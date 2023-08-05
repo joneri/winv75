@@ -5,6 +5,7 @@ const router = express.Router()
 
 router.post('/', async (req, res) => {
   try {
+    console.log('req.body', req.body)
     const { horseName, horseData } = req.body
     const result = await horseService.upsertHorse(horseName, horseData)
     res.send(result)
