@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-console.log('helloo?')
+
 const connectDB = async () => {
   try {
     await mongoose.connect('mongodb://localhost:27017/winv75', {

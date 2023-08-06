@@ -1,7 +1,7 @@
-import { addHorse } from '../views/Horse/services/HorseService.js'
-import { createStore } from 'vuex'
+import { addHorse } from './services/HorseService.js'
 
-export default createStore({
+export default {
+  namespaced: true, // Important for namespacing
   state: {
     horseData: []
   },
@@ -16,4 +16,4 @@ export default createStore({
       commit('setHorseData', response)
     }
   }
-})
+}

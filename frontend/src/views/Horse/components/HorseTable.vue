@@ -11,7 +11,6 @@
     data() {
       return {
         headers: [
-          { text: 'Horse Name', value: 'horseName' },
           { text: 'Horse Data', value: 'horseData' }
         ]
       }

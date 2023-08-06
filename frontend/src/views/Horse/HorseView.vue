@@ -7,7 +7,7 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-if="horseData.length > 0">
+        <v-col v-if="horseData && horseData.length > 0">
           <horse-table :horses="horseData" />
         </v-col>
       </v-row>
@@ -29,7 +29,7 @@
     },
     methods: {
       submitData(data) {
-        this.$store.dispatch('addHorseData', data)
+        this.$store.dispatch('horse/addHorseData', data);
       }
     }
   }

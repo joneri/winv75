@@ -1,5 +1,4 @@
 export async function addHorse(horseData) {
-    console.log('horseData', horseData)
     const response = await fetch(`${import.meta.env.VITE_BE_URL}/api/horses`, {
     method: 'POST',
     headers: {

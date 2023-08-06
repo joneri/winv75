@@ -1,73 +1,163 @@
 import mongoose from 'mongoose'
 
-const positionsSchema = new mongoose.Schema({
-    "1": Number,
-    "2": Number,
-    "3": Number,
-    "4": Number,
-    "5": Number,
-    "6": Number,
-    "7": Number,
-    "Diskvalificeringar": Number
-}, {_id: false})
+const StatisticSchema = new mongoose.Schema({
+    organisation: { type: String, default: '' },
+    sourceOfData: { type: String, default: '' },
+    horseId: { type: Number, default: 0 },
+    year: { type: String, default: '' },
+    numberOfStarts: { type: String, default: '' },
+    placements: { type: String, default: '' },
+    prizeMoney: { type: String, default: '' },
+    mark: { type: String, default: '' }
+}, { _id: false })
 
-const driversSchema = new mongoose.Schema({}, {_id: false, strict: false}) // dynamic keys
-
-const distancesSchema = new mongoose.Schema({
-    "1640": Number,
-    "2140": Number,
-    "2640": Number
-}, {_id: false})
-
-const filterParametersSchema = new mongoose.Schema({
-    drivers: [String],
-    tracks: [String],
-    firstDate: String,
-    lastDate: String,
-    distances: [Number],
-    startingPositions: [Number]
-}, {_id: false})
-
-const staticInfoSchema = new mongoose.Schema({
-    sex: String,
-    age: Number,
-    trainer: String,
-    owner: String
-}, {_id: false})
-
-const graphDataSchema = new mongoose.Schema({
-    positions: positionsSchema,
-    drivers: driversSchema,
-    distances: distancesSchema
-}, {_id: false})
-
-const horseDataSchema = new mongoose.Schema({
-    numberOfRaces: Number,
-    winPercentage: Number,
-    mostCommonFinishPosition: String,
-    totalEarningsInTimePeriod: Number,
-    lifeTimeEarnings: Number,
-    mostCommonDriver: String,
-    shareDisqualified: Number,
-    moneyPerRace: Number,
-    graphData: graphDataSchema,
-    staticInfo: staticInfoSchema,
-    filterParametersFull: filterParametersSchema,
-    filterParametersGivenSelection: filterParametersSchema
-}, {_id: false})
-
-const horseSchema = new mongoose.Schema({
-    horseName: {
-        type: String,
-        required: true,
-        unique: true
+const RaceResultSchema = new mongoose.Schema({
+    trackCode: { type: String, default: '' },
+    raceInformation: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        date: { type: Date, default: Date.now },
+        displayDate: { type: String, default: '' },
+        raceId: { type: Number, default: 0 },
+        raceDayId: { type: Number, default: 0 },
+        raceNumber: { type: Number, default: 0 },
+        linkable: { type: Boolean, default: false },
+        hasStartList: { type: Boolean, default: false }
     },
-    horseId: {
-        type: String,
-        required: true,
-        unique: true
+    raceType: {
+        sortValue: { type: String, default: '' },
+        displayValue: { type: String, default: '' }
     },
-    horseData: horseDataSchema
+    startPosition: {
+        sortValue: { type: Number, default: 0 },
+        displayValue: { type: String, default: '' }
+    },
+    distance: {
+        sortValue: { type: Number, default: 0 },
+        displayValue: { type: String, default: '' }
+    },
+    trackCondition: { type: String, default: '' },
+    placement: {
+        sortValue: { type: Number, default: 0 },
+        displayValue: { type: String, default: '' }
+    },
+    kilometerTime: {
+        sortValue: { type: Number, default: 9999 },
+        displayValue: { type: String, default: '' }
+    },
+    startMethod: { type: String, default: '' },
+    odds: {
+        sortValue: { type: Number, default: 9999 },
+        displayValue: { type: String, default: '' }
+    },
+    driver: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        id: { type: Number, default: 0 },
+        name: { type: String, default: '' },
+        linkable: { type: Boolean, default: false }
+    },
+    trainer: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        id: { type: Number, default: 0 },
+        name: { type: String, default: '' },
+        linkable: { type: Boolean, default: false }
+    },
+    prizeMoney: {
+        sortValue: { type: Number, default: 0 },
+        displayValue: { type: String, default: '' }
+    },
+    equipmentOptions: {
+        shoeOptions: {
+            code: { type: String, default: '' }
+        }
+    },
+    withdrawn: { type: Boolean, default: false }
+}, { _id: false })
+
+
+const HorseSchema = new mongoose.Schema({
+    organisation: { type: String, default: '' },
+    sourceOfData: { type: String, default: '' },
+    id: { type: Number, default: 0 },
+    name: { type: String, default: '' },
+    horseGender: {
+        code: { type: String, default: '' },
+        text: { type: String, default: '' }
+    },
+    horseBreed: {
+        code: { type: String, default: '' },
+        text: { type: String, default: '' }
+    },
+    color: { type: String, default: '' },
+    registrationNumber: { type: String, default: '' },
+    uelnNumber: { type: String, default: '' },
+    passport: { type: Date, default: Date.now },
+    registrationCountryCode: { type: String, default: '' },
+    bredCountryCode: { type: String, default: '' },
+    birthCountryCode: { type: String, default: '' },
+    dateOfBirth: { type: Date, default: Date.now },
+    dateOfBirthDisplayValue: { type: Date, default: Date.now },
+    trotAdditionalInformation: {
+        mockInlander: { type: Boolean, default: false },
+        breedIndex: { type: String, default: '' },
+        inbreedCoefficient: { type: String, default: '' },
+        limitedStartPrivileges: { type: Boolean, default: false },
+        embryo: { type: Boolean, default: false },
+        offspringStartsExists: { type: Boolean, default: false },
+        registrationDone: { type: Boolean, default: false }
+    },
+    guestHorse: { type: Boolean, default: false },
+    registrationStatus: {
+        changeable: { type: Boolean, default: false },
+        dead: { type: Boolean, default: false }
+    },
+    owner: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        id: { type: Number, default: 0 },
+        linkable: { type: Boolean, default: false },
+        name: { type: String, default: '' },
+        ownershipForm: { type: String, default: '' },
+        header: { type: String, default: '' }
+    },
+    breeder: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        id: { type: Number, default: 0 },
+        linkable: { type: Boolean, default: false },
+        name: { type: String, default: '' }
+    },
+    trainer: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        id: { type: Number, default: 0 },
+        licenseType: { type: String, default: '' },
+        name: { type: String, default: '' },
+        linkable: { type: Boolean, default: false }
+    },
+    representative: {
+        organisation: { type: String, default: '' },
+        sourceOfData: { type: String, default: '' },
+        id: { type: Number, default: 0 },
+        personType: { type: String, default: '' },
+        name: { type: String, default: '' }
+    },
+    offspringExists: { type: Boolean, default: false },
+    resultsExists: { type: Boolean, default: false },
+    historyExists: { type: Boolean, default: false },
+    breedingEvaluationExists: { type: Boolean, default: false },
+    startMonitoringInformation: {
+        userLoggedIn: { type: Boolean, default: false },
+        startMonitoringPossible: { type: Boolean, default: false }
+    },
+    sportInfoType: { type: String, default: '' },
+    winningRate: { type: String, default: '' },
+    placementRate: { type: String, default: '' },
+    points: { type: String, default: '' },
+    statistics: [StatisticSchema],
+    results: [RaceResultSchema]
 })
 
-export default mongoose.model('Horse', horseSchema)
+export default mongoose.model('Horse', HorseSchema)
