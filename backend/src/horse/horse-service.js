@@ -21,10 +21,9 @@ const upsertHorseData = async (initialJSON) => {
         results: [...results], 
         statistics: [...statistics.statistics] 
     };
-    horseData.winningRate = statistics.winningrate
-    horseData.placementRate = statistics.placementrate
+    horseData.winningRate = statistics.winningRate
+    horseData.placementRate = statistics.placementRate
     horseData.points = Number(statistics.points.replace(/\s/g, ''))
-    console.log('Merged horseData:', horseData);
 
     let horse
     try {
