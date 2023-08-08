@@ -78,7 +78,7 @@ const raceSchema = new mongoose.Schema({
   resultsReady: Boolean
 })
 
-const startlistSchema = new mongoose.Schema({
+const racedaySchema = new mongoose.Schema({
   organisation: String,
   sourceOfData: String,
   raceDayId: { type: Number, unique: true, required: true },
@@ -92,4 +92,4 @@ const startlistSchema = new mongoose.Schema({
   hasPdf: Boolean
 })
 
-export default mongoose.model('Startlist', startlistSchema)
+export default mongoose.model('Raceday', racedaySchema)
