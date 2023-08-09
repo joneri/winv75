@@ -9,7 +9,7 @@ import * as directives from 'vuetify/directives'
 import store from './stores'
 
 const vuetify = createVuetify({
-  components,
+    components,
   directives,
 })
 

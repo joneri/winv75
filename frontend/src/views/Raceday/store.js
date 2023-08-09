@@ -1,7 +1,6 @@
-import { createStore } from 'vuex'
 import RacedayService from './services/RacedayService.js'
 
-export default createStore({
+export default {
   state: {
     racedayDetails: null,
     loading: false,
@@ -31,4 +30,4 @@ export default createStore({
       }
     }
   }
-})
+}

@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { addRaceday } from './services/RacedayInputService.js'
 
 const state = {
@@ -25,7 +26,10 @@ const mutations = {
         if (!state.raceDays.includes(raceDayId)) {
             state.raceDays.push(raceDayId)
         }
-    }
+    },
+    setRaceDays(state, raceDays) {
+        state.raceDays = raceDays
+    }    
 }
 
 const actions = {
@@ -41,7 +45,15 @@ const actions = {
         } finally {
             commit('setLoading', false)
         }
-    }           
+    },
+    async fetchRacedays({ commit }) {
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/racedays`)
+          commit('setRaceDays', response.data)
+        } catch (error) {
+          console.error('Error fetching racedays:', error)
+        }
+    }     
 }
 
 export default {
