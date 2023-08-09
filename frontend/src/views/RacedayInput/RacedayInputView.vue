@@ -39,76 +39,70 @@
   </v-snackbar>
 </template>
 
-  
-  <script>
-  import { mapState } from 'vuex'
-  import { mapActions } from 'vuex'
+<script>
+import { ref, computed, onMounted, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import { useDateFormat } from '@/composables/useDateFormat.js';
 
-  export default {
-    data() {
-      return {
-        racedayJsonInput: '',  // This will hold the raw JSON input for racedays
-        showSnackbar: false,  // Will be used to show a snackbar when data is submitted successfully
-      }
-    },
-    watch: {
-      successMessage(newVal) {
-        if (newVal) {
-          this.showSnackbar = true;
-          this.racedayJsonInput = '';  // Clear the textarea after submission
-        }
-      }
-    },
-    computed: {
-      error() {
-        return this.$store.state.raceday.error  // This is the error message
-      },
-      ...mapState('racedayInput', ['raceDays']),  // This is the list of racedays
-      loading() {
-        return this.$store.state.raceday.loading  // Check if loading data
-      },
-      successMessage() {
-        return this.$store.state.raceday.successMessage;  // Confirmation message after data submission
-      }
-    },
-    methods: {
-      ...mapActions(['fetchRacedays']),
-      submitRacedayData() {
-        if (this.racedayJsonInput === '') {
-          return
-        }
-        try {
-          const parsedData = JSON.parse(this.racedayJsonInput)
-          this.$store.dispatch('racedayInput/addRacedayData', parsedData)
-          this.racedayJsonInput = ''  // Clear input after successful submission
-        } catch (error) {
-          console.error('Error parsing Raceday JSON data:', error)
-        }
-      },
-      navigateToRaceDay(raceDayId) {
-        this.$router.push({ name: 'RacedayView', params: { raceDayId } })
-      },
-      formatDate(dateString) {
-          const days = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORS DAG', 'FREDAG', 'LÖRDAG']
-          const months = ['JANUARI', 'FEBRUARI', 'MARS', 'APRIL', 'MAJ', 'JUNI', 'JULI', 'AUGUSTI', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DECEMBER']
-          const date = new Date(dateString)
-          const dayName = days[date.getDay()]
-          const day = date.getDate()
-          const month = months[date.getMonth()]
-          const year = date.getFullYear()
-          const hours = String(date.getUTCHours()).padStart(2, '0')
-          const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+export default {
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+    const { formatDate } = useDateFormat();
 
-          return `${dayName} ${day} ${month} ${year} kl ${hours}:${minutes}`
+    const racedayJsonInput = ref('');
+    const showSnackbar = ref(false);
+
+    const error = computed(() => store.state.raceday.error);
+    const raceDays = computed(() => store.state.racedayInput.raceDays);
+    const loading = computed(() => store.state.raceday.loading);
+    const successMessage = computed(() => store.state.raceday.successMessage);
+
+    const submitRacedayData = () => {
+      if (racedayJsonInput.value === '') return;
+
+      try {
+        const parsedData = JSON.parse(racedayJsonInput.value);
+        store.dispatch('racedayInput/addRacedayData', parsedData);
+        racedayJsonInput.value = '';  // Clear input after successful submission
+      } catch (error) {
+        console.error('Error parsing Raceday JSON data:', error);
       }
-    },
-    mounted() {
-      this.$store.dispatch('racedayInput/fetchRacedays')
-    }
+    };
+
+    const navigateToRaceDay = (raceDayId) => {
+      router.push({ name: 'Raceday', params: { racedayId: raceDayId } }); // Changed this.$router to router
+    };
+
+    watchEffect(() => {
+      if (successMessage.value) {
+        showSnackbar.value = true;
+        racedayJsonInput.value = '';
+      }
+    });
+
+    onMounted(() => {
+      store.dispatch('racedayInput/fetchRacedays');
+    });
+
+    return {
+      formatDate,
+      racedayJsonInput,
+      showSnackbar,
+      error,
+      raceDays,
+      loading,
+      successMessage,
+      submitRacedayData,
+      navigateToRaceDay
+    };
   }
-  </script>
-  <style scoped>
+}
+</script>
+
+<style scoped>
   .track-name {
     font-size: 0.9em;
   }
-  </style>
+</style>
