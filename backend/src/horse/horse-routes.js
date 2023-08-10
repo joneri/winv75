@@ -7,13 +7,8 @@ const router = express.Router()
 router.get('/:horseId', async (req, res) => {
   try {
       const horseId = req.params.horseId
-
-      // Fetch the basic horse data from the external API
-      const response = await axios.get(`https://api.travsport.se/webapi/horses/basicinformation/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`)
-      const initialHorseData = response.data
-
       // Handle the fetched horse data (e.g., upsert to your database)
-      const result = await horseService.upsertHorseData(initialHorseData)
+      const result = await horseService.upsertHorseData(horseId)
 
       res.send(result);
   } catch (error) {

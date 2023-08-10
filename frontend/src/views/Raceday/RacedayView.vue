@@ -2,18 +2,15 @@
   <v-container>
     <v-row>
       <v-col>
-        <!-- Check if racedayDetails exists before rendering the name -->
-        <h1 v-if="racedayDetails">{{ formatDate(racedayDetails.firstStart) }}</h1>
-
-        <!-- Check for error messages and display them if any -->
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
+        <!-- Display Raceday details if available, else show error message -->
+        <div v-if="racedayDetails">
+          <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
+          <div v-for="race in sortedRaceList" :key="race.id">
+            <RaceCardComponent :race="race" />
+          </div>
         </div>
-
-        <!-- Display basic Raceday details here -->
-        <!-- Check if racedayDetails.races exists before rendering races -->
-        <div v-for="race in racedayDetails?.races" :key="race.id">
-          <RaceCardComponent :race="race" />
+        <div v-else-if="errorMessage" class="error-message">
+          {{ errorMessage }}
         </div>
       </v-col>
     </v-row>
@@ -21,45 +18,51 @@
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
 import RacedayService from './services/RacedayService.js'
 import RaceCardComponent from './components/RaceCardComponent.vue'
 import { useDateFormat } from '@/composables/useDateFormat.js'
+import { useRoute } from 'vue-router'
+
 
 export default {
   components: {
     RaceCardComponent
   },
-  setup() {
+  setup(props, { root }) {    
+    const route = useRoute()
+    const racedayDetails = ref(null)
+    const errorMessage = ref(null)
     const { formatDate } = useDateFormat()
+
+    // Using onMounted lifecycle hook to fetch raceday details
+    onMounted(async () => {
+      try {
+        racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+      } catch (error) {
+        console.error('Error fetching raceday details:', error)
+        errorMessage.value = 'Error fetching raceday details. Please try again later.'
+      }
+    })
+
+    const sortedRaceList = computed(() => {
+      return racedayDetails.value?.raceList.sort((a, b) => a.raceNumber - b.raceNumber) || []
+    })
+
     return {
-      formatDate
-    }
-  },
-  data() {
-    return {
-      racedayDetails: null,
-      errorMessage: null  // Added an errorMessage property to handle any errors
-    }
-  },
-  async created() {
-    try {
-      this.racedayDetails = await RacedayService.fetchRacedayDetails(this.$route.params.racedayId)
-    } catch (error) {
-      console.error('Error fetching raceday details:', error)
-      this.errorMessage = 'Error fetching raceday details. Please try again later.'; // Set the error message
+      racedayDetails,
+      errorMessage,
+      formatDate,
+      sortedRaceList
     }
   }
 }
 </script>
 
 <style scoped>
-/* You can put any scoped styles for RacedayView here */
-
-/* Style for the error message */
 .error-message {
   color: red;
   font-size: 1rem;
   margin-top: 1rem;
 }
-
 </style>

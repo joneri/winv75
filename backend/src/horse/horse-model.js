@@ -158,6 +158,9 @@ const HorseSchema = new mongoose.Schema({
     points: { type: String, default: '' },
     statistics: [StatisticSchema],
     results: [RaceResultSchema]
+},
+{
+    timestamps: true
 })
 
 export default mongoose.model('Horse', HorseSchema)

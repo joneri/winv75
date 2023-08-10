@@ -1,12 +1,13 @@
 import express from 'express'
-import startlistService from './raceday-service.js'
+import raceDayService from './raceday-service.js'
 
 const router = express.Router()
 
 router.post('/', async (req, res) => {
+    console.log('req:', req)
     try {
         const startlistData = req.body;
-        const result = await startlistService.upsertStartlistData(startlistData)
+        const result = await raceDayService.upsertStartlistData(startlistData)
         res.send(result)
     } catch (error) {
         console.error('Error upserting raceday data:', error)
@@ -16,9 +17,9 @@ router.post('/', async (req, res) => {
 
 // Fetch all racedays
 router.get('/', async (req, res) => {
+    console.log('req:', req)
     try {
-        const racedays = await startlistService.getAllRacedays()
-        console.log('racedays:', racedays)
+        const racedays = await raceDayService.getAllRacedays()
         res.send(racedays)
     } catch (error) {
         console.error('Error fetching all racedays:', error);
@@ -28,9 +29,10 @@ router.get('/', async (req, res) => {
 
 // Fetch a specific raceday by its ID
 router.get('/:id', async (req, res) => {
+    console.log('req:', req)
     try {
         const racedayId = req.params.id;
-        const raceday = await startlistService.getRacedayById(racedayId)
+        const raceday = await raceDayService.getRacedayById(racedayId)
         if (raceday) {
             res.send(raceday);
         } else {

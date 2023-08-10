@@ -13,11 +13,16 @@ const fetchStatistics = async (horseId) => {
     return response.data
 }
 
-const upsertHorseData = async (initialJSON) => {
-    const horseId = initialJSON.id;
-    const [results, statistics] = await Promise.all([fetchResults(horseId), fetchStatistics(horseId)])
+const fetchBasicInformatio = async (horseId) => {
+    const url = `https://api.travsport.se/webapi/horses/basicinformation/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
+    const response = await axios.get(url)
+    return response.data
+}
+
+const upsertHorseData = async (horseId) => {
+    const [basicInformation, results, statistics] = await Promise.all([fetchBasicInformatio(horseId), fetchResults(horseId), fetchStatistics(horseId)])
     const horseData = { 
-        ...initialJSON, 
+        ...basicInformation.data, 
         results: [...results], 
         statistics: [...statistics.statistics] 
     };
