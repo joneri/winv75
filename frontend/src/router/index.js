@@ -18,7 +18,8 @@ const routes = [
   {
     path: '/race/:raceId', 
     name: 'race',
-    component: RaceHorsesView
+    component: RaceHorsesView,
+    props: true  // This will pass route params as props to the component
   }
 ]
 

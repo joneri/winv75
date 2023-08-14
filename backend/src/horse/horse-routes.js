@@ -19,7 +19,9 @@ router.put('/:horseId', async (req, res) => {
 })
 
 router.get('/:horseId', async (req, res) => {
+    let horseId
     try {
+        console.log('req:', req.originalUrl)
         const horseId = req.params.horseId
         const horse = await horseService.getHorseData(horseId)
 
@@ -29,9 +31,13 @@ router.get('/:horseId', async (req, res) => {
 
         res.send(horse)
     } catch (error) {
-        console.error(`Error fetching horse data for id ${horseId}:`, error)
+        const errorMessage = horseId 
+            ? `Error fetching horse data for id ${horseId}: ${error}` 
+            : `Error fetching horse data: ${error}`
+        console.error(errorMessage)
         res.status(500).send('Failed to fetch horse data.')
     }
 })
+
 
 export default router

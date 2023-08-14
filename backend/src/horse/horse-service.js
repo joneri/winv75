@@ -13,19 +13,19 @@ const fetchStatistics = async (horseId) => {
     return response.data
 }
 
-const fetchBasicInformatio = async (horseId) => {
+const fetchBasicInformation = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/basicinformation/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
     const response = await axios.get(url)
     return response.data
 }
 
 const upsertHorseData = async (horseId) => {
-    const [basicInformation, results, statistics] = await Promise.all([fetchBasicInformatio(horseId), fetchResults(horseId), fetchStatistics(horseId)])
+    const [basicInformation, results, statistics] = await Promise.all([fetchBasicInformation(horseId), fetchResults(horseId), fetchStatistics(horseId)])
     const horseData = { 
-        ...basicInformation.data, 
+        ...basicInformation, 
         results: [...results], 
         statistics: [...statistics.statistics] 
-    };
+    }
     horseData.winningRate = statistics.winningRate
     horseData.placementRate = statistics.placementRate
     horseData.points = Number(statistics.points.replace(/\s/g, ''))
@@ -40,6 +40,11 @@ const upsertHorseData = async (horseId) => {
     return horse
 }
 
+const getHorseData = async (horseId) => {
+    return await Horse.findOne({ id: horseId });
+}
+
 export default {
-    upsertHorseData
+    upsertHorseData,
+    getHorseData  // exporting the new function
 }

@@ -3,10 +3,13 @@
         <v-row>
             <v-col>
                 <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16" class="elevation-1">
-
-                    <!-- For the action buttons -->
+                    <template v-slot:item.name="{ item }">
+                        <span :style="{ 'text-decoration': item.columns.horseWithdrawn ? 'line-through' : 'none' }">
+                            {{ item.columns.name }}
+                        </span>
+                    </template>
                     <template v-slot:item.action="{ item }">
-                        <v-btn v-if="!isHorseUpdated(item.id)" @click="updateHorseData(item.id)">Update</v-btn>
+                        <v-btn v-if="!isHorseUpdated(item.key)" @click="updateHorseData(item.key)">Update</v-btn>
                         <v-icon v-else>mdi-check</v-icon>
                     </template>
                 </v-data-table>
@@ -31,6 +34,7 @@ export default {
 
         onMounted(async () => {
             try {
+                console.log('is there a raceId in here???',route.params.raceId)
                 const raceId = route.params.raceId
                 const responseData = await fetchRaceFromRaceId(raceId)
                 store.commit('raceHorses/setCurrentRace', responseData)
@@ -42,10 +46,11 @@ export default {
         })
 
         const headers = [
-            { title: 'Start Position', key: 'startPosition' },
+            { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
-            { title: 'Action', key: 'action' }
+            { title: 'Action', key: 'action' },
+            {key: 'horseWithdrawn'}
         ]
 
         const updatedHorses = ref([])  // A list to store IDs of updated horses
@@ -65,6 +70,7 @@ export default {
         }
 
         const updateHorseData = async (horseId) => {
+            console.log('Logging from updateHorseData function', horseId)
             try {
                 await updateHorse(horseId)
                 const updated = await checkIfUpdatedRecently(horseId)
