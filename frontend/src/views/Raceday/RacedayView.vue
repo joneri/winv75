@@ -39,6 +39,7 @@ export default {
     onMounted(async () => {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+        console.log('Race day details value:',racedayDetails.value)
       } catch (error) {
         console.error('Error fetching raceday details:', error)
         errorMessage.value = 'Error fetching raceday details. Please try again later.'

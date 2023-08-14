@@ -14,7 +14,9 @@
 </template>
 
 <script>
-import { ref, toRefs } from 'vue';
+import { ref, toRefs } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 
 export default {
   props: {
@@ -25,11 +27,20 @@ export default {
   },
   setup(props) {
     // Convert props to reactive references
-    const { race } = toRefs(props);
+    const { race } = toRefs(props)
+    const router = useRouter()
+    const store = useStore()
 
     const viewRaceDetails = () => {
-      // Logic to navigate or display race details
-      // You can access the race id with race.id
+      console.log("Race being committed:", props.race)
+      try {
+        store.commit('raceHorses/setCurrentRace', props.race)
+      } catch (error) {
+        console.error("Error in viewRaceDetails:", error)
+      }
+      router.push({ name: 'race', params: { raceId: props.race.raceId } }).catch(error => {
+        console.error("Router push error:", error);
+      })
     }
 
     return {

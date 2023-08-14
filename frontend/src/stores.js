@@ -1,12 +1,12 @@
 import { createStore } from 'vuex'
 import racedayInputStore from './views/RacedayInput/store'
 import racedayStore from './views/Raceday/store'
-import raceStartlistStore from './views/RaceStartlist/store'
+import raceHorses from './views/RaceHorses/store'
 
 export default createStore({
   modules: {
     racedayInput: racedayInputStore,
     raceday: racedayStore,
-    raceStartlistStore: raceStartlistStore
+    raceHorses: raceHorses
   }
 })

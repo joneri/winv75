@@ -9,6 +9,7 @@ export default {
   mutations: {
     setRacedayDetails(state, details) {
       state.racedayDetails = details
+      console.log("Setting raceday details:", details)
     },
     setLoading(state, isLoading) {
       state.loading = isLoading

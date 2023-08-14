@@ -4,8 +4,9 @@ import axios from 'axios'
 
 const router = express.Router()
 
-router.get('/:horseId', async (req, res) => {
+router.put('/:horseId', async (req, res) => {
   try {
+      console.log('req:', req.originalUrl)
       const horseId = req.params.horseId
       // Handle the fetched horse data (e.g., upsert to your database)
       const result = await horseService.upsertHorseData(horseId)

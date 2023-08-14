@@ -4,7 +4,7 @@ import raceDayService from './raceday-service.js'
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-    console.log('req:', req)
+    console.log('req:', req.originalUrl)
     try {
         const startlistData = req.body;
         const result = await raceDayService.upsertStartlistData(startlistData)
@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
 
 // Fetch all racedays
 router.get('/', async (req, res) => {
-    console.log('req:', req)
+    console.log('req:', req.originalUrl)
     try {
         const racedays = await raceDayService.getAllRacedays()
         res.send(racedays)
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 
 // Fetch a specific raceday by its ID
 router.get('/:id', async (req, res) => {
-    console.log('req:', req)
+    console.log('req:', req.originalUrl)
     try {
         const racedayId = req.params.id;
         const raceday = await raceDayService.getRacedayById(racedayId)
