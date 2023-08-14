@@ -1,15 +1,17 @@
 <template>
   <v-card>
-    <v-card-title> Race Number: {{ race.raceNumber }}</v-card-title>
-    <v-card-text>
-      <div>
-        {{ race.propTexts[0].text + " " +  race.propTexts[1].text}}
-      </div>
-      <!-- Add other race details as needed -->
-    </v-card-text>
-    <v-card-actions>
-      <v-btn @click="viewRaceDetails">View Details</v-btn>
-    </v-card-actions>
+    <div class="d-flex justify-space-between align-center" style="width: 100%;">
+      <v-card-title> Race Number: {{ race.raceNumber }}</v-card-title>
+      <v-card-text>
+        <div>
+          {{ race.propTexts[0].text + " " +  race.propTexts[1].text}}
+        </div>
+        <!-- Add other race details as needed -->
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="viewRaceDetails">View Details</v-btn>
+      </v-card-actions>
+    </div>
   </v-card>
 </template>
 

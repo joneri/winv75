@@ -9,11 +9,6 @@
                         <v-btn v-if="!isHorseUpdated(item.id)" @click="updateHorseData(item.id)">Update</v-btn>
                         <v-icon v-else>mdi-check</v-icon>
                     </template>
-
-                    <!-- This slot is for accessing nested property driver.name -->
-                    <template v-slot:item.driverName="{ item }">
-                        {{ item.driver ? item.driver.name : '' }}
-                    </template>
                 </v-data-table>
             </v-col>
         </v-row>
@@ -24,7 +19,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
-import { checkIfUpdatedRecently, fetchRaceFromRaceId } from '@/views/RaceHorses/services/RaceHorsesService.js'
+import { checkIfUpdatedRecently, fetchRaceFromRaceId, updateHorse } from '@/views/RaceHorses/services/RaceHorsesService.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -49,7 +44,7 @@ export default {
         const headers = [
             { title: 'Start Position', key: 'startPosition' },
             { title: 'Horse Name', key: 'name' },
-            { title: 'Driver Name', key: 'driver.name' }, // Change this to a unique name
+            { title: 'Driver Name', key: 'driver.name' },
             { title: 'Action', key: 'action' }
         ]
 
@@ -69,10 +64,16 @@ export default {
             return updatedHorses.value.includes(horseId)
         }
 
-        const updateHorseData = (horseId) => {
-            // Your logic to update the horse data goes here.
-            // Once the horse is updated, push the horseId to the updatedHorses array
-            // updatedHorses.value.push(horseId)
+        const updateHorseData = async (horseId) => {
+            try {
+                await updateHorse(horseId)
+                const updated = await checkIfUpdatedRecently(horseId)
+                if (updated && !updatedHorses.value.includes(horseId)) {
+                    updatedHorses.value.push(horseId)
+                }
+            } catch (error) {
+                console.error(`Failed to update horse with ID ${horseId}:`, error)
+            }
         }
 
         return {

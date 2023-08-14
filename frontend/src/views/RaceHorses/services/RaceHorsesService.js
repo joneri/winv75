@@ -2,14 +2,13 @@ import { ref } from 'vue'
 import axios from 'axios'
 
 const updateHorse = async (horseId) => {
-    const endpoint = `/api/horses/${horseId}`
+    const endpoint = `${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`
     try {
         const response = await fetch(endpoint, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            // Include any additional data here if needed
         })
 
         if (!response.ok) {
