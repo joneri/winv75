@@ -2,7 +2,6 @@ import { ref } from 'vue'
 import axios from 'axios'
 
 const updateHorse = async (horseId) => {
-    console.log("Update horse ID:", horseId)
     const endpoint = `${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`
     try {
         const response = await fetch(endpoint, {
@@ -25,7 +24,6 @@ const updateHorse = async (horseId) => {
 }
 
 const checkIfUpdatedRecently = async (horseId) => {
-    console.log("checkIfUpdatedRecently:", horseId)
     try {
         const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`)
         
@@ -49,10 +47,8 @@ const checkIfUpdatedRecently = async (horseId) => {
 }
 
 const fetchRaceFromRaceId = async (raceId) => {
-    console.log("fetchRaceFromRaceId:", raceId)
     try {
         const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/race/${raceId}`)
-        console.log('response:', response)
         return response.data
     } catch (error) {
         console.error("Failed to fetch race data", error)

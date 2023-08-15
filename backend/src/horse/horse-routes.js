@@ -8,7 +8,6 @@ router.put('/:horseId', async (req, res) => {
     try {
         console.log('req:', req.originalUrl)
         const horseId = req.params.horseId
-        // Handle the fetched horse data (e.g., upsert to your database)
         const result = await horseService.upsertHorseData(horseId)
 
         res.send(result);
@@ -22,7 +21,7 @@ router.get('/:horseId', async (req, res) => {
     let horseId
     try {
         console.log('req:', req.originalUrl)
-        const horseId = req.params.horseId
+        horseId = req.params.horseId
         const horse = await horseService.getHorseData(horseId)
 
         if (!horse) {
@@ -39,5 +38,18 @@ router.get('/:horseId', async (req, res) => {
     }
 })
 
+router.get('/rankings/:raceId', async (req, res) => {
+    let rankings
+    try {
+        console.log('req:', req.originalUrl)
+        const raceId = req.params.raceId
+        rankings = await horseService.getHorseRankings(raceId)
+        res.status(200).json(rankings)
+    } catch (error) {
+        const errorMessage = `Error fetching horse rankings: ${error}`
+        console.error(errorMessage)
+        res.status(500).send('Failed to fetch horse data.')
+    }
+})
 
 export default router

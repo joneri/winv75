@@ -1,5 +1,5 @@
 <template>
-    <v-app-bar app>
+    <v-app-bar app fixed elevation>
         <v-btn to="/" text>
             Home
         </v-btn>

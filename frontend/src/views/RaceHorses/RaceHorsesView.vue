@@ -34,7 +34,6 @@ export default {
 
         onMounted(async () => {
             try {
-                console.log('is there a raceId in here???',route.params.raceId)
                 const raceId = route.params.raceId
                 const responseData = await fetchRaceFromRaceId(raceId)
                 store.commit('raceHorses/setCurrentRace', responseData)

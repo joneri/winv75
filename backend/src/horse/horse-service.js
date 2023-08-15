@@ -1,5 +1,6 @@
 import Horse from './horse-model.js'
 import axios from 'axios'
+import horseRanking from './horse-ranking.js'
 
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
@@ -44,7 +45,12 @@ const getHorseData = async (horseId) => {
     return await Horse.findOne({ id: horseId });
 }
 
+const getHorseRankings = async (raceId) => {
+    return await horseRanking.getHorseRankings(raceId)
+}
+
 export default {
     upsertHorseData,
-    getHorseData  // exporting the new function
+    getHorseData,
+    getHorseRankings
 }
