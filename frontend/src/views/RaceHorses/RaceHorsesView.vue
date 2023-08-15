@@ -13,6 +13,8 @@
                         <v-icon v-else>mdi-check</v-icon>
                     </template>
                 </v-data-table>
+                <v-btn v-if="allHorsesUpdated" @click="rankHorses()">Rank Horses</v-btn>
+                <v-btn v-else disabled>Rank Horses</v-btn>
             </v-col>
         </v-row>
     </v-container>
@@ -22,7 +24,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
-import { checkIfUpdatedRecently, fetchRaceFromRaceId, updateHorse } from '@/views/RaceHorses/services/RaceHorsesService.js'
+import { checkIfUpdatedRecently, fetchRaceFromRaceId, fetchHorseRankings, updateHorse } from '@/views/RaceHorses/services/RaceHorsesService.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -31,6 +33,12 @@ export default {
         const store = useStore()
         const route = useRoute()
         const currentRace = computed(() => store.state.raceHorses.currentRace)
+        const allHorsesUpdated = computed(() => {
+                const horses = currentRace.value.horses || []
+                const allUpdated = horses.every(horse => updatedHorses.value.includes(horse.id))
+                console.log("All horses updated?", allUpdated)
+                return allUpdated
+            })
 
         onMounted(async () => {
             try {
@@ -81,11 +89,22 @@ export default {
             }
         }
 
+        const rankHorses = async () => {
+            try {
+                const raceId = route.params.raceId
+                console.log(await fetchHorseRankings(raceId))
+            } catch (error) {
+                console.error("Failed to rank horses:", error)
+            }
+        }
+
         return {
             headers,
             isHorseUpdated,
             updateHorseData,
-            currentRace
+            rankHorses,
+            currentRace,
+            allHorsesUpdated
         }
     }
 }

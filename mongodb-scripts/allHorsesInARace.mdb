@@ -1,0 +1,33 @@
+[
+    // Step 1 & 2: Filter the race list to get the specific race
+    {
+        "$match": { "raceList.raceId": 1236926 }
+    },
+    // Step 3: Unwind the raceList
+    {
+        "$unwind": "$raceList"
+    },
+    // Step 4: Filter again
+    {
+        "$match": { "raceList.raceId": 1236926 }
+    },
+    // Step 5: Unwind the horses
+    {
+        "$unwind": "$raceList.horses"
+    },
+    // Step 6: Fetch horse details
+    {
+        "$lookup": {
+            "from": "horses",
+            "localField": "raceList.horses.id",
+            "foreignField": "id",
+            "as": "horseDetails"
+        }
+    },
+    // Replace root with horseDetails
+    {
+        "$replaceRoot": {
+            "newRoot": { "$arrayElemAt": ["$horseDetails", 0] }
+        }
+    }
+]

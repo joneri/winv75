@@ -41,9 +41,10 @@ router.get('/:horseId', async (req, res) => {
 router.get('/rankings/:raceId', async (req, res) => {
     let rankings
     try {
-        console.log('req:', req.originalUrl)
         const raceId = req.params.raceId
+        console.log('req:', req.originalUrl, 'raceId:', raceId)
         rankings = await horseService.getHorseRankings(raceId)
+        console.log('rankings:', rankings)
         res.status(200).json(rankings)
     } catch (error) {
         const errorMessage = `Error fetching horse rankings: ${error}`

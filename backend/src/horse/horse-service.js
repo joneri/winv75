@@ -46,7 +46,7 @@ const getHorseData = async (horseId) => {
 }
 
 const getHorseRankings = async (raceId) => {
-    return await horseRanking.getHorseRankings(raceId)
+    return await horseRanking.aggregateHorses(raceId)
 }
 
 export default {

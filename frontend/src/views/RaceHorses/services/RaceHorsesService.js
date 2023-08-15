@@ -56,8 +56,19 @@ const fetchRaceFromRaceId = async (raceId) => {
     }
 }
 
+const fetchHorseRankings = async (raceId) => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/rankings/${raceId}`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch race data", error)
+        throw error  // this will allow the calling function to catch the error as well
+    }
+}
+
 export {
     updateHorse,
     checkIfUpdatedRecently,
-    fetchRaceFromRaceId
+    fetchRaceFromRaceId,
+    fetchHorseRankings
 }

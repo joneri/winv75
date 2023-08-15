@@ -41,7 +41,7 @@ export default {
         console.error("Error in viewRaceDetails:", error)
       }
       router.push({ name: 'race', params: { raceId: props.race.raceId } }).catch(error => {
-        console.error("Router push error:", error);
+        console.error("Router push error:", error)
       })
     }
 

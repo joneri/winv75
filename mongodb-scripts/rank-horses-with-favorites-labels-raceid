@@ -5,23 +5,32 @@
             let: { horse_id: "$_id" },
             pipeline: [
                 { $unwind: "$raceList" },
-                { $match: { "raceList.raceId": 1236916 } },
+                { $match: { "raceList.raceId": 1236926 } },
                 { $unwind: "$raceList.horses" },
                 { $project: { horseId: "$raceList.horses" } }
             ],
             as: "matchedHorses"
         }
     },
-    // Filter for horses that were found in the racedays lookup
     {
         $match: {
-            "matchedHorses.horseId": { $exists: true }
+            "matchedHorses.0": { $exists: true }
         }
     },
-    // Remove the temporary matchedHorses field
+    {
+        $addFields: {
+            horseId: { $arrayElemAt: ["$matchedHorses.horseId", 0] }
+        }
+    },
+    {
+        $match: {
+            $expr: { $eq: ["$_id", "$horseId"] }
+        }
+    },
     {
         $project: {
-            matchedHorses: 0
+            matchedHorses: 0,
+            horseId: 0
         }
     },
     // Unwind the results array
