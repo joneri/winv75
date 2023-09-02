@@ -6,7 +6,10 @@
         <div v-if="racedayDetails">
           <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
           <div v-for="race in sortedRaceList" :key="race.id">
-           <RaceCardComponent :race="race" :lastUpdatedHorseTimestamp="lastUpdatedHorseTimestamps[race.id]" :racedayId="reactiveRouteParams.racedayId" />
+            <RaceCardComponent :race="race" :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp" :racedayId="reactiveRouteParams.racedayId" />
+            <div v-if="isRecentlyUpdated(race.earliestUpdatedHorseTimestamp)">
+              <v-chip color="green">Updated</v-chip>
+            </div>
           </div>
         </div>
         <div v-else-if="errorMessage" class="error-message">
@@ -36,32 +39,22 @@ export default {
     const racedayDetails = ref(null)
     const errorMessage = ref(null)
     const { formatDate } = useDateFormat()
-    // Create a ref to hold the timestamps
-    const lastUpdatedHorseTimestamps = ref({})
-    const getLastUpdatedHorseTimestamp = async (raceId) => {
-      const racedayId = route.params?.racedayId
-      try {
-        return await RacedayService.fetchEarliestUpdatedHorseTimestamp(racedayId, raceId)
-      } catch (error) {
-        console.error('Error getting the last updated horse timestamp:', error)
-      }
-    }
     const reactiveRouteParams = computed(() => route.params)
+    const isRecentlyUpdated = (timestamp) => {
+      const sixDaysAgo = new Date()
+      sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
+      const raceUpdateTime = new Date(timestamp)
+      return raceUpdateTime >= sixDaysAgo
+    }
     
-    // Using onMounted lifecycle hook to fetch raceday details
     onMounted(async () => {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
-
-        for (const race of racedayDetails.value.raceList) {
-          const timestamp = await RacedayService.fetchEarliestUpdatedHorseTimestamp(racedayDetails.value.raceDayId, race.raceId)
-          lastUpdatedHorseTimestamps.value[race.raceId] = timestamp
-        }
       } catch (error) {
         console.error('Error fetching raceday details:', error)
         errorMessage.value = 'Error fetching raceday details. Please try again later.'
+        return
       }
-      console.log('Here is the racedayDetails', racedayDetails.value)
     })
 
     const sortedRaceList = computed(() => {
@@ -73,9 +66,8 @@ export default {
       errorMessage,
       formatDate,
       sortedRaceList,
-      lastUpdatedHorseTimestamps,
       reactiveRouteParams,
-      getLastUpdatedHorseTimestamp,
+      isRecentlyUpdated
     }
   }
 }

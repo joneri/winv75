@@ -10,12 +10,7 @@ const fetchRacedayDetails = async racedayId => {
   }
 }
 
-const fetchEarliestUpdatedHorseTimestamp = async (raceDayId, raceId) => {
-    console.log(`This function is not yet implemented`)
-}
-
 export default {
-  fetchRacedayDetails,
-  fetchEarliestUpdatedHorseTimestamp
+  fetchRacedayDetails
 
 }
