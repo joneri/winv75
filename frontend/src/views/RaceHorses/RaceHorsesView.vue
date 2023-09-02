@@ -1,66 +1,177 @@
 <template>
-    <v-container>
+    <v-container class="tabbed-view-container">
         <v-row>
             <v-col>
-                <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16" class="elevation-1">
-                    <template v-slot:item.name="{ item }">
-                        <span :style="{ 'text-decoration': item.columns.horseWithdrawn ? 'line-through' : 'none' }">
-                            {{ item.columns.name }}
-                        </span>
-                    </template>
-                    <template v-slot:item.action="{ item }">
-                        <v-btn v-if="!isHorseUpdated(item.key)" @click="updateHorseData(item.key)">Update</v-btn>
-                        <v-icon v-else>mdi-check</v-icon>
-                    </template>
-                </v-data-table>
-                <v-btn v-if="allHorsesUpdated" @click="rankHorses()">Rank Horses</v-btn>
-                <v-btn v-else disabled>Rank Horses</v-btn>
+                <v-tabs v-model="activeTab">
+                    <v-tab>Start List</v-tab>
+                    <v-tab :disabled="!allHorsesUpdated">Ranked Horses</v-tab>
+                </v-tabs>
+                <v-window v-model="activeTab">
+                    <v-window-item value="0">
+                        <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
+                            class="elevation-1">
+                            <template v-slot:item.name="{ item }">
+                                <span :style="{ 'text-decoration': item.columns.horseWithdrawn ? 'line-through' : 'none' }">
+                                    {{ item.columns.name }}
+                                </span>
+                            </template>
+                            <template v-slot:item.action="{ item }">
+                                <v-btn v-if="!isHorseUpdated(item.key)" @click="updateHorseData(item.key)">Update</v-btn>
+                                <v-icon v-else>mdi-check</v-icon>
+                            </template>
+                        </v-data-table>
+                    </v-window-item>
+                    <v-window-item value="1">
+                        <v-data-table :headers="rankedHeaders" :items="rankedHorses" :items-per-page="16" class="elevation-1">
+                            <template v-slot:item.favoriteTrack="{ item }">
+                                {{ getTrackName(item.columns.favoriteTrack) }}
+                            </template>
+                        </v-data-table>
+                    </v-window-item>
+                </v-window>
             </v-col>
         </v-row>
     </v-container>
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'  
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
-import { checkIfUpdatedRecently, fetchRaceFromRaceId, fetchHorseRankings, updateHorse } from '@/views/RaceHorses/services/RaceHorsesService.js'
+import {
+    checkIfUpdatedRecently,
+    fetchRaceFromRaceId,
+    updateHorse,
+    setEarliestUpdatedHorseTimestamp
+} from '@/views/RaceHorses/services/RaceHorsesService.js'
 
 export default {
     name: 'RaceHorsesView',
 
-    setup() {
+    setup(props) {
         const store = useStore()
         const route = useRoute()
         const currentRace = computed(() => store.state.raceHorses.currentRace)
+        const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
+        const rankHorses = async () => {
+            const raceId = route.params.raceId
+            await store.dispatch('raceHorses/rankHorses', raceId)
+        }
         const allHorsesUpdated = computed(() => {
-                const horses = currentRace.value.horses || []
-                const allUpdated = horses.every(horse => updatedHorses.value.includes(horse.id))
-                console.log("All horses updated?", allUpdated)
-                return allUpdated
-            })
+            const horses = currentRace.value.horses || []
+            const allUpdated = horses.every(horse => updatedHorses.value.includes(horse.id))
+            console.log("All horses updated?", allUpdated)
+            return allUpdated
+        })
+        const activeTab = ref(0) // Default tab
+        const items = ['Start List', 'Ranked Horses'] // Tabs
+        const updatedHorses = ref([]) // A list to store IDs of updated horses
 
-        onMounted(async () => {
+        const fetchDataAndUpdate = async (raceId) => {
             try {
-                const raceId = route.params.raceId
                 const responseData = await fetchRaceFromRaceId(raceId)
                 store.commit('raceHorses/setCurrentRace', responseData)
-
                 await fetchUpdatedHorses()
+
+                if (allHorsesUpdated.value) {
+                    await store.dispatch('raceHorses/rankHorses', raceId)
+                }
+
             } catch (error) {
-                console.error("Failed to fetch data:", error)
+                console.error('Failed to fetch data:', error)
             }
+        };
+
+        onMounted(async () => {
+            const raceId = route.params.raceId
+            await fetchDataAndUpdate(raceId)
         })
+
+        watch(() => route.params.raceId, async (newRaceId) => {
+            store.commit('raceHorses/clearRankedHorses')
+            store.commit('raceHorses/clearCurrentRace')
+            await fetchDataAndUpdate(newRaceId)
+        })
+
+        watch(allHorsesUpdated, async (newValue) => {
+            if (newValue && typeof updatedHorses !== 'undefined') {
+                const raceId = route.params.raceId
+                if (raceId) {
+                    await store.dispatch('raceHorses/rankHorses', raceId)
+                }
+            }
+        }, { immediate: true })
+
+        watch(currentRace, async () => {
+            if (allHorsesUpdated.value) {
+                const raceId = route.params.raceId
+                await store.dispatch('raceHorses/rankHorses', raceId)
+            }
+        }, { immediate: true })
 
         const headers = [
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Action', key: 'action' },
-            {key: 'horseWithdrawn'}
+            { key: 'horseWithdrawn' },
         ]
 
-        const updatedHorses = ref([])  // A list to store IDs of updated horses
+        const rankedHeaders = [
+            { title: 'Name', key: 'name' },
+            { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
+            { title: 'Consistency Score', key: 'consistencyScore' },
+            { title: 'Favorite Start Method', key: 'favoriteStartMethod' },
+            { title: 'Favorite Track', key: 'favoriteTrack' },
+            { title: 'Horse Label', key: 'horseLabel' },
+            { title: 'Number of Starts', key: 'numberOfStarts' },
+            { title: 'Placements', key: 'placements' },
+            { title: 'Total Score', key: 'totalScore' },
+        ]
+
+        const trackNames = {
+            'Ar': 'Arvika',
+            'Ax': 'Axevalla',
+            'Bo': 'Bodentravet',
+            'Bs': 'Bollnäs',
+            'B': 'Bergsåker',
+            'C': 'Charlottenlund',
+            'D': 'Dannero',
+            'E': 'Eskilstuna',
+            'F': 'Färjestad',
+            'G': 'Gävle',
+            'H': 'Hagmyren',
+            'Ha': 'Hagmyren',
+            'Hd': 'Halmstad',
+            'Hg': 'Hoting',
+            'J': 'Jägersro',
+            'Kr': 'Kalmar',
+            'Ka': 'Kalmar',
+            'Kh': 'Karlshamn',
+            'L': 'Lindesberg',
+            'Ly': 'Lycksele',
+            'Mp': 'Mantorp',
+            'Ov': 'Oviken',
+            'Ro': 'Romme',
+            'Rä': 'Rättvik',
+            'Rm': 'Roma',
+            'S': 'Solvalla',
+            'Sk': 'Skellefteå',
+            'Ti': 'Tingsryd',
+            'U': 'Umåker',
+            'Vg': 'Vaggeryd',
+            'Vi': 'Visby',
+            'Å': 'Åby',
+            'Ål': 'Åland',
+            'Åm': 'Åmål',
+            'År': 'Årjäng',
+            'Ö': 'Örebro',
+            'Ös': 'Östersund'
+        }
+
+        const getTrackName = (trackCode) => {
+            return trackNames[trackCode] || trackCode
+        }
 
         const fetchUpdatedHorses = async () => {
             const horses = currentRace.value.horses || []
@@ -72,14 +183,16 @@ export default {
             }
         }
 
-        const isHorseUpdated = (horseId) => {
+        const isHorseUpdated = horseId => {
             return updatedHorses.value.includes(horseId)
         }
 
-        const updateHorseData = async (horseId) => {
-            console.log('Logging from updateHorseData function', horseId)
+        const updateHorseData = async horseId => {
+            
             try {
                 await updateHorse(horseId)
+                console.log('Raceday ID:', route.params.racedayId)
+                await setEarliestUpdatedHorseTimestamp(route.params.racedayId, route.params.raceId)
                 const updated = await checkIfUpdatedRecently(horseId)
                 if (updated && !updatedHorses.value.includes(horseId)) {
                     updatedHorses.value.push(horseId)
@@ -89,23 +202,25 @@ export default {
             }
         }
 
-        const rankHorses = async () => {
-            try {
-                const raceId = route.params.raceId
-                console.log(await fetchHorseRankings(raceId))
-            } catch (error) {
-                console.error("Failed to rank horses:", error)
-            }
-        }
-
         return {
             headers,
             isHorseUpdated,
             updateHorseData,
             rankHorses,
+            getTrackName,
             currentRace,
-            allHorsesUpdated
+            allHorsesUpdated,
+            items,
+            activeTab,
+            rankedHeaders,
+            rankedHorses
         }
-    }
+    },
 }
 </script>
+
+<style>
+.tabbed-view-container {
+    margin-top: 64px;
+}
+</style>

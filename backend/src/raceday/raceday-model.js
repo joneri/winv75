@@ -62,6 +62,7 @@ const propTextsSchema = new mongoose.Schema({
 })
 
 const raceSchema = new mongoose.Schema({
+  earliestUpdatedHorseTimestamp: Date,
   organisation: String,
   sourceOfData: String,
   raceNumber: Number,

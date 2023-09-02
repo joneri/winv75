@@ -29,7 +29,12 @@ const upsertHorseData = async (horseId) => {
     }
     horseData.winningRate = statistics.winningRate
     horseData.placementRate = statistics.placementRate
-    horseData.points = Number(statistics.points.replace(/\s/g, ''))
+    if (statistics.points) {
+     horseData.points = Number(statistics.points.replace(/\s/g, ''))
+    } else {
+        console.warn('statistics.points is undefined for horseId:', horseId)
+        horseData.points = 0
+    }
 
     let horse
     try {

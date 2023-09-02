@@ -2,26 +2,35 @@ import { ref } from 'vue'
 import axios from 'axios'
 
 const updateHorse = async (horseId) => {
-    const endpoint = `${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`
-    try {
-        const response = await fetch(endpoint, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
+  const upsertHorseEndpoint = `${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`
+  try {
+    const response = await axios.put(upsertHorseEndpoint, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
 
-        if (!response.ok) {
-            const message = `An error has occurred: ${response.status}`
-            throw new Error(message)
-        }
-
-        const data = await response.json()
-        return data
-    } catch (error) {
-        console.error(`Failed to fetch: ${error.message}`)
+    if (response.status !== 200) {
+      const message = `An error has occurred: ${response.status}`
+      throw new Error(message)
     }
+
+    return response.data
+  } catch (error) {
+    console.error(`Failed to fetch: ${error.message}`)
+  }
 }
+
+const setEarliestUpdatedHorseTimestamp = async (raceDayId, raceId) => {
+  try {
+    const response = await axios.put(`${import.meta.env.VITE_BE_URL}/api/raceday/${raceDayId}/race/${raceId}`)
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching the earliest updated horse timestamp for raceDayId ${raceDayId}, raceId ${raceId}:`, error)
+    throw error
+  }
+}
+
 
 const checkIfUpdatedRecently = async (horseId) => {
     try {
@@ -70,5 +79,6 @@ export {
     updateHorse,
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
-    fetchHorseRankings
+    fetchHorseRankings,
+    setEarliestUpdatedHorseTimestamp
 }

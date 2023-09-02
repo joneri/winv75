@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="main-content">
     <v-progress-circular v-if="loading" indeterminate color="primary"></v-progress-circular>
 
     <!-- Raceday JSON Input Section -->
@@ -104,5 +104,8 @@ export default {
 <style scoped>
   .track-name {
     font-size: 0.9em;
+  }
+  .main-content {
+    padding-top: 70px;
   }
 </style>

@@ -1,5 +1,5 @@
 export async function addRaceday(racedayData) {
-  const response = await fetch(`${import.meta.env.VITE_BE_URL}/api/racedays`, {
+  const response = await fetch(`${import.meta.env.VITE_BE_URL}/api/raceday`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'

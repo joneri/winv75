@@ -48,7 +48,7 @@ const actions = {
     },
     async fetchRacedays({ commit }) {
         try {
-          const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/racedays`)
+          const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`)
           commit('setRaceDays', response.data)
         } catch (error) {
           console.error('Error fetching racedays:', error)

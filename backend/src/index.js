@@ -27,7 +27,7 @@ app.use((err, req, res, next) => {
 
 // Update the API endpoint paths
 app.use('/api/horses', horseRoutes)
-app.use('/api/racedays', racedayRoutes)
+app.use('/api/raceday', racedayRoutes)
 app.use('/api/race', raceRoutes)
 
 app.listen(PORT, () => {

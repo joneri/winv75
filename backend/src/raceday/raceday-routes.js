@@ -27,6 +27,20 @@ router.get('/', async (req, res) => {
     }
 })
 
+// Update the earliest updated horse timestamp for a specific race
+router.put('/:raceDayId/race/:raceId', async (req, res) => {
+  console.log('Update the earliest updated horse timestamp for a specific race - req:', req.originalUrl)
+  try {
+    const raceDayId = req.params.raceDayId
+    const raceId = req.params.raceId
+    const raceDay = await raceDayService.updateEarliestUpdatedHorseTimestamp(raceDayId, raceId)
+    res.send(raceDay)
+  } catch (error) {
+    console.error(`Error updating the earliest updated horse timestamp for raceDayId ${req.params.raceDayId}:`, error)
+    res.status(500).send('Failed to update. Please try again.')
+  }
+})
+
 // Fetch a specific raceday by its ID
 router.get('/:id', async (req, res) => {
     console.log('req:', req.originalUrl)

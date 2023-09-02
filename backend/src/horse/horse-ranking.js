@@ -29,7 +29,6 @@ const getHorsesFromRace = async (raceId) => {
 
 const aggregateHorses = async (raceId) => {
     const horses = await getHorsesFromRace(raceId)
-
     try {
         const aggregatedResult = await Horse.aggregate([
         { "$match": { "id": { "$in": horses } } },
@@ -150,9 +149,9 @@ const aggregateHorses = async (raceId) => {
                         "$thirdPlace"
                     ]
                 },
-                weightedPoints: { $multiply: ["$pointsNumeric", 0.4] },
-                weightedConsistency: { $multiply: ["$consistencyScore", 0.25] },
-                weightedWinRate: { $multiply: ["$winningRateNumeric", 0.2] },
+                weightedPoints: { $multiply: ["$pointsNumeric", 0.30] },
+                weightedConsistency: { $multiply: ["$consistencyScore", 0.30] },
+                weightedWinRate: { $multiply: ["$winningRateNumeric", 0.25] },
                 weightedPlacementRate: { $multiply: ["$placementRatesNumeric", 0.15] }
             }
         },
@@ -193,8 +192,8 @@ const aggregateHorses = async (raceId) => {
         ]).exec()
         return aggregatedResult
     } catch (err) {
-        console.error("Error fetching horse rankings:", err);
-        throw err;
+        console.error("Error fetching horse rankings:", err)
+        throw err
     }
 }
 
