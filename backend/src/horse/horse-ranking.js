@@ -2,36 +2,42 @@ import Raceday from '../raceday/raceday-model.js'
 import Horse from './horse-model.js'
 
 const getHorsesFromRace = async (raceId) => {
-    const horseIdPipeline = [
-        { "$match": { "raceList.raceId": parseInt(raceId) } },
-        { "$unwind": "$raceList" },
-        { "$match": { "raceList.raceId": parseInt(raceId) } },
-        { "$unwind": "$raceList.horses" },
-        {
-            "$lookup": {
-                "from": "horses",
-                "localField": "raceList.horses.id",
-                "foreignField": "id",
-                "as": "horseDetails"
-            }
-        },
-        { "$replaceRoot": { "newRoot": { "$arrayElemAt": ["$horseDetails", 0] } } }
-    ]
+  const horseIdPipeline = [
+    { "$match": { "raceList.raceId": parseInt(raceId) } },
+    { "$unwind": "$raceList" },
+    { "$match": { "raceList.raceId": parseInt(raceId) } },
+    { "$unwind": "$raceList.horses" },
+    {
+      "$lookup": {
+        "from": "horses",
+        "let": { "horseId": "$raceList.horses.id", "programNum": "$raceList.horses.programNumber" },
+        "pipeline": [
+          { "$match": { "$expr": { "$eq": ["$id", "$$horseId"] } } },
+          { "$addFields": { "programNumber": "$$programNum" } }
+        ],
+        "as": "horseDetails"
+      }
+    },
+    { "$replaceRoot": { "newRoot": { "$arrayElemAt": ["$horseDetails", 0] } } }
+  ];
 
-    try {
-        const horses = await Raceday.aggregate(horseIdPipeline).exec()
-        return horses.map(horse => horse.id)
-    } catch (err) {
-        console.error("Error fetching horses:", err)
-        throw err
-    }
-}
+  try {
+    const horses = await Raceday.aggregate(horseIdPipeline).exec();
+    //return horses.map(horse => horse.id);  // Here, you can also include `horse.programNumber` if needed
+    return horses.map(horse => ({ id: horse.id, programNumber: horse.programNumber }));
+
+  } catch (err) {
+    console.error("Error fetching horses:", err);
+    throw err;
+  }
+};
+
 
 const aggregateHorses = async (raceId) => {
     const horses = await getHorsesFromRace(raceId)
     try {
         const aggregatedResult = await Horse.aggregate([
-        { "$match": { "id": { "$in": horses } } },
+        { "$match": { "id": { "$in": horses.map(horse => horse.id) } } },
         { $unwind: "$results" },
         {
             $group: {
@@ -171,6 +177,9 @@ const aggregateHorses = async (raceId) => {
         {
             $project: {
                 name: 1,
+                id: 1, 
+                programNumber: 1,
+                programNum: 1,
                 prizeMoney: { $arrayElemAt: ["$statistics.totalPrizeMoney", 0] },
                 numberOfStarts: { $arrayElemAt: ["$statistics.numberOfStarts", 0] },
                 placements: { $arrayElemAt: ["$statistics.placements", 0] },
@@ -190,7 +199,14 @@ const aggregateHorses = async (raceId) => {
             }
         }
         ]).exec()
-        return aggregatedResult
+        aggregatedResult.forEach(horse => {
+            const matchingHorse = horses.find(h => h.id === horse.id)
+            if (matchingHorse) {
+                horse.programNumber = matchingHorse.programNumber
+            }
+         })
+
+    return aggregatedResult;
     } catch (err) {
         console.error("Error fetching horse rankings:", err)
         throw err

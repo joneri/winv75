@@ -4,7 +4,8 @@ const state = () => ({
   currentRace: {
     horses: []
   },
-  rankedHorses: []
+  rankedHorses: [],
+  currentRacedayId: null
 })
 
 const mutations = {
@@ -19,6 +20,9 @@ const mutations = {
   },
   clearRankedHorses(state) {
     state.rankedHorses = []
+  },
+  setCurrentRacedayId(state, racedayId) {
+    state.currentRacedayId = racedayId
   }
 }
 

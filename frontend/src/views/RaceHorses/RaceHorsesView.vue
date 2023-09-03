@@ -2,6 +2,16 @@
     <v-container class="tabbed-view-container">
         <v-row>
             <v-col>
+                <button @click="navigateToRaceDay(raceDayId)">Go to Race Day</button>
+            </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <h1>Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}</h1>
+          </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
                 <v-tabs v-model="activeTab">
                     <v-tab>Start List</v-tab>
                     <v-tab :disabled="!allHorsesUpdated">Ranked Horses</v-tab>
@@ -37,6 +47,7 @@
 <script>
 import { ref, onMounted, computed, watch } from 'vue'  
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import {
     checkIfUpdatedRecently,
@@ -48,9 +59,16 @@ import {
 export default {
     name: 'RaceHorsesView',
 
-    setup(props) {
+    setup() {
         const store = useStore()
         const route = useRoute()
+        const router = useRouter()
+        const navigateToRaceDay = () => {
+            const currentPath = router.currentRoute.value.fullPath
+            const segments = currentPath.split('/')
+            const raceDayId = segments[2]
+            router.push(`/raceday/${raceDayId}`)
+        }
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
         const rankHorses = async () => {
@@ -118,6 +136,7 @@ export default {
         ]
 
         const rankedHeaders = [
+            { title: 'Start Position', key: 'programNumber' },
             { title: 'Name', key: 'name' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
             { title: 'Consistency Score', key: 'consistencyScore' },
@@ -208,12 +227,13 @@ export default {
             updateHorseData,
             rankHorses,
             getTrackName,
+            navigateToRaceDay,
             currentRace,
             allHorsesUpdated,
             items,
             activeTab,
             rankedHeaders,
-            rankedHorses
+            rankedHorses,
         }
     },
 }

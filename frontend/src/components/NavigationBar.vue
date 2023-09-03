@@ -1,14 +1,12 @@
 <template>
-    <v-app-bar app fixed elevation="2">
-        <v-btn to="/" text>
-            Home
-        </v-btn>
-        <!-- Add other navigation buttons/links as needed -->
+    <v-app-bar app color="primary" dark>
+        <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-toolbar-title>Navbar</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn to="/" text>Home</v-btn>
     </v-app-bar>
 </template>
 
 <script>
-export default {
-    name: 'NavigationBar',
-}
+
 </script>
