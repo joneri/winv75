@@ -138,6 +138,7 @@ export default {
         const rankedHeaders = [
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Name', key: 'name' },
+            { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
             { title: 'Consistency Score', key: 'consistencyScore' },
             { title: 'Favorite Start Method', key: 'favoriteStartMethod' },
