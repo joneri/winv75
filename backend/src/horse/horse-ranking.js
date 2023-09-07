@@ -18,12 +18,22 @@ const getHorsesFromRace = async (raceId) => {
         "as": "horseDetails"
       }
     },
-    { "$replaceRoot": { "newRoot": { "$arrayElemAt": ["$horseDetails", 0] } } }
-  ];
+    {
+        "$replaceRoot": {
+            "newRoot": {
+            "$ifNull": [
+                {
+                "$arrayElemAt": ["$horseDetails", 0]
+                },
+                "$$ROOT"
+            ]
+            }
+            }
+    }
+]
 
   try {
     const horses = await Raceday.aggregate(horseIdPipeline).exec();
-    //return horses.map(horse => horse.id);  // Here, you can also include `horse.programNumber` if needed
     return horses.map(horse => ({ id: horse.id, programNumber: horse.programNumber }));
 
   } catch (err) {
