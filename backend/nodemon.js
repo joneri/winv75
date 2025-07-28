@@ -5,4 +5,4 @@
     "execMap": {
       "js": "node -r dotenv/config"
     }
-  }  
+  }
