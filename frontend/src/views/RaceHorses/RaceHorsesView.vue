@@ -8,7 +8,10 @@
         <v-row>
           <v-col>
             <h1>Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}</h1>
-            <div v-if="racedayTrackName" class="text-h6">{{ racedayTrackName }}</div>
+            <div v-if="racedayTrackName" class="text-h6">
+              {{ racedayTrackName }}
+              <span v-if="raceStartMethod"> – {{ raceStartMethod }}</span>
+            </div>
           </v-col>
         </v-row>
         <v-row>
@@ -59,6 +62,15 @@ export default {
     name: 'RaceHorsesView',
 
     setup() {
+        // Step 1: Detect start method from propTexts
+        const raceStartMethod = computed(() => {
+          const propTexts = (currentRace.value && currentRace.value.propTexts) || [];
+          const tObj = propTexts.find(pt => pt.typ === 'T' && pt.text);
+          if (!tObj) return '';
+          if (/Autostart/i.test(tObj.text)) return 'Autostart';
+          if (/Voltstart/i.test(tObj.text)) return 'Voltstart';
+          return '';
+        });
         const store = useStore()
         const route = useRoute()
         const router = useRouter()
@@ -251,6 +263,7 @@ export default {
             activeTab,
             rankedHeaders,
             rankedHorses,
+            raceStartMethod,
         }
     },
 }
