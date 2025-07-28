@@ -62,7 +62,8 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import {
     checkIfUpdatedRecently,
-    fetchRaceFromRaceId
+    fetchRaceFromRaceId,
+    fetchHorseRatings
 } from '@/views/RaceHorses/services/RaceHorsesService.js'
 import RacedayService from '@/views/Raceday/services/RacedayService.js'
 
@@ -141,6 +142,14 @@ export default {
         const fetchDataAndUpdate = async (raceId) => {
             try {
                 const responseData = await fetchRaceFromRaceId(raceId)
+                const horseIds = (responseData.horses || []).map(h => h.id)
+                let ratings = []
+                if (horseIds.length) {
+                    ratings = await fetchHorseRatings(horseIds)
+                }
+                const ratingMap = {}
+                ratings.forEach(r => { ratingMap[r.id] = r.rating })
+                responseData.horses = (responseData.horses || []).map(h => ({ ...h, rating: ratingMap[h.id] }))
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
 
@@ -190,6 +199,7 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
+            { title: 'Rating', key: 'rating' },
             { key: 'horseWithdrawn' },
         ]
 
@@ -197,6 +207,7 @@ export default {
             { title: '', key: 'favoriteIndicator', sortable: false },
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Name', key: 'name' },
+            { title: 'Rating', key: 'rating' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
             { title: 'Consistency Score', key: 'consistencyScore' },
