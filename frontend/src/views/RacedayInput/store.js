@@ -1,8 +1,7 @@
 import axios from 'axios'
-import { addRaceday, fetchRacedaysByDate } from './services/RacedayInputService.js'
+import { fetchRacedaysByDate } from './services/RacedayInputService.js'
 
 const state = {
-    racedayData: {},
     loading: false,
     listLoading: false,
     error: null,
@@ -14,9 +13,6 @@ const state = {
 }
 
 const mutations = {
-    setRacedayData(state, data) {
-        state.racedayData = data
-    },
     setLoading(state, loading) {
         state.loading = loading
     },
@@ -52,19 +48,6 @@ const mutations = {
 }
 
 const actions = {
-    async addRacedayData({ commit }, data) {
-        commit('setLoading', true)
-        try {
-            const response = await addRaceday(data)
-            commit('setRacedayData', response)
-            commit('setSuccessMessage', 'Raceday data uploaded successfully!')
-            commit('addRaceDay', response)
-        } catch (error) {
-            commit('setError', error.message)
-        } finally {
-            commit('setLoading', false)
-        }
-    },
     async fetchRacedaysFromAPI({ commit }, date) {
         commit('setLoading', true)
         try {
