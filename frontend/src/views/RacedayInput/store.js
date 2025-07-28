@@ -49,11 +49,13 @@ const actions = {
     async fetchRacedays({ commit }) {
         try {
           const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`)
-          commit('setRaceDays', response.data)
+          // Ensure racedays are sorted with the latest first
+          const sorted = response.data.sort((a, b) => new Date(b.firstStart) - new Date(a.firstStart))
+          commit('setRaceDays', sorted)
         } catch (error) {
           console.error('Error fetching racedays:', error)
         }
-    }     
+    }
 }
 
 export default {
