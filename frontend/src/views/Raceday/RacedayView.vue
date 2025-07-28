@@ -12,9 +12,6 @@
               :racedayId="reactiveRouteParams.racedayId"
               @race-updated="refreshRaceday"
             />
-            <div v-if="isRecentlyUpdated(race.earliestUpdatedHorseTimestamp)">
-              <v-chip color="green">Updated</v-chip>
-            </div>
           </div>
         </div>
         <div v-else-if="errorMessage" class="error-message">
