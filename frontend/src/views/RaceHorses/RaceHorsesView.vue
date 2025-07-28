@@ -26,8 +26,7 @@
                                 </span>
                             </template>
                             <template v-slot:item.action="{ item }">
-                                <v-btn v-if="!isHorseUpdated(item.key)" @click="updateHorseData(item.key)">Update</v-btn>
-                                <v-icon v-else>mdi-check</v-icon>
+                                <v-icon v-if="isHorseUpdated(item.key)">mdi-check</v-icon>
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -207,25 +206,11 @@ export default {
             return updatedHorses.value.includes(horseId)
         }
 
-        const updateHorseData = async horseId => {
-            
-            try {
-                await updateHorse(horseId)
-                console.log('Raceday ID:', route.params.racedayId)
-                await setEarliestUpdatedHorseTimestamp(route.params.racedayId, route.params.raceId)
-                const updated = await checkIfUpdatedRecently(horseId)
-                if (updated && !updatedHorses.value.includes(horseId)) {
-                    updatedHorses.value.push(horseId)
-                }
-            } catch (error) {
-                console.error(`Failed to update horse with ID ${horseId}:`, error)
-            }
-        }
+
 
         return {
             headers,
             isHorseUpdated,
-            updateHorseData,
             rankHorses,
             getTrackName,
             navigateToRaceDay,

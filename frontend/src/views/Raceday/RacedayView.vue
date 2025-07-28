@@ -6,7 +6,12 @@
         <div v-if="racedayDetails">
           <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
           <div v-for="race in sortedRaceList" :key="race.id">
-            <RaceCardComponent :race="race" :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp" :racedayId="reactiveRouteParams.racedayId" />
+            <RaceCardComponent
+              :race="race"
+              :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp"
+              :racedayId="reactiveRouteParams.racedayId"
+              @race-updated="refreshRaceday"
+            />
             <div v-if="isRecentlyUpdated(race.earliestUpdatedHorseTimestamp)">
               <v-chip color="green">Updated</v-chip>
             </div>
@@ -57,9 +62,17 @@ export default {
       }
     })
 
+    const refreshRaceday = async () => {
+      try {
+        racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+      } catch (error) {
+        console.error('Error refreshing raceday details:', error)
+      }
+    }
+
     const sortedRaceList = computed(() => {
       return racedayDetails.value?.raceList.sort((a, b) => a.raceNumber - b.raceNumber) || []
-    }) 
+    })
 
     return {
       racedayDetails,
@@ -67,7 +80,8 @@ export default {
       formatDate,
       sortedRaceList,
       reactiveRouteParams,
-      isRecentlyUpdated
+      isRecentlyUpdated,
+      refreshRaceday
     }
   }
 }

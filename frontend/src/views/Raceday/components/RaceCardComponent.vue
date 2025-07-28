@@ -16,16 +16,21 @@
       </v-card-text>
       <v-card-actions>
         <v-btn @click.stop="viewRaceDetails">View Details</v-btn>
+        <v-btn @click.stop="updateRace" :disabled="loading" class="ml-2">
+          {{ loading ? 'Updating…' : 'Update Race' }}
+        </v-btn>
       </v-card-actions>
     </div>
+    <v-alert v-if="errorMessage" type="error" class="ma-2">{{ errorMessage }}</v-alert>
   </v-card>
 </template>
 
 <script>
-import { toRefs } from 'vue'
+import { toRefs, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { getContrastColor } from '@/utils/colors'
+import { updateHorse, setEarliestUpdatedHorseTimestamp } from '@/views/RaceHorses/services/RaceHorsesService.js'
 
 export default {
   props: {
@@ -42,11 +47,13 @@ export default {
       required: true
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     // Convert props to reactive references
     const { race, lastUpdatedHorseTimestamp } = toRefs(props)
     const router = useRouter()
     const store = useStore()
+    const loading = ref(false)
+    const errorMessage = ref('')
 
     const hoverBg = '#f5f5f5'
     const hoverText = getContrastColor(hoverBg)
@@ -62,12 +69,34 @@ export default {
         });
     };
 
-
+    const updateRace = async () => {
+      loading.value = true
+      errorMessage.value = ''
+      for (const h of props.race.horses || []) {
+        try {
+          await updateHorse(h.id)
+          await new Promise(r => setTimeout(r, 200))
+        } catch (err) {
+          console.error(`Failed to update horse ${h.id}:`, err)
+          errorMessage.value = 'Failed to update some horses'
+        }
+      }
+      try {
+        await setEarliestUpdatedHorseTimestamp(props.racedayId, props.race.raceId)
+      } catch (err) {
+        console.error('Failed to set earliest updated timestamp', err)
+      }
+      loading.value = false
+      emit('race-updated')
+    }
 
     return {
       race,
       lastUpdatedHorseTimestamp,
       viewRaceDetails,
+      updateRace,
+      loading,
+      errorMessage,
       hoverBg,
       hoverText
     }
