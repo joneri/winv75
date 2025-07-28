@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="clickable-card" @click="viewRaceDetails">
     <div class="d-flex justify-space-between align-center" style="width: 100%;">
       <v-card-title> Race Number: {{ race.raceNumber }}</v-card-title>
       <v-card-text>
@@ -11,7 +11,7 @@
         </div>
       </v-card-text>
       <v-card-actions>
-        <v-btn @click="viewRaceDetails">View Details</v-btn>
+        <v-btn @click.stop="viewRaceDetails">View Details</v-btn>
       </v-card-actions>
     </div>
   </v-card>
@@ -69,5 +69,13 @@ export default {
 .updated-indication {
   color: green;
   font-weight: bold;
+}
+.clickable-card {
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.clickable-card:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
