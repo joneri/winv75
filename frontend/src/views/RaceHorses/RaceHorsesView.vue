@@ -8,6 +8,7 @@
         <v-row>
           <v-col>
             <h1>Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}</h1>
+            <div v-if="racedayTrackName" class="text-h6">{{ racedayTrackName }}</div>
           </v-col>
         </v-row>
         <v-row>
@@ -29,6 +30,9 @@
                     </v-window-item>
                     <v-window-item value="1">
                         <v-data-table :headers="rankedHeaders" :items="rankedHorses" :items-per-page="16" class="elevation-1">
+                            <template v-slot:item.favoriteIndicator="{ item }">
+                                <span v-if="item.columns.favoriteTrack === racedayTrackCode">⭐</span>
+                            </template>
                             <template v-slot:item.favoriteTrack="{ item }">
                                 {{ getTrackName(item.columns.favoriteTrack) }}
                             </template>
@@ -41,7 +45,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'  
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -49,6 +53,7 @@ import {
     checkIfUpdatedRecently,
     fetchRaceFromRaceId
 } from '@/views/RaceHorses/services/RaceHorsesService.js'
+import RacedayService from '@/views/Raceday/services/RacedayService.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -78,6 +83,33 @@ export default {
         const activeTab = ref(0) // Default tab
         const items = ['Start List', 'Ranked Horses'] // Tabs
         const updatedHorses = ref([]) // A list to store IDs of updated horses
+        const racedayTrackName = ref('')
+        const racedayTrackCode = ref('')
+
+        const getTrackCodeFromName = (name) => {
+            for (const [code, n] of Object.entries(trackNames)) {
+                if (n === name) return code
+            }
+            return ''
+        }
+
+        const fetchTrackInfo = async () => {
+            if (route.params.racedayId) {
+                try {
+                    const details = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+                    racedayTrackName.value = details.trackName
+                    racedayTrackCode.value = getTrackCodeFromName(details.trackName)
+                } catch (error) {
+                    console.error('Failed to fetch raceday details:', error)
+                }
+            } else if (currentRace.value.trackName) {
+                racedayTrackName.value = currentRace.value.trackName
+                racedayTrackCode.value = getTrackCodeFromName(currentRace.value.trackName)
+            } else if (currentRace.value.trackCode) {
+                racedayTrackCode.value = currentRace.value.trackCode
+                racedayTrackName.value = getTrackName(currentRace.value.trackCode)
+            }
+        }
 
         const fetchDataAndUpdate = async (raceId) => {
             try {
@@ -97,12 +129,18 @@ export default {
         onMounted(async () => {
             const raceId = route.params.raceId
             await fetchDataAndUpdate(raceId)
+            await fetchTrackInfo()
         })
 
         watch(() => route.params.raceId, async (newRaceId) => {
             store.commit('raceHorses/clearRankedHorses')
             store.commit('raceHorses/clearCurrentRace')
             await fetchDataAndUpdate(newRaceId)
+            await fetchTrackInfo()
+        })
+
+        watch(() => route.params.racedayId, async () => {
+            await fetchTrackInfo()
         })
 
         watch(allHorsesUpdated, async (newValue) => {
@@ -129,6 +167,7 @@ export default {
         ]
 
         const rankedHeaders = [
+            { title: '', key: 'favoriteIndicator', sortable: false },
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Name', key: 'name' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
@@ -203,6 +242,8 @@ export default {
             headers,
             rankHorses,
             getTrackName,
+            racedayTrackName,
+            racedayTrackCode,
             navigateToRaceDay,
             currentRace,
             allHorsesUpdated,
