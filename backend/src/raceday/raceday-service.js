@@ -46,10 +46,14 @@ const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
 }
 
 const upsertStartlistData = async (racedayJSON) => {
-    const raceDayId = racedayJSON.raceDayId;
+    const raceDayId = racedayJSON.raceDayId
     let raceDay
     try {
-        raceDay = await Raceday.updateOne({ raceDayId: raceDayId }, racedayJSON, { upsert: true, new: true })
+        raceDay = await Raceday.findOneAndUpdate(
+            { raceDayId: raceDayId },
+            racedayJSON,
+            { upsert: true, new: true, runValidators: true }
+        )
     } catch (error) {
         console.error(`Error while upserting the startlist with raceDayId ${raceDayId}:`, error)
         throw error
