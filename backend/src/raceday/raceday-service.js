@@ -7,7 +7,7 @@ const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
     throw new Error(`No raceDay found for the given ID: ${raceDayId}`);
   }
 
-  let raceFound = false;
+  let raceFound = false
 
   for (const race of raceDay.raceList) {
     if (String(race.raceId) === String(targetRaceId)) {
@@ -15,36 +15,30 @@ const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
       let earliestTimestamp = new Date(); // Initialize to current date and time
 
       for (const listHorse of race.horses) {
-        const horse = await Horse.findOne({ id: listHorse.id });
+        const horse = await Horse.findOne({ id: listHorse.id })
         if (!horse) {
-          console.warn(`No horse found for ID: ${listHorse.id}`);
+          console.warn(`No horse found for ID: ${listHorse.id}`)
           continue;
         }
         if (horse.updatedAt < earliestTimestamp) {
           earliestTimestamp = horse.updatedAt;
         }
       }
-      console.log(`Setting earliestTimestamp: ${earliestTimestamp}`);
+      console.log(`Setting earliestTimestamp: ${earliestTimestamp}`)
       race.earliestUpdatedHorseTimestamp = earliestTimestamp;
 
       // Mark the sub-document as modified to ensure it gets saved
-      raceDay.markModified('raceList');
+      raceDay.markModified('raceList')
       await raceDay.save();
-
       console.log('Race day saved.');
       return raceDay;
     }
   }
 
   if (!raceFound) {
-    throw new Error(`No race found for the given raceId: ${targetRaceId}`);
+    throw new Error(`No race found for the given raceId: ${targetRaceId}`)
   }
-};
-
-
-
-
-
+}
 
 const upsertStartlistData = async (racedayJSON) => {
     const raceDayId = racedayJSON.raceDayId;
