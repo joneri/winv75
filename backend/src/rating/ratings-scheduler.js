@@ -1,5 +1,5 @@
 import cron from 'node-cron'
-import HorseRating from './horseRating-model.js'
+import HorseRating from '../horse/horse-rating-model.js'
 import { refreshHorseRating } from './rating-service.js'
 
 export const startRatingsCronJob = () => {

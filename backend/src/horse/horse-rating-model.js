@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 
 const HorseRatingSchema = new mongoose.Schema({
-const HorseRatingSchema = new mongoose.Schema({
   horseId: { type: Number, required: true, unique: true },
   rating: { type: Number, default: 1500 },
   numberOfRaces: { type: Number, default: 0 },

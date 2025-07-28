@@ -1,6 +1,7 @@
 import Raceday from '../raceday/raceday-model.js'
 import Horse from './horse-model.js'
 import { getWeights } from '../config/scoring.js'
+import { calculateHorseScore } from './horse-score.js'
 
 const getHorsesFromRace = async (raceId) => {
   const horseIdPipeline = [
@@ -44,15 +45,6 @@ const getHorsesFromRace = async (raceId) => {
 };
 
 
-const calculateHorseScore = (horse, weights) => {
-    const weightedPoints = (horse.pointsNumeric || 0) * weights.points
-    const weightedConsistency = (horse.consistencyScore || 0) * weights.consistency
-    const weightedWinRate = (horse.winningRateNumeric || 0) * weights.winRate
-    const weightedPlacementRate = (horse.placementRatesNumeric || 0) * weights.placementRate
-    // Sum of weighted metrics is the current score model.
-    // TODO: incorporate probability estimates from external data here
-    return weightedPoints + weightedConsistency + weightedWinRate + weightedPlacementRate
-}
 
 const aggregateHorses = async (raceId, weights = getWeights()) => {
     const horses = await getHorsesFromRace(raceId)
@@ -209,8 +201,8 @@ const aggregateHorses = async (raceId, weights = getWeights()) => {
                 horse.programNumber = match.programNumber
             }
             // compute weighted values
-            horse.rating = calculateHorseScore(horse, weights)
-            horse.totalScore = horse.rating
+            horse.score = calculateHorseScore(horse, weights)
+            horse.totalScore = horse.score
         })
 
         // order horses by their computed score

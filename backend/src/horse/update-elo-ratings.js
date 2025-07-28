@@ -3,13 +3,10 @@ import connectDB from '../config/db.js'
 import Horse from './horse-model.js'
 import HorseRating from './horse-rating-model.js'
 import RatingMeta from './rating-meta-model.js'
+import { expectedScore } from '../elo/elo-utils.js'
 
 const DEFAULT_K = 20
 const DEFAULT_DECAY_DAYS = 365
-
-const calculateExpected = (ratingA, ratingB) => {
-  return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400))
-}
 
 const getRecencyWeight = (date, decayDays = DEFAULT_DECAY_DAYS) => {
   const diff = Date.now() - new Date(date).getTime()
@@ -41,7 +38,7 @@ const processRace = (horsePlacements, ratings, k, raceDate, decayDays) => {
       let outcomeA = 0.5
       if (placeA < placeB) outcomeA = 1
       else if (placeA > placeB) outcomeA = 0
-      const expectedA = calculateExpected(ratingA, ratingB)
+      const expectedA = expectedScore(ratingA, ratingB)
       const expectedB = 1 - expectedA
       const outcomeB = 1 - outcomeA
       const factorA = getExperienceMultiplier(entryA.numberOfRaces)
