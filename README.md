@@ -35,6 +35,16 @@ VITE_BE_URL=http://localhost:3001
 
 The back‑end server uses port `3001` by default. Adjust the value if you run the server on another port.
 
+The ranking logic uses a weighted score. You can override the default weights with environment variables in the back‑end:
+
+```bash
+# optional scoring weights
+SCORE_WEIGHT_POINTS=0.30
+SCORE_WEIGHT_CONSISTENCY=0.30
+SCORE_WEIGHT_WIN_RATE=0.25
+SCORE_WEIGHT_PLACEMENT_RATE=0.15
+```
+
 ### 3. Starting MongoDB
 
 Make sure a MongoDB instance is running on `mongodb://localhost:27017`. The back‑end connects to a database named `winv75`.
