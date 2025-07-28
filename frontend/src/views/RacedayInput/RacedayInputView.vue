@@ -14,7 +14,11 @@
     <!-- List of Racedays -->
     <v-list v-show="raceDays.length > 0" ref="listContainer" class="raceday-list">
       <template v-for="raceDay in raceDays" :key="raceDay._id">
-          <v-list-item class="clickable-row" @click="navigateToRaceDay(raceDay._id)">
+          <v-list-item
+            class="clickable-row"
+            @click="navigateToRaceDay(raceDay._id)"
+            :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText }"
+          >
               <div class="d-flex justify-space-between align-center" style="width: 100%;">
                   <div>
                       <v-list-item-title class="headline">{{ formatDate(raceDay.firstStart) }}</v-list-item-title>
@@ -50,6 +54,7 @@ import { ref, computed, onMounted, watchEffect, nextTick, onBeforeUnmount } from
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useDateFormat } from '@/composables/useDateFormat.js';
+import { getContrastColor } from '@/utils/colors';
 
 export default {
   setup() {
@@ -59,6 +64,9 @@ export default {
 
     const fetchDate = ref('');
     const showSnackbar = ref(false);
+
+    const hoverBg = '#f5f5f5';
+    const hoverText = getContrastColor(hoverBg);
 
     const error = computed(() => store.state.racedayInput.error);
     const raceDays = computed(() => store.state.racedayInput.raceDays);
@@ -121,6 +129,8 @@ export default {
       successMessage,
       fetchRacedays,
       navigateToRaceDay,
+      hoverBg,
+      hoverText,
       infiniteScrollTrigger,
       listContainer,
       hasMore
@@ -145,9 +155,10 @@ export default {
   }
   .clickable-row {
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, color 0.2s;
   }
   .clickable-row:hover {
-    background-color: #f5f5f5;
+    background-color: var(--hover-bg);
+    color: var(--hover-text);
   }
 </style>
