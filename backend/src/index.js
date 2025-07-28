@@ -7,6 +7,7 @@ import connectDB from './config/db.js'
 import horseRoutes from './horse/horse-routes.js'
 import racedayRoutes from './raceday/raceday-routes.js'
 import raceRoutes from './race/race-routes.js'
+import { startRatingsCronJob } from './rating/ratings-scheduler.js'
 
 // Middleware
 import errorHandler from './middleware/errorHandler.js'
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 3001
 
 app.use(express.json({ limit: '2mb' }));
 connectDB()
+startRatingsCronJob()
 
 app.use(cors())
 app.get('/', (req, res) => {
