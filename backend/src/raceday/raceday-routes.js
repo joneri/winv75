@@ -4,6 +4,21 @@ import { validateNumericParam, validateObjectIdParam } from '../middleware/valid
 
 const router = express.Router()
 
+// Fetch raceday data from the external API and store it
+router.post('/fetch', async (req, res) => {
+    const date = req.query.date
+    if (!date) {
+        return res.status(400).send('Missing date parameter')
+    }
+    try {
+        const result = await raceDayService.fetchAndStoreByDate(date)
+        res.send(result)
+    } catch (error) {
+        console.error('Error fetching raceday data from external API:', error)
+        res.status(500).send('Failed to fetch raceday data')
+    }
+})
+
 router.post('/', async (req, res) => {
     console.log('req:', req.originalUrl)
     try {
