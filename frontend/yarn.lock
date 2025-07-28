@@ -122,15 +122,15 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.15.tgz#d7c6e6755c78567a951e04ab52ef0fd26de59f32"
   integrity sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==
 
-"@mdi/font@^7.2.96":
-  version "7.2.96"
-  resolved "https://registry.yarnpkg.com/@mdi/font/-/font-7.2.96.tgz#af800d9fe3b424f85ad45e9baa755bd003ab4986"
-  integrity sha512-e//lmkmpFUMZKhmCY9zdjRe4zNXfbOIJnn6xveHbaV2kSw5aJ5dLXUxcRt1Gxfi7ZYpFLUWlkG2MGSFAiqAu7w==
+"@mdi/font@^7.3.67":
+  version "7.3.67"
+  resolved "https://registry.yarnpkg.com/@mdi/font/-/font-7.3.67.tgz#faa344a04c9d02f608c891a01134084febeb42db"
+  integrity sha512-SWxvzRbUQRfewlIV+OF4/YF4DkeTjMWoT8Hh9yeU/5UBVdJZj9Uf4a9+cXjknSIhIaMxZ/4N1O/s7ojApOOGjg==
 
-"@vitejs/plugin-vue@^4.3.4":
-  version "4.3.4"
-  resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-4.3.4.tgz#a289dff38e01949fe7be581d5542cabaeb961dec"
-  integrity sha512-ciXNIHKPriERBisHFBvnTbfKa6r9SAesOYXeGDzgegcvy9Q4xdScSHAmKbNT0M3O0S9LKhIf5/G+UYG4NnnzYw==
+"@vitejs/plugin-vue@^4.5.2":
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-4.5.2.tgz#1212d81bc83680e14448fefe55abd9fe1ed49ed1"
+  integrity sha512-UGR3DlzLi/SaVBPX0cnSyE37vqxU3O6chn8l0HJNzQzDia6/Au2A4xKv+iIJW8w2daf80G7TYHhi1pAUjdZ0bQ==
 
 "@vue/compiler-core@3.3.4":
   version "3.3.4"
@@ -248,10 +248,10 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
-axios@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.5.0.tgz#f02e4af823e2e46a9768cfc74691fdd0517ea267"
-  integrity sha512-D4DdjDo5CY50Qms0qGQTTw6Q44jl7zRwY7bthds06pUGfChBCTcQs+N743eFWGEd6pRTMd6A+I87aWyFV5wiZQ==
+axios@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.2.tgz#de67d42c755b571d3e698df1b6504cde9b0ee9f2"
+  integrity sha512-7i24Ri4pmDRfJTR7LDBhsOTtcm+9kjX5WiY1X3wIisx6G9So3pfMkEiU7emUBe46oceVImccTEM3k6C5dbVW8A==
   dependencies:
     follow-redirects "^1.15.0"
     form-data "^4.0.0"
@@ -499,10 +499,10 @@ vue@^3.3.4:
     "@vue/server-renderer" "3.3.4"
     "@vue/shared" "3.3.4"
 
-vuetify@^3.3.16:
-  version "3.3.16"
-  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.3.16.tgz#b51a6f304a9cec8e997a3cf505314bf5eaa9ad3a"
-  integrity sha512-vVfUroT5lSU+yOZAf7JlGm2j3dCR4BQml8Al27+/Uh0YW+97/CyUqOzo6IzMCt/bXLvnRerJ5fCAJtQYWnwfLA==
+vuetify@^3.4.7:
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.4.7.tgz#3bb39f081fc66be0ad1038cf3c8458584a03354f"
+  integrity sha512-K++yer5H94Yi/uzgKDOTYRPA9qipVntomEohRsegfAnRqmFyw2x9clHVEoTRa/Fvk3nkHti0zn90Mp7mSUwVnw==
 
 vuex@^4.1.0:
   version "4.1.0"
