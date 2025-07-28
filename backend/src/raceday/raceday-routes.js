@@ -1,5 +1,6 @@
 import express from 'express'
 import raceDayService from './raceday-service.js'
+import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
 
 const router = express.Router()
 
@@ -7,6 +8,9 @@ router.post('/', async (req, res) => {
     console.log('req:', req.originalUrl)
     try {
         const startlistData = req.body;
+        if (!startlistData.raceDayId || !/^[0-9]+$/.test(startlistData.raceDayId)) {
+            return res.status(400).send('Invalid raceDayId')
+        }
         const result = await raceDayService.upsertStartlistData(startlistData)
         res.send(result)
     } catch (error) {
@@ -28,7 +32,7 @@ router.get('/', async (req, res) => {
 })
 
 // Update the earliest updated horse timestamp for a specific race
-router.put('/:raceDayId/race/:raceId', async (req, res) => {
+router.put('/:raceDayId/race/:raceId', validateObjectIdParam('raceDayId'), validateNumericParam('raceId'), async (req, res) => {
   console.log('Update the earliest updated horse timestamp for a specific race - req:', req.originalUrl)
   try {
     const raceDayId = req.params.raceDayId
@@ -42,7 +46,7 @@ router.put('/:raceDayId/race/:raceId', async (req, res) => {
 })
 
 // Fetch a specific raceday by its ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
     console.log('req:', req.originalUrl)
     try {
         const racedayId = req.params.id;

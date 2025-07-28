@@ -8,9 +8,11 @@ const getRaceById = async (id) => {
             return raceDay.raceList.find(r => r.raceId.toString() === id.toString())
         } else {
             console.log(`No matching document found for race with ID ${id}.`)
+            return null
         }
     } catch (err) {
-        console.error(`Error fetching race with ID ${id}: ${err}`)
+        console.error(`Error fetching race with ID ${id}: ${err.message}`)
+        throw new Error('Failed to retrieve race')
     }
 }
 

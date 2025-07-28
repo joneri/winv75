@@ -1,10 +1,11 @@
 import express from 'express'
 import horseService from './horse-service.js'
 import axios from 'axios'
+import { validateNumericParam } from '../middleware/validators.js'
 
 const router = express.Router()
 
-router.put('/:horseId', async (req, res) => {
+router.put('/:horseId', validateNumericParam('horseId'), async (req, res) => {
     try {
         console.log('req:', req.originalUrl)
         const horseId = req.params.horseId
@@ -17,7 +18,7 @@ router.put('/:horseId', async (req, res) => {
     }
 })
 
-router.get('/:horseId', async (req, res) => {
+router.get('/:horseId', validateNumericParam('horseId'), async (req, res) => {
     let horseId
     try {
         console.log('req:', req.originalUrl)
@@ -38,7 +39,7 @@ router.get('/:horseId', async (req, res) => {
     }
 })
 
-router.get('/rankings/:raceId', async (req, res) => {
+router.get('/rankings/:raceId', validateNumericParam('raceId'), async (req, res) => {
     let rankings
     try {
         const raceId = req.params.raceId

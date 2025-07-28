@@ -4,20 +4,35 @@ import horseRanking from './horse-ranking.js'
 
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
-    const response = await axios.get(url)
-    return response.data
+    try {
+        const response = await axios.get(url)
+        return response.data
+    } catch (error) {
+        console.error(`Failed to fetch results for horseId ${horseId}:`, error.message)
+        throw new Error('Failed to fetch results')
+    }
 }
 
 const fetchStatistics = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/statistics/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
-    const response = await axios.get(url)
-    return response.data
+    try {
+        const response = await axios.get(url)
+        return response.data
+    } catch (error) {
+        console.error(`Failed to fetch statistics for horseId ${horseId}:`, error.message)
+        throw new Error('Failed to fetch statistics')
+    }
 }
 
 const fetchBasicInformation = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/basicinformation/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
-    const response = await axios.get(url)
-    return response.data
+    try {
+        const response = await axios.get(url)
+        return response.data
+    } catch (error) {
+        console.error(`Failed to fetch basic information for horseId ${horseId}:`, error.message)
+        throw new Error('Failed to fetch basic information')
+    }
 }
 
 const upsertHorseData = async (horseId) => {
@@ -47,11 +62,21 @@ const upsertHorseData = async (horseId) => {
 }
 
 const getHorseData = async (horseId) => {
-    return await Horse.findOne({ id: horseId });
+    try {
+        return await Horse.findOne({ id: horseId })
+    } catch (error) {
+        console.error(`Error retrieving horse ${horseId}:`, error.message)
+        throw new Error('Failed to retrieve horse')
+    }
 }
 
 const getHorseRankings = async (raceId) => {
-    return await horseRanking.aggregateHorses(raceId)
+    try {
+        return await horseRanking.aggregateHorses(raceId)
+    } catch (error) {
+        console.error(`Error retrieving horse rankings for raceId ${raceId}:`, error.message)
+        throw new Error('Failed to retrieve horse rankings')
+    }
 }
 
 export default {
