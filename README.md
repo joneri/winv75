@@ -124,3 +124,14 @@ yarn build
 
 The compiled static files will be in `frontend/dist` and can be served by any static file server.
 
+## Scheduled Ratings Update
+
+The back‑end runs a cron job that refreshes horse ratings every hour. It looks for
+records in the `HorseRating` collection where `lastUpdated` is more than 24 hours
+old. For each outdated entry it fetches recent race results and updates the
+rating using `updateRatingsForRace`.
+
+The job starts automatically when the Express server launches but the exported
+`startRatingsCronJob` function can also be invoked from another process if you
+prefer running it separately.
+
