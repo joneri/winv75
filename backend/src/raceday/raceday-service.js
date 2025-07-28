@@ -2,10 +2,11 @@ import Raceday from './raceday-model.js'
 import Horse from '../horse/horse-model.js'
 
 const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
-  const raceDay = await Raceday.findById(raceDayId);
-  if (!raceDay) {
-    throw new Error(`No raceDay found for the given ID: ${raceDayId}`);
-  }
+  try {
+    const raceDay = await Raceday.findById(raceDayId)
+    if (!raceDay) {
+      throw new Error(`No raceDay found for the given ID: ${raceDayId}`)
+    }
 
   let raceFound = false
 
@@ -38,6 +39,10 @@ const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
 
   if (!raceFound) {
     throw new Error(`No race found for the given raceId: ${targetRaceId}`)
+  }
+  } catch (error) {
+    console.error('Error updating earliest horse timestamp:', error.message)
+    throw error
   }
 }
 

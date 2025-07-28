@@ -1,10 +1,11 @@
 import express from 'express'
 import raceService from './race-service.js'
+import { validateNumericParam } from '../middleware/validators.js'
 
 const router = express.Router()
 
 // Fetch a specific race by its ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateNumericParam('id'), async (req, res) => {
     console.log('req:', req.originalUrl)
     try {
         const raceId = req.params.id;

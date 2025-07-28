@@ -3,10 +3,13 @@ import cors from 'cors'
 import { config } from 'dotenv'
 import connectDB from './config/db.js'
 
-// Use the renamed modules for imports
+// Routes
 import horseRoutes from './horse/horse-routes.js'
 import racedayRoutes from './raceday/raceday-routes.js'
 import raceRoutes from './race/race-routes.js'
+
+// Middleware
+import errorHandler from './middleware/errorHandler.js'
 
 config()
 
@@ -20,16 +23,21 @@ app.use(cors())
 app.get('/', (req, res) => {
   res.send('200 OK')
 })
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-})
 
-// Update the API endpoint paths
+// API routes
 app.use('/api/horses', horseRoutes)
 app.use('/api/raceday', racedayRoutes)
 app.use('/api/race', raceRoutes)
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' })
+})
+
+// Error handler
+app.use(errorHandler)
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
 })
+
