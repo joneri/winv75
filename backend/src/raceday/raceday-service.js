@@ -30,9 +30,9 @@ const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
       // Mark the sub-document as modified to ensure it gets saved
       raceDay.markModified('raceList');
       await raceDay.save();
-      
+
       console.log('Race day saved.');
-      break;
+      return raceDay;
     }
   }
 
