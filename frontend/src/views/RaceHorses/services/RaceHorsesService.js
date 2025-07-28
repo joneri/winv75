@@ -75,13 +75,13 @@ const fetchHorseRankings = async (raceId) => {
     }
 }
 
-const fetchHorseRatings = async (ids = []) => {
+const fetchHorseScores = async (ids = []) => {
     try {
         const params = ids.length ? { params: { ids: ids.join(',') } } : {}
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/ratings`, params)
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/scores`, params)
         return response.data
     } catch (error) {
-        console.error('Failed to fetch horse ratings', error)
+        console.error('Failed to fetch horse scores', error)
         throw error
     }
 }
@@ -92,5 +92,5 @@ export {
     fetchRaceFromRaceId,
     fetchHorseRankings,
     setEarliestUpdatedHorseTimestamp,
-    fetchHorseRatings
+    fetchHorseScores
 }

@@ -63,7 +63,7 @@ import { useStore } from 'vuex'
 import {
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
-    fetchHorseRatings
+    fetchHorseScores
 } from '@/views/RaceHorses/services/RaceHorsesService.js'
 import RacedayService from '@/views/Raceday/services/RacedayService.js'
 
@@ -143,13 +143,13 @@ export default {
             try {
                 const responseData = await fetchRaceFromRaceId(raceId)
                 const horseIds = (responseData.horses || []).map(h => h.id)
-                let ratings = []
+                let scores = []
                 if (horseIds.length) {
-                    ratings = await fetchHorseRatings(horseIds)
+                    scores = await fetchHorseScores(horseIds)
                 }
-                const ratingMap = {}
-                ratings.forEach(r => { ratingMap[r.id] = r.rating })
-                responseData.horses = (responseData.horses || []).map(h => ({ ...h, rating: ratingMap[h.id] }))
+                const scoreMap = {}
+                scores.forEach(r => { scoreMap[r.id] = r.score })
+                responseData.horses = (responseData.horses || []).map(h => ({ ...h, score: scoreMap[h.id] }))
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
 
@@ -199,7 +199,7 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
-            { title: 'Rating', key: 'rating' },
+            { title: 'Score', key: 'score' },
             { key: 'horseWithdrawn' },
         ]
 
@@ -207,7 +207,7 @@ export default {
             { title: '', key: 'favoriteIndicator', sortable: false },
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Name', key: 'name' },
-            { title: 'Rating', key: 'rating' },
+            { title: 'Score', key: 'score' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
             { title: 'Consistency Score', key: 'consistencyScore' },

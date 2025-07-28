@@ -1,5 +1,5 @@
 import axios from 'axios'
-import HorseRating from './horseRating-model.js'
+import HorseRating from '../horse/horse-rating-model.js'
 
 const fetchResults = async horseId => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
