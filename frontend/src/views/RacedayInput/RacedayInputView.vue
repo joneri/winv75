@@ -24,13 +24,13 @@
     <!-- List of Racedays -->
     <v-list>
         <template v-for="raceDay in raceDays" :key="raceDay._id">
-            <v-list-item>
+            <v-list-item class="clickable-row" @click="navigateToRaceDay(raceDay._id)">
                 <div class="d-flex justify-space-between align-center" style="width: 100%;">
                     <div>
                         <v-list-item-title class="headline">{{ formatDate(raceDay.firstStart) }}</v-list-item-title>
                         <v-list-item-subtitle>{{ raceDay.trackName }} - {{ raceDay.raceStandard }}</v-list-item-subtitle>
                     </div>
-                    <v-btn @click="navigateToRaceDay(raceDay._id)" variant="text">View Details</v-btn>
+                    <v-btn @click.stop="navigateToRaceDay(raceDay._id)" variant="text">View Details</v-btn>
                 </div>
             </v-list-item>
             <v-divider></v-divider>
@@ -142,5 +142,12 @@ export default {
   }
   .infinite-scroll-trigger {
     height: 1px;
+  }
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .clickable-row:hover {
+    background-color: #f5f5f5;
   }
 </style>
