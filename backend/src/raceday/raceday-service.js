@@ -83,13 +83,13 @@ const getRacedayById = async (id) => {
     }
 };
 
-const fetchRacedayIdsByDate = async (date) => {
+const fetchRacedaysByDate = async (date) => {
     const url = `https://api.travsport.se/webapi/raceinfo/organisation/TROT/sourceofdata/BOTH?fromracedate=${date}&toracedate=${date}&tosubmissiondate=${date}&typeOfRacesCodes=`
     try {
         const response = await axios.get(url)
-        return response.data.map(item => item.raceDayId)
+        return response.data
     } catch (error) {
-        console.error(`Error fetching raceday ids for ${date}:`, error)
+        console.error(`Error fetching raceday data for ${date}:`, error)
         throw error
     }
 }
@@ -106,12 +106,18 @@ const fetchStartlistById = async (racedayId) => {
 }
 
 const fetchAndStoreByDate = async (date) => {
-    const ids = await fetchRacedayIdsByDate(date)
+    const raceDaysInfo = await fetchRacedaysByDate(date)
     const stored = []
-    for (const id of ids) {
-        const startlist = await fetchStartlistById(id)
-        const raceDay = await upsertStartlistData(startlist)
-        stored.push(raceDay)
+    for (const info of raceDaysInfo) {
+        if (info.hasOldStartList || info.hasNewStartList) {
+            try {
+                const startlist = await fetchStartlistById(info.raceDayId)
+                const raceDay = await upsertStartlistData(startlist)
+                stored.push(raceDay)
+            } catch (error) {
+                console.error(`Skipping racedayId ${info.raceDayId} due to fetch error:`, error.message)
+            }
+        }
     }
     return stored
 }
