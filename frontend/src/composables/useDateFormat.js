@@ -1,6 +1,6 @@
 export const useDateFormat = () => {
     const formatDate = (dateString) => {
-        const days = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORS DAG', 'FREDAG', 'LÖRDAG']
+        const days = ['SÖNDAG', 'MÅNDAG', 'TISDAG', 'ONSDAG', 'TORSDAG', 'FREDAG', 'LÖRDAG']
         const months = ['JANUARI', 'FEBRUARI', 'MARS', 'APRIL', 'MAJ', 'JUNI', 'JULI', 'AUGUSTI', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DECEMBER']
         const date = new Date(dateString)
         const dayName = days[date.getDay()]
