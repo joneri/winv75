@@ -4,9 +4,13 @@ import { addRaceday } from './services/RacedayInputService.js'
 const state = {
     racedayData: {},
     loading: false,
+    listLoading: false,
     error: null,
     successMessage: null,
-    raceDays: []
+    raceDays: [],
+    page: 0,
+    pageSize: 10,
+    hasMore: true
 }
 
 const mutations = {
@@ -29,7 +33,22 @@ const mutations = {
     },
     setRaceDays(state, raceDays) {
         state.raceDays = raceDays
-    }    
+    },
+    appendRaceDays(state, raceDays) {
+        state.raceDays.push(...raceDays)
+    },
+    setListLoading(state, loading) {
+        state.listLoading = loading
+    },
+    setPage(state, page) {
+        state.page = page
+    },
+    incrementPage(state) {
+        state.page++
+    },
+    setHasMore(state, hasMore) {
+        state.hasMore = hasMore
+    }
 }
 
 const actions = {
@@ -46,14 +65,39 @@ const actions = {
             commit('setLoading', false)
         }
     },
-    async fetchRacedays({ commit }) {
+    async fetchRacedays({ commit, state }, { reset = false } = {}) {
+        if (state.listLoading) return
+        if (reset) {
+            commit('setRaceDays', [])
+            commit('setPage', 0)
+            commit('setHasMore', true)
+        }
+        if (!state.hasMore && !reset) return
+
+        const skip = state.page * state.pageSize
+        const limit = state.pageSize
+        commit('setListLoading', true)
         try {
-          const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`)
-          commit('setRaceDays', response.data)
+          const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`, {
+            params: { skip, limit }
+          })
+          const fetched = response.data
+          if (reset) {
+            commit('setRaceDays', fetched)
+          } else {
+            commit('appendRaceDays', fetched)
+          }
+          commit('incrementPage')
+          if (fetched.length < state.pageSize) {
+            commit('setHasMore', false)
+          }
         } catch (error) {
           console.error('Error fetching racedays:', error)
+          commit('setHasMore', false)
+        } finally {
+          commit('setListLoading', false)
         }
-    }     
+    }
 }
 
 export default {

@@ -23,7 +23,9 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
     console.log('req:', req.originalUrl)
     try {
-        const racedays = await raceDayService.getAllRacedays()
+        const skip = parseInt(req.query.skip) || 0
+        const limit = req.query.limit ? parseInt(req.query.limit) : null
+        const racedays = await raceDayService.getAllRacedays(skip, limit)
         res.send(racedays)
     } catch (error) {
         console.error('Error fetching all racedays:', error);
