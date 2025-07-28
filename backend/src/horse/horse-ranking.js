@@ -1,5 +1,6 @@
 import Raceday from '../raceday/raceday-model.js'
 import Horse from './horse-model.js'
+import { getWeights } from '../config/scoring.js'
 
 const getHorsesFromRace = async (raceId) => {
   const horseIdPipeline = [
@@ -43,7 +44,17 @@ const getHorsesFromRace = async (raceId) => {
 };
 
 
-const aggregateHorses = async (raceId) => {
+const calculateHorseScore = (horse, weights) => {
+    const weightedPoints = (horse.pointsNumeric || 0) * weights.points
+    const weightedConsistency = (horse.consistencyScore || 0) * weights.consistency
+    const weightedWinRate = (horse.winningRateNumeric || 0) * weights.winRate
+    const weightedPlacementRate = (horse.placementRatesNumeric || 0) * weights.placementRate
+    // Sum of weighted metrics is the current score model.
+    // TODO: incorporate probability estimates from external data here
+    return weightedPoints + weightedConsistency + weightedWinRate + weightedPlacementRate
+}
+
+const aggregateHorses = async (raceId, weights = getWeights()) => {
     const horses = await getHorsesFromRace(raceId)
     try {
         const aggregatedResult = await Horse.aggregate([
@@ -164,26 +175,9 @@ const aggregateHorses = async (raceId) => {
                         { $multiply: ["$secondPlace", 2] },
                         "$thirdPlace"
                     ]
-                },
-                weightedPoints: { $multiply: ["$pointsNumeric", 0.30] },
-                weightedConsistency: { $multiply: ["$consistencyScore", 0.30] },
-                weightedWinRate: { $multiply: ["$winningRateNumeric", 0.25] },
-                weightedPlacementRate: { $multiply: ["$placementRatesNumeric", 0.15] }
-            }
-        },
-        {
-            $addFields: {
-                totalScore: {
-                    $add: [
-                        { $ifNull: ["$weightedPoints", 0] },
-                        { $ifNull: ["$weightedConsistency", 0] },
-                        { $ifNull: ["$weightedWinRate", 0] },
-                        { $ifNull: ["$weightedPlacementRate", 0] }
-                    ]
                 }
             }
         },
-        { $sort: { totalScore: -1 } },
         {
             $project: {
                 name: 1,
@@ -193,12 +187,10 @@ const aggregateHorses = async (raceId) => {
                 prizeMoney: { $arrayElemAt: ["$statistics.totalPrizeMoney", 0] },
                 numberOfStarts: { $arrayElemAt: ["$statistics.numberOfStarts", 0] },
                 placements: { $arrayElemAt: ["$statistics.placements", 0] },
-                weightedPoints: 1,
+                pointsNumeric: 1,
                 consistencyScore: 1,
-                weightedWinRate: 1,
-                winningRate: 1,
-                weightedPlacementRate: 1,
-                totalScore: 1,
+                winningRateNumeric: 1,
+                placementRatesNumeric: 1,
                 placementRates: 1,
                 favoriteStartMethod: 1,
                 favoriteStartPosition: 1,
@@ -209,12 +201,19 @@ const aggregateHorses = async (raceId) => {
             }
         }
         ]).exec()
+
+        // Attach program numbers and calculate final scores
         aggregatedResult.forEach(horse => {
-            const matchingHorse = horses.find(h => h.id === horse.id)
-            if (matchingHorse) {
-                horse.programNumber = matchingHorse.programNumber
+            const match = horses.find(h => h.id === horse.id)
+            if (match) {
+                horse.programNumber = match.programNumber
             }
-         })
+            // compute weighted values
+            horse.totalScore = calculateHorseScore(horse, weights)
+        })
+
+        // order horses by their computed score
+        aggregatedResult.sort((a, b) => b.totalScore - a.totalScore)
 
     return aggregatedResult;
     } catch (err) {
