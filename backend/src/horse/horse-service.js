@@ -1,23 +1,8 @@
 import Horse from './horse-model.js'
 import axios from 'axios'
 import horseRanking from './horse-ranking.js'
+import { calculateHorseScore } from './horse-score.js'
 import { getWeights } from '../config/scoring.js'
-
-const calculateHorseRating = (horse, weights = getWeights()) => {
-    const pointsNumeric = typeof horse.points === 'string'
-        ? parseFloat(horse.points.replace(/\s/g, '')) || 0
-        : horse.points || 0
-    const winningRateNumeric = parseFloat(horse.winningRate) || 0
-    const placementRateNumeric = parseFloat(horse.placementRate) || 0
-    const placementString = horse.statistics?.[0]?.placements || '0-0-0'
-    const [first = 0, second = 0, third = 0] = placementString.split('-').map(n => parseInt(n) || 0)
-    const consistencyScore = first * 3 + second * 2 + third
-
-    return (pointsNumeric * weights.points) +
-        (consistencyScore * weights.consistency) +
-        (winningRateNumeric * weights.winRate) +
-        (placementRateNumeric * weights.placementRate)
-}
 
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
@@ -68,7 +53,7 @@ const upsertHorseData = async (horseId) => {
         horseData.points = 0
     }
 
-    horseData.rating = calculateHorseRating(horseData)
+    horseData.score = calculateHorseScore(horseData)
 
     let horse
     try {
@@ -85,7 +70,7 @@ const getHorseData = async (horseId) => {
         const horse = await Horse.findOne({ id: horseId })
         if (!horse) return null
         const obj = horse.toObject()
-        obj.rating = calculateHorseRating(obj)
+        obj.score = calculateHorseScore(obj)
         return obj
     } catch (error) {
         console.error(`Error retrieving horse ${horseId}:`, error.message)
@@ -102,7 +87,7 @@ const getHorseRankings = async (raceId) => {
     }
 }
 
-const getHorsesByRating = async ({ ids, minRating } = {}) => {
+const getHorsesByScore = async ({ ids, minScore } = {}) => {
     const query = {}
     if (ids && ids.length) {
         query.id = { $in: ids }
@@ -112,13 +97,13 @@ const getHorsesByRating = async ({ ids, minRating } = {}) => {
     const weights = getWeights()
     let results = horses.map(h => {
         const obj = h.toObject()
-        obj.rating = calculateHorseRating(obj, weights)
+        obj.score = calculateHorseScore(obj, weights)
         return obj
     })
-    if (typeof minRating === 'number') {
-        results = results.filter(h => h.rating >= minRating)
+    if (typeof minScore === 'number') {
+        results = results.filter(h => h.score >= minScore)
     }
-    results.sort((a, b) => b.rating - a.rating)
+    results.sort((a, b) => b.score - a.score)
     return results
 }
 
@@ -126,5 +111,5 @@ export default {
     upsertHorseData,
     getHorseData,
     getHorseRankings,
-    getHorsesByRating
+    getHorsesByScore
 }

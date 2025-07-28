@@ -1,6 +1,7 @@
 import express from 'express'
 import horseService from './horse-service.js'
 import axios from 'axios'
+import HorseRating from './horse-rating-model.js'
 import { validateNumericParam } from '../middleware/validators.js'
 
 const router = express.Router()
@@ -8,12 +9,23 @@ const router = express.Router()
 router.get('/ratings', async (req, res) => {
     try {
         const ids = req.query.ids ? req.query.ids.split(',').map(id => parseInt(id)) : undefined
-        const minRating = req.query.minRating ? parseFloat(req.query.minRating) : undefined
-        const horses = await horseService.getHorsesByRating({ ids, minRating })
-        res.json(horses)
+        const ratings = await HorseRating.find(ids ? { horseId: { $in: ids } } : {}).lean()
+        res.json(ratings.map(r => ({ id: r.horseId, rating: r.rating })))
     } catch (error) {
         console.error('Error fetching horse ratings:', error)
         res.status(500).send('Failed to fetch horse ratings.')
+    }
+})
+
+router.get('/scores', async (req, res) => {
+    try {
+        const ids = req.query.ids ? req.query.ids.split(',').map(id => parseInt(id)) : undefined
+        const minScore = req.query.minScore ? parseFloat(req.query.minScore) : undefined
+        const horses = await horseService.getHorsesByScore({ ids, minScore })
+        res.json(horses)
+    } catch (error) {
+        console.error('Error fetching horse scores:', error)
+        res.status(500).send('Failed to fetch horse scores.')
     }
 })
 

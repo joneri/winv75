@@ -1,5 +1,6 @@
 import HorseRating from '../horse/horse-rating-model.js'
 import RatingHistory from './rating-history-model.js'
+import { expectedScore } from './elo-utils.js'
 
 const DEFAULT_RATING = 1500
 const K_FACTOR = 32
@@ -35,7 +36,7 @@ const updateRatingsForRace = async (raceId, raceData) => {
       if (horse.id === opponent.id) continue
       const r1 = currentRatings[horse.id]
       const r2 = currentRatings[opponent.id]
-      const exp = 1 / (1 + Math.pow(10, (r2 - r1) / 400))
+      const exp = expectedScore(r1, r2)
       expected += exp
       if (horse.placement < opponent.placement) actual += 1
       else if (horse.placement === opponent.placement) actual += 0.5
