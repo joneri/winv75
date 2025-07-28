@@ -13,6 +13,14 @@
       </v-col>
     </v-row>
 
+    <!-- Fetch Raceday by Date Section -->
+    <v-row class="mt-4">
+      <v-col>
+        <v-text-field v-model="fetchDate" type="date" label="Fetch Racedays by Date"></v-text-field>
+        <v-btn @click="fetchRacedays" color="primary">Fetch</v-btn>
+      </v-col>
+    </v-row>
+
     <!-- List of Racedays -->
     <v-list>
         <template v-for="raceDay in raceDays" :key="raceDay._id">
@@ -53,6 +61,7 @@ export default {
     const { formatDate } = useDateFormat();
 
     const racedayJsonInput = ref('');
+    const fetchDate = ref('');
     const showSnackbar = ref(false);
 
     const error = computed(() => store.state.racedayInput.error);
@@ -74,6 +83,12 @@ export default {
       }
     };
 
+    const fetchRacedays = () => {
+      if (fetchDate.value) {
+        store.dispatch('racedayInput/fetchRacedaysFromAPI', fetchDate.value);
+      }
+    };
+
     const navigateToRaceDay = (raceDayId) => {
       router.push({ name: 'Raceday', params: { racedayId: raceDayId } }); // Changed this.$router to router
     };
@@ -82,6 +97,7 @@ export default {
       if (successMessage.value) {
         showSnackbar.value = true;
         racedayJsonInput.value = '';
+        fetchDate.value = '';
       }
     });
 
@@ -101,12 +117,14 @@ export default {
     return {
       formatDate,
       racedayJsonInput,
+      fetchDate,
       showSnackbar,
       error,
       raceDays,
       loading,
       successMessage,
       submitRacedayData,
+      fetchRacedays,
       navigateToRaceDay,
       infiniteScrollTrigger,
       hasMore

@@ -61,6 +61,19 @@ The Vue application will be available at <http://localhost:5173> by default and 
 
 The `mongodb-scripts` folder contains aggregation pipelines exported from MongoDB Compass. They can be loaded in the Aggregations tab of Compass for experimenting with ranking logic.
 
+## Fetching raceday data automatically
+
+To import startlists from the official Travsport API, the back‑end exposes a POST
+endpoint:
+
+```
+POST /api/raceday/fetch?date=YYYY-MM-DD
+```
+
+It downloads all raceday startlists for the given date and stores them in MongoDB.
+The front‑end provides a date field in the **Raceday Input** view where you can
+trigger this fetch.
+
 ## Building for production
 
 To create optimized builds:

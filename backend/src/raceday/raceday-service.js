@@ -1,5 +1,6 @@
 import Raceday from './raceday-model.js'
 import Horse from '../horse/horse-model.js'
+import axios from 'axios'
 
 const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
   try {
@@ -82,9 +83,43 @@ const getRacedayById = async (id) => {
     }
 };
 
+const fetchRacedayIdsByDate = async (date) => {
+    const url = `https://api.travsport.se/webapi/raceinfo/organisation/TROT/sourceofdata/BOTH?fromracedate=${date}&toracedate=${date}&tosubmissiondate=${date}&typeOfRacesCodes=`
+    try {
+        const response = await axios.get(url)
+        return response.data.map(item => item.raceDayId)
+    } catch (error) {
+        console.error(`Error fetching raceday ids for ${date}:`, error)
+        throw error
+    }
+}
+
+const fetchStartlistById = async (racedayId) => {
+    const url = `https://api.travsport.se/webapi/raceinfo/startlists/organisation/TROT/sourceofdata/SPORT/racedayid/${racedayId}`
+    try {
+        const response = await axios.get(url)
+        return response.data
+    } catch (error) {
+        console.error(`Error fetching startlist for racedayId ${racedayId}:`, error)
+        throw error
+    }
+}
+
+const fetchAndStoreByDate = async (date) => {
+    const ids = await fetchRacedayIdsByDate(date)
+    const stored = []
+    for (const id of ids) {
+        const startlist = await fetchStartlistById(id)
+        const raceDay = await upsertStartlistData(startlist)
+        stored.push(raceDay)
+    }
+    return stored
+}
+
 export default {
     upsertStartlistData,
     getAllRacedays,
     getRacedayById,
-    updateEarliestUpdatedHorseTimestamp
+    updateEarliestUpdatedHorseTimestamp,
+    fetchAndStoreByDate
 }
