@@ -84,6 +84,32 @@ It downloads all raceday startlists for the given date and stores them in MongoD
 The front‑end provides a date field in the **Raceday Input** view where you can
 trigger this fetch.
 
+## Horse Ranking
+
+Each horse receives a score based on four weighted metrics:
+
+1. **Points** – the official rating points.
+2. **Consistency Score** – derived from placements where first place counts as three, second as two and third as one.
+3. **Win Rate** – percentage of starts that resulted in a win.
+4. **Placement Rate** – percentage of starts finishing in a paying position.
+
+The total score is simply the sum of each metric multiplied by its weight:
+
+```
+points * SCORE_WEIGHT_POINTS
+  + consistencyScore * SCORE_WEIGHT_CONSISTENCY
+  + winRate * SCORE_WEIGHT_WIN_RATE
+  + placementRate * SCORE_WEIGHT_PLACEMENT_RATE
+```
+
+Default weights are defined in the back‑end but can be overridden with optional
+environment variables (`SCORE_WEIGHT_*`). The weights determine how much each
+metric contributes to the final ranking.
+
+The ranking output also includes data such as favorite track, driver and start
+position, as well as the average odds when the horse finished in the top three.
+These values are currently informational only and do not affect the score.
+
 ## Building for production
 
 To create optimized builds:
