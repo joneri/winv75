@@ -12,7 +12,7 @@
     </v-row>
 
     <!-- List of Racedays -->
-    <v-list>
+    <v-list ref="listContainer" class="raceday-list">
         <template v-for="raceDay in raceDays" :key="raceDay._id">
             <v-list-item class="clickable-row" @click="navigateToRaceDay(raceDay._id)">
                 <div class="d-flex justify-space-between align-center" style="width: 100%;">
@@ -59,6 +59,7 @@ export default {
     const successMessage = computed(() => store.state.racedayInput.successMessage);
     const hasMore = computed(() => store.state.racedayInput.hasMore);
     const infiniteScrollTrigger = ref(null);
+    const listContainer = ref(null);
 
 
     const fetchRacedays = () => {
@@ -78,15 +79,20 @@ export default {
       }
     });
 
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore.value) {
-        store.dispatch('racedayInput/fetchRacedays');
-      }
-    });
+    let observer;
 
     onMounted(() => {
       store.dispatch('racedayInput/fetchRacedays', { reset: true });
       if (infiniteScrollTrigger.value) {
+        const options = {
+          root: listContainer.value,
+          rootMargin: '0px 0px 200px 0px'
+        };
+        observer = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting && hasMore.value) {
+            store.dispatch('racedayInput/fetchRacedays');
+          }
+        }, options);
         observer.observe(infiniteScrollTrigger.value);
       }
     });
@@ -102,6 +108,7 @@ export default {
       fetchRacedays,
       navigateToRaceDay,
       infiniteScrollTrigger,
+      listContainer,
       hasMore
     };
   }
@@ -114,6 +121,10 @@ export default {
   }
   .main-content {
     padding-top: 70px;
+  }
+  .raceday-list {
+    max-height: 80vh;
+    overflow-y: auto;
   }
   .infinite-scroll-trigger {
     height: 1px;
