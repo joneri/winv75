@@ -27,6 +27,7 @@
             </v-list-item>
             <v-divider></v-divider>
         </template>
+        <div ref="infiniteScrollTrigger" class="infinite-scroll-trigger"></div>
     </v-list>
 
   </v-container>
@@ -54,10 +55,12 @@ export default {
     const racedayJsonInput = ref('');
     const showSnackbar = ref(false);
 
-    const error = computed(() => store.state.raceday.error);
+    const error = computed(() => store.state.racedayInput.error);
     const raceDays = computed(() => store.state.racedayInput.raceDays);
-    const loading = computed(() => store.state.raceday.loading);
-    const successMessage = computed(() => store.state.raceday.successMessage);
+    const loading = computed(() => store.state.racedayInput.loading || store.state.racedayInput.listLoading);
+    const successMessage = computed(() => store.state.racedayInput.successMessage);
+    const hasMore = computed(() => store.state.racedayInput.hasMore);
+    const infiniteScrollTrigger = ref(null);
 
     const submitRacedayData = () => {
       if (racedayJsonInput.value === '') return;
@@ -82,8 +85,17 @@ export default {
       }
     });
 
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore.value) {
+        store.dispatch('racedayInput/fetchRacedays');
+      }
+    });
+
     onMounted(() => {
-      store.dispatch('racedayInput/fetchRacedays');
+      store.dispatch('racedayInput/fetchRacedays', { reset: true });
+      if (infiniteScrollTrigger.value) {
+        observer.observe(infiniteScrollTrigger.value);
+      }
     });
 
     return {
@@ -95,7 +107,9 @@ export default {
       loading,
       successMessage,
       submitRacedayData,
-      navigateToRaceDay
+      navigateToRaceDay,
+      infiniteScrollTrigger,
+      hasMore
     };
   }
 }
@@ -107,5 +121,8 @@ export default {
   }
   .main-content {
     padding-top: 70px;
+  }
+  .infinite-scroll-trigger {
+    height: 1px;
   }
 </style>

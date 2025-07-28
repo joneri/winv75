@@ -61,10 +61,12 @@ const upsertStartlistData = async (racedayJSON) => {
     return raceDay
 }
 
-const getAllRacedays = async () => {
+const getAllRacedays = async (skip = 0, limit = null) => {
     try {
-        // Sort by firstStart in descending order so the latest raceday appears first
-        return await Raceday.find({}).sort({ firstStart: -1 })
+        const query = Raceday.find({}).sort({ firstStart: -1 })
+        if (skip) query.skip(skip)
+        if (limit) query.limit(limit)
+        return await query.exec()
     } catch (error) {
         console.error('Error in getAllRacedays:', error)
         throw error
