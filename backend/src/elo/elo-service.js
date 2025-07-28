@@ -1,4 +1,4 @@
-import HorseRating from './horse-rating-model.js'
+import HorseRating from '../horse/horse-rating-model.js'
 import RatingHistory from './rating-history-model.js'
 
 const DEFAULT_RATING = 1500

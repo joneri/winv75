@@ -11,10 +11,10 @@ const getHorsesFromRace = async (raceId) => {
     {
       "$lookup": {
         "from": "horses",
-        "let": { "horseId": "$raceList.horses.id", "programNum": "$raceList.horses.programNumber" },
+        "let": { "horseId": "$raceList.horses.id", "programNum": "$raceList.horses.programNumber", "driver": "$raceList.horses.driver" },
         "pipeline": [
           { "$match": { "$expr": { "$eq": ["$id", "$$horseId"] } } },
-          { "$addFields": { "programNumber": "$$programNum" } }
+          { "$addFields": { "programNumber": "$$programNum", "driver": "$$driver" } }
         ],
         "as": "horseDetails"
       }
@@ -35,7 +35,7 @@ const getHorsesFromRace = async (raceId) => {
 
   try {
     const horses = await Raceday.aggregate(horseIdPipeline).exec();
-    return horses.map(horse => ({ id: horse.id, programNumber: horse.programNumber }));
+    return horses.map(horse => ({ id: horse.id, programNumber: horse.programNumber, driver: horse.driver }));
 
   } catch (err) {
     console.error("Error fetching horses:", err);
@@ -183,6 +183,7 @@ const aggregateHorses = async (raceId, weights = getWeights()) => {
                 name: 1,
                 id: 1, 
                 programNumber: 1,
+                driver: 1,
                 programNum: 1,
                 prizeMoney: { $arrayElemAt: ["$statistics.totalPrizeMoney", 0] },
                 numberOfStarts: { $arrayElemAt: ["$statistics.numberOfStarts", 0] },
@@ -207,6 +208,7 @@ const aggregateHorses = async (raceId, weights = getWeights()) => {
             const match = horses.find(h => h.id === horse.id)
             if (match) {
                 horse.programNumber = match.programNumber
+                horse.driver = match.driver
             }
             // compute weighted values
             horse.rating = calculateHorseScore(horse, weights)

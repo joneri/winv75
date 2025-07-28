@@ -206,6 +206,7 @@ export default {
         const rankedHeaders = [
             { title: '', key: 'favoriteIndicator', sortable: false },
             { title: 'Start Position', key: 'programNumber' },
+            { title: 'Driver Name', key: 'driver.name' },
             { title: 'Name', key: 'name' },
             { title: 'Rating', key: 'rating' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },

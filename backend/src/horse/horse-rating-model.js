@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 
 const HorseRatingSchema = new mongoose.Schema({
-const HorseRatingSchema = new mongoose.Schema({
   horseId: { type: Number, required: true, unique: true },
   rating: { type: Number, default: 1500 },
   numberOfRaces: { type: Number, default: 0 },
@@ -11,4 +10,4 @@ const HorseRatingSchema = new mongoose.Schema({
 HorseRatingSchema.index({ horseId: 1 }, { unique: true })
 HorseRatingSchema.index({ lastUpdated: 1 })
 
-export default mongoose.model('HorseRating', HorseRatingSchema, 'horse_ratings')
+export default mongoose.models.HorseRating
