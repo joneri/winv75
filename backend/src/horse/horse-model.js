@@ -156,6 +156,7 @@ const HorseSchema = new mongoose.Schema({
     winningRate: { type: String, default: '' },
     placementRate: { type: String, default: '' },
     points: { type: String, default: '' },
+    rating: { type: Number, default: 0 },
     statistics: [StatisticSchema],
     results: [RaceResultSchema]
 },

@@ -75,10 +75,22 @@ const fetchHorseRankings = async (raceId) => {
     }
 }
 
+const fetchHorseRatings = async (ids = []) => {
+    try {
+        const params = ids.length ? { params: { ids: ids.join(',') } } : {}
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/ratings`, params)
+        return response.data
+    } catch (error) {
+        console.error('Failed to fetch horse ratings', error)
+        throw error
+    }
+}
+
 export {
     updateHorse,
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
     fetchHorseRankings,
-    setEarliestUpdatedHorseTimestamp
+    setEarliestUpdatedHorseTimestamp,
+    fetchHorseRatings
 }

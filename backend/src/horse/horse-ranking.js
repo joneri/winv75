@@ -209,7 +209,8 @@ const aggregateHorses = async (raceId, weights = getWeights()) => {
                 horse.programNumber = match.programNumber
             }
             // compute weighted values
-            horse.totalScore = calculateHorseScore(horse, weights)
+            horse.rating = calculateHorseScore(horse, weights)
+            horse.totalScore = horse.rating
         })
 
         // order horses by their computed score

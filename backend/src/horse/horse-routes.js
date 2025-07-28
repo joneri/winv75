@@ -5,6 +5,33 @@ import { validateNumericParam } from '../middleware/validators.js'
 
 const router = express.Router()
 
+router.get('/ratings', async (req, res) => {
+    try {
+        const ids = req.query.ids ? req.query.ids.split(',').map(id => parseInt(id)) : undefined
+        const minRating = req.query.minRating ? parseFloat(req.query.minRating) : undefined
+        const horses = await horseService.getHorsesByRating({ ids, minRating })
+        res.json(horses)
+    } catch (error) {
+        console.error('Error fetching horse ratings:', error)
+        res.status(500).send('Failed to fetch horse ratings.')
+    }
+})
+
+router.get('/rankings/:raceId', validateNumericParam('raceId'), async (req, res) => {
+    let rankings
+    try {
+        const raceId = req.params.raceId
+        console.log('req:', req.originalUrl, 'raceId:', raceId)
+        rankings = await horseService.getHorseRankings(raceId)
+        console.log('rankings:', rankings)
+        res.status(200).json(rankings)
+    } catch (error) {
+        const errorMessage = `Error fetching horse rankings: ${error}`
+        console.error(errorMessage)
+        res.status(500).send('Failed to fetch horse data.')
+    }
+})
+
 router.put('/:horseId', validateNumericParam('horseId'), async (req, res) => {
     try {
         console.log('req:', req.originalUrl)
@@ -34,21 +61,6 @@ router.get('/:horseId', validateNumericParam('horseId'), async (req, res) => {
         const errorMessage = horseId 
             ? `Error fetching horse data for id ${horseId}: ${error}` 
             : `Error fetching horse data: ${error}`
-        console.error(errorMessage)
-        res.status(500).send('Failed to fetch horse data.')
-    }
-})
-
-router.get('/rankings/:raceId', validateNumericParam('raceId'), async (req, res) => {
-    let rankings
-    try {
-        const raceId = req.params.raceId
-        console.log('req:', req.originalUrl, 'raceId:', raceId)
-        rankings = await horseService.getHorseRankings(raceId)
-        console.log('rankings:', rankings)
-        res.status(200).json(rankings)
-    } catch (error) {
-        const errorMessage = `Error fetching horse rankings: ${error}`
         console.error(errorMessage)
         res.status(500).send('Failed to fetch horse data.')
     }
