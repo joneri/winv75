@@ -26,9 +26,9 @@ const mutations = {
     setSuccessMessage(state, message) {
         state.successMessage = message
     },
-    addRaceDay(state, raceDayId) {
-        if (!state.raceDays.includes(raceDayId)) {
-            state.raceDays.push(raceDayId)
+    addRaceDay(state, raceDay) {
+        if (!state.raceDays.find(rd => rd._id === raceDay._id)) {
+            state.raceDays.push(raceDay)
         }
     },
     setRaceDays(state, raceDays) {
@@ -58,7 +58,7 @@ const actions = {
             const response = await addRaceday(data)
             commit('setRacedayData', response)
             commit('setSuccessMessage', 'Raceday data uploaded successfully!')
-            commit('addRaceDay', data.raceDayId)
+            commit('addRaceDay', response)
         } catch (error) {
             commit('setError', error.message)
         } finally {
@@ -78,19 +78,20 @@ const actions = {
         const limit = state.pageSize
         commit('setListLoading', true)
         try {
-          const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`, {
-            params: { skip, limit }
-          })
-          const fetched = response.data
-          if (reset) {
-            commit('setRaceDays', fetched)
-          } else {
-            commit('appendRaceDays', fetched)
-          }
-          commit('incrementPage')
-          if (fetched.length < state.pageSize) {
-            commit('setHasMore', false)
-          }
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`, {
+          params: { skip, limit }
+        });
+        const fetched = response.data.sort((a, b) => new Date(b.firstStart) - new Date(a.firstStart)); // sort here
+        if (reset) {
+          commit('setRaceDays', fetched);
+        } else {
+          commit('appendRaceDays', fetched);
+        }
+        commit('incrementPage');
+        if (fetched.length < state.pageSize) {
+          commit('setHasMore', false);
+        }
+
         } catch (error) {
           console.error('Error fetching racedays:', error)
           commit('setHasMore', false)
