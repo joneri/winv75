@@ -10,7 +10,10 @@
             <h1>Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}</h1>
             <div v-if="racedayTrackName" class="text-h6">
               {{ racedayTrackName }}
-              <span v-if="raceStartMethod"> – {{ raceStartMethod }}</span>
+              <span v-if="raceStartMethod">
+                – {{ raceStartMethod }}
+                <span v-if="raceStartMethodCode"> ({{ raceStartMethodCode }})</span>
+              </span>
             </div>
           </v-col>
         </v-row>
@@ -69,6 +72,13 @@ export default {
           if (!tObj) return '';
           if (/Autostart/i.test(tObj.text)) return 'Autostart';
           if (/Voltstart/i.test(tObj.text)) return 'Voltstart';
+          return '';
+        });
+
+        // Step 2: Compute code 'A' or 'V' for start method
+        const raceStartMethodCode = computed(() => {
+          if (raceStartMethod.value === 'Autostart') return 'A';
+          if (raceStartMethod.value === 'Voltstart') return 'V';
           return '';
         });
         const store = useStore()
@@ -264,6 +274,7 @@ export default {
             rankedHeaders,
             rankedHorses,
             raceStartMethod,
+            raceStartMethodCode,
         }
     },
 }
