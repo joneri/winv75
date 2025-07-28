@@ -12,22 +12,29 @@
     </v-row>
 
     <!-- List of Racedays -->
-    <v-list ref="listContainer" class="raceday-list">
-        <template v-for="raceDay in raceDays" :key="raceDay._id">
-            <v-list-item class="clickable-row" @click="navigateToRaceDay(raceDay._id)">
-                <div class="d-flex justify-space-between align-center" style="width: 100%;">
-                    <div>
-                        <v-list-item-title class="headline">{{ formatDate(raceDay.firstStart) }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ raceDay.trackName }} - {{ raceDay.raceStandard }}</v-list-item-subtitle>
-                    </div>
-                    <v-btn @click.stop="navigateToRaceDay(raceDay._id)" variant="text">View Details</v-btn>
-                </div>
-            </v-list-item>
-            <v-divider></v-divider>
-        </template>
-        <div ref="infiniteScrollTrigger" class="infinite-scroll-trigger"></div>
+    <v-list v-show="raceDays.length > 0" ref="listContainer" class="raceday-list">
+      <template v-for="raceDay in raceDays" :key="raceDay._id">
+          <v-list-item class="clickable-row" @click="navigateToRaceDay(raceDay._id)">
+              <div class="d-flex justify-space-between align-center" style="width: 100%;">
+                  <div>
+                      <v-list-item-title class="headline">{{ formatDate(raceDay.firstStart) }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ raceDay.trackName }} - {{ raceDay.raceStandard }}</v-list-item-subtitle>
+                  </div>
+                  <v-btn @click.stop="navigateToRaceDay(raceDay._id)" variant="text">View Details</v-btn>
+              </div>
+          </v-list-item>
+          <v-divider></v-divider>
+      </template>
+      <div ref="infiniteScrollTrigger" class="infinite-scroll-trigger"></div>
     </v-list>
-
+    <v-alert v-if="raceDays.length === 0" type="info" class="mt-4">No racedays found.</v-alert>
+    <v-progress-linear
+      v-if="loading && hasMore"
+      indeterminate
+      color="primary"
+      height="3"
+      class="mt-2"
+    />
   </v-container>
 
   <v-snackbar v-model="showSnackbar" top color="success">
@@ -39,7 +46,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, watchEffect, nextTick, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useDateFormat } from '@/composables/useDateFormat.js';
@@ -81,11 +88,14 @@ export default {
 
     let observer;
 
-    onMounted(() => {
+    onMounted(async () => {
       store.dispatch('racedayInput/fetchRacedays', { reset: true });
-      if (infiniteScrollTrigger.value) {
+      // Wait for DOM update to access element refs
+      await nextTick();
+      const rootEl = listContainer.value?.$el ?? listContainer.value;
+      if (infiniteScrollTrigger.value && rootEl instanceof HTMLElement) {
         const options = {
-          root: listContainer.value,
+          root: rootEl,
           rootMargin: '0px 0px 200px 0px'
         };
         observer = new IntersectionObserver((entries) => {
@@ -95,6 +105,10 @@ export default {
         }, options);
         observer.observe(infiniteScrollTrigger.value);
       }
+    });
+
+    onBeforeUnmount(() => {
+      if (observer) observer.disconnect();
     });
 
     return {
