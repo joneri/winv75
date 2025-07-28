@@ -1,5 +1,9 @@
 <template>
-  <v-card class="clickable-card" @click="viewRaceDetails">
+  <v-card
+    class="clickable-card"
+    @click="viewRaceDetails"
+    :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText }"
+  >
     <div class="d-flex justify-space-between align-center" style="width: 100%;">
       <v-card-title> Race Number: {{ race.raceNumber }}</v-card-title>
       <v-card-text>
@@ -21,6 +25,7 @@
 import { toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import { getContrastColor } from '@/utils/colors'
 
 export default {
   props: {
@@ -43,6 +48,9 @@ export default {
     const router = useRouter()
     const store = useStore()
 
+    const hoverBg = '#f5f5f5'
+    const hoverText = getContrastColor(hoverBg)
+
     const viewRaceDetails = () => {
       store.commit('raceHorses/setCurrentRace', props.race);
       const raceId = props.race.raceId;
@@ -59,7 +67,9 @@ export default {
     return {
       race,
       lastUpdatedHorseTimestamp,
-      viewRaceDetails
+      viewRaceDetails,
+      hoverBg,
+      hoverText
     }
   }
 }
@@ -72,10 +82,11 @@ export default {
 }
 .clickable-card {
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .clickable-card:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg);
+  color: var(--hover-text);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
