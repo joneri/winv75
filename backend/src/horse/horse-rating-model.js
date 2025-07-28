@@ -10,4 +10,5 @@ const HorseRatingSchema = new mongoose.Schema({
 HorseRatingSchema.index({ horseId: 1 }, { unique: true })
 HorseRatingSchema.index({ lastUpdated: 1 })
 
-export default mongoose.models.HorseRating
+export default mongoose.models.HorseRating ||
+  mongoose.model('HorseRating', HorseRatingSchema)

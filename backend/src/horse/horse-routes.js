@@ -1,6 +1,5 @@
 import express from 'express'
 import horseService from './horse-service.js'
-import axios from 'axios'
 import HorseRating from './horse-rating-model.js'
 import { validateNumericParam } from '../middleware/validators.js'
 
