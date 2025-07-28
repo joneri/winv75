@@ -2,22 +2,12 @@
   <v-container fluid class="main-content">
     <v-progress-circular v-if="loading" indeterminate color="primary"></v-progress-circular>
 
-    <!-- Raceday JSON Input Section -->
-    <v-row>
-      <v-col>
-        <v-form @submit.prevent="submitRacedayData">
-          <v-textarea v-model="racedayJsonInput" label="Raceday JSON Data" required variant="outlined"></v-textarea>
-          <v-btn type="submit" color="primary">Submit Raceday Data</v-btn>
-        </v-form>
-        <v-alert v-if="error" type="error">{{ error }}</v-alert>
-      </v-col>
-    </v-row>
-
     <!-- Fetch Raceday by Date Section -->
     <v-row class="mt-4">
       <v-col>
         <v-text-field v-model="fetchDate" type="date" label="Fetch Racedays by Date"></v-text-field>
         <v-btn @click="fetchRacedays" color="primary">Fetch</v-btn>
+        <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
       </v-col>
     </v-row>
 
@@ -60,7 +50,6 @@ export default {
     const router = useRouter();
     const { formatDate } = useDateFormat();
 
-    const racedayJsonInput = ref('');
     const fetchDate = ref('');
     const showSnackbar = ref(false);
 
@@ -71,17 +60,6 @@ export default {
     const hasMore = computed(() => store.state.racedayInput.hasMore);
     const infiniteScrollTrigger = ref(null);
 
-    const submitRacedayData = () => {
-      if (racedayJsonInput.value === '') return;
-
-      try {
-        const parsedData = JSON.parse(racedayJsonInput.value);
-        store.dispatch('racedayInput/addRacedayData', parsedData);
-        racedayJsonInput.value = '';  // Clear input after successful submission
-      } catch (error) {
-        console.error('Error parsing Raceday JSON data:', error);
-      }
-    };
 
     const fetchRacedays = () => {
       if (fetchDate.value) {
@@ -96,7 +74,6 @@ export default {
     watchEffect(() => {
       if (successMessage.value) {
         showSnackbar.value = true;
-        racedayJsonInput.value = '';
         fetchDate.value = '';
       }
     });
@@ -116,14 +93,12 @@ export default {
 
     return {
       formatDate,
-      racedayJsonInput,
       fetchDate,
       showSnackbar,
       error,
       raceDays,
       loading,
       successMessage,
-      submitRacedayData,
       fetchRacedays,
       navigateToRaceDay,
       infiniteScrollTrigger,
