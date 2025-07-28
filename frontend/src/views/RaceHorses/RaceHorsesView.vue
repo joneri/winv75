@@ -25,9 +25,6 @@
                                     {{ item.columns.name }}
                                 </span>
                             </template>
-                            <template v-slot:item.action="{ item }">
-                                <v-icon v-if="isHorseUpdated(item.key)">mdi-check</v-icon>
-                            </template>
                         </v-data-table>
                     </v-window-item>
                     <v-window-item value="1">
@@ -50,9 +47,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import {
     checkIfUpdatedRecently,
-    fetchRaceFromRaceId,
-    updateHorse,
-    setEarliestUpdatedHorseTimestamp
+    fetchRaceFromRaceId
 } from '@/views/RaceHorses/services/RaceHorsesService.js'
 
 export default {
@@ -130,7 +125,6 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
-            { title: 'Action', key: 'action' },
             { key: 'horseWithdrawn' },
         ]
 
@@ -202,15 +196,11 @@ export default {
             }
         }
 
-        const isHorseUpdated = horseId => {
-            return updatedHorses.value.includes(horseId)
-        }
 
 
 
         return {
             headers,
-            isHorseUpdated,
             rankHorses,
             getTrackName,
             navigateToRaceDay,
