@@ -59,7 +59,8 @@ const upsertStartlistData = async (racedayJSON) => {
 
 const getAllRacedays = async () => {
     try {
-        return await Raceday.find({})
+        // Sort by firstStart in descending order so the latest raceday appears first
+        return await Raceday.find({}).sort({ firstStart: -1 })
     } catch (error) {
         console.error('Error in getAllRacedays:', error)
         throw error
