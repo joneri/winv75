@@ -68,12 +68,13 @@ const updateRatings = async (
   k = DEFAULT_K,
   decayDays = DEFAULT_DECAY_DAYS,
   syncHorses = true,
-  { disconnect = false } = {}
+  { disconnect = false, fullRecalc = false } = {}
 ) => {
   await ensureConnection()
 
-  const meta = await RatingMeta.findById('elo')
-  const lastDate = meta?.lastProcessedRaceDate || new Date(0)
+  const lastDate = !fullRecalc
+    ? (await RatingMeta.findById('elo'))?.lastProcessedRaceDate || new Date(0)
+    : new Date(0)
 
   const pipeline = [
     { $unwind: '$results' },
@@ -143,7 +144,8 @@ const updateRatings = async (
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const k = process.env.ELO_K ? Number(process.env.ELO_K) : DEFAULT_K
   const decayDays = process.env.RATING_DECAY_DAYS ? Number(process.env.RATING_DECAY_DAYS) : DEFAULT_DECAY_DAYS
-  updateRatings(k, decayDays, true, { disconnect: true }).then(() => {
+  const fullRecalc = process.argv.includes('--full')
+  updateRatings(k, decayDays, true, { disconnect: true, fullRecalc }).then(() => {
     console.log('Horse ratings updated')
     process.exit(0)
   }).catch(err => {
