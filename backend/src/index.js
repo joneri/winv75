@@ -9,6 +9,7 @@ import racedayRoutes from './raceday/raceday-routes.js'
 import raceRoutes from './race/race-routes.js'
 import eloRoutes from './rating/elo-routes.js'
 import { startRatingsCronJob } from './rating/ratings-scheduler.js'
+import { startDriverCronJob } from './driver/scheduler.js'
 
 // Middleware
 import errorHandler from './middleware/errorHandler.js'
@@ -44,3 +45,4 @@ app.use(errorHandler)
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
 })
+startDriverCronJob()
