@@ -3,6 +3,7 @@ import axios from 'axios'
 import horseRanking from './horse-ranking.js'
 import { calculateHorseScore } from './horse-score.js'
 import { getWeights } from '../config/scoring.js'
+import HorseRating from './horse-rating-model.js'
 
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
@@ -71,6 +72,8 @@ const getHorseData = async (horseId) => {
         if (!horse) return null
         const obj = horse.toObject()
         obj.score = calculateHorseScore(obj)
+        const ratingDoc = await HorseRating.findOne({ horseId })
+        obj.rating = ratingDoc ? ratingDoc.rating : obj.rating
         return obj
     } catch (error) {
         console.error(`Error retrieving horse ${horseId}:`, error.message)
@@ -80,7 +83,10 @@ const getHorseData = async (horseId) => {
 
 const getHorseRankings = async (raceId) => {
     try {
-        return await horseRanking.aggregateHorses(raceId)
+        const ranked = await horseRanking.aggregateHorses(raceId)
+        const ratingDocs = await HorseRating.find({ horseId: { $in: ranked.map(r => r.id) } })
+        const ratingMap = new Map(ratingDocs.map(r => [r.horseId, r.rating]))
+        return ranked.map(r => ({ ...r, rating: ratingMap.get(r.id) || 0 }))
     } catch (error) {
         console.error(`Error retrieving horse rankings for raceId ${raceId}:`, error.message)
         throw new Error('Failed to retrieve horse rankings')
@@ -99,6 +105,11 @@ const getHorsesByScore = async ({ ids, minScore } = {}) => {
         const obj = h.toObject()
         obj.score = calculateHorseScore(obj, weights)
         return obj
+    })
+    const ratingDocs = await HorseRating.find({ horseId: { $in: results.map(r => r.id) } })
+    const ratingMap = new Map(ratingDocs.map(r => [r.horseId, r.rating]))
+    results.forEach(r => {
+        r.rating = ratingMap.get(r.id) || r.rating
     })
     if (typeof minScore === 'number') {
         results = results.filter(h => h.score >= minScore)
