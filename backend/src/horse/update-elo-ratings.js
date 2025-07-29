@@ -4,6 +4,7 @@ import Horse from './horse-model.js'
 import HorseRating from './horse-rating-model.js'
 import RatingMeta from './rating-meta-model.js'
 import { expectedScore } from '../elo/elo-utils.js'
+import { fileURLToPath } from 'url'
 
 const DEFAULT_K = 20
 const DEFAULT_DECAY_DAYS = 365
@@ -57,8 +58,19 @@ const processRace = (horsePlacements, ratings, k, raceDate, decayDays) => {
   }
 }
 
-const updateRatings = async (k = DEFAULT_K, decayDays = DEFAULT_DECAY_DAYS, syncHorses = true) => {
-  await connectDB()
+const ensureConnection = async () => {
+  if (mongoose.connection.readyState === 0) {
+    await connectDB()
+  }
+}
+
+const updateRatings = async (
+  k = DEFAULT_K,
+  decayDays = DEFAULT_DECAY_DAYS,
+  syncHorses = true,
+  { disconnect = false } = {}
+) => {
+  await ensureConnection()
 
   const meta = await RatingMeta.findById('elo')
   const lastDate = meta?.lastProcessedRaceDate || new Date(0)
@@ -121,15 +133,17 @@ const updateRatings = async (k = DEFAULT_K, decayDays = DEFAULT_DECAY_DAYS, sync
   const lastRaceDate = races.length > 0 ? races[races.length - 1].raceDate : lastDate
   await RatingMeta.updateOne({ _id: 'elo' }, { lastProcessedRaceDate: lastRaceDate }, { upsert: true })
 
-  await mongoose.disconnect()
+  if (disconnect && mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect()
+  }
 
   console.log(`Processed ${raceCount} races, updated ${ratings.size} horses`)
 }
 
-if (process.argv[1] === import.meta.url) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const k = process.env.ELO_K ? Number(process.env.ELO_K) : DEFAULT_K
   const decayDays = process.env.RATING_DECAY_DAYS ? Number(process.env.RATING_DECAY_DAYS) : DEFAULT_DECAY_DAYS
-  updateRatings(k, decayDays).then(() => {
+  updateRatings(k, decayDays, true, { disconnect: true }).then(() => {
     console.log('Horse ratings updated')
     process.exit(0)
   }).catch(err => {

@@ -36,6 +36,10 @@ const getHorsesFromRace = async (raceId) => {
 
   try {
     const horses = await Raceday.aggregate(horseIdPipeline).exec();
+    if (!horses || horses.length === 0) {
+      console.warn(`No horses found for raceId ${raceId}`)
+      return []
+    }
     return horses.map(horse => ({ id: horse.id, programNumber: horse.programNumber, driver: horse.driver }));
 
   } catch (err) {
@@ -48,6 +52,9 @@ const getHorsesFromRace = async (raceId) => {
 
 const aggregateHorses = async (raceId, weights = getWeights()) => {
     const horses = await getHorsesFromRace(raceId)
+    if (!horses || horses.length === 0) {
+        return []
+    }
     try {
         const aggregatedResult = await Horse.aggregate([
         { "$match": { "id": { "$in": horses.map(horse => horse.id) } } },
@@ -194,6 +201,10 @@ const aggregateHorses = async (raceId, weights = getWeights()) => {
             }
         }
         ]).exec()
+        if (!aggregatedResult) {
+            console.warn(`No aggregated data for raceId ${raceId}`)
+            return []
+        }
 
         // Attach program numbers and calculate final scores
         aggregatedResult.forEach(horse => {

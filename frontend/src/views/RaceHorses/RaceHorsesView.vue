@@ -213,7 +213,6 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
-            { title: 'Score', key: 'score' },
             { key: 'horseWithdrawn' },
         ]
 
@@ -223,7 +222,6 @@ export default {
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Name', key: 'name' },
             { title: 'Elo Rating', key: 'rating' },
-            { title: 'Score', key: 'score' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
             { title: 'Consistency Score', key: 'consistencyScore' },
