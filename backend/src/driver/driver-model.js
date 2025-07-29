@@ -23,6 +23,7 @@ const ResultSchema = new mongoose.Schema({
 const DriverSchema = new mongoose.Schema({
   _id: { type: Number, required: true },
   name: { type: String, default: '' },
+  elo: { type: Number, default: 0 },
   results: [ResultSchema]
 }, { timestamps: true })
 

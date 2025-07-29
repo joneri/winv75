@@ -161,3 +161,14 @@ yarn build-drivers
 ```
 
 The script is idempotent and rebuilds all driver documents from the current horse results.
+
+### Updating Driver Elo Ratings
+
+Drivers receive an Elo rating calculated from their race placements. Run the update script to recompute scores:
+
+```bash
+cd backend
+yarn update-driver-elo
+```
+
+The cron job in the backend automatically recalculates driver ratings once per day.
