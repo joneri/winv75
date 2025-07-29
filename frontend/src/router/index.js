@@ -3,6 +3,7 @@ import RacedayInputView from '@/views/raceday-input/RacedayInputView.vue'
 import RacedayView from '@/views/raceday/RacedayView.vue'
 import RaceHorsesView from '@/views/race/RaceHorsesView.vue'
 import DevRatingsView from '@/views/DevRatingsView.vue'
+import AdminView from '@/views/Admin/AdminView.vue'
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     path: '/dev/ratings',
     name: 'DevRatings',
     component: DevRatingsView
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: AdminView
   }
 ]
 

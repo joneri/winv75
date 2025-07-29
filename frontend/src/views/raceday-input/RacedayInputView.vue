@@ -31,6 +31,9 @@
       </template>
       <div ref="infiniteScrollTrigger" class="infinite-scroll-trigger"></div>
     </v-list>
+    <v-row justify="center" class="mt-2" v-if="hasMore && !loading">
+      <v-btn color="primary" @click="loadMore">Load more</v-btn>
+    </v-row>
     <v-alert v-if="raceDays.length === 0" type="info" class="mt-4">No racedays found.</v-alert>
     <v-progress-linear
       v-if="loading && hasMore"
@@ -77,6 +80,16 @@ export default {
     const listContainer = ref(null);
 
 
+    const loadMore = async () => {
+      const rootEl = listContainer.value?.$el ?? listContainer.value;
+      if (!(rootEl instanceof HTMLElement)) return;
+      const offset = rootEl.scrollHeight - rootEl.scrollTop;
+      await store.dispatch('racedayInput/fetchRacedays');
+      await nextTick();
+      rootEl.scrollTop = rootEl.scrollHeight - offset;
+    };
+
+
     const fetchRacedays = () => {
       if (fetchDate.value) {
         store.dispatch('racedayInput/fetchRacedaysFromAPI', fetchDate.value);
@@ -108,7 +121,7 @@ export default {
         };
         observer = new IntersectionObserver((entries) => {
           if (entries[0].isIntersecting && hasMore.value) {
-            store.dispatch('racedayInput/fetchRacedays');
+            loadMore();
           }
         }, options);
         observer.observe(infiniteScrollTrigger.value);
@@ -133,7 +146,8 @@ export default {
       hoverText,
       infiniteScrollTrigger,
       listContainer,
-      hasMore
+      hasMore,
+      loadMore
     };
   }
 }

@@ -3,7 +3,6 @@
         <v-row>
             <v-col>
                 <button @click="navigateToRaceDay(raceDayId)">Go to Race Day</button>
-                <button class="ml-4" @click="manualUpdateRatings">Update Ratings</button>
             </v-col>
         </v-row>
         <v-row>
@@ -67,7 +66,7 @@ import {
     fetchHorseScores,
     triggerRatingsUpdate
 } from '@/views/race/services/RaceHorsesService.js'
-import RacedayService from '@/views/raceday/services/RacedayService.js'
+import RacedayService from '@/views/race/services/RacedayService.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -99,13 +98,6 @@ export default {
             router.push(`/raceday/${raceDayId}`)
         }
 
-        const manualUpdateRatings = async () => {
-            try {
-                await triggerRatingsUpdate()
-            } catch (error) {
-                console.error('Manual rating update failed', error)
-            }
-        }
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
         const rankHorses = async () => {
@@ -297,7 +289,6 @@ export default {
             racedayTrackName,
             racedayTrackCode,
             navigateToRaceDay,
-            manualUpdateRatings,
             currentRace,
             allHorsesUpdated,
             items,

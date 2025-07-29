@@ -4,6 +4,7 @@
         <v-toolbar-title>Navbar</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn to="/" text>Home</v-btn>
+        <v-btn to="/admin" text>Admin</v-btn>
     </v-app-bar>
 </template>
 
