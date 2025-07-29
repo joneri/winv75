@@ -29,14 +29,10 @@
           </v-list-item>
           <v-divider></v-divider>
       </template>
-      <div ref="infiniteScrollTrigger" class="infinite-scroll-trigger"></div>
     </v-list>
-    <v-row justify="center" class="mt-2" v-if="hasMore && !loading">
-      <v-btn color="primary" @click="loadMore">Load more</v-btn>
-    </v-row>
     <v-alert v-if="raceDays.length === 0" type="info" class="mt-4">No racedays found.</v-alert>
     <v-progress-linear
-      v-if="loading && hasMore"
+      v-if="loading"
       indeterminate
       color="primary"
       height="3"
@@ -53,7 +49,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watchEffect, nextTick, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useDateFormat } from '@/composables/useDateFormat.js';
@@ -73,21 +69,9 @@ export default {
 
     const error = computed(() => store.state.racedayInput.error);
     const raceDays = computed(() => store.state.racedayInput.raceDays);
-    const loading = computed(() => store.state.racedayInput.loading || store.state.racedayInput.listLoading);
+    const loading = computed(() => store.state.racedayInput.loading);
     const successMessage = computed(() => store.state.racedayInput.successMessage);
-    const hasMore = computed(() => store.state.racedayInput.hasMore);
-    const infiniteScrollTrigger = ref(null);
     const listContainer = ref(null);
-
-
-    const loadMore = async () => {
-      const rootEl = listContainer.value?.$el ?? listContainer.value;
-      if (!(rootEl instanceof HTMLElement)) return;
-      const offset = rootEl.scrollHeight - rootEl.scrollTop;
-      await store.dispatch('racedayInput/fetchRacedays');
-      await nextTick();
-      rootEl.scrollTop = rootEl.scrollHeight - offset;
-    };
 
 
     const fetchRacedays = () => {
@@ -107,29 +91,8 @@ export default {
       }
     });
 
-    let observer;
-
-    onMounted(async () => {
-      store.dispatch('racedayInput/fetchRacedays', { reset: true });
-      // Wait for DOM update to access element refs
-      await nextTick();
-      const rootEl = listContainer.value?.$el ?? listContainer.value;
-      if (infiniteScrollTrigger.value && rootEl instanceof HTMLElement) {
-        const options = {
-          root: rootEl,
-          rootMargin: '0px 0px 200px 0px'
-        };
-        observer = new IntersectionObserver((entries) => {
-          if (entries[0].isIntersecting && hasMore.value) {
-            loadMore();
-          }
-        }, options);
-        observer.observe(infiniteScrollTrigger.value);
-      }
-    });
-
-    onBeforeUnmount(() => {
-      if (observer) observer.disconnect();
+    onMounted(() => {
+      store.dispatch('racedayInput/fetchRacedays');
     });
 
     return {
@@ -144,10 +107,7 @@ export default {
       navigateToRaceDay,
       hoverBg,
       hoverText,
-      infiniteScrollTrigger,
-      listContainer,
-      hasMore,
-      loadMore
+      listContainer
     };
   }
 }
@@ -163,9 +123,6 @@ export default {
   .raceday-list {
     max-height: 80vh;
     overflow-y: auto;
-  }
-  .infinite-scroll-trigger {
-    height: 1px;
   }
   .clickable-row {
     cursor: pointer;
