@@ -66,8 +66,8 @@ import {
     fetchRaceFromRaceId,
     fetchHorseScores,
     triggerRatingsUpdate
-} from '@/views/RaceHorses/services/RaceHorsesService.js'
-import RacedayService from '@/views/Raceday/services/RacedayService.js'
+} from '@/views/race/services/RaceHorsesService.js'
+import RacedayService from '@/views/raceday/services/RacedayService.js'
 
 export default {
     name: 'RaceHorsesView',
