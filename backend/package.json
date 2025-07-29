@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "update-ratings": "node src/horse/update-elo-ratings.js"
+    "update-ratings": "node src/horse/update-elo-ratings.js",
+    "build-drivers": "node src/driver/build-driver-collection.js"
   },
   "keywords": [],
   "author": "",
