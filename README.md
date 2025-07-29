@@ -110,6 +110,18 @@ The ranking output also includes data such as favorite track, driver and start
 position, as well as the average odds when the horse finished in the top three.
 These values are currently informational only and do not affect the score.
 
+## Folder Naming Convention
+
+Both the back‑end and front‑end organize source files under singular, lower‑case folders.
+Core modules share the same names across the projects to keep imports predictable:
+
+- `horse`
+- `race`
+- `raceday`
+- `rating`
+
+Using the same folder names makes it clear where new functionality belongs and simplifies refactoring.
+
 ## Building for production
 
 To create optimized builds:
@@ -131,7 +143,7 @@ The back‑end runs a cron job that recalculates Elo ratings every hour using
 synced to the `horses` documents. The cron job can also be triggered manually via
 
 ```
-POST /api/elo/update
+POST /api/rating/update
 ```
 
 which is helpful after importing new race results. The exported

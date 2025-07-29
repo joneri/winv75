@@ -3,7 +3,7 @@ import connectDB from '../config/db.js'
 import Horse from './horse-model.js'
 import HorseRating from './horse-rating-model.js'
 import RatingMeta from './rating-meta-model.js'
-import { expectedScore } from '../elo/elo-utils.js'
+import { expectedScore } from '../rating/elo-utils.js'
 import { fileURLToPath } from 'url'
 
 const DEFAULT_K = 20

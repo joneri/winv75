@@ -25,7 +25,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import RaceCardComponent from './components/RaceCardComponent.vue'
-import RacedayService from '@/views/Raceday/services/RacedayService.js'
+import RacedayService from '@/views/raceday/services/RacedayService.js'
 import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
 

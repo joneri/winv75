@@ -63,9 +63,10 @@ import { useStore } from 'vuex'
 import {
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
-    fetchHorseScores
-} from '@/views/RaceHorses/services/RaceHorsesService.js'
-import RacedayService from '@/views/Raceday/services/RacedayService.js'
+    fetchHorseScores,
+    triggerRatingsUpdate
+} from '@/views/race/services/RaceHorsesService.js'
+import RacedayService from '@/views/raceday/services/RacedayService.js'
 
 export default {
     name: 'RaceHorsesView',

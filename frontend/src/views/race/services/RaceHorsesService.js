@@ -87,7 +87,7 @@ const fetchHorseScores = async (ids = []) => {
 
 const triggerRatingsUpdate = async () => {
     try {
-        await axios.post(`${import.meta.env.VITE_BE_URL}/api/elo/update`)
+        await axios.post(`${import.meta.env.VITE_BE_URL}/api/rating/update`)
     } catch (error) {
         console.error('Failed to trigger ratings update', error)
         throw error
