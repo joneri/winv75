@@ -1,6 +1,6 @@
 import express from 'express'
 import raceService from './race-service.js'
-import eloService from '../elo/elo-service.js'
+import eloService from '../rating/elo-service.js'
 import { validateNumericParam } from '../middleware/validators.js'
 
 const router = express.Router()

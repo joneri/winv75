@@ -7,7 +7,7 @@ import connectDB from './config/db.js'
 import horseRoutes from './horse/horse-routes.js'
 import racedayRoutes from './raceday/raceday-routes.js'
 import raceRoutes from './race/race-routes.js'
-import eloRoutes from './elo/elo-routes.js'
+import eloRoutes from './rating/elo-routes.js'
 import { startRatingsCronJob } from './rating/ratings-scheduler.js'
 
 // Middleware
@@ -31,7 +31,7 @@ app.get('/', (req, res) => {
 app.use('/api/horses', horseRoutes)
 app.use('/api/raceday', racedayRoutes)
 app.use('/api/race', raceRoutes)
-app.use('/api/elo', eloRoutes)
+app.use('/api/rating', eloRoutes)
 
 // 404 handler
 app.use((req, res) => {

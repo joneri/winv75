@@ -30,7 +30,7 @@ import { toRefs, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { getContrastColor } from '@/utils/colors'
-import { updateHorse, setEarliestUpdatedHorseTimestamp } from '@/views/RaceHorses/services/RaceHorsesService.js'
+import { updateHorse, setEarliestUpdatedHorseTimestamp } from '@/views/race/services/RaceHorsesService.js'
 
 export default {
   props: {
