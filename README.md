@@ -150,3 +150,14 @@ which is helpful after importing new race results. The exported
 `startRatingsCronJob` function is invoked automatically when the Express server
 starts.
 
+## Driver Collection
+
+A helper script aggregates race results for each driver into its own `drivers` collection.
+Run it after importing horse data:
+
+```bash
+cd backend
+yarn build-drivers
+```
+
+The script is idempotent and rebuilds all driver documents from the current horse results.
