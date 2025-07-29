@@ -57,7 +57,7 @@ const processRace = (horsePlacements, ratings, k, raceDate, decayDays) => {
   }
 }
 
-const updateRatings = async (k = DEFAULT_K, decayDays = DEFAULT_DECAY_DAYS) => {
+const updateRatings = async (k = DEFAULT_K, decayDays = DEFAULT_DECAY_DAYS, syncHorses = true) => {
   await connectDB()
 
   const meta = await RatingMeta.findById('elo')
@@ -100,6 +100,7 @@ const updateRatings = async (k = DEFAULT_K, decayDays = DEFAULT_DECAY_DAYS) => {
   }
 
   const bulk = HorseRating.collection.initializeUnorderedBulkOp()
+  const horseBulk = Horse.collection.initializeUnorderedBulkOp()
   for (const [horseId, info] of ratings.entries()) {
     bulk.find({ horseId: Number(horseId) }).upsert().updateOne({
       $set: {
@@ -108,8 +109,14 @@ const updateRatings = async (k = DEFAULT_K, decayDays = DEFAULT_DECAY_DAYS) => {
         lastUpdated: new Date()
       }
     })
+    if (syncHorses) {
+      horseBulk.find({ id: Number(horseId) }).updateOne({
+        $set: { rating: info.rating }
+      })
+    }
   }
   if (bulk.length > 0) await bulk.execute()
+  if (syncHorses && horseBulk.length > 0) await horseBulk.execute()
 
   const lastRaceDate = races.length > 0 ? races[races.length - 1].raceDate : lastDate
   await RatingMeta.updateOne({ _id: 'elo' }, { lastProcessedRaceDate: lastRaceDate }, { upsert: true })

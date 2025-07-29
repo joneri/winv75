@@ -126,12 +126,15 @@ The compiled static files will be in `frontend/dist` and can be served by any st
 
 ## Scheduled Ratings Update
 
-The back‑end runs a cron job that refreshes horse ratings every hour. It looks for
-records in the `HorseRating` collection where `lastUpdated` is more than 24 hours
-old. For each outdated entry it fetches recent race results and updates the
-rating using `updateRatingsForRace`.
+The back‑end runs a cron job that recalculates Elo ratings every hour using
+`update-elo-ratings.js`. Ratings are stored in the `horse_ratings` collection and
+synced to the `horses` documents. The cron job can also be triggered manually via
 
-The job starts automatically when the Express server launches but the exported
-`startRatingsCronJob` function can also be invoked from another process if you
-prefer running it separately.
+```
+POST /api/elo/update
+```
+
+which is helpful after importing new race results. The exported
+`startRatingsCronJob` function is invoked automatically when the Express server
+starts.
 

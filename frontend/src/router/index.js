@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import RacedayInputView from '@/views/RacedayInput/RacedayInputView.vue'
 import RacedayView from '@/views/Raceday/RacedayView.vue'
 import RaceHorsesView from '@/views/RaceHorses/RaceHorsesView.vue'
+import DevRatingsView from '@/views/DevRatingsView.vue'
 
 const routes = [
   {
@@ -22,10 +23,15 @@ const routes = [
     props: true
   },
   {
-    path: '/race/:raceId', 
+    path: '/race/:raceId',
     name: 'race',
     component: RaceHorsesView,
     props: true
+  },
+  {
+    path: '/dev/ratings',
+    name: 'DevRatings',
+    component: DevRatingsView
   }
 ]
 

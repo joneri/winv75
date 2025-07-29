@@ -3,6 +3,7 @@
         <v-row>
             <v-col>
                 <button @click="navigateToRaceDay(raceDayId)">Go to Race Day</button>
+                <button class="ml-4" @click="manualUpdateRatings">Update Ratings</button>
             </v-col>
         </v-row>
         <v-row>
@@ -63,7 +64,8 @@ import { useStore } from 'vuex'
 import {
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
-    fetchHorseScores
+    fetchHorseScores,
+    triggerRatingsUpdate
 } from '@/views/RaceHorses/services/RaceHorsesService.js'
 import RacedayService from '@/views/Raceday/services/RacedayService.js'
 
@@ -95,6 +97,14 @@ export default {
             const segments = currentPath.split('/')
             const raceDayId = segments[2]
             router.push(`/raceday/${raceDayId}`)
+        }
+
+        const manualUpdateRatings = async () => {
+            try {
+                await triggerRatingsUpdate()
+            } catch (error) {
+                console.error('Manual rating update failed', error)
+            }
         }
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
@@ -148,8 +158,12 @@ export default {
                     scores = await fetchHorseScores(horseIds)
                 }
                 const scoreMap = {}
-                scores.forEach(r => { scoreMap[r.id] = r.score })
-                responseData.horses = (responseData.horses || []).map(h => ({ ...h, score: scoreMap[h.id] }))
+                const ratingMap = {}
+                scores.forEach(r => { 
+                    scoreMap[r.id] = r.score 
+                    ratingMap[r.id] = r.rating
+                })
+                responseData.horses = (responseData.horses || []).map(h => ({ ...h, score: scoreMap[h.id], rating: ratingMap[h.id] }))
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
 
@@ -208,6 +222,7 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Name', key: 'name' },
+            { title: 'Elo Rating', key: 'rating' },
             { title: 'Score', key: 'score' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
@@ -284,6 +299,7 @@ export default {
             racedayTrackName,
             racedayTrackCode,
             navigateToRaceDay,
+            manualUpdateRatings,
             currentRace,
             allHorsesUpdated,
             items,
