@@ -16,6 +16,8 @@ const ensureConnection = async () => {
 
 const processRace = (placements, ratings, k) => {
   const ids = Object.keys(placements)
+  const n = ids.length
+  if (n < 2) return
   const deltas = {}
   for (let i = 0; i < ids.length; i++) {
     for (let j = i + 1; j < ids.length; j++) {
@@ -42,7 +44,7 @@ const processRace = (placements, ratings, k) => {
   }
   for (const id of ids) {
     const base = ratings.get(id) || { rating: DEFAULT_RATING, races: 0 }
-    base.rating += deltas[id] || 0
+    base.rating += (deltas[id] || 0) / (n - 1)
     base.races += 1
     ratings.set(id, base)
   }

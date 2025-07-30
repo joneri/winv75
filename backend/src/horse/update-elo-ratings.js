@@ -24,6 +24,8 @@ const getExperienceMultiplier = (races) => {
 const processRace = (horsePlacements, ratings, k, raceDate, decayDays) => {
   const deltas = {}
   const ids = Object.keys(horsePlacements)
+  const n = ids.length
+  if (n < 2) return
   const weight = getRecencyWeight(raceDate, decayDays)
   for (let i = 0; i < ids.length; i++) {
     for (let j = i + 1; j < ids.length; j++) {
@@ -52,7 +54,7 @@ const processRace = (horsePlacements, ratings, k, raceDate, decayDays) => {
   }
   for (const id of ids) {
     const base = ratings.get(id) || { rating: 1000, numberOfRaces: 0 }
-    base.rating += deltas[id] || 0
+    base.rating += (deltas[id] || 0) / (n - 1)
     base.numberOfRaces += 1
     ratings.set(id, base)
   }
