@@ -16,6 +16,62 @@ const ensureConnection = async () => {
   }
 }
 
+const processRace = (placements, ratings, k) => {
+  const ids = Object.keys(placements)
+  const deltas = {}
+  const priorRaces = {}
+
+  for (const id of ids) {
+    priorRaces[id] = (ratings.get(id) || { races: 0 }).races
+  }
+
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = i + 1; j < ids.length; j++) {
+      const idA = ids[i]
+      const idB = ids[j]
+      const placeA = placements[idA]
+      const placeB = placements[idB]
+      if (placeA == null || placeB == null) continue
+
+      const entryA = ratings.get(idA) || { rating: DEFAULT_RATING, races: 0 }
+      const entryB = ratings.get(idB) || { rating: DEFAULT_RATING, races: 0 }
+      const ratingA = entryA.rating
+      const ratingB = entryB.rating
+
+      const provisionalA = priorRaces[idA] < MIN_RACES
+      const provisionalB = priorRaces[idB] < MIN_RACES
+
+      let outcomeA = 0.5
+      if (placeA < placeB) outcomeA = 1
+      else if (placeA > placeB) outcomeA = 0
+
+      const expectedA = expectedScore(ratingA, ratingB)
+      const expectedB = 1 - expectedA
+      const outcomeB = 1 - outcomeA
+      const deltaA = k * (outcomeA - expectedA)
+      const deltaB = k * (outcomeB - expectedB)
+
+      if (!provisionalA && !provisionalB) {
+        deltas[idA] = (deltas[idA] || 0) + deltaA
+        deltas[idB] = (deltas[idB] || 0) + deltaB
+      } else if (provisionalA && !provisionalB) {
+        deltas[idA] = (deltas[idA] || 0) + deltaA
+      } else if (!provisionalA && provisionalB) {
+        deltas[idB] = (deltas[idB] || 0) + deltaB
+      } else {
+        deltas[idA] = (deltas[idA] || 0) + deltaA
+        deltas[idB] = (deltas[idB] || 0) + deltaB
+      }
+    }
+  }
+
+  for (const id of ids) {
+    const base = ratings.get(id) || { rating: DEFAULT_RATING, races: 0 }
+    base.rating += deltas[id] || 0
+    base.races += 1
+    ratings.set(id, base)
+  }
+}
 
 const updateDriverEloRatings = async (k = DEFAULT_K, { disconnect = false } = {}) => {
   await ensureConnection()
