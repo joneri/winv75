@@ -107,8 +107,12 @@ export default {
 
         const displayPrizeMoney = computed(() => {
           const prize = currentRace.value?.totalPrizeMoney;
-          if (typeof prize === 'number') {
+          if (typeof prize === 'number' && prize > 0) {
             return `${prize.toLocaleString('sv-SE')} kr`;
+          }
+          const prizeObj = currentRace.value?.propTexts?.find(pt => pt.typ === 'P');
+          if (prizeObj?.text) {
+            return prizeObj.text.replace(/\./g, ' ');
           }
           return 'N/A';
         });
