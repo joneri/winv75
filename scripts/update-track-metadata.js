@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from '../backend/node_modules/mongoose/index.js'
 import { fileURLToPath } from 'url'
 import connectDB from '../backend/src/config/db.js'
 import trackService from '../backend/src/track/track-service.js'
