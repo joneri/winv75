@@ -4,6 +4,7 @@ import horseRanking from './horse-ranking.js'
 import { calculateHorseScore } from './horse-score.js'
 import { getWeights } from '../config/scoring.js'
 import HorseRating from './horse-rating-model.js'
+import trackService from '../track/track-service.js'
 
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
@@ -63,6 +64,21 @@ const upsertHorseData = async (horseId) => {
         console.error('Error in upsertHorseData:', error)
         throw error
     }
+
+    const winnerTracks = new Set()
+    for (const res of horseData.results) {
+        if (res.placement?.sortValue === 1 && res.trackCode) {
+            winnerTracks.add(res.trackCode)
+        }
+    }
+    for (const code of winnerTracks) {
+        try {
+            await trackService.updateTrackStats(code)
+        } catch (err) {
+            console.error(`Failed to update track stats for ${code}:`, err)
+        }
+    }
+
     return horse
 }
 
