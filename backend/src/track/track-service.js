@@ -30,9 +30,15 @@ const computeStatsForTrack = async (trackCode) => {
       fastestSort = w.timeSort
       fastestDisplay = w.timeDisplay
     }
-    if (typeof w.startPos === 'number' && w.startPos !== 99) {
-      startCounts[w.startPos] = (startCounts[w.startPos] || 0) + 1
+    const pos = w.startPos
+    // Exclude invalid values such as 99 (no draw) and anything outside 1-20
+    if (Number.isInteger(pos) && pos >= 1 && pos <= 20) {
+      startCounts[pos] = (startCounts[pos] || 0) + 1
     }
+  }
+
+  if (Object.keys(startCounts).length === 0) {
+    console.warn(`No valid starting positions found for track ${trackCode}`)
   }
 
   let favPos = null
@@ -44,10 +50,11 @@ const computeStatsForTrack = async (trackCode) => {
     }
   }
 
-  return {
-    trackRecord: fastestDisplay,
-    favouriteStartingPosition: favPos
+  const result = { trackRecord: fastestDisplay }
+  if (favPos !== null) {
+    result.favouriteStartingPosition = favPos
   }
+  return result
 }
 
 const getTrackByCode = async (trackCode) => {
@@ -57,11 +64,12 @@ const getTrackByCode = async (trackCode) => {
 const updateTrackStats = async (trackCode) => {
   const stats = await computeStatsForTrack(trackCode)
   if (!stats.trackRecord && stats.favouriteStartingPosition == null) return
+  const update = { trackRecord: stats.trackRecord }
+  if (stats.favouriteStartingPosition != null) {
+    update.favouriteStartingPosition = stats.favouriteStartingPosition
+  }
   await Track.updateOne({ trackCode }, {
-    $set: {
-      trackRecord: stats.trackRecord,
-      favouriteStartingPosition: stats.favouriteStartingPosition
-    }
+    $set: update
   }, { upsert: true })
 }
 
