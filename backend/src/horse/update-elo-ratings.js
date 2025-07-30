@@ -82,7 +82,13 @@ const updateRatings = async (
         horseId: '$id',
         raceId: '$results.raceInformation.raceId',
         raceDate: '$results.raceInformation.date',
-        placement: '$results.placement.sortValue',
+        placement: {
+          $cond: [
+            { $eq: ['$results.placement.sortValue', 99] },
+            null,
+            '$results.placement.sortValue'
+          ]
+        },
         withdrawn: '$results.withdrawn'
     } },
     { $match: { withdrawn: { $ne: true }, raceDate: { $gt: lastDate } } },
@@ -106,7 +112,9 @@ const updateRatings = async (
   for (const race of races) {
     const placements = {}
     for (const h of race.horses) {
-      placements[h.horseId] = h.placement
+      if (h.placement != null) {
+        placements[h.horseId] = h.placement
+      }
     }
     processRace(placements, ratings, k, race.raceDate, decayDays)
     raceCount++

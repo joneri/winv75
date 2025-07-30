@@ -67,7 +67,9 @@ const updateDriverEloRatings = async (k = DEFAULT_K, { disconnect = false } = {}
         race = { date: res.date, placements: {} }
         races.set(raceId, race)
       }
-      race.placements[driverId] = res.placement?.sortValue
+      const placement = res.placement?.sortValue
+      if (typeof placement !== 'number' || placement === 99 || placement <= 0) continue
+      race.placements[driverId] = placement
       seenDrivers.add(driverId)
     }
   }
