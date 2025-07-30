@@ -10,10 +10,9 @@
             <h1>Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}</h1>
             <div v-if="racedayTrackName" class="text-h6">
               {{ racedayTrackName }}
-              <span v-if="raceStartMethod">
-                – {{ raceStartMethod }}
-                <span v-if="raceStartMethodCode"> ({{ raceStartMethodCode }})</span>
-              </span>
+            </div>
+            <div class="race-meta text-subtitle-1">
+              {{ raceMetaString }}
             </div>
           </v-col>
         </v-row>
@@ -87,6 +86,35 @@ export default {
           if (raceStartMethod.value === 'Autostart') return 'A';
           if (raceStartMethod.value === 'Voltstart') return 'V';
           return '';
+        });
+
+        const displayStartMethod = computed(() => {
+          return currentRace.value?.startMethod || raceStartMethod.value || 'N/A';
+        });
+
+        const displayDistance = computed(() => {
+          const d = currentRace.value?.distance;
+          return d ? `${d} m` : 'N/A';
+        });
+
+        const displayRaceType = computed(() => {
+          if (currentRace.value?.propositionName) return currentRace.value.propositionName;
+          const p1 = currentRace.value?.propTexts?.[0]?.text || '';
+          const p2 = currentRace.value?.propTexts?.[1]?.text || '';
+          const combined = `${p1} ${p2}`.trim();
+          return combined || 'N/A';
+        });
+
+        const displayPrizeMoney = computed(() => {
+          const prize = currentRace.value?.totalPrizeMoney;
+          if (typeof prize === 'number') {
+            return `${prize.toLocaleString('sv-SE')} kr`;
+          }
+          return 'N/A';
+        });
+
+        const raceMetaString = computed(() => {
+          return `Start: ${displayStartMethod.value} | Distance: ${displayDistance.value} | Type: ${displayRaceType.value} | Prize: ${displayPrizeMoney.value}`;
         });
         const store = useStore()
         const route = useRoute()
@@ -297,6 +325,7 @@ export default {
             rankedHorses,
             raceStartMethod,
             raceStartMethodCode,
+            raceMetaString,
         }
     },
 }
@@ -305,5 +334,10 @@ export default {
 <style>
 .tabbed-view-container {
     margin-top: 64px;
+}
+
+.race-meta {
+    margin-top: 4px;
+    margin-bottom: 8px;
 }
 </style>
