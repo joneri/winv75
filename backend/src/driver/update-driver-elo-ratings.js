@@ -2,9 +2,11 @@ import mongoose from 'mongoose'
 import { fileURLToPath } from 'url'
 import connectDB from '../config/db.js'
 import Driver from './driver-model.js'
-import { expectedScore } from '../rating/elo-utils.js'
+import {
+  processRace,
+  DEFAULT_K
+} from '../rating/elo-engine.js'
 
-const DEFAULT_K = 20
 const DEFAULT_RATING = 1400
 const MIN_RACES = 5
 
@@ -30,15 +32,19 @@ const processRace = (placements, ratings, k) => {
       const placeA = placements[idA]
       const placeB = placements[idB]
       if (placeA == null || placeB == null) continue
+
       const entryA = ratings.get(idA) || { rating: DEFAULT_RATING, races: 0 }
       const entryB = ratings.get(idB) || { rating: DEFAULT_RATING, races: 0 }
       const ratingA = entryA.rating
       const ratingB = entryB.rating
+
       const provisionalA = priorRaces[idA] < MIN_RACES
       const provisionalB = priorRaces[idB] < MIN_RACES
+
       let outcomeA = 0.5
       if (placeA < placeB) outcomeA = 1
       else if (placeA > placeB) outcomeA = 0
+
       const expectedA = expectedScore(ratingA, ratingB)
       const expectedB = 1 - expectedA
       const outcomeB = 1 - outcomeA
@@ -97,7 +103,11 @@ const updateDriverEloRatings = async (k = DEFAULT_K, { disconnect = false } = {}
   const ratings = new Map()
 
   for (const race of raceList) {
-    processRace(race.placements, ratings, k)
+    processRace(race.placements, ratings, {
+      k,
+      defaultRating: DEFAULT_RATING,
+      raceDate: race.date
+    })
   }
 
   const bulk = Driver.collection.initializeUnorderedBulkOp()

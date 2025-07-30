@@ -3,60 +3,12 @@ import connectDB from '../config/db.js'
 import Horse from './horse-model.js'
 import HorseRating from './horse-rating-model.js'
 import RatingMeta from './rating-meta-model.js'
-import { expectedScore } from '../rating/elo-utils.js'
 import { fileURLToPath } from 'url'
-
-const DEFAULT_K = 20
-const DEFAULT_DECAY_DAYS = 365
-
-const getRecencyWeight = (date, decayDays = DEFAULT_DECAY_DAYS) => {
-  const diff = Date.now() - new Date(date).getTime()
-  const days = diff / (1000 * 60 * 60 * 24)
-  return Math.exp(-days / decayDays)
-}
-
-const getExperienceMultiplier = (races) => {
-  if (races < 5) return 1.5
-  if (races < 20) return 1.2
-  return 1
-}
-
-const processRace = (horsePlacements, ratings, k, raceDate, decayDays) => {
-  const deltas = {}
-  const ids = Object.keys(horsePlacements)
-  const weight = getRecencyWeight(raceDate, decayDays)
-  for (let i = 0; i < ids.length; i++) {
-    for (let j = i + 1; j < ids.length; j++) {
-      const idA = ids[i]
-      const idB = ids[j]
-      const placeA = horsePlacements[idA]
-      const placeB = horsePlacements[idB]
-      if (placeA == null || placeB == null) continue
-      const entryA = ratings.get(idA) || { rating: 1000, numberOfRaces: 0 }
-      const entryB = ratings.get(idB) || { rating: 1000, numberOfRaces: 0 }
-      const ratingA = entryA.rating
-      const ratingB = entryB.rating
-      let outcomeA = 0.5
-      if (placeA < placeB) outcomeA = 1
-      else if (placeA > placeB) outcomeA = 0
-      const expectedA = expectedScore(ratingA, ratingB)
-      const expectedB = 1 - expectedA
-      const outcomeB = 1 - outcomeA
-      const factorA = getExperienceMultiplier(entryA.numberOfRaces)
-      const factorB = getExperienceMultiplier(entryB.numberOfRaces)
-      const deltaA = weight * k * factorA * (outcomeA - expectedA)
-      const deltaB = weight * k * factorB * (outcomeB - expectedB)
-      deltas[idA] = (deltas[idA] || 0) + deltaA
-      deltas[idB] = (deltas[idB] || 0) + deltaB
-    }
-  }
-  for (const id of ids) {
-    const base = ratings.get(id) || { rating: 1000, numberOfRaces: 0 }
-    base.rating += deltas[id] || 0
-    base.numberOfRaces += 1
-    ratings.set(id, base)
-  }
-}
+import {
+  processRace,
+  DEFAULT_K,
+  DEFAULT_DECAY_DAYS
+} from '../rating/elo-engine.js'
 
 const ensureConnection = async () => {
   if (mongoose.connection.readyState === 0) {
@@ -116,7 +68,11 @@ const updateRatings = async (
         placements[h.horseId] = h.placement
       }
     }
-    processRace(placements, ratings, k, race.raceDate, decayDays)
+    processRace(placements, ratings, {
+      k,
+      raceDate: race.raceDate,
+      decayDays
+    })
     raceCount++
   }
 
