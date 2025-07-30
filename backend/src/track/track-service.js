@@ -30,7 +30,7 @@ const computeStatsForTrack = async (trackCode) => {
       fastestSort = w.timeSort
       fastestDisplay = w.timeDisplay
     }
-    if (typeof w.startPos === 'number') {
+    if (typeof w.startPos === 'number' && w.startPos !== 99) {
       startCounts[w.startPos] = (startCounts[w.startPos] || 0) + 1
     }
   }
