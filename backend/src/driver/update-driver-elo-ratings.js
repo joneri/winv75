@@ -31,6 +31,8 @@ const ensureConnection = async () => {
 
 const processRace = (placements, ratings, k, raceDate, decayDays) => {
   const ids = Object.keys(placements)
+  const n = ids.length
+  if (n < 2) return
   const deltas = {}
 const weight = getRecencyWeight(raceDate, decayDays)
 
@@ -83,7 +85,7 @@ if (!provisionalA && !provisionalB) {
 
   for (const id of ids) {
     const base = ratings.get(id) || { rating: DEFAULT_RATING, races: 0 }
-    base.rating += deltas[id] || 0
+    base.rating += (deltas[id] || 0) / (n - 1)
     base.races += 1
     ratings.set(id, base)
   }
