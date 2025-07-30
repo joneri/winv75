@@ -14,6 +14,9 @@
             <div class="race-meta text-subtitle-1">
               {{ raceMetaString }}
             </div>
+            <div class="track-meta text-subtitle-2">
+              {{ trackMetaString }}
+            </div>
           </v-col>
         </v-row>
         <v-row>
@@ -66,6 +69,7 @@ import {
     triggerRatingsUpdate
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
+import TrackService from '@/views/race/services/TrackService.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -120,6 +124,25 @@ export default {
         const raceMetaString = computed(() => {
           return `Start: ${displayStartMethod.value} | Distance: ${displayDistance.value} | Type: ${displayRaceType.value} | Prize: ${displayPrizeMoney.value}`;
         });
+
+        const displayTrackLength = computed(() => {
+          const len = trackMeta.value?.trackLength
+          return typeof len === 'number' ? `${len} m` : 'N/A'
+        });
+
+        const displayTrackRecord = computed(() => {
+          return trackMeta.value?.trackRecord || 'N/A'
+        });
+
+        const displayFavStartPos = computed(() => {
+          const pos = trackMeta.value?.favouriteStartingPosition
+          return typeof pos === 'number' ? pos : 'N/A'
+        });
+
+        const trackMetaString = computed(() => {
+          const name = getTrackName(racedayTrackCode.value)
+          return `Track: ${name} | Length: ${displayTrackLength.value} | Fav. pos: ${displayFavStartPos.value} | Record: ${displayTrackRecord.value}`
+        });
         const store = useStore()
         const route = useRoute()
         const router = useRouter()
@@ -147,6 +170,7 @@ export default {
         const updatedHorses = ref([]) // A list to store IDs of updated horses
         const racedayTrackName = ref('')
         const racedayTrackCode = ref('')
+        const trackMeta = ref({})
 
         const getTrackCodeFromName = (name) => {
             for (const [code, n] of Object.entries(trackNames)) {
@@ -170,6 +194,17 @@ export default {
             } else if (currentRace.value.trackCode) {
                 racedayTrackCode.value = currentRace.value.trackCode
                 racedayTrackName.value = getTrackName(currentRace.value.trackCode)
+            }
+
+            if (racedayTrackCode.value) {
+                try {
+                    trackMeta.value = await TrackService.getTrackByCode(racedayTrackCode.value) || {}
+                } catch (error) {
+                    console.error('Failed to fetch track metadata:', error)
+                    trackMeta.value = {}
+                }
+            } else {
+                trackMeta.value = {}
             }
         }
 
@@ -330,6 +365,7 @@ export default {
             raceStartMethod,
             raceStartMethodCode,
             raceMetaString,
+            trackMetaString,
         }
     },
 }
@@ -343,5 +379,9 @@ export default {
 .race-meta {
     margin-top: 4px;
     margin-bottom: 8px;
+}
+
+.track-meta {
+    margin-bottom: 12px;
 }
 </style>
