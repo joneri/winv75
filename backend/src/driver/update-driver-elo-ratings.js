@@ -6,7 +6,20 @@ import { expectedScore } from '../rating/elo-utils.js'
 
 const DEFAULT_K = 20
 const DEFAULT_RATING = 1400
+const DEFAULT_DECAY_DAYS = 365
 const MIN_RACES = 5
+
+const getRecencyWeight = (date, decayDays = DEFAULT_DECAY_DAYS) => {
+  const diff = Date.now() - new Date(date).getTime()
+  const days = diff / (1000 * 60 * 60 * 24)
+  return Math.exp(-days / decayDays)
+}
+
+const getExperienceMultiplier = (races) => {
+  if (races < 5) return 1.5
+  if (races < 20) return 1.2
+  return 1
+}
 
 const ensureConnection = async () => {
   if (mongoose.connection.readyState === 0) {
@@ -14,9 +27,10 @@ const ensureConnection = async () => {
   }
 }
 
-const processRace = (placements, ratings, k) => {
+const processRace = (placements, ratings, k, raceDate, decayDays) => {
   const ids = Object.keys(placements)
   const deltas = {}
+  const weight = getRecencyWeight(raceDate, decayDays)
   for (let i = 0; i < ids.length; i++) {
     for (let j = i + 1; j < ids.length; j++) {
       const idA = ids[i]
@@ -34,8 +48,10 @@ const processRace = (placements, ratings, k) => {
       const expectedA = expectedScore(ratingA, ratingB)
       const expectedB = 1 - expectedA
       const outcomeB = 1 - outcomeA
-      const deltaA = k * (outcomeA - expectedA)
-      const deltaB = k * (outcomeB - expectedB)
+      const factorA = getExperienceMultiplier(entryA.races)
+      const factorB = getExperienceMultiplier(entryB.races)
+      const deltaA = weight * k * factorA * (outcomeA - expectedA)
+      const deltaB = weight * k * factorB * (outcomeB - expectedB)
       deltas[idA] = (deltas[idA] || 0) + deltaA
       deltas[idB] = (deltas[idB] || 0) + deltaB
     }
@@ -48,7 +64,11 @@ const processRace = (placements, ratings, k) => {
   }
 }
 
-const updateDriverEloRatings = async (k = DEFAULT_K, { disconnect = false } = {}) => {
+const updateDriverEloRatings = async (
+  k = DEFAULT_K,
+  decayDays = DEFAULT_DECAY_DAYS,
+  { disconnect = false } = {}
+) => {
   await ensureConnection()
 
   const cursor = Driver.find({}, { _id: 1, results: 1 }).lean().cursor()
@@ -78,7 +98,7 @@ const updateDriverEloRatings = async (k = DEFAULT_K, { disconnect = false } = {}
   const ratings = new Map()
 
   for (const race of raceList) {
-    processRace(race.placements, ratings, k)
+    processRace(race.placements, ratings, k, race.date, decayDays)
   }
 
   const bulk = Driver.collection.initializeUnorderedBulkOp()
@@ -98,7 +118,8 @@ const updateDriverEloRatings = async (k = DEFAULT_K, { disconnect = false } = {}
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const k = process.env.DRIVER_ELO_K ? Number(process.env.DRIVER_ELO_K) : DEFAULT_K
-  updateDriverEloRatings(k, { disconnect: true }).then(() => {
+  const decayDays = process.env.RATING_DECAY_DAYS ? Number(process.env.RATING_DECAY_DAYS) : DEFAULT_DECAY_DAYS
+  updateDriverEloRatings(k, decayDays, { disconnect: true }).then(() => {
     console.log('Driver Elo ratings updated')
     process.exit(0)
   }).catch(err => {
