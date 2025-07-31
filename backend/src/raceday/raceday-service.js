@@ -81,6 +81,18 @@ const updateHorsesForRaceday = async (raceDay) => {
             await delay(400)
         }
     }
+
+    // After all horses have been refreshed, align race metadata so the UI
+    // can display when horses were last updated. This mirrors the manual
+    // update flow where this timestamp is calculated after updating each
+    // horse individually.
+    for (const race of raceDay.raceList) {
+        try {
+            await updateEarliestUpdatedHorseTimestamp(raceDay._id, race.raceId)
+        } catch (err) {
+            console.error(`Failed updating earliest horse timestamp for race ${race.raceId}:`, err.message)
+        }
+    }
 }
 
 const getAllRacedays = async (skip = 0, limit = null) => {
