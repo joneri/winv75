@@ -7,7 +7,10 @@
         </v-row>
         <v-row>
           <v-col>
-            <h1>Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}</h1>
+            <h1>
+              Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}
+              <SpelformBadge v-for="g in raceGames" :key="g.game" :game="g.game" :leg="g.leg" />
+            </h1>
             <div v-if="racedayTrackName" class="text-h6">
               {{ racedayTrackName }}
             </div>
@@ -90,9 +93,11 @@ import {
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
+import SpelformBadge from '@/components/SpelformBadge.vue'
 
 export default {
     name: 'RaceHorsesView',
+    components: { SpelformBadge },
 
     setup() {
         // Helper to parse start method and handicaps from propTexts
@@ -179,6 +184,16 @@ export default {
           const name = getTrackName(racedayTrackCode.value)
           return `Track: ${name} | Length: ${displayTrackLength.value} | Fav. pos: ${displayFavStartPos.value} | Record: ${displayTrackRecord.value}`
         });
+        const raceGames = computed(() => {
+            const res = []
+            const raceId = currentRace.value?.raceId
+            if (!raceId) return res
+            for (const [game, ids] of Object.entries(spelformer.value)) {
+                const idx = ids.indexOf(raceId)
+                if (idx !== -1) res.push({ game, leg: idx + 1 })
+            }
+            return res
+        });
         const store = useStore()
         const route = useRoute()
         const router = useRouter()
@@ -207,6 +222,7 @@ export default {
         const racedayTrackName = ref('')
         const racedayTrackCode = ref('')
         const trackMeta = ref({})
+        const spelformer = ref({})
 
         const getTrackCodeFromName = (name) => {
             for (const [code, n] of Object.entries(trackNames)) {
@@ -241,6 +257,16 @@ export default {
                 }
             } else {
                 trackMeta.value = {}
+            }
+        }
+
+        const fetchSpelformer = async () => {
+            if (route.params.racedayId) {
+                try {
+                    spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
+                } catch (error) {
+                    console.error('Failed to fetch spelformer:', error)
+                }
             }
         }
 
@@ -303,6 +329,7 @@ export default {
             const raceId = route.params.raceId
             await fetchDataAndUpdate(raceId)
             await fetchTrackInfo()
+            await fetchSpelformer()
         })
 
         watch(() => route.params.raceId, async (newRaceId) => {
@@ -310,10 +337,12 @@ export default {
             store.commit('raceHorses/clearCurrentRace')
             await fetchDataAndUpdate(newRaceId)
             await fetchTrackInfo()
+            await fetchSpelformer()
         })
 
         watch(() => route.params.racedayId, async () => {
             await fetchTrackInfo()
+            await fetchSpelformer()
         })
 
         watch(allHorsesUpdated, async (newValue) => {
@@ -481,6 +510,7 @@ export default {
             displayStartMethod,
             raceMetaString,
             trackMetaString,
+            raceGames,
             formatElo,
             formatShoe,
             shoeTooltip,
