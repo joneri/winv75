@@ -4,28 +4,35 @@
     @click="viewRaceDetails"
     :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText, 'background-color': cardColor }"
   >
-    <div class="d-flex justify-space-between align-center" style="width: 100%;">
-      <v-card-title>
-        Race Number: {{ race.raceNumber }}
-        <div class="d-inline-flex ml-2">
-          <SpelformBadge v-for="g in games" :key="g.game" :game="g.game" :leg="g.leg" />
+    <v-card-title>
+      Race Number: {{ race.raceNumber }}
+    </v-card-title>
+
+    <v-card-text>
+      <div>
+        {{ race.propTexts[0].text + " " + race.propTexts[1].text }}
+        <div v-if="lastUpdatedHorseTimestamp !== null" class="updated-indication">
+          Last Horse Updated: {{ lastUpdatedHorseTimestamp }}
         </div>
-      </v-card-title>
-      <v-card-text>
-        <div>
-          {{ race.propTexts[0].text + " " + race.propTexts[1].text }}
-          <div v-if="lastUpdatedHorseTimestamp !== null" class="updated-indication">
-            Last Horse Updated: {{ lastUpdatedHorseTimestamp }}
-          </div>
-        </div>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click.stop="viewRaceDetails">View Details</v-btn>
-        <v-btn @click.stop="updateRace" :disabled="loading" class="ml-2">
-          {{ loading ? 'Updating…' : 'Update Race' }}
-        </v-btn>
-      </v-card-actions>
+      </div>
+    </v-card-text>
+
+    <div class="spelformer-row" v-if="games.length">
+      <SpelformBadge
+        v-for="g in games"
+        :key="`${g.game}-${g.leg}`"
+        :game="g.game"
+        :leg="g.leg"
+      />
     </div>
+
+    <v-card-actions>
+      <v-btn @click.stop="viewRaceDetails">View Details</v-btn>
+      <v-btn @click.stop="updateRace" :disabled="loading" class="ml-2">
+        {{ loading ? 'Updating…' : 'Update Race' }}
+      </v-btn>
+    </v-card-actions>
+
     <v-alert v-if="errorMessage" type="error" class="ma-2">{{ errorMessage }}</v-alert>
   </v-card>
 </template>
@@ -137,5 +144,13 @@ export default {
   background-color: var(--hover-bg);
   color: var(--hover-text);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.spelformer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  margin-bottom: 4px;
 }
 </style>
