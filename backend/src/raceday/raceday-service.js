@@ -1,6 +1,9 @@
 import Raceday from './raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import axios from 'axios'
+import horseService from '../horse/horse-service.js'
+
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 const updateEarliestUpdatedHorseTimestamp = async (raceDayId, targetRaceId) => {
   try {
@@ -59,7 +62,25 @@ const upsertStartlistData = async (racedayJSON) => {
         console.error(`Error while upserting the startlist with raceDayId ${raceDayId}:`, error)
         throw error
     }
+    updateHorsesForRaceday(raceDay).catch(err => console.error('Failed updating horses for raceday', err))
     return raceDay
+}
+
+const updateHorsesForRaceday = async (raceDay) => {
+    const horseIds = [...new Set(raceDay.raceList.flatMap(r => r.horses.map(h => h.id)))]
+    console.log(`Updating ${horseIds.length} horses for raceday ${raceDay.raceDayId}`)
+    for (let i = 0; i < horseIds.length; i++) {
+        const id = horseIds[i]
+        try {
+            console.log(`Updating horse ${i + 1} of ${horseIds.length}: ${id}`)
+            await horseService.upsertHorseData(id)
+        } catch (err) {
+            console.error(`Skipped horse ${id} due to error:`, err.message)
+        }
+        if (i < horseIds.length - 1) {
+            await delay(400)
+        }
+    }
 }
 
 const getAllRacedays = async (skip = 0, limit = null) => {
