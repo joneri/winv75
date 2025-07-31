@@ -5,7 +5,8 @@ const TrackSchema = new mongoose.Schema({
   trackName: { type: String, required: true },
   trackLength: { type: Number, required: true },
   trackRecord: { type: String },
-  favouriteStartingPosition: { type: Number }
+  favouriteStartingPosition: { type: Number },
+  atgTrackId: { type: Number }
 })
 
 export default mongoose.model('Track', TrackSchema, 'tracks')
