@@ -10,6 +10,7 @@
               :race="race"
               :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp"
               :racedayId="reactiveRouteParams.racedayId"
+              :games="getRaceGames(race.raceId)"
               @race-updated="refreshRaceday"
             />
           </div>
@@ -42,6 +43,7 @@ export default {
     const errorMessage = ref(null)
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
+    const spelformer = ref({})
     const isRecentlyUpdated = (timestamp) => {
       const sixDaysAgo = new Date()
       sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
@@ -52,6 +54,7 @@ export default {
     onMounted(async () => {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+        spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
       } catch (error) {
         console.error('Error fetching raceday details:', error)
         errorMessage.value = 'Error fetching raceday details. Please try again later.'
@@ -62,6 +65,7 @@ export default {
     const refreshRaceday = async () => {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+        spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
       } catch (error) {
         console.error('Error refreshing raceday details:', error)
       }
@@ -71,12 +75,23 @@ export default {
       return racedayDetails.value?.raceList.sort((a, b) => a.raceNumber - b.raceNumber) || []
     })
 
+    const getRaceGames = raceId => {
+      const res = []
+      for (const [game, ids] of Object.entries(spelformer.value)) {
+        const idx = ids.indexOf(raceId)
+        if (idx !== -1) res.push({ game, leg: idx + 1 })
+      }
+      return res
+    }
+
     return {
       racedayDetails,
       errorMessage,
       formatDate,
       sortedRaceList,
       reactiveRouteParams,
+      spelformer,
+      getRaceGames,
       isRecentlyUpdated,
       refreshRaceday
     }

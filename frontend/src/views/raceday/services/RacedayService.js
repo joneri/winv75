@@ -11,6 +11,16 @@ const fetchRacedayDetails = async racedayId => {
 }
 
 export default {
-  fetchRacedayDetails
+  fetchRacedayDetails,
+  fetchSpelformer
+}
 
+async function fetchSpelformer(racedayId) {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/spelformer/${racedayId}`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching spelformer:', error)
+    throw error
+  }
 }

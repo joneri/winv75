@@ -2,10 +2,15 @@
   <v-card
     class="clickable-card"
     @click="viewRaceDetails"
-    :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText }"
+    :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText, 'background-color': cardColor }"
   >
     <div class="d-flex justify-space-between align-center" style="width: 100%;">
-      <v-card-title> Race Number: {{ race.raceNumber }}</v-card-title>
+      <v-card-title>
+        Race Number: {{ race.raceNumber }}
+        <div class="d-inline-flex ml-2">
+          <SpelformBadge v-for="g in games" :key="g.game" :game="g.game" :leg="g.leg" />
+        </div>
+      </v-card-title>
       <v-card-text>
         <div>
           {{ race.propTexts[0].text + " " + race.propTexts[1].text }}
@@ -26,13 +31,16 @@
 </template>
 
 <script>
-import { toRefs, ref } from 'vue'
+import { toRefs, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { getContrastColor } from '@/utils/colors'
+import { getGameColor } from '@/utils/gameColors'
+import SpelformBadge from '@/components/SpelformBadge.vue'
 import { updateHorse, setEarliestUpdatedHorseTimestamp } from '@/views/race/services/RaceHorsesService.js'
 
 export default {
+  components: { SpelformBadge },
   props: {
     race: {
       type: Object,
@@ -45,11 +53,15 @@ export default {
     racedayId: {
       type: String,
       required: true
+    },
+    games: {
+      type: Array,
+      default: () => []
     }
   },
   setup(props, { emit }) {
     // Convert props to reactive references
-    const { race, lastUpdatedHorseTimestamp } = toRefs(props)
+    const { race, lastUpdatedHorseTimestamp, games } = toRefs(props)
     const router = useRouter()
     const store = useStore()
     const loading = ref(false)
@@ -57,6 +69,12 @@ export default {
 
     const hoverBg = '#f5f5f5'
     const hoverText = getContrastColor(hoverBg)
+    const cardColor = computed(() => {
+      if (games.value.length > 0) {
+        return getGameColor(games.value[0].game)
+      }
+      return undefined
+    })
 
     const viewRaceDetails = () => {
       store.commit('raceHorses/setCurrentRace', props.race);
@@ -93,12 +111,14 @@ export default {
     return {
       race,
       lastUpdatedHorseTimestamp,
+      games,
       viewRaceDetails,
       updateRace,
       loading,
       errorMessage,
       hoverBg,
-      hoverText
+      hoverText,
+      cardColor
     }
   }
 }
