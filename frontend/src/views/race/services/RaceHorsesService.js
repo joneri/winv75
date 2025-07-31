@@ -85,6 +85,17 @@ const fetchHorseScores = async (ids = []) => {
     }
 }
 
+const fetchDriverRatings = async (ids = []) => {
+    try {
+        const params = ids.length ? { params: { ids: ids.join(',') } } : {}
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/driver/ratings`, params)
+        return response.data
+    } catch (error) {
+        console.error('Failed to fetch driver ratings', error)
+        throw error
+    }
+}
+
 const triggerRatingsUpdate = async () => {
     try {
         await axios.post(`${import.meta.env.VITE_BE_URL}/api/rating/update`)
@@ -101,5 +112,6 @@ export {
     fetchHorseRankings,
     setEarliestUpdatedHorseTimestamp,
     fetchHorseScores,
+    fetchDriverRatings,
     triggerRatingsUpdate
 }

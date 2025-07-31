@@ -9,6 +9,7 @@ import racedayRoutes from './raceday/raceday-routes.js'
 import raceRoutes from './race/race-routes.js'
 import trackRoutes from './track/track-routes.js'
 import eloRoutes from './rating/elo-routes.js'
+import driverRoutes from './driver/driver-routes.js'
 import { startRatingsCronJob } from './rating/ratings-scheduler.js'
 import { startDriverCronJob } from './driver/scheduler.js'
 
@@ -35,6 +36,7 @@ app.use('/api/raceday', racedayRoutes)
 app.use('/api/race', raceRoutes)
 app.use('/api/track', trackRoutes)
 app.use('/api/rating', eloRoutes)
+app.use('/api/driver', driverRoutes)
 
 // 404 handler
 app.use((req, res) => {

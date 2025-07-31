@@ -34,6 +34,12 @@
                                     {{ item.columns.name }}
                                 </span>
                             </template>
+                            <template v-slot:item.eloRating="{ item }">
+                                {{ formatElo(item.columns.eloRating) }}
+                            </template>
+                            <template v-slot:item.driverEloRating="{ item }">
+                                {{ formatElo(item.columns.driverEloRating) }}
+                            </template>
                         </v-data-table>
                     </v-window-item>
                     <v-window-item value="1">
@@ -66,6 +72,7 @@ import {
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
     fetchHorseScores,
+    fetchDriverRatings,
     triggerRatingsUpdate
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
@@ -212,17 +219,32 @@ export default {
             try {
                 const responseData = await fetchRaceFromRaceId(raceId)
                 const horseIds = (responseData.horses || []).map(h => h.id)
+                const driverIds = (responseData.horses || []).map(h => h.driver?.id).filter(id => typeof id === 'number')
                 let scores = []
+                let driverRatings = []
                 if (horseIds.length) {
                     scores = await fetchHorseScores(horseIds)
                 }
+                if (driverIds.length) {
+                    driverRatings = await fetchDriverRatings(driverIds)
+                }
                 const scoreMap = {}
                 const ratingMap = {}
-                scores.forEach(r => { 
-                    scoreMap[r.id] = r.score 
+                const driverRatingMap = {}
+                scores.forEach(r => {
+                    scoreMap[r.id] = r.score
                     ratingMap[r.id] = r.rating
                 })
-                responseData.horses = (responseData.horses || []).map(h => ({ ...h, score: scoreMap[h.id], rating: ratingMap[h.id] }))
+                driverRatings.forEach(d => {
+                    driverRatingMap[d.id] = d.elo
+                })
+                responseData.horses = (responseData.horses || []).map(h => ({
+                    ...h,
+                    score: scoreMap[h.id],
+                    rating: ratingMap[h.id],
+                    eloRating: ratingMap[h.id],
+                    driverEloRating: driverRatingMap[h.driver?.id]
+                }))
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
 
@@ -272,6 +294,8 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
+            { title: 'Horse Elo', key: 'eloRating' },
+            { title: 'Driver Elo', key: 'driverEloRating' },
             { key: 'horseWithdrawn' },
         ]
 
@@ -346,9 +370,9 @@ export default {
             }
         }
 
-
-
-
+        const formatElo = (value) => {
+            return typeof value === 'number' ? Math.round(value) : 'N/A'
+        }
         return {
             headers,
             rankHorses,
@@ -366,6 +390,7 @@ export default {
             raceStartMethodCode,
             raceMetaString,
             trackMetaString,
+            formatElo,
         }
     },
 }
