@@ -90,7 +90,9 @@ const racedaySchema = new mongoose.Schema({
   trackName: String,
   raceStandard: String,
   raceDayDate: String,
-  hasPdf: Boolean
+  hasPdf: Boolean,
+  atgCalendarGamesRaw: { type: mongoose.Schema.Types.Mixed, default: {} },
+  gameTypes: { type: mongoose.Schema.Types.Mixed, default: {} }
 })
 
 export default mongoose.model('Raceday', racedaySchema)
