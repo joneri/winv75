@@ -27,8 +27,11 @@
                 </v-tabs>
                 <v-window v-model="activeTab">
                     <v-window-item value="0">
-                        <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
+                    <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
                             class="elevation-1">
+                            <template v-if="hasHandicap" v-slot:item.actualDistance="{ item }">
+                                {{ item.columns.actualDistance ? `${item.columns.actualDistance} m` : '—' }}
+                            </template>
                             <template v-slot:item.name="{ item }">
                                 <span :style="{ 'text-decoration': item.columns.horseWithdrawn ? 'line-through' : 'none' }">
                                     {{ item.columns.name }}
@@ -92,25 +95,41 @@ export default {
     name: 'RaceHorsesView',
 
     setup() {
-        // Step 1: Detect start method from propTexts
-        const raceStartMethod = computed(() => {
-          const propTexts = (currentRace.value && currentRace.value.propTexts) || [];
-          const tObj = propTexts.find(pt => pt.typ === 'T' && pt.text);
-          if (!tObj) return '';
-          if (/Autostart/i.test(tObj.text)) return 'Autostart';
-          if (/Voltstart/i.test(tObj.text)) return 'Voltstart';
-          return '';
-        });
+        // Helper to parse start method and handicaps from propTexts
+        const parseStartMethodFromPropTexts = (propTexts = []) => {
+          const text = propTexts
+            .filter(pt => pt.typ === 'T' && pt.text)
+            .map(pt => pt.text)
+            .join(' ');
 
-        // Step 2: Compute code 'A' or 'V' for start method
-        const raceStartMethodCode = computed(() => {
-          if (raceStartMethod.value === 'Autostart') return 'A';
-          if (raceStartMethod.value === 'Voltstart') return 'V';
-          return '';
-        });
+          let method = 'Voltstart';
+          let code = 'V';
+          if (/Autostart/i.test(text)) {
+            method = 'Autostart';
+            code = 'A';
+          } else if (/Voltstart/i.test(text)) {
+            method = 'Voltstart';
+            code = 'V';
+          }
+
+          const handicap = /\btillägg\b|\b\d{2,3}\s*m\b/i.test(text);
+
+          return { method, code, handicap };
+        };
+
+        const startInfo = computed(() =>
+          parseStartMethodFromPropTexts(currentRace.value?.propTexts || [])
+        );
+
+        const raceStartMethod = computed(() => startInfo.value.method);
+        const raceStartMethodCode = computed(() => startInfo.value.code);
+        const hasHandicap = computed(() => startInfo.value.handicap);
 
         const displayStartMethod = computed(() => {
-          return currentRace.value?.startMethod || raceStartMethod.value || '—';
+          if (raceStartMethod.value === 'Voltstart' && hasHandicap.value) {
+            return 'Voltstart med tillägg';
+          }
+          return raceStartMethod.value;
         });
 
         const displayDistance = computed(() => {
@@ -313,15 +332,21 @@ export default {
             }
         }, { immediate: true })
 
-        const headers = [
-            { title: 'Start Position', key: 'programNumber' },
-            { title: 'Horse Name', key: 'name' },
-            { title: 'Driver Name', key: 'driver.name' },
-            { title: 'Horse Elo', key: 'eloRating' },
-            { title: 'Driver Elo', key: 'driverElo' },
-            { title: 'Sko', key: 'shoeOption', sortable: false },
-            { key: 'horseWithdrawn' },
-        ]
+        const headers = computed(() => {
+            const base = [
+                { title: 'Start Position', key: 'programNumber' },
+                { title: 'Horse Name', key: 'name' },
+                { title: 'Driver Name', key: 'driver.name' },
+                { title: 'Horse Elo', key: 'eloRating' },
+                { title: 'Driver Elo', key: 'driverElo' },
+                { title: 'Sko', key: 'shoeOption', sortable: false },
+                { key: 'horseWithdrawn' },
+            ]
+            if (hasHandicap.value) {
+                base.splice(1, 0, { title: 'Distans', key: 'actualDistance' })
+            }
+            return base
+        })
 
         const rankedHeaders = [
             { title: '', key: 'favoriteIndicator', sortable: false },
@@ -435,7 +460,7 @@ export default {
         }
 
         const formatElo = (value) => {
-            return typeof value === 'number' ? Math.round(value) : '—'
+          return typeof value === 'number' ? Math.round(value) : '—'
         }
         return {
             headers,
@@ -450,8 +475,10 @@ export default {
             activeTab,
             rankedHeaders,
             rankedHorses,
-            raceStartMethod,
             raceStartMethodCode,
+            raceStartMethod,
+            hasHandicap,
+            displayStartMethod,
             raceMetaString,
             trackMetaString,
             formatElo,
