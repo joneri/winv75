@@ -32,6 +32,11 @@
                     <v-window-item value="0">
                     <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
                             class="elevation-1">
+                            <template v-if="showStartPositionColumn" v-slot:item.startPosition="{ item }">
+                                <span title="Startposition i volten">
+                                    {{ formatStartPosition(item.columns.actualStartPosition ?? item.columns.startPosition) }}
+                                </span>
+                            </template>
                             <template v-if="hasHandicap" v-slot:item.actualDistance="{ item }">
                                 {{ item.columns.actualDistance ? `${item.columns.actualDistance} m` : '—' }}
                             </template>
@@ -57,6 +62,11 @@
                         <v-data-table :headers="rankedHeaders" :items="rankedHorses" :items-per-page="16" class="elevation-1">
                             <template v-slot:item.favoriteIndicator="{ item }">
                                 <!-- Intentionally left blank: star moved to track column -->
+                            </template>
+                            <template v-if="showStartPositionColumn" v-slot:item.startPosition="{ item }">
+                                <span title="Startposition i volten">
+                                    {{ formatStartPosition(item.columns.actualStartPosition ?? item.columns.startPosition) }}
+                                </span>
                             </template>
                             <template v-slot:item.favoriteTrack="{ item }">
                                 {{ getTrackName(item.columns.favoriteTrack) }}
@@ -129,6 +139,15 @@ export default {
         const raceStartMethod = computed(() => startInfo.value.method);
         const raceStartMethodCode = computed(() => startInfo.value.code);
         const hasHandicap = computed(() => startInfo.value.handicap);
+
+        const showStartPositionColumn = computed(() => {
+          const horses = currentRace.value?.horses || [];
+          const anyDiff = horses.some(h => {
+            const pos = h.actualStartPosition ?? h.startPosition;
+            return pos && pos !== h.programNumber;
+          });
+          return raceStartMethod.value === 'Voltstart' || anyDiff;
+        });
 
         const displayStartMethod = computed(() => {
           if (raceStartMethod.value === 'Voltstart' && hasHandicap.value) {
@@ -363,7 +382,7 @@ export default {
 
         const headers = computed(() => {
             const base = [
-                { title: 'Start Position', key: 'programNumber' },
+                { title: 'Programnummer', key: 'programNumber' },
                 { title: 'Horse Name', key: 'name' },
                 { title: 'Driver Name', key: 'driver.name' },
                 { title: 'Horse Elo', key: 'eloRating' },
@@ -371,29 +390,39 @@ export default {
                 { title: 'Sko', key: 'shoeOption', sortable: false },
                 { key: 'horseWithdrawn' },
             ]
+            if (showStartPositionColumn.value) {
+                base.splice(1, 0, { title: 'Startposition', key: 'startPosition' })
+            }
             if (hasHandicap.value) {
-                base.splice(1, 0, { title: 'Distans', key: 'actualDistance' })
+                const index = showStartPositionColumn.value ? 2 : 1
+                base.splice(index, 0, { title: 'Distans', key: 'actualDistance' })
             }
             return base
         })
 
-        const rankedHeaders = [
-            { title: '', key: 'favoriteIndicator', sortable: false },
-            { title: 'Start Position', key: 'programNumber' },
-            { title: 'Driver Name', key: 'driver.name' },
-            { title: 'Name', key: 'name' },
-            { title: 'Sko', key: 'shoeOption', sortable: false },
-            { title: 'Elo Rating', key: 'rating' },
-            { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
-            { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
-            { title: 'Consistency Score', key: 'consistencyScore' },
-            { title: 'Favorite Start Method', key: 'favoriteStartMethod' },
-            { title: 'Favorite Track', key: 'favoriteTrack' },
-            { title: 'Horse Label', key: 'horseLabel' },
-            { title: 'Number of Starts', key: 'numberOfStarts' },
-            { title: 'Placements', key: 'placements' },
-            { title: 'Total Score', key: 'totalScore' },
-        ]
+        const rankedHeaders = computed(() => {
+            const base = [
+                { title: '', key: 'favoriteIndicator', sortable: false },
+                { title: 'Programnummer', key: 'programNumber' },
+                { title: 'Driver Name', key: 'driver.name' },
+                { title: 'Name', key: 'name' },
+                { title: 'Sko', key: 'shoeOption', sortable: false },
+                { title: 'Elo Rating', key: 'rating' },
+                { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
+                { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
+                { title: 'Consistency Score', key: 'consistencyScore' },
+                { title: 'Favorite Start Method', key: 'favoriteStartMethod' },
+                { title: 'Favorite Track', key: 'favoriteTrack' },
+                { title: 'Horse Label', key: 'horseLabel' },
+                { title: 'Number of Starts', key: 'numberOfStarts' },
+                { title: 'Placements', key: 'placements' },
+                { title: 'Total Score', key: 'totalScore' },
+            ]
+            if (showStartPositionColumn.value) {
+                base.splice(2, 0, { title: 'Startposition', key: 'startPosition' })
+            }
+            return base
+        })
 
         const trackNames = {
             'Ar': 'Arvika',
@@ -488,6 +517,11 @@ export default {
             return horse ? shoeTooltip(horse) : ''
         }
 
+        const formatStartPosition = (value) => {
+            if (value === undefined || value === null) return '—'
+            return typeof value === 'number' ? `${value} m` : value
+        }
+
         const formatElo = (value) => {
           return typeof value === 'number' ? Math.round(value) : '—'
         }
@@ -507,10 +541,12 @@ export default {
             raceStartMethodCode,
             raceStartMethod,
             hasHandicap,
+            showStartPositionColumn,
             displayStartMethod,
             raceMetaString,
             trackMetaString,
             raceGames,
+            formatStartPosition,
             formatElo,
             formatShoe,
             shoeTooltip,
