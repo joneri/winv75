@@ -41,7 +41,9 @@
                                 {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
-                                {{ formatShoe(item.raw) }}
+                                <span :title="shoeTooltip(item.raw) || null">
+                                    {{ formatShoe(item.raw) }}
+                                </span>
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -59,7 +61,9 @@
                                 <span v-if="item.columns.favoriteStartMethod && item.columns.favoriteStartMethod.toUpperCase() === raceStartMethodCode.toUpperCase()" title="Favorite start method match" class="ml-1">⭐</span>
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
-                                {{ getShoeById(item.raw.id) }}
+                                <span :title="getShoeTooltipById(item.raw.id) || null">
+                                    {{ getShoeById(item.raw.id) }}
+                                </span>
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -106,12 +110,12 @@ export default {
         });
 
         const displayStartMethod = computed(() => {
-          return currentRace.value?.startMethod || raceStartMethod.value || 'N/A';
+          return currentRace.value?.startMethod || raceStartMethod.value || '—';
         });
 
         const displayDistance = computed(() => {
           const d = currentRace.value?.distance;
-          return d ? `${d} m` : 'N/A';
+          return d ? `${d} m` : '—';
         });
 
         const displayRaceType = computed(() => {
@@ -119,7 +123,7 @@ export default {
           const p1 = currentRace.value?.propTexts?.[0]?.text || '';
           const p2 = currentRace.value?.propTexts?.[1]?.text || '';
           const combined = `${p1} ${p2}`.trim();
-          return combined || 'N/A';
+          return combined || '—';
         });
 
         const displayPrizeMoney = computed(() => {
@@ -131,7 +135,7 @@ export default {
           if (prizeObj?.text) {
             return prizeObj.text.replace(/\./g, ' ');
           }
-          return 'N/A';
+          return '—';
         });
 
         const raceMetaString = computed(() => {
@@ -140,16 +144,16 @@ export default {
 
         const displayTrackLength = computed(() => {
           const len = trackMeta.value?.trackLength
-          return typeof len === 'number' ? `${len} m` : 'N/A'
+          return typeof len === 'number' ? `${len} m` : '—'
         });
 
         const displayTrackRecord = computed(() => {
-          return trackMeta.value?.trackRecord || 'N/A'
+          return trackMeta.value?.trackRecord || '—'
         });
 
         const displayFavStartPos = computed(() => {
           const pos = trackMeta.value?.favouriteStartingPosition
-          return typeof pos === 'number' ? pos : 'N/A'
+          return typeof pos === 'number' ? pos : '—'
         });
 
         const trackMetaString = computed(() => {
@@ -400,7 +404,7 @@ export default {
 
         const formatShoe = (horse) => {
             const code = horse?.shoeOption?.code
-            if (code === undefined || code === null) return 'N/A'
+            if (code === undefined || code === null) return '—'
             const prev = horse?.previousShoeOption?.code
             const changed = prev !== undefined && prev !== null && prev !== code
             const mapping = shoeMap[code] || { label: code, emoji: '' }
@@ -408,13 +412,28 @@ export default {
             return changed ? `${text} 🔁` : text
         }
 
+        const shoeTooltip = (horse) => {
+            const code = horse?.shoeOption?.code
+            const prev = horse?.previousShoeOption?.code
+            const changed = prev !== undefined && prev !== null && prev !== code
+            if (!changed) return ''
+            const prevMapping = shoeMap[prev] || { label: prev, emoji: '' }
+            const prevText = `${prevMapping.emoji} ${prevMapping.label}`.trim()
+            return `Changed from: ${prevText}`
+        }
+
         const getShoeById = (horseId) => {
             const horse = currentRace.value?.horses?.find(h => h.id === horseId)
-            return horse ? formatShoe(horse) : 'N/A'
+            return horse ? formatShoe(horse) : '—'
+        }
+
+        const getShoeTooltipById = (horseId) => {
+            const horse = currentRace.value?.horses?.find(h => h.id === horseId)
+            return horse ? shoeTooltip(horse) : ''
         }
 
         const formatElo = (value) => {
-            return typeof value === 'number' ? Math.round(value) : 'N/A'
+            return typeof value === 'number' ? Math.round(value) : '—'
         }
         return {
             headers,
@@ -435,7 +454,9 @@ export default {
             trackMetaString,
             formatElo,
             formatShoe,
+            shoeTooltip,
             getShoeById,
+            getShoeTooltipById,
         }
     },
 }
