@@ -159,15 +159,15 @@ export default {
 }
 
 .v64-bg {
-  background-color: #2563eb !important;
+  background-color: #ed6c15 !important;
 }
 
 .v65-bg {
-  background-color: #ea580c !important;
+  background-color: #c00a26 !important;
 }
 
 .v86-bg {
-  background-color: #6b21a8 !important;
+  background-color: #802c7e !important;
 }
 
 .gs75-bg {

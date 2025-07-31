@@ -22,6 +22,12 @@
             </div>
           </v-col>
         </v-row>
+        <v-row v-if="raceList.length" class="race-navigation">
+            <v-col class="d-flex justify-space-between">
+                <v-btn variant="text" @click="goToRace(previousRaceId)" :disabled="!previousRaceId">⟵ Previous race</v-btn>
+                <v-btn variant="text" @click="goToRace(nextRaceId)" :disabled="!nextRaceId">Next race ⟶</v-btn>
+            </v-col>
+        </v-row>
         <v-row>
             <v-col>
                 <v-tabs v-model="activeTab">
@@ -188,7 +194,7 @@ export default {
         });
 
         const raceMetaString = computed(() => {
-          return `Start: ${displayStartMethod.value} | Distance: ${displayDistance.value} | Type: ${displayRaceType.value} | Prize: ${displayPrizeMoney.value}`;
+          return `Start: ${displayStartMethod.value} | Distance: ${displayDistance.value} | ${displayPrizeMoney.value}`;
         });
 
         const displayTrackLength = computed(() => {
@@ -546,7 +552,7 @@ export default {
 
         const formatStartPosition = (value) => {
             if (value === undefined || value === null) return '—'
-            return typeof value === 'number' ? `${value} m` : value
+            return typeof value === 'number' ? `${value}` : value
         }
 
         const formatElo = (value) => {
