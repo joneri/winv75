@@ -51,7 +51,8 @@ const horseSchema = new mongoose.Schema({
   },
   horseWithdrawn: Boolean,
   driverChanged: Boolean,
-  linkable: Boolean
+  linkable: Boolean,
+  comment: String
 })
 
 const propTextsSchema = new mongoose.Schema({
@@ -76,7 +77,8 @@ const raceSchema = new mongoose.Schema({
   horses: [horseSchema],
   propTexts: [propTextsSchema],
   startDateTime: Date,
-  resultsReady: Boolean
+  resultsReady: Boolean,
+  atgExtendedRaw: { type: mongoose.Schema.Types.Mixed, default: {} }
 })
 
 const racedaySchema = new mongoose.Schema({
