@@ -37,8 +37,8 @@
                             <template v-slot:item.eloRating="{ item }">
                                 {{ formatElo(item.columns.eloRating) }}
                             </template>
-                            <template v-slot:item.driverEloRating="{ item }">
-                                {{ formatElo(item.columns.driverEloRating) }}
+                            <template v-slot:item["driver.elo"]="{ item }">
+                                {{ formatElo(item.columns['driver.elo']) }}
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -221,7 +221,7 @@ export default {
                 const horseIds = (responseData.horses || []).map(h => h.id)
                 // Collect driver IDs even if the API returns them as strings
                 const driverIds = (responseData.horses || [])
-                    .map(h => h.driver?.id)
+                    .map(h => h.driver?.licenseId ?? h.driver?.id)
                     .filter(id => id != null)
                 let scores = []
                 let driverRatings = []
@@ -242,13 +242,21 @@ export default {
                     // Use string keys to avoid number/string mismatches
                     driverRatingMap[String(d.id)] = d.elo
                 })
-                responseData.horses = (responseData.horses || []).map(h => ({
-                    ...h,
-                    score: scoreMap[h.id],
-                    rating: ratingMap[h.id],
-                    eloRating: ratingMap[h.id],
-                    driverEloRating: driverRatingMap[String(h.driver?.id)]
-                }))
+                responseData.horses = (responseData.horses || []).map(h => {
+                    const driverId = h.driver?.licenseId ?? h.driver?.id
+                    const driverElo = driverRatingMap[String(driverId)]
+                    return {
+                        ...h,
+                        score: scoreMap[h.id],
+                        rating: ratingMap[h.id],
+                        eloRating: ratingMap[h.id],
+                        driver: {
+                            ...h.driver,
+                            id: driverId,
+                            elo: driverElo,
+                        }
+                    }
+                })
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
 
@@ -299,7 +307,7 @@ export default {
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Horse Elo', key: 'eloRating' },
-            { title: 'Driver Elo', key: 'driverEloRating' },
+            { title: 'Driver Elo', key: 'driver.elo' },
             { key: 'horseWithdrawn' },
         ]
 
