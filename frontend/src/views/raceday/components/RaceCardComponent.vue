@@ -1,8 +1,9 @@
 <template>
   <v-card
     class="clickable-card"
+    :class="gameClass"
     @click="viewRaceDetails"
-    :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText, 'background-color': cardColor }"
+    :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText }"
   >
     <v-card-title>
       Race Number: {{ race.raceNumber }}
@@ -42,7 +43,6 @@ import { toRefs, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { getContrastColor } from '@/utils/colors'
-import { getGameColor } from '@/utils/gameColors'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import { updateHorse, setEarliestUpdatedHorseTimestamp } from '@/views/race/services/RaceHorsesService.js'
 
@@ -76,11 +76,11 @@ export default {
 
     const hoverBg = '#f5f5f5'
     const hoverText = getContrastColor(hoverBg)
-    const cardColor = computed(() => {
-      if (games.value.length > 0) {
-        return getGameColor(games.value[0].game)
-      }
-      return undefined
+    const gameClass = computed(() => {
+      if (!games.value.length) return ''
+      const code = games.value[0].game
+      const majorGames = ['V75', 'V64', 'V65', 'V86', 'GS75']
+      return majorGames.includes(code) ? `${code.toLowerCase()}-bg` : ''
     })
 
     const viewRaceDetails = () => {
@@ -125,7 +125,7 @@ export default {
       errorMessage,
       hoverBg,
       hoverText,
-      cardColor
+      gameClass
     }
   }
 }
@@ -141,8 +141,8 @@ export default {
   transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .clickable-card:hover {
-  background-color: var(--hover-bg);
-  color: var(--hover-text);
+  background-color: var(--hover-bg) !important;
+  color: var(--hover-text) !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -152,5 +152,33 @@ export default {
   gap: 4px;
   margin-top: 8px;
   margin-bottom: 4px;
+}
+
+.v75-bg {
+  background-color: #1e3a8a !important;
+}
+
+.v64-bg {
+  background-color: #2563eb !important;
+}
+
+.v65-bg {
+  background-color: #ea580c !important;
+}
+
+.v86-bg {
+  background-color: #6b21a8 !important;
+}
+
+.gs75-bg {
+  background-color: #be123c !important;
+}
+
+.v75-bg .v-card-title,
+.v64-bg .v-card-title,
+.v65-bg .v-card-title,
+.v86-bg .v-card-title,
+.gs75-bg .v-card-title {
+  color: white !important;
 }
 </style>
