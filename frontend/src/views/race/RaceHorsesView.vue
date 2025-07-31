@@ -219,7 +219,10 @@ export default {
             try {
                 const responseData = await fetchRaceFromRaceId(raceId)
                 const horseIds = (responseData.horses || []).map(h => h.id)
-                const driverIds = (responseData.horses || []).map(h => h.driver?.id).filter(id => typeof id === 'number')
+                // Collect driver IDs even if the API returns them as strings
+                const driverIds = (responseData.horses || [])
+                    .map(h => h.driver?.id)
+                    .filter(id => id != null)
                 let scores = []
                 let driverRatings = []
                 if (horseIds.length) {
@@ -236,14 +239,15 @@ export default {
                     ratingMap[r.id] = r.rating
                 })
                 driverRatings.forEach(d => {
-                    driverRatingMap[d.id] = d.elo
+                    // Use string keys to avoid number/string mismatches
+                    driverRatingMap[String(d.id)] = d.elo
                 })
                 responseData.horses = (responseData.horses || []).map(h => ({
                     ...h,
                     score: scoreMap[h.id],
                     rating: ratingMap[h.id],
                     eloRating: ratingMap[h.id],
-                    driverEloRating: driverRatingMap[h.driver?.id]
+                    driverEloRating: driverRatingMap[String(h.driver?.id)]
                 }))
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
