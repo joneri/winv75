@@ -86,11 +86,17 @@
                 </v-window>
             </v-col>
         </v-row>
+        <v-row v-if="raceList.length" class="race-navigation">
+            <v-col class="d-flex justify-space-between">
+                <v-btn variant="text" @click="goToRace(previousRaceId)" :disabled="!previousRaceId">⟵ Previous race</v-btn>
+                <v-btn variant="text" @click="goToRace(nextRaceId)" :disabled="!nextRaceId">Next race ⟶</v-btn>
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -242,6 +248,22 @@ export default {
         const racedayTrackCode = ref('')
         const trackMeta = ref({})
         const spelformer = ref({})
+        const racedayDetails = ref(null)
+        const raceList = computed(() => {
+            return racedayDetails.value?.raceList?.sort((a, b) => a.raceNumber - b.raceNumber) || []
+        })
+        const currentRaceIndex = computed(() => {
+            return raceList.value.findIndex(r => String(r.raceId) === String(route.params.raceId))
+        })
+        const previousRaceId = computed(() => {
+            return currentRaceIndex.value > 0 ? raceList.value[currentRaceIndex.value - 1].raceId : null
+        })
+        const nextRaceId = computed(() => {
+            return currentRaceIndex.value !== -1 && currentRaceIndex.value < raceList.value.length - 1
+                ? raceList.value[currentRaceIndex.value + 1].raceId
+                : null
+        })
+        const scrollPosition = ref(0)
 
         const getTrackCodeFromName = (name) => {
             for (const [code, n] of Object.entries(trackNames)) {
@@ -254,6 +276,7 @@ export default {
             if (route.params.racedayId) {
                 try {
                     const details = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+                    racedayDetails.value = details
                     racedayTrackName.value = details.trackName
                     racedayTrackCode.value = getTrackCodeFromName(details.trackName)
                 } catch (error) {
@@ -349,6 +372,8 @@ export default {
             await fetchDataAndUpdate(raceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            await nextTick()
+            window.scrollTo(0, scrollPosition.value)
         })
 
         watch(() => route.params.raceId, async (newRaceId) => {
@@ -357,6 +382,8 @@ export default {
             await fetchDataAndUpdate(newRaceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            await nextTick()
+            window.scrollTo(0, scrollPosition.value)
         })
 
         watch(() => route.params.racedayId, async () => {
@@ -525,6 +552,12 @@ export default {
         const formatElo = (value) => {
           return typeof value === 'number' ? Math.round(value) : '—'
         }
+        const goToRace = (raceId) => {
+            if (!raceId) return
+            scrollPosition.value = window.scrollY
+            router.push(`/raceday/${route.params.racedayId}/race/${raceId}`)
+        }
+
         return {
             headers,
             rankHorses,
@@ -552,6 +585,10 @@ export default {
             shoeTooltip,
             getShoeById,
             getShoeTooltipById,
+            raceList,
+            previousRaceId,
+            nextRaceId,
+            goToRace,
         }
     },
 }
@@ -569,5 +606,9 @@ export default {
 
 .track-meta {
     margin-bottom: 12px;
+}
+
+.race-navigation {
+    margin-top: 16px;
 }
 </style>
