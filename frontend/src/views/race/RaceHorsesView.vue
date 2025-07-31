@@ -357,6 +357,8 @@ export default {
             'Rm': 'Roma',
             'S': 'Solvalla',
             'Sk': 'Skellefteå',
+            'Sä': 'Solänget',
+            'T': 'Tingsryd',
             'Ti': 'Tingsryd',
             'U': 'Umåker',
             'Vg': 'Vaggeryd',

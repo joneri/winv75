@@ -64,9 +64,7 @@ const updateRatings = async (
   for (const race of races) {
     const placements = {}
     for (const h of race.horses) {
-      if (h.placement != null) {
-        placements[h.horseId] = h.placement
-      }
+      placements[h.horseId] = h.placement
     }
     processRace(placements, ratings, {
       k,
