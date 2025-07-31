@@ -1,5 +1,11 @@
 <template>
-  <v-chip :style="{ backgroundColor: bgColor, color: textColor }" class="ma-1" density="compact" label>
+  <v-chip
+    class="spelform-badge"
+    :style="{ backgroundColor: bgColor, color: textColor }"
+    size="small"
+    density="compact"
+    label
+  >
     {{ label }}
   </v-chip>
 </template>
@@ -22,3 +28,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.spelform-badge {
+  font-size: 0.75rem;
+  padding: 0 4px;
+}
+</style>
