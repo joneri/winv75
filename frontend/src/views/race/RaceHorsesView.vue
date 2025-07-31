@@ -56,6 +56,14 @@
                                     {{ formatShoe(item.raw) }}
                                 </span>
                             </template>
+                            <template v-slot:item.comment="{ item }">
+                                <v-tooltip v-if="item.columns.comment">
+                                    <template #activator="{ props }">
+                                        <v-icon v-bind="props" size="small">mdi-information-outline</v-icon>
+                                    </template>
+                                    <span>{{ item.columns.comment }}</span>
+                                </v-tooltip>
+                            </template>
                         </v-data-table>
                     </v-window-item>
                     <v-window-item value="1">
@@ -424,6 +432,7 @@ export default {
                 const index = showStartPositionColumn.value ? 2 : 1
                 base.splice(index, 0, { title: 'Distans', key: 'actualDistance' })
             }
+            base.push({ title: 'Kommentar', key: 'comment', sortable: false })
             return base
         })
 
