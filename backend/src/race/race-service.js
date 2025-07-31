@@ -29,6 +29,7 @@ const getRaceById = async (id) => {
 
             if (!trackId) {
                 try {
+                    console.log(`Fetching ATG extended comments for race: ${race.raceNumber} on ${raceDay.raceDayDate} (${raceDay.trackName})`)
                     const calResp = await axios.get(`${ATG_BASE_URL}/calendar/day/${raceDay.raceDayDate}`)
                     const atgTrack = calResp.data?.tracks?.find(t => t.name === raceDay.trackName)
                     trackId = atgTrack?.id
@@ -45,14 +46,19 @@ const getRaceById = async (id) => {
                 console.error(`Unable to resolve ATG track id for ${raceDay.trackName}`)
             } else {
                 const raceKey = `${raceDay.raceDayDate}_${trackId}_${race.raceNumber}`
+                console.log(`Constructed raceKey: ${raceKey}`)
                 try {
                     const resp = await axios.get(`${ATG_BASE_URL}/races/${raceKey}/extended`)
                     const ext = resp.data
                     race.atgExtendedRaw = ext
-                    for (const extHorse of ext.horses || []) {
-                        const match = race.horses.find(h => h.id === extHorse.id)
+                    for (const start of ext.starts || []) {
+                        const horseId = start.horse?.id
+                        const commentText = start.comments?.[0]?.commentText
+                        if (!horseId || !commentText) continue
+                        const match = race.horses.find(h => h.id === horseId)
                         if (match) {
-                            match.comment = extHorse.comment
+                            match.comment = commentText
+                            console.log(`💬 Saved comment for horse ${horseId}: "${commentText.slice(0, 50)}..."`)
                         }
                     }
                     raceDay.markModified('raceList')
