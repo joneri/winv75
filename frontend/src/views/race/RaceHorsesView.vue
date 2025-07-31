@@ -394,10 +394,10 @@ export default {
         }
 
         const shoeMap = {
-            A: { label: 'Alla skor', emoji: '👟👟' },
-            B: { label: 'Barfota fram', emoji: '👟🦶' },
-            C: { label: 'Barfota bak', emoji: '🦶👟' },
-            D: { label: 'Barfota runt om', emoji: '🦶🦶' },
+            4: { label: '', emoji: '👟👟👟👟' },
+            3: { label: '', emoji: '🦶🦶👟👟' },
+            2: { label: '', emoji: '👟👟🦶🦶' },
+            1: { label: '', emoji: '🦶🦶🦶🦶' },
         }
 
         const formatShoe = (horse) => {
