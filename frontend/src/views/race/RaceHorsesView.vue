@@ -37,8 +37,8 @@
                             <template v-slot:item.eloRating="{ item }">
                                 {{ formatElo(item.columns.eloRating) }}
                             </template>
-                            <template v-slot:item["driver.elo"]="{ item }">
-                                {{ formatElo(item.columns['driver.elo']) }}
+                            <template v-slot:item.driverElo="{ item }">
+                                {{ formatElo(item.columns.driverElo) }}
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -250,6 +250,7 @@ export default {
                         score: scoreMap[h.id],
                         rating: ratingMap[h.id],
                         eloRating: ratingMap[h.id],
+                        driverElo,
                         driver: {
                             ...h.driver,
                             id: driverId,
@@ -307,7 +308,7 @@ export default {
             { title: 'Horse Name', key: 'name' },
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Horse Elo', key: 'eloRating' },
-            { title: 'Driver Elo', key: 'driver.elo' },
+            { title: 'Driver Elo', key: 'driverElo' },
             { key: 'horseWithdrawn' },
         ]
 
