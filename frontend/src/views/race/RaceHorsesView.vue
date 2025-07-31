@@ -40,6 +40,9 @@
                             <template v-slot:item.driverElo="{ item }">
                                 {{ formatElo(item.columns.driverElo) }}
                             </template>
+                            <template v-slot:item.shoeOption="{ item }">
+                                {{ formatShoe(item.raw) }}
+                            </template>
                         </v-data-table>
                     </v-window-item>
                     <v-window-item value="1">
@@ -54,6 +57,9 @@
                             <template v-slot:item.favoriteStartMethod="{ item }">
                                 {{ item.columns.favoriteStartMethod }}
                                 <span v-if="item.columns.favoriteStartMethod && item.columns.favoriteStartMethod.toUpperCase() === raceStartMethodCode.toUpperCase()" title="Favorite start method match" class="ml-1">⭐</span>
+                            </template>
+                            <template v-slot:item.shoeOption="{ item }">
+                                {{ getShoeById(item.raw.id) }}
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -309,6 +315,7 @@ export default {
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Horse Elo', key: 'eloRating' },
             { title: 'Driver Elo', key: 'driverElo' },
+            { title: 'Sko', key: 'shoeOption', sortable: false },
             { key: 'horseWithdrawn' },
         ]
 
@@ -317,6 +324,7 @@ export default {
             { title: 'Start Position', key: 'programNumber' },
             { title: 'Driver Name', key: 'driver.name' },
             { title: 'Name', key: 'name' },
+            { title: 'Sko', key: 'shoeOption', sortable: false },
             { title: 'Elo Rating', key: 'rating' },
             { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
             { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
@@ -383,6 +391,28 @@ export default {
             }
         }
 
+        const shoeMap = {
+            A: { label: 'Alla skor', emoji: '👟👟' },
+            B: { label: 'Barfota fram', emoji: '👟🦶' },
+            C: { label: 'Barfota bak', emoji: '🦶👟' },
+            D: { label: 'Barfota runt om', emoji: '🦶🦶' },
+        }
+
+        const formatShoe = (horse) => {
+            const code = horse?.shoeOption?.code
+            if (code === undefined || code === null) return 'N/A'
+            const prev = horse?.previousShoeOption?.code
+            const changed = prev !== undefined && prev !== null && prev !== code
+            const mapping = shoeMap[code] || { label: code, emoji: '' }
+            const text = `${mapping.emoji} ${mapping.label}`.trim()
+            return changed ? `${text} 🔁` : text
+        }
+
+        const getShoeById = (horseId) => {
+            const horse = currentRace.value?.horses?.find(h => h.id === horseId)
+            return horse ? formatShoe(horse) : 'N/A'
+        }
+
         const formatElo = (value) => {
             return typeof value === 'number' ? Math.round(value) : 'N/A'
         }
@@ -404,6 +434,8 @@ export default {
             raceMetaString,
             trackMetaString,
             formatElo,
+            formatShoe,
+            getShoeById,
         }
     },
 }
