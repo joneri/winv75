@@ -29,6 +29,7 @@ const getRaceById = async (id) => {
 
             if (!trackId) {
                 try {
+                    console.log(`Fetching ATG extended comments for race: ${race.raceNumber} on ${raceDay.raceDayDate} (${raceDay.trackName})`)
                     const calResp = await axios.get(`${ATG_BASE_URL}/calendar/day/${raceDay.raceDayDate}`)
                     const atgTrack = calResp.data?.tracks?.find(t => t.name === raceDay.trackName)
                     trackId = atgTrack?.id
@@ -45,51 +46,54 @@ const getRaceById = async (id) => {
                 console.error(`Unable to resolve ATG track id for ${raceDay.trackName}`)
             } else {
                 const raceKey = `${raceDay.raceDayDate}_${trackId}_${race.raceNumber}`
+                console.log(`Constructed raceKey: ${raceKey}`)
                 try {
                     const resp = await axios.get(`${ATG_BASE_URL}/races/${raceKey}/extended`)
                     const ext = resp.data
                     race.atgExtendedRaw = ext
-                    for (const extHorse of ext.horses || []) {
-                        const match = race.horses.find(h => h.id === extHorse.id)
+                    for (const start of ext.starts || []) {
+                        const horseId = start.horse?.id
+                        const commentText = start.comments?.[0]?.commentText
+                        if (!horseId || !commentText) continue
+                        const match = race.horses.find(h => h.id === horseId)
                         if (match) {
-                            match.comment = extHorse.comment
+match.comment = extHorse.comment
+console.log(`💬 Saved comment for horse ${extHorse.id}: "${extHorse.comment?.slice(0, 50)}..."`)
 
-                            // Collect past race comments from historical results
-                            const records = extHorse.results?.records
-                            if (!Array.isArray(records)) {
-                                console.warn(`Expected records array for horse ${extHorse.id}`)
-                            } else {
-                                const pastRaceComments = []
-                                for (const record of records) {
-                                    const comment = record?.trMediaInfo?.comment?.trim()
-                                    if (!comment) {
-                                        continue
-                                    }
+// Collect past race comments from historical results
+const records = extHorse.results?.records
+if (!Array.isArray(records)) {
+    console.warn(`Expected records array for horse ${extHorse.id}`)
+} else {
+    const pastRaceComments = []
+    for (const record of records) {
+        const comment = record?.trMediaInfo?.comment?.trim()
+        if (!comment) continue
 
-                                    // Skip qualifiers when race type hints at qualification
-                                    const raceType = record?.race?.type || record?.type
-                                    if (typeof raceType === 'string' && raceType.toLowerCase().includes('qual')) {
-                                        continue
-                                    }
+        const raceType = record?.race?.type || record?.type
+        if (typeof raceType === 'string' && raceType.toLowerCase().includes('qual')) {
+            continue
+        }
 
-                                    const raceInfo = record?.race || {}
-                                    const driver = record?.driver?.name || [record?.driver?.firstName, record?.driver?.lastName].filter(Boolean).join(' ')
-                                    const track = raceInfo?.track?.name || record?.track?.name
-                                    const date = raceInfo?.startTime || raceInfo?.date || record?.startTime || record?.date
+        const raceInfo = record?.race || {}
+        const driver = record?.driver?.name || [record?.driver?.firstName, record?.driver?.lastName].filter(Boolean).join(' ')
+        const track = raceInfo?.track?.name || record?.track?.name
+        const date = raceInfo?.startTime || raceInfo?.date || record?.startTime || record?.date
 
-                                    pastRaceComments.push({
-                                        date,
-                                        comment,
-                                        raceId: raceInfo?.id,
-                                        driver: driver || undefined,
-                                        track: track || undefined
-                                    })
-                                }
+        pastRaceComments.push({
+            date,
+            comment,
+            raceId: raceInfo?.id,
+            driver: driver || undefined,
+            track: track || undefined
+        })
+    }
 
-                                if (pastRaceComments.length) {
-                                    match.pastRaceComments = pastRaceComments
-                                }
-                            }
+    if (pastRaceComments.length) {
+        match.pastRaceComments = pastRaceComments
+        console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${extHorse.id}`)
+    }
+}
                         }
                     }
                     raceDay.markModified('raceList')

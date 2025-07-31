@@ -63,12 +63,7 @@
                                 </span>
                             </template>
                             <template v-slot:item.comment="{ item }">
-                                <v-tooltip v-if="item.columns.comment">
-                                    <template #activator="{ props }">
-                                        <v-icon v-bind="props" size="small">mdi-information-outline</v-icon>
-                                    </template>
-                                    <span>{{ item.columns.comment }}</span>
-                                </v-tooltip>
+                              {{ item.columns.comment }}
                             </template>
                         </v-data-table>
                     </v-window-item>
