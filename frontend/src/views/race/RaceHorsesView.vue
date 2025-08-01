@@ -48,7 +48,12 @@
                             </template>
                             <template v-slot:item.eloRating="{ item }">
                                 <div :class="{ withdrawn: item.columns.horseWithdrawn }">
-                                    <div>{{ item.raw.name }} – {{ formatElo(item.columns.eloRating) }}</div>
+                                    <div v-if="(item.raw.numberOfStarts ?? 0) >= 5">
+                                        {{ item.raw.name }} – {{ formatElo(item.columns.eloRating) }}
+                                    </div>
+                                    <div v-else>
+                                        {{ item.raw.name }} – För få starter.
+                                    </div>
                                     <HorseCommentBlock
                                       :comment="item.raw.comment"
                                       :past-race-comments="item.raw.pastRaceComments"
@@ -339,10 +344,12 @@ export default {
                 }
                 const scoreMap = {}
                 const ratingMap = {}
+                const numberOfStartsMap = {}
                 const driverRatingMap = {}
                 scores.forEach(r => {
                     scoreMap[r.id] = r.score
                     ratingMap[r.id] = r.rating
+                    numberOfStartsMap[r.id] = parseInt(r.statistics?.[0]?.numberOfStarts) || 0
                 })
                 driverRatings.forEach(d => {
                     // Use string keys to avoid number/string mismatches
@@ -356,6 +363,7 @@ export default {
                         score: scoreMap[h.id],
                         rating: ratingMap[h.id],
                         eloRating: ratingMap[h.id],
+                        numberOfStarts: numberOfStartsMap[h.id] ?? 0,
                         driverElo,
                         driver: {
                             ...h.driver,
