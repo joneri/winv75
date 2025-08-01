@@ -52,7 +52,16 @@ const horseSchema = new mongoose.Schema({
   horseWithdrawn: Boolean,
   driverChanged: Boolean,
   linkable: Boolean,
-  comment: String
+  comment: String,
+  pastRaceComments: [
+    {
+      date: String,
+      comment: String,
+      raceId: String,
+      driver: String,
+      track: String
+    }
+  ]
 })
 
 const propTextsSchema = new mongoose.Schema({
