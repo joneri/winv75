@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="comment || formattedPastComments.length"
+    v-if="comment || formattedPastComments.length > 0"
     :class="['horse-comment-block', { withdrawn }]"
   >
     <div v-if="comment" class="main-comment" :class="commentClass(comment)">
@@ -100,6 +100,8 @@ export default {
 }
 .main-comment {
   margin-top: 2px;
+  font-weight: 600;
+  color: #333;
 }
 .past-comments {
   padding-left: 0;
