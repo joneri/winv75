@@ -1,17 +1,26 @@
 <template>
   <div v-if="hasContent" :class="['horse-comment-block', { withdrawn }]">
-    <div v-if="comment" class="main-comment">{{ comment }}</div>
+    <div v-if="comment" class="main-comment" :class="commentClass(comment)">
+      {{ comment }}
+    </div>
     <ul v-if="formattedPastComments.length" class="past-comments">
-      <li v-for="(pc, idx) in formattedPastComments" :key="idx">
+      <li v-for="(pc, idx) in visiblePastComments" :key="idx">
         <span class="arrow">\u2192</span>
-        {{ pc }}
+        <span :class="commentClass(pc)">{{ pc }}</span>
+      </li>
+      <li
+        v-if="!showAll && extraCommentsCount > 0"
+        class="more-comments"
+        @click="showAll = true"
+      >
+        +{{ extraCommentsCount }} fler tidigare kommentarer
       </li>
     </ul>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { formatPastComment } from '../services/formatPastComment.js'
 
 export default {
@@ -22,18 +31,54 @@ export default {
     withdrawn: Boolean
   },
   setup(props) {
-    const formattedPastComments = computed(() => {
-      const list = (props.pastRaceComments || [])
+    const showAll = ref(false)
+
+    const formattedPastComments = computed(() =>
+      (props.pastRaceComments || [])
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 3)
         .map(formatPastComment)
-      return list
-    })
+    )
 
-    const hasContent = computed(() => !!(props.comment || formattedPastComments.value.length))
+    const visiblePastComments = computed(() =>
+      showAll.value
+        ? formattedPastComments.value
+        : formattedPastComments.value.slice(0, 3)
+    )
 
-    return { formattedPastComments, hasContent }
+    const extraCommentsCount = computed(
+      () => formattedPastComments.value.length - 3
+    )
+
+    const hasContent = computed(
+      () => !!(props.comment || formattedPastComments.value.length)
+    )
+
+    const negativeWords = ['gal', 'galopp', 'disk']
+    const positiveWords = [
+      'fullföljde bra',
+      'bra avslutning',
+      'stark',
+      'rejäl spurt',
+      'vass'
+    ]
+
+    const commentClass = text => {
+      if (!text) return ''
+      const lower = text.toLowerCase()
+      if (negativeWords.some(w => lower.includes(w))) return 'comment-negative'
+      if (positiveWords.some(w => lower.includes(w))) return 'comment-positive'
+      return ''
+    }
+
+    return {
+      formattedPastComments,
+      visiblePastComments,
+      extraCommentsCount,
+      showAll,
+      hasContent,
+      commentClass
+    }
   }
 }
 </script>
@@ -55,6 +100,17 @@ export default {
 }
 .past-comments .arrow {
   margin-right: 4px;
+}
+.past-comments .more-comments {
+  font-size: 9px;
+  color: #aaa;
+  cursor: pointer;
+}
+.comment-negative {
+  color: #c44;
+}
+.comment-positive {
+  color: #2b2;
 }
 .withdrawn {
   text-decoration: line-through;
