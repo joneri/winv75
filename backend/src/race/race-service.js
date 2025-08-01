@@ -54,32 +54,37 @@ const getRaceById = async (id) => {
                     for (const start of ext.starts || []) {
                         const horseId = start.horse?.id
                         const comment = start.comments?.[0]?.commentText?.trim() || start.comments?.[0]?.comment?.trim()
-                        if (!horseId || !comment) continue
+                        if (!horseId) continue
                         const match = race.horses.find(h => h.id === horseId)
                         if (match) {
-                            match.comment = comment
-                            console.log(`💬 Saved comment for horse ${horseId}: "${comment.slice(0, 50)}..."`)
+                            if (comment) {
+                                match.comment = comment
+                                console.log(`💬 Saved comment for horse ${horseId}: "${comment.slice(0, 50)}..."`)
+                            }
 
-                            const records = start.horse?.results?.records
-                            if (Array.isArray(records)) {
-                                const pastRaceComments = records
-                                    .filter(r => {
-                                        const raceType = r?.race?.type || r?.type || ''
-                                        const isQualifier = raceType.toLowerCase().includes('qual')
-                                        const hasComment = r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim()
-                                        return !isQualifier && hasComment
-                                    })
-                                    .map(r => ({
-                                        date: r?.race?.startTime || r?.race?.date || r?.startTime || r?.date,
-                                        comment: r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim(),
-                                        raceId: r?.race?.id,
-                                        driver: r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
-                                        track: r?.race?.track?.name || r?.track?.name
-                                    }))
-                                
-                                if (pastRaceComments.length) {
-                                    match.pastRaceComments = pastRaceComments
-                                    console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${horseId}`)
+                            // Always attempt to fetch past race comments regardless of match.comment
+                            if (!match.pastRaceComments) {
+                                const records = start.horse?.results?.records
+                                if (Array.isArray(records)) {
+                                    const pastRaceComments = records
+                                        .filter(r => {
+                                            const raceType = r?.race?.type || r?.type || ''
+                                            const isQualifier = raceType.toLowerCase().includes('qual')
+                                            const hasComment = r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim()
+                                            return !isQualifier && hasComment
+                                        })
+                                        .map(r => ({
+                                            date: r?.race?.startTime || r?.race?.date || r?.startTime || r?.date,
+                                            comment: r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim(),
+                                            raceId: r?.race?.id,
+                                            driver: r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
+                                            track: r?.race?.track?.name || r?.track?.name
+                                        }))
+
+                                    if (pastRaceComments.length) {
+                                        match.pastRaceComments = pastRaceComments
+                                        console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${horseId}`)
+                                    }
                                 }
                             }
                         }
