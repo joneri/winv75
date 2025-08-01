@@ -9,7 +9,6 @@
     <ul v-if="formattedPastComments.length" class="past-comments">
       <li v-for="(pc, idx) in visiblePastComments" :key="idx">
         <span class="arrow">→</span>
-        <span :class="commentClass(pc)">{{ pc }}</span>
       </li>
       <li
         v-if="!showAll && extraCommentsCount > 0"
@@ -40,7 +39,6 @@ export default {
       (props.pastRaceComments || [])
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .map(formatPastComment)
     )
 
     const visiblePastComments = computed(() =>
@@ -84,6 +82,9 @@ export default {
   margin-top: 2px;
   font-weight: 600;
   color: #333;
+  font-weight: 700;
+  font-size: 13px;
+  color: #cfc8c8;
 }
 .past-comments {
   padding-left: 0;
