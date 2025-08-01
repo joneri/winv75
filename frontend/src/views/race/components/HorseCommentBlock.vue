@@ -71,6 +71,7 @@ export default {
       'bra tempo',
       'bra fart',
       'bra styrka',
+      'koppla grepp si'
     ]
 
     const commentClass = text => {
