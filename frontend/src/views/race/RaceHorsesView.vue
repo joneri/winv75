@@ -67,6 +67,29 @@
                             <template v-slot:item.driverElo="{ item }">
                                 {{ item.raw.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
+                            <template v-slot:item.winPercentage="{ item }">
+                                <span :title="`${item.raw.statsTotalStarts} starter`">
+                                    {{ item.raw.statsTotalStarts ? Math.round(item.raw.winPercentage) + '%' : '—' }}
+                                </span>
+                            </template>
+                            <template v-slot:item.top3Percentage="{ item }">
+                                <span :title="`${item.raw.statsTotalStarts} starter`">
+                                    {{ item.raw.statsTotalStarts ? Math.round(item.raw.top3Percentage) + '%' : '—' }}
+                                </span>
+                            </template>
+                            <template v-slot:item.averagePlacing="{ item }">
+                                {{
+                                    typeof item.raw.averagePlacing === 'number'
+                                        ? item.raw.averagePlacing.toFixed(1)
+                                        : '—'
+                                }}
+                            </template>
+                            <template v-slot:item.formScoreDisplay="{ item }">
+                                {{ item.raw.formScoreDisplay }}
+                            </template>
+                            <template v-slot:item.favoriteDriverDisplay="{ item }">
+                                {{ item.raw.favoriteDriverDisplay }}
+                            </template>
                             <template v-slot:item.shoeOption="{ item }">
                                 <span :title="startListShoeTooltip(item.raw) || null">
                                     {{ formatStartListShoe(item.raw) }}
@@ -358,15 +381,68 @@ export default {
                     // Use string keys to avoid number/string mismatches
                     driverRatingMap[String(d.id)] = d.elo
                 })
+                const computeHorseStats = (horse) => {
+                    const records = horse.results?.records || horse.results || []
+                    const totalStarts = records.length
+                    let wins = 0
+                    let top3 = 0
+                    let sumPlacings = 0
+                    let racesWithPlace = 0
+                    let formScore = 0
+                    const driverCounts = {}
+                    let favDriver = ''
+                    let favCount = 0
+
+                    records.forEach((r, idx) => {
+                        const placement = Number(r?.placement?.sortValue ?? r?.placement ?? 0)
+                        if (placement === 1) wins++
+                        if (placement >= 1 && placement <= 3) top3++
+                        if (placement > 0 && placement < 99) {
+                            sumPlacings += placement
+                            racesWithPlace++
+                        }
+                        if (idx < 5) {
+                            if (placement === 1) formScore += 3
+                            else if (placement === 2) formScore += 2
+                            else if (placement === 3) formScore += 1
+                        }
+                        const dName = r?.driver?.name
+                        if (dName) {
+                            driverCounts[dName] = (driverCounts[dName] || 0) + 1
+                            if (driverCounts[dName] > favCount) {
+                                favCount = driverCounts[dName]
+                                favDriver = dName
+                            }
+                        }
+                    })
+
+                    return {
+                        totalStarts,
+                        winPercentage: totalStarts ? (wins / totalStarts) * 100 : 0,
+                        top3Percentage: totalStarts ? (top3 / totalStarts) * 100 : 0,
+                        averagePlacing: racesWithPlace ? (sumPlacings / racesWithPlace) : null,
+                        formScore: totalStarts >= 5 ? formScore : null,
+                        favDriver,
+                        favCount,
+                    }
+                }
+
                 responseData.horses = (responseData.horses || []).map(h => {
                     const driverId = h.driver?.licenseId ?? h.driver?.id
                     const driverElo = driverRatingMap[String(driverId)]
+                    const stats = computeHorseStats(h)
                     return {
                         ...h,
                         score: scoreMap[h.id],
                         rating: ratingMap[h.id],
                         eloRating: ratingMap[h.id],
                         numberOfStarts: numberOfStartsMap[h.id] ?? 0,
+                        winPercentage: stats.winPercentage,
+                        top3Percentage: stats.top3Percentage,
+                        averagePlacing: stats.averagePlacing,
+                        formScoreDisplay: stats.formScore !== null ? `${stats.formScore} / 15` : '—',
+                        favoriteDriverDisplay: stats.favDriver ? `${stats.favDriver} (${stats.favCount}x)` : '—',
+                        statsTotalStarts: stats.totalStarts,
                         driverElo,
                         driver: {
                             ...h.driver,
@@ -431,18 +507,27 @@ export default {
             const base = [
                 { title: '#', key: 'programNumber', width: '50px' },
                 { title: '# Starts', key: 'numberOfStarts', sortable: false },
-                { title: 'Horse (Elo)', key: 'eloRating' },
-                { title: 'Driver (Elo)', key: 'driverElo' },
-                { title: 'Shoe', key: 'shoeOption', sortable: false },
-                { key: 'horseWithdrawn' },
             ]
             if (showStartPositionColumn.value) {
-                base.splice(2, 0, { title: 'Pos', key: 'startPosition', width: '50px' })
+                base.push({ title: 'Pos', key: 'startPosition', width: '50px' })
             }
             if (hasHandicap.value) {
-                const index = showStartPositionColumn.value ? 3 : 2
-                base.splice(index, 0, { title: 'Distans', key: 'actualDistance' })
+                base.push({ title: 'Distans', key: 'actualDistance' })
             }
+            base.push({ title: 'Horse (Elo)', key: 'eloRating' })
+            base.push({ title: 'Driver (Elo)', key: 'driverElo' })
+            base.push({
+                title: '🧪 Stats',
+                children: [
+                    { title: 'Win %', key: 'winPercentage', sortable: false },
+                    { title: 'Top 3 %', key: 'top3Percentage', sortable: false },
+                    { title: 'Avg Place', key: 'averagePlacing', sortable: false },
+                    { title: 'Form (5)', key: 'formScoreDisplay', sortable: false },
+                    { title: 'Fav. Driver', key: 'favoriteDriverDisplay', sortable: false },
+                ],
+            })
+            base.push({ title: 'Shoe', key: 'shoeOption', sortable: false })
+            base.push({ key: 'horseWithdrawn' })
             return base
         })
 
