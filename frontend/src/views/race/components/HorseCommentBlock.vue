@@ -11,7 +11,7 @@
         <span class="arrow">→</span>
         <span :class="commentClass(pc.comment)">
           <strong>{{ pc.date }}</strong>
-          <span v-if="pc.place"> ({{ pc.place }})</span>
+          <span> ({{ formatPlace(pc.place) }})</span>
           {{ pc.comment }}
         </span>
       </li>
@@ -44,11 +44,14 @@ export default {
       (props.pastRaceComments || [])
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .map(pc => ({
-          date: pc.date?.split('T')[0] || '',
-          place: pc.place || '',
-          comment: pc.comment || ''
-        }))
+        .map(pc => {
+          console.log('🧪 Past comment place:', pc.place)
+          return {
+            date: pc.date?.split('T')[0] || '',
+            place: pc.place ?? null,
+            comment: pc.comment || ''
+          }
+        })
     )
 
     const visiblePastComments = computed(() =>
@@ -74,12 +77,18 @@ export default {
 
     console.log('Formatted past comments:', formattedPastComments.value)
 
+    const formatPlace = place =>
+      place === 0 || place === null || place === undefined || place === ''
+        ? '**'
+        : place
+
     return {
       formattedPastComments,
       visiblePastComments,
       extraCommentsCount,
       showAll,
-      commentClass
+      commentClass,
+      formatPlace
     }
     
   }

@@ -46,14 +46,18 @@ const extractPastRaceComments = (records) =>
             const hasComment = r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim()
             return !isQualifier && hasComment
         })
-        .map(r => ({
-            date: r?.race?.startTime || r?.race?.date || r?.startTime || r?.date,
-            comment: r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim(),
-            raceId: r?.race?.id,
-            driver: r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
-            track: r?.race?.track?.name || r?.track?.name,
-            place: r?.place || ''
-        }))
+        .map(r => {
+            const record = {
+                date: r?.race?.startTime || r?.race?.date || r?.startTime || r?.date,
+                comment: r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim(),
+                raceId: r?.race?.id,
+                driver: r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
+                track: r?.race?.track?.name || r?.track?.name,
+                place: r?.place ?? null
+            }
+            console.log('🧪 Extracted record:', record.place)
+            return record
+        })
 
 /**
  * Apply extended race data to the horses in the race object.
