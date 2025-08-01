@@ -47,9 +47,14 @@
                                 {{ item.columns.actualDistance ? `${item.columns.actualDistance} m` : '—' }}
                             </template>
                             <template v-slot:item.name="{ item }">
-                                <span :style="{ 'text-decoration': item.columns.horseWithdrawn ? 'line-through' : 'none' }">
-                                    {{ item.columns.name }}
-                                </span>
+                                <div :class="{ withdrawn: item.columns.horseWithdrawn }">
+                                    <div>{{ item.columns.name }}</div>
+                                    <HorseCommentBlock
+                                      :comment="item.columns.comment"
+                                      :past-race-comments="item.raw.pastRaceComments"
+                                      :withdrawn="item.columns.horseWithdrawn"
+                                    />
+                                </div>
                             </template>
                             <template v-slot:item.eloRating="{ item }">
                                 {{ formatElo(item.columns.eloRating) }}
@@ -61,9 +66,6 @@
                                 <span :title="shoeTooltip(item.raw) || null">
                                     {{ formatShoe(item.raw) }}
                                 </span>
-                            </template>
-                            <template v-slot:item.comment="{ item }">
-                              {{ item.columns.comment }}
                             </template>
                         </v-data-table>
                     </v-window-item>
@@ -119,10 +121,11 @@ import {
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
 import SpelformBadge from '@/components/SpelformBadge.vue'
+import HorseCommentBlock from './components/HorseCommentBlock.vue'
 
 export default {
     name: 'RaceHorsesView',
-    components: { SpelformBadge },
+    components: { SpelformBadge, HorseCommentBlock },
 
     setup() {
         // Helper to parse start method and handicaps from propTexts
@@ -433,7 +436,6 @@ export default {
                 const index = showStartPositionColumn.value ? 2 : 1
                 base.splice(index, 0, { title: 'Distans', key: 'actualDistance' })
             }
-            base.push({ title: 'Kommentar', key: 'comment', sortable: false })
             return base
         })
 
@@ -620,5 +622,9 @@ export default {
 
 .race-navigation {
     margin-top: 16px;
+}
+
+.withdrawn {
+    text-decoration: line-through;
 }
 </style>
