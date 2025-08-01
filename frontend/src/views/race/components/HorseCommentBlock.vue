@@ -54,7 +54,7 @@ export default {
       () => !!(props.comment || formattedPastComments.value.length)
     )
 
-    const negativeWords = ['gal', 'galopp', 'disk']
+    const negativeWords = ['gal', 'galopp', 'disk', 'inget extra', 'inga plus', 'inget plus', 'saknade plus', 'saknade extra', 'ej plus', 'ej extra']
     const positiveWords = [
       'fullföljde bra', 'fullf bra',
       'bra avslutning', 'bra avsl',
@@ -71,7 +71,8 @@ export default {
       'bra tempo',
       'bra fart',
       'bra styrka',
-      'koppla grepp si'
+      'koppla grepp si',
+      'enkelt undan', 'enkel seger',
     ]
 
     const commentClass = text => {
