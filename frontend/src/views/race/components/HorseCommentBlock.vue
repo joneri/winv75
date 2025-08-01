@@ -53,26 +53,8 @@ export default {
       () => formattedPastComments.value.length - 3
     )
 
-    const negativeWords = ['gal', 'galopp', 'disk']
-    const positiveWords = [
-      'fullföljde bra', 'fullf bra',
-      'bra avslutning', 'bra avsl',
-      'stark',
-      'rejäl spurt',
-      'vass',
-      'bra prestation', 'bra prest',
-      'bra lopp',
-      'bra insats',
-      'bra form',
-      'avgj lätt',
-      'bra spurt',
-      'pressade', 
-      'bra tempo',
-      'bra fart',
-      'bra styrka',
-      'koppla grepp si',
-      'enkelt undan', 'enkel seger',
-    ]
+  const negativeWords = ['gal', 'galopp', 'disk', 'inget extra', 'inga plus', 'inget plus', 'saknade plus', 'saknade extra', 'ej plus', 'ej extra']
+  const positiveWords = ['fullföljde bra', 'bra avslutning', 'stark', 'rejäl spurt', 'vass']
 
     const commentClass = text => {
       if (!text) return ''
