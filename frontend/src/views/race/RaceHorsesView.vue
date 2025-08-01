@@ -48,7 +48,7 @@
                             </template>
                             <template v-slot:item.eloRating="{ item }">
                                 <div :class="{ withdrawn: item.columns.horseWithdrawn }">
-                                    <div>{{ item.columns.name }} – {{ formatElo(item.columns.eloRating) }}</div>
+                                    <div>{{ item.raw.name }} – {{ formatElo(item.columns.eloRating) }}</div>
                                     <HorseCommentBlock
                                       :comment="item.columns.comment"
                                       :past-race-comments="item.raw.pastRaceComments"
@@ -57,7 +57,7 @@
                                 </div>
                             </template>
                             <template v-slot:item.driverElo="{ item }">
-                                {{ item.columns.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
+                                {{ item.raw.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
                                 <span :title="startListShoeTooltip(item.raw) || null">
@@ -419,8 +419,8 @@ export default {
         const headers = computed(() => {
             const base = [
                 { title: '#', key: 'programNumber', width: '50px' },
-                { title: 'Horse', key: 'eloRating' },
-                { title: 'Driver', key: 'driverElo' },
+                { title: 'Horse (Elo)', key: 'eloRating' },
+                { title: 'Driver (Elo)', key: 'driverElo' },
                 { title: 'Shoe', key: 'shoeOption', sortable: false },
                 { key: 'horseWithdrawn' },
             ]
