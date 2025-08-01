@@ -63,8 +63,8 @@
                                 {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
-                                <span :title="shoeTooltip(item.raw) || null">
-                                    {{ formatShoe(item.raw) }}
+                                <span :title="startListShoeTooltip(item.raw) || null">
+                                    {{ formatStartListShoe(item.raw) }}
                                 </span>
                             </template>
                         </v-data-table>
@@ -421,16 +421,16 @@ export default {
 
         const headers = computed(() => {
             const base = [
-                { title: 'Programnummer', key: 'programNumber' },
+                { title: '#', key: 'programNumber', width: '50px' },
                 { title: 'Horse Name', key: 'name' },
                 { title: 'Driver Name', key: 'driver.name' },
                 { title: 'Horse Elo', key: 'eloRating' },
                 { title: 'Driver Elo', key: 'driverElo' },
-                { title: 'Sko', key: 'shoeOption', sortable: false },
+                { title: 'Shoe', key: 'shoeOption', sortable: false },
                 { key: 'horseWithdrawn' },
             ]
             if (showStartPositionColumn.value) {
-                base.splice(1, 0, { title: 'Startposition', key: 'startPosition' })
+                base.splice(1, 0, { title: 'Pos', key: 'startPosition', width: '50px' })
             }
             if (hasHandicap.value) {
                 const index = showStartPositionColumn.value ? 2 : 1
@@ -526,6 +526,31 @@ export default {
             1: { label: '', emoji: '🦶🦶🦶🦶' },
         }
 
+        const startListShoeMap = {
+            4: '👟👟',
+            3: '🦶👟',
+            2: '👟🦶',
+            1: '🦶🦶',
+        }
+
+        const formatStartListShoe = (horse) => {
+            const code = horse?.shoeOption?.code
+            if (code === undefined || code === null) return '—'
+            const prev = horse?.previousShoeOption?.code
+            const changed = prev !== undefined && prev !== null && prev !== code
+            const emoji = startListShoeMap[code] || ''
+            return changed ? `${emoji} 🔁` : emoji
+        }
+
+        const startListShoeTooltip = (horse) => {
+            const code = horse?.shoeOption?.code
+            const prev = horse?.previousShoeOption?.code
+            const changed = prev !== undefined && prev !== null && prev !== code
+            if (!changed) return ''
+            const prevEmoji = startListShoeMap[prev] || ''
+            return `Changed from: ${prevEmoji}`
+        }
+
         const formatShoe = (horse) => {
             const code = horse?.shoeOption?.code
             if (code === undefined || code === null) return '—'
@@ -593,6 +618,8 @@ export default {
             raceGames,
             formatStartPosition,
             formatElo,
+            formatStartListShoe,
+            startListShoeTooltip,
             formatShoe,
             shoeTooltip,
             getShoeById,

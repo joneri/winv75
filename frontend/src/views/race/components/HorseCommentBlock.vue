@@ -1,11 +1,14 @@
 <template>
-  <div v-if="hasContent" :class="['horse-comment-block', { withdrawn }]">
+  <div
+    v-if="comment || formattedPastComments.length"
+    :class="['horse-comment-block', { withdrawn }]"
+  >
     <div v-if="comment" class="main-comment" :class="commentClass(comment)">
       {{ comment }}
     </div>
     <ul v-if="formattedPastComments.length" class="past-comments">
       <li v-for="(pc, idx) in visiblePastComments" :key="idx">
-        <span class="arrow">\u2192</span>
+        <span class="arrow">→</span>
         <span :class="commentClass(pc)">{{ pc }}</span>
       </li>
       <li
@@ -50,11 +53,7 @@ export default {
       () => formattedPastComments.value.length - 3
     )
 
-    const hasContent = computed(
-      () => !!(props.comment || formattedPastComments.value.length)
-    )
-
-    const negativeWords = ['gal', 'galopp', 'disk', 'inget extra', 'inga plus', 'inget plus', 'saknade plus', 'saknade extra', 'ej plus', 'ej extra']
+    const negativeWords = ['gal', 'galopp', 'disk']
     const positiveWords = [
       'fullföljde bra', 'fullf bra',
       'bra avslutning', 'bra avsl',
@@ -88,7 +87,6 @@ export default {
       visiblePastComments,
       extraCommentsCount,
       showAll,
-      hasContent,
       commentClass
     }
   }
