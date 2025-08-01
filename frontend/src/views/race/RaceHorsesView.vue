@@ -46,6 +46,9 @@
                             <template v-if="hasHandicap" v-slot:item.actualDistance="{ item }">
                                 {{ item.columns.actualDistance ? `${item.columns.actualDistance} m` : '—' }}
                             </template>
+                            <template v-slot:item.numberOfStarts="{ item }">
+                                {{ item.raw.numberOfStarts }}
+                            </template>
                             <template v-slot:item.eloRating="{ item }">
                                 <div :class="{ withdrawn: item.columns.horseWithdrawn }">
                                     <div v-if="(item.raw.numberOfStarts ?? 0) >= 5">
@@ -427,16 +430,17 @@ export default {
         const headers = computed(() => {
             const base = [
                 { title: '#', key: 'programNumber', width: '50px' },
+                { title: '# Starts', key: 'numberOfStarts', sortable: false },
                 { title: 'Horse (Elo)', key: 'eloRating' },
                 { title: 'Driver (Elo)', key: 'driverElo' },
                 { title: 'Shoe', key: 'shoeOption', sortable: false },
                 { key: 'horseWithdrawn' },
             ]
             if (showStartPositionColumn.value) {
-                base.splice(1, 0, { title: 'Pos', key: 'startPosition', width: '50px' })
+                base.splice(2, 0, { title: 'Pos', key: 'startPosition', width: '50px' })
             }
             if (hasHandicap.value) {
-                const index = showStartPositionColumn.value ? 2 : 1
+                const index = showStartPositionColumn.value ? 3 : 2
                 base.splice(index, 0, { title: 'Distans', key: 'actualDistance' })
             }
             return base
@@ -456,7 +460,6 @@ export default {
                 { title: 'Favorite Start Method', key: 'favoriteStartMethod' },
                 { title: 'Favorite Track', key: 'favoriteTrack' },
                 { title: 'Horse Label', key: 'horseLabel' },
-                { title: 'Number of Starts', key: 'numberOfStarts' },
                 { title: 'Placements', key: 'placements' },
                 { title: 'Total Score', key: 'totalScore' },
             ]
