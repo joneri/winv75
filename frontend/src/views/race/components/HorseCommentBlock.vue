@@ -55,11 +55,23 @@ export default {
 
     const negativeWords = ['gal', 'galopp', 'disk']
     const positiveWords = [
-      'fullföljde bra',
-      'bra avslutning',
+      'fullföljde bra', 'fullf bra',
+      'bra avslutning', 'bra avsl',
       'stark',
       'rejäl spurt',
-      'vass'
+      'vass',
+      'bra prestation', 'bra prest',
+      'bra lopp',
+      'bra insats',
+      'bra form',
+      'avgj lätt',
+      'bra spurt',
+      'pressade', 
+      'bra tempo',
+      'bra fart',
+      'bra styrka',
+      'koppla grepp si',
+      'enkelt undan', 'enkel seger',
     ]
 
     const commentClass = text => {
