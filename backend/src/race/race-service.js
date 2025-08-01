@@ -51,7 +51,8 @@ const extractPastRaceComments = (records) =>
             comment: r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim(),
             raceId: r?.race?.id,
             driver: r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
-            track: r?.race?.track?.name || r?.track?.name
+            track: r?.race?.track?.name || r?.track?.name,
+            place: r?.place || ''
         }))
 
 /**

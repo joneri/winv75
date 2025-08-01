@@ -9,6 +9,11 @@
     <ul v-if="formattedPastComments.length" class="past-comments">
       <li v-for="(pc, idx) in visiblePastComments" :key="idx">
         <span class="arrow">→</span>
+        <span :class="commentClass(pc.comment)">
+          <strong>{{ pc.date }}</strong>
+          <span v-if="pc.place"> ({{ pc.place }})</span>
+          {{ pc.comment }}
+        </span>
       </li>
       <li
         v-if="!showAll && extraCommentsCount > 0"
@@ -23,7 +28,6 @@
 
 <script>
 import { computed, ref } from 'vue'
-import { formatPastComment } from '../services/formatPastComment.js'
 
 export default {
   name: 'HorseCommentBlock',
@@ -33,12 +37,18 @@ export default {
     withdrawn: Boolean
   },
   setup(props) {
+    console.log('Raw pastRaceComments prop:', props.pastRaceComments);
     const showAll = ref(false)
 
     const formattedPastComments = computed(() =>
       (props.pastRaceComments || [])
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .map(pc => ({
+          date: pc.date?.split('T')[0] || '',
+          place: pc.place || '',
+          comment: pc.comment || ''
+        }))
     )
 
     const visiblePastComments = computed(() =>
@@ -62,6 +72,8 @@ export default {
       return ''
     }
 
+    console.log('Formatted past comments:', formattedPastComments.value)
+
     return {
       formattedPastComments,
       visiblePastComments,
@@ -69,6 +81,7 @@ export default {
       showAll,
       commentClass
     }
+    
   }
 }
 </script>
@@ -80,8 +93,6 @@ export default {
 }
 .main-comment {
   margin-top: 2px;
-  font-weight: 600;
-  color: #333;
   font-weight: 700;
   font-size: 13px;
   color: #cfc8c8;
