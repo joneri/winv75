@@ -50,7 +50,6 @@
                                 <div :class="{ withdrawn: item.columns.horseWithdrawn }">
                                     <div>{{ item.raw.name }} – {{ formatElo(item.columns.eloRating) }}</div>
                                     <HorseCommentBlock
-                                      :comment="item.columns.comment"
                                       :comment="item.raw.comment"
                                       :past-race-comments="item.raw.pastRaceComments"
                                       :withdrawn="item.columns.horseWithdrawn"
