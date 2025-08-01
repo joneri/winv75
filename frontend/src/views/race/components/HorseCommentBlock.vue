@@ -44,14 +44,11 @@ export default {
       (props.pastRaceComments || [])
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .map(pc => {
-          console.log('🧪 Past comment place:', pc.place)
-          return {
-            date: pc.date?.split('T')[0] || '',
-            place: pc.place ?? null,
-            comment: pc.comment || ''
-          }
-        })
+        .map(pc => ({
+          date: pc.date?.split('T')[0] || '',
+          place: Number(pc.place ?? 0),
+          comment: pc.comment || ''
+        }))
     )
 
     const visiblePastComments = computed(() =>

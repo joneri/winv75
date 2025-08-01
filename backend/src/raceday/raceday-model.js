@@ -59,7 +59,8 @@ const horseSchema = new mongoose.Schema({
       comment: String,
       raceId: String,
       driver: String,
-      track: String
+      track: String,
+      place: { type: Number, default: 0 }
     }
   ]
 })
