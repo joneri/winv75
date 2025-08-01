@@ -84,6 +84,14 @@ It downloads all raceday startlists for the given date and stores them in MongoD
 The front‑end provides a date field in the **Raceday Input** view where you can
 trigger this fetch.
 
+## Race comments and past performance
+
+When a race is requested via `GET /api/race/:id`, the back‑end checks whether
+any horses are missing comments or past race comments. Missing data triggers a
+single fetch to ATG’s extended race endpoint, and the results are stored in
+MongoDB. Subsequent requests use the cached data so the external data source is
+only contacted when necessary.
+
 ## Horse Ranking
 
 Each horse receives a score based on four weighted metrics:
