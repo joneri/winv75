@@ -381,11 +381,23 @@ export default {
                     // Use string keys to avoid number/string mismatches
                     driverRatingMap[String(d.id)] = d.elo
                 })
-                const computeHorseStats = (horse) => {
-                    const records = horse.results?.records || horse.results || []
-                    const totalStarts = records.length
+                // Stats based on Travsport data (horse.results[]). ATG past-race
+                // objects expose a `.records` property, but that structure is not
+                // used here.
+                const statsFor = (horse) => {
+                    const results = Array.isArray(horse.results)
+                        ? [...horse.results]
+                        : []
+                    // Sort most recent first so that form is calculated on the
+                    // latest starts
+                    results.sort((a, b) =>
+                        new Date(b.startTime) - new Date(a.startTime)
+                    )
+
+                    let totalStarts = 0
                     let wins = 0
-                    let top3 = 0
+                    let seconds = 0
+                    let thirds = 0
                     let sumPlacings = 0
                     let racesWithPlace = 0
                     let formScore = 0
@@ -393,20 +405,53 @@ export default {
                     let favDriver = ''
                     let favCount = 0
 
-                    records.forEach((r, idx) => {
-                        const placement = Number(r?.placement?.sortValue ?? r?.placement ?? 0)
-                        if (placement === 1) wins++
-                        if (placement >= 1 && placement <= 3) top3++
-                        if (placement > 0 && placement < 99) {
+                    const trackStats = {}
+                    const distanceStats = {
+                        '1600-1800': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                        '1801-2200': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                        '2201-2600': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                        '2601+': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                    }
+                    const methodStats = {
+                        A: { starts: 0, wins: 0, top3: 0, sumPlacings: 0, placements: 0 },
+                        V: { starts: 0, wins: 0, top3: 0, sumPlacings: 0, placements: 0 },
+                    }
+
+                    const getDistanceBucket = (dist) => {
+                        if (dist >= 1600 && dist <= 1800) return '1600-1800'
+                        if (dist >= 1801 && dist <= 2200) return '1801-2200'
+                        if (dist >= 2201 && dist <= 2600) return '2201-2600'
+                        if (dist >= 2601) return '2601+'
+                        return null
+                    }
+
+                    results.forEach((r, idx) => {
+                        if (r.withdrawn) return
+                        totalStarts++
+
+                        const placement = parseInt(r?.place, 10)
+                        if (!Number.isNaN(placement) && placement > 0) {
+                            if (placement === 1) wins++
+                            else if (placement === 2) seconds++
+                            else if (placement === 3) thirds++
+
                             sumPlacings += placement
                             racesWithPlace++
                         }
+
                         if (idx < 5) {
                             if (placement === 1) formScore += 3
                             else if (placement === 2) formScore += 2
                             else if (placement === 3) formScore += 1
                         }
-                        const dName = r?.driver?.name
+
+                        const driverObj = r?.driver || {}
+                        const dName =
+                            driverObj.name ||
+                            [driverObj.firstName, driverObj.lastName]
+                                .filter(Boolean)
+                                .join(' ')
+                                .trim()
                         if (dName) {
                             driverCounts[dName] = (driverCounts[dName] || 0) + 1
                             if (driverCounts[dName] > favCount) {
@@ -414,14 +459,101 @@ export default {
                                 favDriver = dName
                             }
                         }
+
+                        const track = r.track?.code || r.trackCode
+                        if (track) {
+                            if (!trackStats[track]) {
+                                trackStats[track] = { starts: 0, wins: 0, sumPlacings: 0, placements: 0 }
+                            }
+                            const t = trackStats[track]
+                            t.starts++
+                            if (placement === 1) t.wins++
+                            if (!Number.isNaN(placement) && placement > 0) {
+                                t.sumPlacings += placement
+                                t.placements++
+                            }
+                        }
+
+                        const dist = Number(r?.distance ?? 0)
+                        const bucket = getDistanceBucket(dist)
+                        if (bucket) {
+                            const b = distanceStats[bucket]
+                            b.starts++
+                            if (placement === 1) b.wins++
+                            if (!Number.isNaN(placement) && placement > 0) {
+                                b.sumPlacings += placement
+                                b.placements++
+                            }
+                        }
+
+                        const method = r.startMethod
+                        if (method && methodStats[method]) {
+                            const m = methodStats[method]
+                            m.starts++
+                            if (placement === 1) m.wins++
+                            if (placement >= 1 && placement <= 3) m.top3++
+                            if (!Number.isNaN(placement) && placement > 0) {
+                                m.sumPlacings += placement
+                                m.placements++
+                            }
+                        }
                     })
+
+                    const top3 = wins + seconds + thirds
+
+                    let bestTrackCode = null
+                    let bestTrackWins = -1
+                    let bestTrackAvg = Infinity
+                    Object.entries(trackStats).forEach(([code, s]) => {
+                        const avg = s.placements ? s.sumPlacings / s.placements : Infinity
+                        if (s.wins > bestTrackWins || (s.wins === bestTrackWins && avg < bestTrackAvg)) {
+                            bestTrackCode = code
+                            bestTrackWins = s.wins
+                            bestTrackAvg = avg
+                        }
+                    })
+
+                    let bestDistanceLabel = null
+                    let bestDistanceWins = -1
+                    let bestDistanceAvg = Infinity
+                    Object.entries(distanceStats).forEach(([label, s]) => {
+                        if (!s.starts) return
+                        const avg = s.placements ? s.sumPlacings / s.placements : Infinity
+                        if (s.wins > bestDistanceWins || (s.wins === bestDistanceWins && avg < bestDistanceAvg)) {
+                            bestDistanceLabel = label
+                            bestDistanceWins = s.wins
+                            bestDistanceAvg = avg
+                        }
+                    })
+                    const bestDistanceStats = bestDistanceLabel ? distanceStats[bestDistanceLabel] : null
+
+                    const formatMethodStats = (s) => {
+                        const winPct = s.starts ? (s.wins / s.starts) * 100 : 0
+                        const top3Pct = s.starts ? (s.top3 / s.starts) * 100 : 0
+                        const avg = s.placements ? (s.sumPlacings / s.placements) : null
+                        return { winPct, top3Pct, avg, starts: s.starts }
+                    }
+                    const autoStats = formatMethodStats(methodStats.A)
+                    const voltStats = formatMethodStats(methodStats.V)
+
+                    let preferredStartMethod = null
+                    if (autoStats.starts || voltStats.starts) {
+                        if (autoStats.winPct > voltStats.winPct) preferredStartMethod = 'A'
+                        else if (voltStats.winPct > autoStats.winPct) preferredStartMethod = 'V'
+                        else if (autoStats.avg !== null && voltStats.avg !== null) {
+                            preferredStartMethod = autoStats.avg <= voltStats.avg ? 'A' : 'V'
+                        }
+                    }
 
                     return {
                         totalStarts,
+                        wins,
+                        seconds,
+                        thirds,
                         winPercentage: totalStarts ? (wins / totalStarts) * 100 : 0,
                         top3Percentage: totalStarts ? (top3 / totalStarts) * 100 : 0,
                         averagePlacing: racesWithPlace ? (sumPlacings / racesWithPlace) : null,
-                        formScore: totalStarts >= 5 ? formScore : null,
+                        formScore,
                         favDriver,
                         favCount,
                     }
@@ -430,7 +562,7 @@ export default {
                 responseData.horses = (responseData.horses || []).map(h => {
                     const driverId = h.driver?.licenseId ?? h.driver?.id
                     const driverElo = driverRatingMap[String(driverId)]
-                    const stats = computeHorseStats(h)
+                    const stats = statsFor(h)
                     return {
                         ...h,
                         score: scoreMap[h.id],
