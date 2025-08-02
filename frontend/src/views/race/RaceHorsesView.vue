@@ -68,11 +68,11 @@
                                 {{ item.raw.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.stats="{ item }">
-                                <span v-if="item.raw.stats?.totalStarts">
+                                <span v-if="item.raw.statsTotalStarts">
                                     {{
-                                        `${item.raw.stats.totalStarts} starts, ` +
-                                        `${Math.round(item.raw.stats.winPercentage)}% win, ` +
-                                        `${Math.round(item.raw.stats.top3Percentage)}% top3`
+                                        `${item.raw.statsTotalStarts} starts, ` +
+                                        `${Math.round(item.raw.statsWinPercentage)}% win, ` +
+                                        `${Math.round(item.raw.statsTop3Percentage)}% top3`
                                     }}
                                 </span>
                                 <span v-else>
@@ -164,6 +164,7 @@ import {
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
+import HorseService from '@/views/race/services/HorseService.js'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import HorseCommentBlock from './components/HorseCommentBlock.vue'
 
@@ -610,12 +611,12 @@ export default {
                     return label
                 }
 
-                responseData.horses = (responseData.horses || []).map(h => {
+                responseData.horses = await Promise.all((responseData.horses || []).map(async h => {
                     const driverId = h.driver?.licenseId ?? h.driver?.id
                     const driverElo = driverRatingMap[String(driverId)]
-                    const stats = statsFor(h)
-                    console.log('stats for', h.id, stats)
-                    return {
+                    const fullHorse = await HorseService.getHorseById(h.id)
+                    const stats = statsFor(fullHorse)
+                    const enriched = {
                         ...h,
                         stats,
                         score: scoreMap[h.id],
@@ -648,7 +649,9 @@ export default {
                             elo: driverElo,
                         }
                     }
-                })
+                    console.log('h.stats', enriched.stats)
+                    return enriched
+                }))
                 store.commit('raceHorses/setCurrentRace', responseData)
                 await fetchUpdatedHorses()
 
