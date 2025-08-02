@@ -90,6 +90,20 @@
                             <template v-slot:item.favoriteDriverDisplay="{ item }">
                                 {{ item.raw.favoriteDriverDisplay }}
                             </template>
+                            <template v-slot:item.bestTrack="{ item }">
+                                {{ item.raw.bestTrack }}
+                            </template>
+                            <template v-slot:item.preferredDistance="{ item }">
+                                {{ item.raw.preferredDistance }}
+                            </template>
+                            <template v-slot:item.autostartStats="{ item }">
+                                {{ item.raw.autostartStats }}
+                                <span v-if="item.raw.preferredStartMethod === 'A'">⭐</span>
+                            </template>
+                            <template v-slot:item.voltstartStats="{ item }">
+                                {{ item.raw.voltstartStats }}
+                                <span v-if="item.raw.preferredStartMethod === 'V'">⭐</span>
+                            </template>
                             <template v-slot:item.shoeOption="{ item }">
                                 <span :title="startListShoeTooltip(item.raw) || null">
                                     {{ formatStartListShoe(item.raw) }}
@@ -382,18 +396,42 @@ export default {
                     driverRatingMap[String(d.id)] = d.elo
                 })
                 const computeHorseStats = (horse) => {
-                    const records = horse.results?.records || horse.results || []
-                    const totalStarts = records.length
+                    const records = Array.isArray(horse.results) ? horse.results : []
+
+                    let totalStarts = 0
                     let wins = 0
                     let top3 = 0
                     let sumPlacings = 0
                     let racesWithPlace = 0
                     let formScore = 0
+
                     const driverCounts = {}
                     let favDriver = ''
                     let favCount = 0
 
+                    const trackStats = {}
+                    const distanceStats = {
+                        '1600-1800': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                        '1801-2200': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                        '2201-2600': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                        '2601+': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
+                    }
+                    const methodStats = {
+                        A: { starts: 0, wins: 0, top3: 0, sumPlacings: 0, placements: 0 },
+                        V: { starts: 0, wins: 0, top3: 0, sumPlacings: 0, placements: 0 },
+                    }
+
+                    const getDistanceBucket = (dist) => {
+                        if (dist >= 1600 && dist <= 1800) return '1600-1800'
+                        if (dist >= 1801 && dist <= 2200) return '1801-2200'
+                        if (dist >= 2201 && dist <= 2600) return '2201-2600'
+                        if (dist >= 2601) return '2601+'
+                        return null
+                    }
+
                     records.forEach((r, idx) => {
+                        if (r.withdrawn) return
+                        totalStarts++
                         const placement = Number(r?.placement?.sortValue ?? r?.placement ?? 0)
                         if (placement === 1) wins++
                         if (placement >= 1 && placement <= 3) top3++
@@ -414,7 +452,89 @@ export default {
                                 favDriver = dName
                             }
                         }
+
+                        const track = r.trackCode
+                        if (track) {
+                            if (!trackStats[track]) {
+                                trackStats[track] = { starts: 0, wins: 0, sumPlacings: 0, placements: 0 }
+                            }
+                            const t = trackStats[track]
+                            t.starts++
+                            if (placement === 1) t.wins++
+                            if (placement > 0 && placement < 99) {
+                                t.sumPlacings += placement
+                                t.placements++
+                            }
+                        }
+
+                        const dist = Number(r?.distance?.sortValue ?? r?.distance ?? 0)
+                        const bucket = getDistanceBucket(dist)
+                        if (bucket) {
+                            const b = distanceStats[bucket]
+                            b.starts++
+                            if (placement === 1) b.wins++
+                            if (placement > 0 && placement < 99) {
+                                b.sumPlacings += placement
+                                b.placements++
+                            }
+                        }
+
+                        const method = r.startMethod
+                        if (method && methodStats[method]) {
+                            const m = methodStats[method]
+                            m.starts++
+                            if (placement === 1) m.wins++
+                            if (placement >= 1 && placement <= 3) m.top3++
+                            if (placement > 0 && placement < 99) {
+                                m.sumPlacings += placement
+                                m.placements++
+                            }
+                        }
                     })
+
+                    let bestTrackCode = null
+                    let bestTrackWins = -1
+                    let bestTrackAvg = Infinity
+                    Object.entries(trackStats).forEach(([code, s]) => {
+                        const avg = s.placements ? s.sumPlacings / s.placements : Infinity
+                        if (s.wins > bestTrackWins || (s.wins === bestTrackWins && avg < bestTrackAvg)) {
+                            bestTrackCode = code
+                            bestTrackWins = s.wins
+                            bestTrackAvg = avg
+                        }
+                    })
+
+                    let bestDistanceLabel = null
+                    let bestDistanceWins = -1
+                    let bestDistanceAvg = Infinity
+                    Object.entries(distanceStats).forEach(([label, s]) => {
+                        if (!s.starts) return
+                        const avg = s.placements ? s.sumPlacings / s.placements : Infinity
+                        if (s.wins > bestDistanceWins || (s.wins === bestDistanceWins && avg < bestDistanceAvg)) {
+                            bestDistanceLabel = label
+                            bestDistanceWins = s.wins
+                            bestDistanceAvg = avg
+                        }
+                    })
+                    const bestDistanceStats = bestDistanceLabel ? distanceStats[bestDistanceLabel] : null
+
+                    const formatMethodStats = (s) => {
+                        const winPct = s.starts ? (s.wins / s.starts) * 100 : 0
+                        const top3Pct = s.starts ? (s.top3 / s.starts) * 100 : 0
+                        const avg = s.placements ? (s.sumPlacings / s.placements) : null
+                        return { winPct, top3Pct, avg, starts: s.starts }
+                    }
+                    const autoStats = formatMethodStats(methodStats.A)
+                    const voltStats = formatMethodStats(methodStats.V)
+
+                    let preferredStartMethod = null
+                    if (autoStats.starts || voltStats.starts) {
+                        if (autoStats.winPct > voltStats.winPct) preferredStartMethod = 'A'
+                        else if (voltStats.winPct > autoStats.winPct) preferredStartMethod = 'V'
+                        else if (autoStats.avg !== null && voltStats.avg !== null) {
+                            preferredStartMethod = autoStats.avg <= voltStats.avg ? 'A' : 'V'
+                        }
+                    }
 
                     return {
                         totalStarts,
@@ -424,7 +544,38 @@ export default {
                         formScore: totalStarts >= 5 ? formScore : null,
                         favDriver,
                         favCount,
+                        bestTrackCode,
+                        bestTrackWins,
+                        bestTrackStarts: bestTrackCode ? trackStats[bestTrackCode]?.starts : 0,
+                        bestDistanceLabel,
+                        bestDistanceStats: bestDistanceStats
+                            ? {
+                                winPct: bestDistanceStats.starts ? (bestDistanceStats.wins / bestDistanceStats.starts) * 100 : 0,
+                                avg: bestDistanceStats.placements ? (bestDistanceStats.sumPlacings / bestDistanceStats.placements) : null,
+                                starts: bestDistanceStats.starts,
+                                wins: bestDistanceStats.wins,
+                            }
+                            : null,
+                        autoStats,
+                        voltStats,
+                        preferredStartMethod,
                     }
+                }
+
+                const formatMethodDisplay = (stat) => {
+                    if (!stat.starts) return '—'
+                    const parts = []
+                    parts.push(`${Math.round(stat.winPct)}% win`)
+                    parts.push(`${Math.round(stat.top3Pct)}% top3`)
+                    if (typeof stat.avg === 'number') parts.push(`avg ${stat.avg.toFixed(1)}`)
+                    return parts.join(', ')
+                }
+
+                const formatDistanceDisplay = (label, stat) => {
+                    if (!stat) return label
+                    if (stat.winPct) return `${label} (${Math.round(stat.winPct)}% win)`
+                    if (typeof stat.avg === 'number') return `${label} (avg ${stat.avg.toFixed(1)})`
+                    return label
                 }
 
                 responseData.horses = (responseData.horses || []).map(h => {
@@ -443,6 +594,19 @@ export default {
                         formScoreDisplay: stats.formScore !== null ? `${stats.formScore} / 15` : '—',
                         favoriteDriverDisplay: stats.favDriver ? `${stats.favDriver} (${stats.favCount}x)` : '—',
                         statsTotalStarts: stats.totalStarts,
+                        bestTrack: stats.totalStarts >= 5 && stats.bestTrackCode
+                            ? `${getTrackName(stats.bestTrackCode)}${stats.bestTrackWins ? ` (${stats.bestTrackWins}x win)` : ''}`
+                            : 'För få lopp',
+                        preferredDistance: stats.totalStarts >= 5 && stats.bestDistanceLabel
+                            ? formatDistanceDisplay(stats.bestDistanceLabel, stats.bestDistanceStats)
+                            : 'För få lopp',
+                        autostartStats: stats.totalStarts >= 5
+                            ? formatMethodDisplay(stats.autoStats)
+                            : 'För få lopp',
+                        voltstartStats: stats.totalStarts >= 5
+                            ? formatMethodDisplay(stats.voltStats)
+                            : 'För få lopp',
+                        preferredStartMethod: stats.totalStarts >= 5 ? stats.preferredStartMethod : null,
                         driverElo,
                         driver: {
                             ...h.driver,
@@ -524,6 +688,15 @@ export default {
                     { title: 'Avg Place', key: 'averagePlacing', sortable: false },
                     { title: 'Form (5)', key: 'formScoreDisplay', sortable: false },
                     { title: 'Fav. Driver', key: 'favoriteDriverDisplay', sortable: false },
+                ],
+            })
+            base.push({
+                title: '🏁 Conditions',
+                children: [
+                    { title: 'Best Track', key: 'bestTrack', sortable: false },
+                    { title: 'Pref. Distance', key: 'preferredDistance', sortable: false },
+                    { title: 'Autostart', key: 'autostartStats', sortable: false },
+                    { title: 'Voltstart', key: 'voltstartStats', sortable: false },
                 ],
             })
             base.push({ title: 'Shoe', key: 'shoeOption', sortable: false })
