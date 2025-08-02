@@ -65,32 +65,10 @@
                                 </div>
                             </template>
                             <template v-slot:item.driverElo="{ item }">
-                                {{ item.raw.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
+                                {{ item.raw.driver?.name || '—' }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.stats="{ item }">
-                                <span v-if="item.raw.statsTotalStarts">
-                                    {{
-                                        `${item.raw.statsTotalStarts} starts, ` +
-                                        `${Math.round(item.raw.statsWinPercentage)}% win, ` +
-                                        `${Math.round(item.raw.statsTop3Percentage)}% top3`
-                                    }}
-                                </span>
-                                <span v-else>
-                                    —
-                                </span>
-                            </template>
-                            <template v-slot:item.averagePlacing="{ item }">
-                                {{
-                                    typeof item.raw.averagePlacing === 'number'
-                                        ? item.raw.averagePlacing.toFixed(1)
-                                        : '—'
-                                }}
-                            </template>
-                            <template v-slot:item.formScoreDisplay="{ item }">
-                                {{ item.raw.formScoreDisplay }}
-                            </template>
-                            <template v-slot:item.favoriteDriverDisplay="{ item }">
-                                {{ item.raw.favoriteDriverDisplay }}
+                                {{ item.raw.statsFormatted || 'Ingen data' }}
                             </template>
                             <template v-slot:item.bestTrack="{ item }">
                                 {{ item.raw.bestTrack }}
@@ -369,6 +347,15 @@ export default {
             }
         }
 
+        const formatStats = (stats) => {
+            if (!stats || stats.totalStarts === 0) return ''
+            const wins = stats.wins ?? 0
+            const top3 = stats.top3 ?? 0
+            const avg = typeof stats.averagePlacing === 'number' ? stats.averagePlacing.toFixed(1) : '—'
+            const form = typeof stats.formScore === 'number' ? stats.formScore : '—'
+            return `${wins} segrar • ${top3} topp-3 • Snitt: ${avg} • Form: ${form}`
+        }
+
         const fetchDataAndUpdate = async (raceId) => {
             try {
                 const responseData = await fetchRaceFromRaceId(raceId)
@@ -566,6 +553,8 @@ export default {
                         }
                     }
 
+                    const averagePlacing = racesWithPlace ? (sumPlacings / racesWithPlace) : null
+
                     return {
                         totalStarts,
                         wins,
@@ -574,7 +563,7 @@ export default {
                         top3,
                         winPercentage: totalStarts ? (wins / totalStarts) * 100 : 0,
                         top3Percentage: totalStarts ? (top3 / totalStarts) * 100 : 0,
-                        averagePlacing: racesWithPlace ? (sumPlacings / racesWithPlace) : null,
+                        averagePlacing,
                         formScore,
                         favDriver,
                         favCount,
@@ -620,6 +609,7 @@ export default {
                     const enriched = {
                         ...h,
                         stats,
+                        statsFormatted: formatStats(stats),
                         score: scoreMap[h.id],
                         rating: ratingMap[h.id],
                         eloRating: ratingMap[h.id],
@@ -718,15 +708,7 @@ export default {
             }
             base.push({ title: 'Horse (Elo)', key: 'eloRating' })
             base.push({ title: 'Driver (Elo)', key: 'driverElo' })
-            base.push({
-                title: 'Stats',
-                children: [
-                    { title: 'Stats', key: 'stats', sortable: false },
-                    { title: 'Avg Place', key: 'averagePlacing', sortable: false },
-                    { title: 'Form (5)', key: 'formScoreDisplay', sortable: false },
-                    { title: 'Fav. Driver', key: 'favoriteDriverDisplay', sortable: false },
-                ],
-            })
+            base.push({ title: 'Stats', key: 'stats', sortable: false })
             base.push({
                 title: '🏁 Conditions',
                 children: [
