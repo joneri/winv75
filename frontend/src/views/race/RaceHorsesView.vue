@@ -70,19 +70,19 @@
                             <template v-slot:item.stats="{ item }">
                                 {{ item.raw.statsFormatted || 'Ingen data' }}
                             </template>
-                            <template v-slot:item.bestTrack="{ item }">
-                                {{ item.raw.bestTrack }}
-                            </template>
-                            <template v-slot:item.preferredDistance="{ item }">
-                                {{ item.raw.preferredDistance }}
-                            </template>
-                            <template v-slot:item.autostartStats="{ item }">
-                                {{ item.raw.autostartStats }}
-                                <span v-if="item.raw.preferredStartMethod === 'A'">⭐</span>
-                            </template>
-                            <template v-slot:item.voltstartStats="{ item }">
-                                {{ item.raw.voltstartStats }}
-                                <span v-if="item.raw.preferredStartMethod === 'V'">⭐</span>
+                            <template #item.conditions="{ item }">
+                                <div class="flex flex-col gap-1 text-xs">
+                                    <div>{{ item.raw.bestTrack || '—' }}</div>
+                                    <div>{{ item.raw.preferredDistance || '—' }}</div>
+                                    <div>
+                                        {{ item.raw.autostartStats || '—' }}
+                                        <span v-if="item.raw.preferredStartMethod === 'A'">⭐</span>
+                                    </div>
+                                    <div>
+                                        {{ item.raw.voltstartStats || '—' }}
+                                        <span v-if="item.raw.preferredStartMethod === 'V'">⭐</span>
+                                    </div>
+                                </div>
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
                                 <span :title="startListShoeTooltip(item.raw) || null">
@@ -717,15 +717,7 @@ export default {
             base.push({ title: 'Horse (Elo)', key: 'eloRating' })
             base.push({ title: 'Driver (Elo)', key: 'driverElo' })
             base.push({ title: 'Stats', key: 'stats', sortable: false })
-            base.push({
-                title: '🏁 Conditions',
-                children: [
-                    { title: 'Best Track', key: 'bestTrack', sortable: false },
-                    { title: 'Pref. Distance', key: 'preferredDistance', sortable: false },
-                    { title: 'Autostart', key: 'autostartStats', sortable: false },
-                    { title: 'Voltstart', key: 'voltstartStats', sortable: false },
-                ],
-            })
+            base.push({ title: '🏁 Conditions', key: 'conditions', sortable: false })
             base.push({ title: 'Shoe', key: 'shoeOption', sortable: false })
             base.push({ key: 'horseWithdrawn' })
             return base
