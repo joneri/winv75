@@ -398,12 +398,14 @@ export default {
                     driverRatingMap[String(d.id)] = d.elo
                 })
                 // Stats based on Travsport data (horse.results[]). ATG past-race
-                // objects expose a `.records` property, but that structure is not
-                // used here.
+                // objects may expose a `.records` property, so handle both
+                // shapes when gathering result data.
                 const statsFor = (horse) => {
-                    const results = Array.isArray(horse.results)
-                        ? [...horse.results]
-                        : []
+                    const results = Array.isArray(horse.results?.records)
+                        ? [...horse.results.records]
+                        : Array.isArray(horse.results)
+                            ? [...horse.results]
+                            : []
                     // Sort most recent first so that form is calculated on the
                     // latest starts
                     results.sort((a, b) =>
