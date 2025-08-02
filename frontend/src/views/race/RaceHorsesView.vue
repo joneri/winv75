@@ -382,8 +382,8 @@ export default {
                     driverRatingMap[String(d.id)] = d.elo
                 })
                 const computeHorseStats = (horse) => {
-                    const records = horse.results?.records || horse.results || []
-                    const totalStarts = records.length
+                    const results = horse.results || []
+                    const totalStarts = results.length
                     let wins = 0
                     let top3 = 0
                     let sumPlacings = 0
@@ -393,7 +393,7 @@ export default {
                     let favDriver = ''
                     let favCount = 0
 
-                    records.forEach((r, idx) => {
+                    results.forEach((r, idx) => {
                         const placement = Number(r?.placement?.sortValue ?? r?.placement ?? 0)
                         if (placement === 1) wins++
                         if (placement >= 1 && placement <= 3) top3++
