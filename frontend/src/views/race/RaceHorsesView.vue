@@ -396,11 +396,13 @@ export default {
                             ? [...horse.results]
                             : []
                     // Sort most recent first so that form is calculated on the
-                    // latest starts
+                    // latest starts. Travsport results expose the race date
+                    // under `raceInformation.date` whereas some ATG payloads
+                    // may use `startTime`.
                     results.sort((a, b) =>
-                        new Date(b.startTime) - new Date(a.startTime)
+                        new Date(b.raceInformation?.date || b.startTime || 0) -
+                        new Date(a.raceInformation?.date || a.startTime || 0)
                     )
-                    console.log('_________________________________', horse) 
                     let totalStarts = 0
                     let wins = 0
                     let seconds = 0
@@ -437,7 +439,12 @@ export default {
                         if (r.withdrawn) return
                         totalStarts++
 
-                        const placement = parseInt(r?.place, 10)
+                        // Travsport stores placing under `placement.sortValue`
+                        // while other data sources might expose `place`.
+                        const placement = parseInt(
+                            r?.placement?.sortValue ?? r?.place ?? 0,
+                            10
+                        )
                         if (!Number.isNaN(placement) && placement > 0) {
                             if (placement === 1) wins++
                             else if (placement === 2) seconds++
@@ -482,7 +489,9 @@ export default {
                             }
                         }
 
-                        const dist = Number(r?.distance ?? 0)
+                        // Distance is provided as an object with `sortValue`
+                        // in Travsport data.
+                        const dist = Number(r.distance?.sortValue ?? r.distance ?? 0)
                         const bucket = getDistanceBucket(dist)
                         if (bucket) {
                             const b = distanceStats[bucket]
@@ -640,7 +649,6 @@ export default {
                             elo: driverElo,
                         }
                     }
-                    console.log('h.stats', enriched.stats)
                     return enriched
                 }))
                 store.commit('raceHorses/setCurrentRace', responseData)
