@@ -614,6 +614,7 @@ export default {
                     const driverId = h.driver?.licenseId ?? h.driver?.id
                     const driverElo = driverRatingMap[String(driverId)]
                     const stats = statsFor(h)
+                    console.log('stats for', h.id, stats)
                     return {
                         ...h,
                         score: scoreMap[h.id],
