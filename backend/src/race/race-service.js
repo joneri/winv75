@@ -36,24 +36,38 @@ const resolveTrackId = async (raceDay) => {
 }
 
 /**
- * Extract past race comments from the horse's results.
+ * Extract past race comments from ATG's extended horse result records.
+ *
+ * The comments live in `start.horse.results[].records[]` in the
+ * extended data returned by ATG. Travsport's horse results do not
+ * contain these records so we must avoid mixing the two sources.
+ *
+ * @param {Array} results  The array located at `start.horse.results`.
+ * @returns {Array}        A list of the latest (max five) comment objects.
  */
 const extractPastRaceComments = (results) =>
     (results || [])
+        // Ignore qualifiers that typically don't have meaningful comments
         .filter(r => {
             const raceType = r?.race?.type || r?.type || ''
-            const isQualifier = raceType.toLowerCase().includes('qual')
-            const hasComment = r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim()
-            return !isQualifier && hasComment
+            return !raceType.toLowerCase().includes('qual')
         })
-        .map(r => ({
-            date: r?.race?.startTime || r?.race?.date || r?.startTime || r?.date,
-            comment: r?.trMediaInfo?.comment?.trim() || r?.trMediaInfo?.commentText?.trim(),
-            raceId: r?.race?.id,
-            driver: r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
-            track: r?.race?.track?.name || r?.track?.name,
-            place: Number(r?.place ?? 0)
-        }))
+        // Flatten out the inner records array where the comments reside
+        .flatMap(r => (r?.records || [])
+            .filter(rec => rec?.comment?.trim())
+            .map(rec => ({
+                // Prefer record specific dates but fall back to the result level
+                date: rec?.startTime || rec?.date || r?.race?.startTime || r?.startTime || r?.date,
+                comment: rec?.comment?.trim(),
+                raceId: rec?.raceId || r?.race?.id,
+                driver: rec?.driver?.name || rec?.driver || r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
+                track: rec?.track?.name || rec?.track || r?.race?.track?.name || r?.track?.name,
+                place: Number(rec?.place ?? r?.place ?? 0)
+            }))
+        )
+        // Sort newest first and keep only the latest 5 comments
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5)
 
 /**
  * Apply extended race data to the horses in the race object.
@@ -73,6 +87,8 @@ const applyExtendedData = (race, starts = []) => {
         }
 
         if (!match.pastRaceComments || match.pastRaceComments.length === 0) {
+            // Hämtar pastRaceComments från ATG (atgExtendedRawData)
+            // – inte från Travsport.
             const pastRaceComments = extractPastRaceComments(start.horse?.results)
             if (pastRaceComments.length) {
                 match.pastRaceComments = pastRaceComments
