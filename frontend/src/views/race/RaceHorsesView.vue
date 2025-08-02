@@ -397,7 +397,7 @@ export default {
                 })
                 const computeHorseStats = (horse) => {
                     const results = Array.isArray(horse.results) ? horse.results : []
-                    const totalStarts = results.length
+                    let totalStarts = 0
                     let wins = 0
                     let top3 = 0
                     let sumPlacings = 0
@@ -428,7 +428,7 @@ export default {
                         return null
                     }
 
-                    records.forEach((r, idx) => {
+                    results.forEach((r, idx) => {
                         if (r.withdrawn) return
                         totalStarts++
                         const placement = Number(r?.placement?.sortValue ?? r?.placement ?? 0)
