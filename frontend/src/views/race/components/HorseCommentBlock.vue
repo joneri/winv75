@@ -37,7 +37,6 @@ export default {
     withdrawn: Boolean
   },
   setup(props) {
-    console.log('Raw pastRaceComments prop:', props.pastRaceComments);
     const showAll = ref(false)
 
     const formattedPastComments = computed(() =>
@@ -71,8 +70,6 @@ export default {
       if (positiveWords.some(w => lower.includes(w))) return 'comment-positive'
       return ''
     }
-
-    console.log('Formatted past comments:', formattedPastComments.value)
 
     const formatPlace = place =>
       place === 0 || place === null || place === undefined || place === ''

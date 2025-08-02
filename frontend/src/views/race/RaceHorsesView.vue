@@ -402,6 +402,7 @@ export default {
                 // objects may expose a `.records` property, so handle both
                 // shapes when gathering result data.
                 const statsFor = (horse) => {
+
                     const results = Array.isArray(horse.results?.records)
                         ? [...horse.results.records]
                         : Array.isArray(horse.results)
@@ -412,7 +413,7 @@ export default {
                     results.sort((a, b) =>
                         new Date(b.startTime) - new Date(a.startTime)
                     )
-
+                    console.log('_________________________________', horse) 
                     let totalStarts = 0
                     let wins = 0
                     let seconds = 0
