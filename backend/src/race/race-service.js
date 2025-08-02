@@ -36,10 +36,10 @@ const resolveTrackId = async (raceDay) => {
 }
 
 /**
- * Extract past race comments from the start's result records.
+ * Extract past race comments from the horse's results.
  */
-const extractPastRaceComments = (records) =>
-    (records || [])
+const extractPastRaceComments = (results) =>
+    (results || [])
         .filter(r => {
             const raceType = r?.race?.type || r?.type || ''
             const isQualifier = raceType.toLowerCase().includes('qual')
@@ -73,7 +73,7 @@ const applyExtendedData = (race, starts = []) => {
         }
 
         if (!match.pastRaceComments || match.pastRaceComments.length === 0) {
-            const pastRaceComments = extractPastRaceComments(start.horse?.results?.records)
+            const pastRaceComments = extractPastRaceComments(start.horse?.results)
             if (pastRaceComments.length) {
                 match.pastRaceComments = pastRaceComments
                 console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${horseId}`)

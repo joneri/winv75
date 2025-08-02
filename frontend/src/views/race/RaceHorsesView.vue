@@ -396,9 +396,8 @@ export default {
                     driverRatingMap[String(d.id)] = d.elo
                 })
                 const computeHorseStats = (horse) => {
-                    const records = Array.isArray(horse.results) ? horse.results : []
-
-                    let totalStarts = 0
+                    const results = Array.isArray(horse.results) ? horse.results : []
+                    const totalStarts = results.length
                     let wins = 0
                     let top3 = 0
                     let sumPlacings = 0
