@@ -714,7 +714,20 @@ export default {
             }
             base.push({ title: 'Horse (Elo)', key: 'eloRating' })
             base.push({ title: 'Driver (Elo)', key: 'driverElo' })
-            base.push({ title: 'Stats', key: 'stats', sortable: false })
+            base.push({
+                title: 'Form stats',
+                key: 'stats',
+                sortable: true,
+                sort: (a, b) => {
+                    const getVal = v => v?.formIndex ?? v?.formScore
+                    const aVal = getVal(a)
+                    const bVal = getVal(b)
+                    if (aVal == null && bVal == null) return 0
+                    if (aVal == null) return 1
+                    if (bVal == null) return -1
+                    return aVal - bVal
+                },
+            })
             base.push({ title: '🏁 Conditions', key: 'conditions', sortable: false })
             base.push({ title: 'Shoe', key: 'shoeOption', sortable: false })
             base.push({ key: 'horseWithdrawn' })
@@ -794,16 +807,40 @@ export default {
             const stats = horse.stats || {}
             const lines = []
 
-            if (stats.bestTrackCode && (stats.bestTrackWins ?? 0) > 0) {
+            if (
+                stats.bestTrackCode &&
+                (stats.bestTrackWins ?? 0) > 0 &&
+                stats.bestTrackCode === racedayTrackCode.value
+            ) {
                 const wins = stats.bestTrackWins
                 lines.push(`🏟️ Gillar banan: ${getTrackName(stats.bestTrackCode)} (${wins} seger${wins > 1 ? 'ar' : ''})`)
             }
 
             const distStats = stats.bestDistanceStats
             if (stats.bestDistanceLabel && distStats && (distStats.winPct ?? 0) > 0) {
-                const winPct = Math.round(distStats.winPct)
-                const label = stats.bestDistanceLabel.replace('-', '–')
-                lines.push(`📏 Gillar distansen: ${label} (${winPct}% segrar)`)
+                let showDistance = false
+                const currentLabel = horse.currentDistanceLabel || horse.distanceLabel || horse.distance?.label
+                if (currentLabel) {
+                    showDistance = currentLabel === stats.bestDistanceLabel
+                } else {
+                    const parseLabel = (label) => {
+                        if (!label) return null
+                        if (label.includes('+')) return parseInt(label, 10)
+                        const [from, to] = label.split('-').map(n => parseInt(n, 10))
+                        if (!isNaN(from) && !isNaN(to)) return Math.round((from + to) / 2)
+                        return from
+                    }
+                    const liked = parseLabel(stats.bestDistanceLabel)
+                    const raceDist = Number(currentRace.value?.distance)
+                    if (liked && raceDist) {
+                        showDistance = Math.abs(liked - raceDist) <= 100
+                    }
+                }
+                if (showDistance) {
+                    const winPct = Math.round(distStats.winPct)
+                    const label = stats.bestDistanceLabel.replace('-', '–')
+                    lines.push(`📏 Gillar distansen: ${label} (${winPct}% segrar)`)
+                }
             }
 
             const auto = stats.autoStats
