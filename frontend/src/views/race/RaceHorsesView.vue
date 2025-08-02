@@ -68,20 +68,16 @@
                                 {{ item.raw.driver?.name || '—' }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.stats="{ item }">
-                                {{ item.raw.statsFormatted || 'Ingen data' }}
+                                {{ item.raw.statsFormatted || '—' }}
                             </template>
                             <template #item.conditions="{ item }">
                                 <div class="flex flex-col gap-1 text-xs">
-                                    <div>{{ item.raw.bestTrack || '—' }}</div>
-                                    <div>{{ item.raw.preferredDistance || '—' }}</div>
-                                    <div>
-                                        {{ item.raw.autostartStats || '—' }}
-                                        <span v-if="item.raw.preferredStartMethod === 'A'">⭐</span>
-                                    </div>
-                                    <div>
-                                        {{ item.raw.voltstartStats || '—' }}
-                                        <span v-if="item.raw.preferredStartMethod === 'V'">⭐</span>
-                                    </div>
+                                    <template v-if="getConditionLines(item.raw).length">
+                                        <div v-for="(line, i) in getConditionLines(item.raw)" :key="i">{{ line }}</div>
+                                    </template>
+                                    <template v-else>
+                                        —
+                                    </template>
                                 </div>
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
@@ -350,10 +346,12 @@ export default {
         const formatStats = (stats) => {
             if (!stats || stats.totalStarts === 0) return ''
             const wins = stats.wins ?? 0
-            const top3 = stats.top3 ?? 0
-            const avg = typeof stats.averagePlacing === 'number' ? stats.averagePlacing.toFixed(1) : '—'
-            const form = typeof stats.formScore === 'number' ? stats.formScore : '—'
-            return `${wins} segrar • ${top3} topp-3 • Snitt: ${avg} • Form: ${form}`
+            const top3 = stats.top3Placements ?? stats.top3 ?? 0
+            const form = typeof stats.formIndex === 'number'
+                ? stats.formIndex
+                : (typeof stats.formScore === 'number' ? stats.formScore : null)
+            const formDisplay = form !== null ? form : '—'
+            return `${wins} segrar • ${top3} topp-3 • Form: ${formDisplay}`
         }
 
         const fetchDataAndUpdate = async (raceId) => {
@@ -792,6 +790,43 @@ export default {
             return trackNames[trackCode] || trackCode
         }
 
+        const getConditionLines = (horse) => {
+            const stats = horse.stats || {}
+            const lines = []
+
+            if (stats.bestTrackCode && (stats.bestTrackWins ?? 0) > 0) {
+                const wins = stats.bestTrackWins
+                lines.push(`🏟️ Gillar banan: ${getTrackName(stats.bestTrackCode)} (${wins} seger${wins > 1 ? 'ar' : ''})`)
+            }
+
+            const distStats = stats.bestDistanceStats
+            if (stats.bestDistanceLabel && distStats && (distStats.winPct ?? 0) > 0) {
+                const winPct = Math.round(distStats.winPct)
+                const label = stats.bestDistanceLabel.replace('-', '–')
+                lines.push(`📏 Gillar distansen: ${label} (${winPct}% segrar)`)
+            }
+
+            const auto = stats.autoStats
+            if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
+                const winPct = Math.round(auto.winPct)
+                const top3Pct = Math.round(auto.top3Pct)
+                let line = `🏃‍♂️ Gillar autostart: ${winPct}% vinster, ${top3Pct}% topp-3`
+                if (stats.preferredStartMethod === 'A') line += ' ⭐'
+                lines.push(line)
+            }
+
+            const volt = stats.voltStats
+            if (volt && ((volt.wins ?? 0) > 0 || (volt.top3 ?? 0) > 0)) {
+                const winPct = Math.round(volt.winPct)
+                const top3Pct = Math.round(volt.top3Pct)
+                let line = `🔄 Gillar voltstart: ${winPct}% vinster, ${top3Pct}% topp-3`
+                if (stats.preferredStartMethod === 'V') line += ' ⭐'
+                lines.push(line)
+            }
+
+            return lines
+        }
+
         const fetchUpdatedHorses = async () => {
             const horses = currentRace.value.horses || []
             for (let horse of horses) {
@@ -907,6 +942,7 @@ export default {
             shoeTooltip,
             getShoeById,
             getShoeTooltipById,
+            getConditionLines,
             raceList,
             previousRaceId,
             nextRaceId,
