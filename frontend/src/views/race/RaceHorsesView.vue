@@ -68,11 +68,11 @@
                                 {{ item.raw.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
                             <template v-slot:item.stats="{ item }">
-                                <span v-if="item.raw.statsTotalStarts">
+                                <span v-if="item.raw.stats?.totalStarts">
                                     {{
-                                        `${item.raw.statsTotalStarts} starts, ` +
-                                        `${Math.round(item.raw.statsWinPercentage)}% win, ` +
-                                        `${Math.round(item.raw.statsTop3Percentage)}% top3`
+                                        `${item.raw.stats.totalStarts} starts, ` +
+                                        `${Math.round(item.raw.stats.winPercentage)}% win, ` +
+                                        `${Math.round(item.raw.stats.top3Percentage)}% top3`
                                     }}
                                 </span>
                                 <span v-else>
@@ -617,6 +617,7 @@ export default {
                     console.log('stats for', h.id, stats)
                     return {
                         ...h,
+                        stats,
                         score: scoreMap[h.id],
                         rating: ratingMap[h.id],
                         eloRating: ratingMap[h.id],
