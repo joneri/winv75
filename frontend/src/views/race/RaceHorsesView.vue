@@ -67,14 +67,16 @@
                             <template v-slot:item.driverElo="{ item }">
                                 {{ item.raw.driver?.name }} – {{ formatElo(item.columns.driverElo) }}
                             </template>
-                            <template v-slot:item.winPercentage="{ item }">
-                                <span :title="`${item.raw.statsTotalStarts} starter`">
-                                    {{ item.raw.statsTotalStarts ? Math.round(item.raw.winPercentage) + '%' : '—' }}
+                            <template v-slot:item.stats="{ item }">
+                                <span v-if="item.raw.statsTotalStarts">
+                                    {{
+                                        `${item.raw.statsTotalStarts} starts, ` +
+                                        `${Math.round(item.raw.statsWinPercentage)}% win, ` +
+                                        `${Math.round(item.raw.statsTop3Percentage)}% top3`
+                                    }}
                                 </span>
-                            </template>
-                            <template v-slot:item.top3Percentage="{ item }">
-                                <span :title="`${item.raw.statsTotalStarts} starter`">
-                                    {{ item.raw.statsTotalStarts ? Math.round(item.raw.top3Percentage) + '%' : '—' }}
+                                <span v-else>
+                                    —
                                 </span>
                             </template>
                             <template v-slot:item.averagePlacing="{ item }">
@@ -565,6 +567,7 @@ export default {
                         wins,
                         seconds,
                         thirds,
+                        top3,
                         winPercentage: totalStarts ? (wins / totalStarts) * 100 : 0,
                         top3Percentage: totalStarts ? (top3 / totalStarts) * 100 : 0,
                         averagePlacing: racesWithPlace ? (sumPlacings / racesWithPlace) : null,
@@ -615,8 +618,8 @@ export default {
                         rating: ratingMap[h.id],
                         eloRating: ratingMap[h.id],
                         numberOfStarts: numberOfStartsMap[h.id] ?? 0,
-                        winPercentage: stats.winPercentage,
-                        top3Percentage: stats.top3Percentage,
+                        statsWinPercentage: stats.winPercentage,
+                        statsTop3Percentage: stats.top3Percentage,
                         averagePlacing: stats.averagePlacing,
                         formScoreDisplay: stats.formScore !== null ? `${stats.formScore} / 15` : '—',
                         favoriteDriverDisplay: stats.favDriver ? `${stats.favDriver} (${stats.favCount}x)` : '—',
@@ -708,10 +711,9 @@ export default {
             base.push({ title: 'Horse (Elo)', key: 'eloRating' })
             base.push({ title: 'Driver (Elo)', key: 'driverElo' })
             base.push({
-                title: '🧪 Stats',
+                title: 'Stats',
                 children: [
-                    { title: 'Win %', key: 'winPercentage', sortable: false },
-                    { title: 'Top 3 %', key: 'top3Percentage', sortable: false },
+                    { title: 'Stats', key: 'stats', sortable: false },
                     { title: 'Avg Place', key: 'averagePlacing', sortable: false },
                     { title: 'Form (5)', key: 'formScoreDisplay', sortable: false },
                     { title: 'Fav. Driver', key: 'favoriteDriverDisplay', sortable: false },
