@@ -351,7 +351,7 @@ export default {
                 ? stats.formIndex
                 : (typeof stats.formScore === 'number' ? stats.formScore : null)
             const formDisplay = form !== null ? form : '—'
-            return `${wins} segrar • ${top3} topp-3 • Form: ${formDisplay}`
+            return `${wins} segrar • ${top3} plats • Form: ${formDisplay}`
         }
 
         const fetchDataAndUpdate = async (raceId) => {
@@ -847,7 +847,7 @@ export default {
             if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
                 const winPct = Math.round(auto.winPct)
                 const top3Pct = Math.round(auto.top3Pct)
-                let line = `🏃‍♂️ Gillar autostart: ${winPct}% vinster, ${top3Pct}% topp-3`
+                let line = `🏃‍♂️ Gillar autostart: ${winPct}% vinster, ${top3Pct}% plats`
                 if (stats.preferredStartMethod === 'A') line += ' ⭐'
                 lines.push(line)
             }
@@ -856,7 +856,7 @@ export default {
             if (volt && ((volt.wins ?? 0) > 0 || (volt.top3 ?? 0) > 0)) {
                 const winPct = Math.round(volt.winPct)
                 const top3Pct = Math.round(volt.top3Pct)
-                let line = `🔄 Gillar voltstart: ${winPct}% vinster, ${top3Pct}% topp-3`
+                let line = `🔄 Gillar voltstart: ${winPct}% vinster, ${top3Pct}% plats`
                 if (stats.preferredStartMethod === 'V') line += ' ⭐'
                 lines.push(line)
             }

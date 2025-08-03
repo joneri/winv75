@@ -45,29 +45,41 @@ const resolveTrackId = async (raceDay) => {
  * @param {Array} results  The array located at `start.horse.results`.
  * @returns {Array}        A list of the latest (max five) comment objects.
  */
-const extractPastRaceComments = (results) =>
-    (results || [])
-        // Ignore qualifiers that typically don't have meaningful comments
-        .filter(r => {
-            const raceType = r?.race?.type || r?.type || ''
-            return !raceType.toLowerCase().includes('qual')
-        })
-        // Flatten out the inner records array where the comments reside
-        .flatMap(r => (r?.records || [])
-            .filter(rec => rec?.comment?.trim())
+const extractPastRaceComments = (results) => {
+    // Om results är en array, kör som vanligt
+    if (Array.isArray(results)) {
+        return results
+            .filter(r => {
+                const raceType = r?.race?.type || r?.type || ''
+                return !raceType.toLowerCase().includes('qual')
+            })
+            .flatMap(r => (r?.records || [])
+                .filter(rec => rec?.trMediaInfo?.comment?.trim())
+                .map(rec => ({
+                    date: rec?.date,
+                    comment: rec?.trMediaInfo?.comment?.trim(),
+                    // Lägg till fler fält om du vill
+                }))
+            )
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5)
+    }
+    // Om results är ett objekt, hämta records direkt
+    if (results && typeof results === 'object' && Array.isArray(results.records)) {
+        return results.records
+            .filter(rec => rec?.trMediaInfo?.comment?.trim())
             .map(rec => ({
-                // Prefer record specific dates but fall back to the result level
-                date: rec?.startTime || rec?.date || r?.race?.startTime || r?.startTime || r?.date,
-                comment: rec?.comment?.trim(),
-                raceId: rec?.raceId || r?.race?.id,
-                driver: rec?.driver?.name || rec?.driver || r?.driver?.name || [r?.driver?.firstName, r?.driver?.lastName].filter(Boolean).join(' '),
-                track: rec?.track?.name || rec?.track || r?.race?.track?.name || r?.track?.name,
-                place: Number(rec?.place ?? r?.place ?? 0)
+                date: rec?.date,
+                comment: rec?.trMediaInfo?.comment?.trim(),
+                // Lägg till fler fält om du vill
             }))
-        )
-        // Sort newest first and keep only the latest 5 comments
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5)
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5)
+    }
+    // Annars, returnera tom array
+    console.warn('ATG: horse.results är varken array eller objekt med records:', results)
+    return []
+}
 
 /**
  * Apply extended race data to the horses in the race object.
@@ -80,20 +92,21 @@ const applyExtendedData = (race, starts = []) => {
         const match = race.horses.find(h => h.id === horseId)
         if (!match) continue
 
+        // Logga ATG-data för denna häst
+        console.log(`ATG start.horse för horseId ${horseId}:`, JSON.stringify(start.horse, null, 2))
+
         const comment = start.comments?.[0]?.commentText?.trim() || start.comments?.[0]?.comment?.trim()
         if (comment) {
             match.comment = comment
             console.log(`💬 Saved comment for horse ${horseId}: "${comment.slice(0, 50)}..."`)
         }
 
-        if (!match.pastRaceComments || match.pastRaceComments.length === 0) {
-            // Hämtar pastRaceComments från ATG (atgExtendedRawData)
-            // – inte från Travsport.
-            const pastRaceComments = extractPastRaceComments(start.horse?.results)
-            if (pastRaceComments.length) {
-                match.pastRaceComments = pastRaceComments
-                console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${horseId}`)
-            }
+        // Alltid uppdatera pastRaceComments från ATG (ersätt alltid, även om det redan finns)
+        const pastRaceComments = extractPastRaceComments(start.horse?.results)
+        console.log(`ATG pastRaceComments för horseId ${horseId}:`, pastRaceComments)
+        match.pastRaceComments = pastRaceComments
+        if (pastRaceComments.length) {
+            console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${horseId}`)
         }
     }
 }
@@ -112,7 +125,8 @@ const getRaceById = async (id) => {
             return null
         }
 
-        if (needsExtendedData(race)) {
+        // Hämta ATG extended data ENDAST om någon häst saknar comment eller pastRaceComments
+        if (race.horses.some(h => !h.comment || !(h.pastRaceComments && h.pastRaceComments.length))) {
             const trackId = await resolveTrackId(raceDay)
 
             if (!trackId) {
