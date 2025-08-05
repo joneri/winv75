@@ -54,10 +54,9 @@ const extractPastRaceComments = (results) => {
                 return !raceType.toLowerCase().includes('qual')
             })
             .flatMap(r => (r?.records || [])
-                .filter(rec => rec?.trMediaInfo?.comment?.trim())
                 .map(rec => ({
                     date: rec?.date,
-                    comment: rec?.trMediaInfo?.comment?.trim(),
+                    comment: rec?.trMediaInfo?.comment?.trim() || '',
                     place: rec?.place ?? r?.place ?? null // Försök hitta place på record eller result-nivå
                 }))
             )
@@ -67,10 +66,9 @@ const extractPastRaceComments = (results) => {
     // Om results är ett objekt, hämta records direkt
     if (results && typeof results === 'object' && Array.isArray(results.records)) {
         return results.records
-            .filter(rec => rec?.trMediaInfo?.comment?.trim())
             .map(rec => ({
                 date: rec?.date,
-                comment: rec?.trMediaInfo?.comment?.trim(),
+                comment: rec?.trMediaInfo?.comment?.trim() || '',
                 place: rec?.place ?? null
             }))
             .sort((a, b) => new Date(b.date) - new Date(a.date))
