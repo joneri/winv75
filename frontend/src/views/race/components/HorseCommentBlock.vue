@@ -1,18 +1,16 @@
 <template>
-  <div
-    v-if="comment || formattedPastComments.length > 0"
-    :class="['horse-comment-block', { withdrawn }]"
-  >
+  <div :class="['horse-comment-block', { withdrawn }]">
     <div v-if="comment" class="main-comment" :class="commentClass(comment)">
       {{ comment }}
     </div>
     <ul v-if="formattedPastComments.length" class="past-comments">
       <li v-for="(pc, idx) in visiblePastComments" :key="idx">
         <span class="arrow">→</span>
-        <span :class="commentClass(pc.comment)">
+        <span>
           <strong>{{ pc.date }}</strong>
           <span> ({{ formatPlace(pc.place) }})</span>
-          {{ pc.comment }}
+          <span v-if="pc.comment && pc.comment.length" :class="commentClass(pc.comment)"> – {{ pc.comment }}</span>
+          <span v-else class="text-muted"> – Ingen kommentar</span>
         </span>
       </li>
       <li
@@ -23,6 +21,9 @@
         +{{ extraCommentsCount }} fler tidigare kommentarer
       </li>
     </ul>
+    <div v-else-if="!comment && formattedPastComments.length === 0" class="text-muted" style="font-size:10px;">
+      Inga tidigare starter tillgängliga
+    </div>
   </div>
 </template>
 
@@ -39,16 +40,17 @@ export default {
   setup(props) {
     const showAll = ref(false)
 
-    const formattedPastComments = computed(() =>
-      (props.pastRaceComments || [])
+    // Always sort and format pastRaceComments from props (which should come from atgExtendedRaw)
+    const formattedPastComments = computed(() => {
+      return (props.pastRaceComments || [])
         .slice()
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .map(pc => ({
           date: pc.date?.split('T')[0] || '',
-          place: Number(pc.place ?? 0),
+          place: pc.place,
           comment: pc.comment || ''
         }))
-    )
+    })
 
     const visiblePastComments = computed(() =>
       showAll.value
@@ -56,12 +58,18 @@ export default {
         : formattedPastComments.value.slice(0, 3)
     )
 
-    const extraCommentsCount = computed(
-      () => formattedPastComments.value.length - 3
+    const extraCommentsCount = computed(() =>
+      Math.max(0, formattedPastComments.value.length - 3)
     )
 
-  const negativeWords = ['gal', 'galopp', 'disk', 'inget extra', 'inga plus', 'inget plus', 'saknade plus', 'saknade extra', 'ej plus', 'ej extra']
-  const positiveWords = ['fullföljde bra', 'bra avslutning', 'stark', 'rejäl spurt', 'vass']
+    // Simple sentiment coloring
+    const negativeWords = [
+      'gal', 'galopp', 'disk', 'inget extra', 'inga plus', 'inget plus',
+      'saknade plus', 'saknade extra', 'ej plus', 'ej extra'
+    ]
+    const positiveWords = [
+      'fullföljde bra', 'bra avslutning', 'stark', 'rejäl spurt', 'vass'
+    ]
 
     const commentClass = text => {
       if (!text) return ''
@@ -71,9 +79,10 @@ export default {
       return ''
     }
 
+    // Show *** for missing/zero/empty place
     const formatPlace = place =>
       place === 0 || place === null || place === undefined || place === ''
-        ? '**'
+        ? '***'
         : place
 
     return {
@@ -84,7 +93,6 @@ export default {
       commentClass,
       formatPlace
     }
-    
   }
 }
 </script>

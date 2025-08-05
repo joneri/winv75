@@ -53,16 +53,7 @@ const horseSchema = new mongoose.Schema({
   driverChanged: Boolean,
   linkable: Boolean,
   comment: String,
-  pastRaceComments: [
-    {
-      date: String,
-      comment: String,
-      raceId: String,
-      driver: String,
-      track: String,
-      place: { type: Number, default: 0 }
-    }
-  ]
+  // pastRaceComments removed: all past race comments are now only in atgExtendedRaw
 })
 
 const propTextsSchema = new mongoose.Schema({

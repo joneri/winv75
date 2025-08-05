@@ -58,8 +58,8 @@
                                         {{ item.raw.name }} – För få starter.
                                     </div>
                                     <HorseCommentBlock
-                                      :comment="item.raw.comment"
-                                      :past-race-comments="item.raw.pastRaceComments"
+                                      :comment="getAtgCommentForHorse(item.raw.id)"
+                                      :past-race-comments="getAtgPastRaceCommentsForHorse(item.raw.id)"
                                       :withdrawn="item.columns.horseWithdrawn"
                                     />
                                 </div>
@@ -147,6 +147,65 @@ export default {
     components: { SpelformBadge, HorseCommentBlock },
 
     setup() {
+        // --- ATG comment/pastRaceComments extraction ---
+        // All comment and past race comment logic is now single-source: atgExtendedRaw only.
+        // This is robust to missing/undefined fields and never throws.
+        const getAtgStartForHorse = (horseId) => {
+          const starts = currentRace.value?.atgExtendedRaw?.starts;
+          if (!Array.isArray(starts)) return null;
+          return starts.find(s => s?.horse?.id === horseId) || null;
+        };
+
+        const getAtgCommentForHorse = (horseId) => {
+          const start = getAtgStartForHorse(horseId);
+          if (!start || !Array.isArray(start.comments) || !start.comments[0]) return '';
+          // Prefer commentText, fallback to comment, fallback to empty string
+          return (
+            (typeof start.comments[0].commentText === 'string' && start.comments[0].commentText.trim()) ||
+            (typeof start.comments[0].comment === 'string' && start.comments[0].comment.trim()) ||
+            ''
+          );
+        };
+
+        // Extract past race comments, always robust to missing fields
+        const extractPastRaceComments = (results) => {
+          if (Array.isArray(results)) {
+            return results
+              .filter(r => {
+                const raceType = r?.race?.type || r?.type || '';
+                return !raceType.toLowerCase().includes('qual');
+              })
+              .flatMap(r => Array.isArray(r?.records)
+                ? r.records.filter(rec => rec?.trMediaInfo?.comment && rec.trMediaInfo.comment.trim())
+                  .map(rec => ({
+                    date: rec?.date,
+                    comment: rec.trMediaInfo.comment.trim(),
+                    place: rec?.place ?? r?.place ?? '—'
+                  }))
+                : []
+              )
+              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .slice(0, 5);
+          }
+          if (results && typeof results === 'object' && Array.isArray(results.records)) {
+            return results.records
+              .filter(rec => rec?.trMediaInfo?.comment && rec.trMediaInfo.comment.trim())
+              .map(rec => ({
+                date: rec?.date,
+                comment: rec.trMediaInfo.comment.trim(),
+                place: rec?.place ?? '—'
+              }))
+              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .slice(0, 5);
+          }
+          return [];
+        };
+
+        const getAtgPastRaceCommentsForHorse = (horseId) => {
+          const start = getAtgStartForHorse(horseId);
+          if (!start || !start.horse || !start.horse.results) return [];
+          return extractPastRaceComments(start.horse.results);
+        };
         // Helper to parse start method and handicaps from propTexts
         const parseStartMethodFromPropTexts = (propTexts = []) => {
           const text = propTexts
@@ -961,6 +1020,8 @@ export default {
             allHorsesUpdated,
             items,
             activeTab,
+            getAtgCommentForHorse,
+            getAtgPastRaceCommentsForHorse,
             rankedHeaders,
             rankedHorses,
             raceStartMethodCode,

@@ -9,8 +9,8 @@ const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
  * Determine whether any horse in the race is missing extended data
  * such as comments or past race comments.
  */
-const needsExtendedData = (race) =>
-    race.horses?.some(h => !h.comment || !(h.pastRaceComments && h.pastRaceComments.length))
+// Nu: Endast om atgExtendedRaw saknas
+const needsExtendedData = (race) => !race.atgExtendedRaw?.starts
 
 /**
  * Resolve the ATG track id using cached metadata when possible to
@@ -58,7 +58,7 @@ const extractPastRaceComments = (results) => {
                 .map(rec => ({
                     date: rec?.date,
                     comment: rec?.trMediaInfo?.comment?.trim(),
-                    // Lägg till fler fält om du vill
+                    place: rec?.place ?? r?.place ?? null // Försök hitta place på record eller result-nivå
                 }))
             )
             .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -71,7 +71,7 @@ const extractPastRaceComments = (results) => {
             .map(rec => ({
                 date: rec?.date,
                 comment: rec?.trMediaInfo?.comment?.trim(),
-                // Lägg till fler fält om du vill
+                place: rec?.place ?? null
             }))
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 5)
@@ -84,32 +84,8 @@ const extractPastRaceComments = (results) => {
 /**
  * Apply extended race data to the horses in the race object.
  */
-const applyExtendedData = (race, starts = []) => {
-    for (const start of starts) {
-        const horseId = start.horse?.id
-        if (!horseId) continue
-
-        const match = race.horses.find(h => h.id === horseId)
-        if (!match) continue
-
-        // Logga ATG-data för denna häst
-        console.log(`ATG start.horse för horseId ${horseId}:`, JSON.stringify(start.horse, null, 2))
-
-        const comment = start.comments?.[0]?.commentText?.trim() || start.comments?.[0]?.comment?.trim()
-        if (comment) {
-            match.comment = comment
-            console.log(`💬 Saved comment for horse ${horseId}: "${comment.slice(0, 50)}..."`)
-        }
-
-        // Alltid uppdatera pastRaceComments från ATG (ersätt alltid, även om det redan finns)
-        const pastRaceComments = extractPastRaceComments(start.horse?.results)
-        console.log(`ATG pastRaceComments för horseId ${horseId}:`, pastRaceComments)
-        match.pastRaceComments = pastRaceComments
-        if (pastRaceComments.length) {
-            console.log(`📜 Stored ${pastRaceComments.length} past comments for horse ${horseId}`)
-        }
-    }
-}
+// NO-OP: All logik för kommentarer och pastRaceComments ska nu bara finnas i atgExtendedRaw
+const applyExtendedData = () => { return }
 
 const getRaceById = async (id) => {
     try {
@@ -126,7 +102,8 @@ const getRaceById = async (id) => {
         }
 
         // Hämta ATG extended data ENDAST om någon häst saknar comment eller pastRaceComments
-        if (race.horses.some(h => !h.comment || !(h.pastRaceComments && h.pastRaceComments.length))) {
+        // Hämta ATG extended data endast om den inte redan finns i databasen
+        if (!race.atgExtendedRaw?.starts) {
             const trackId = await resolveTrackId(raceDay)
 
             if (!trackId) {
@@ -135,13 +112,8 @@ const getRaceById = async (id) => {
                 const raceKey = `${raceDay.raceDayDate}_${trackId}_${race.raceNumber}`
                 console.log(`Constructed raceKey: ${raceKey}`)
                 try {
-                    let ext = race.atgExtendedRaw
-                    if (!ext?.starts) {
-                        const resp = await axios.get(`${ATG_BASE_URL}/races/${raceKey}/extended`)
-                        ext = resp.data
-                        race.atgExtendedRaw = ext
-                    }
-                    applyExtendedData(race, ext.starts)
+                    const resp = await axios.get(`${ATG_BASE_URL}/races/${raceKey}/extended`)
+                    race.atgExtendedRaw = resp.data
                     raceDay.markModified('raceList')
                     await raceDay.save()
                 } catch (e) {
@@ -149,6 +121,9 @@ const getRaceById = async (id) => {
                 }
             }
         }
+        // Applicera extended data om den nu finns
+        // Ingen applyExtendedData längre, vi sparar bara atgExtendedRaw
+        // Om du vill rensa gamla kommentarer på horse-objekt kan du göra det här
 
         return race
     } catch (err) {
