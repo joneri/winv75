@@ -1,6 +1,8 @@
 import express from 'express'
 import raceDayService from './raceday-service.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
+import { buildRaceInsights } from '../race/race-insights.js'
+import Raceday from './raceday-model.js'
 
 const router = express.Router()
 
@@ -76,6 +78,44 @@ router.get('/summary', async (req, res) => {
   } catch (error) {
     console.error('Error fetching raceday summary:', error)
     res.status(500).send('Failed to fetch raceday summary. Please try again.')
+  }
+})
+
+// New: AI-style list for an entire raceday (each race)
+router.get('/:id/ai-list', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const raceday = await Raceday.findById(
+      req.params.id,
+      { raceList: 1, trackName: 1, raceDayDate: 1, gameTypes: 1 }
+    ).lean()
+    if (!raceday) return res.status(404).send('Raceday not found')
+
+    // Build a map: raceId -> [{ game, leg }]
+    const gamesMap = {}
+    const gt = raceday.gameTypes || {}
+    for (const [game, ids] of Object.entries(gt)) {
+      ids.forEach((rid, idx) => {
+        if (!gamesMap[rid]) gamesMap[rid] = []
+        gamesMap[rid].push({ game, leg: idx + 1 })
+      })
+    }
+
+    const raceIds = (raceday.raceList || []).map(r => r.raceId)
+    const results = []
+    for (const rid of raceIds) {
+      const insights = await buildRaceInsights(rid)
+      if (insights) {
+        results.push({ ...insights, games: gamesMap[rid] || [] })
+      }
+    }
+
+    // Ensure Loppen sorted by raceNumber
+    results.sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
+
+    res.json({ raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races: results })
+  } catch (err) {
+    console.error('Failed to build raceday AI list', err)
+    res.status(500).send('Failed to build raceday AI list')
   }
 })
 

@@ -164,4 +164,9 @@ const HorseSchema = new mongoose.Schema({
     timestamps: true
 })
 
+// Indexes for performance in aggregations and lookups
+HorseSchema.index({ id: 1 })
+HorseSchema.index({ 'results.raceInformation.raceId': 1 })
+HorseSchema.index({ 'results.raceInformation.date': 1 })
+
 export default mongoose.model('Horse', HorseSchema)

@@ -54,6 +54,7 @@ const horseSchema = new mongoose.Schema({
   linkable: Boolean,
   comment: String,
   // pastRaceComments removed: all past race comments are now only in atgExtendedRaw
+  aiSummary: { type: String, default: '' }
 })
 
 const propTextsSchema = new mongoose.Schema({
@@ -97,5 +98,10 @@ const racedaySchema = new mongoose.Schema({
   atgCalendarGamesRaw: { type: mongoose.Schema.Types.Mixed, default: {} },
   gameTypes: { type: mongoose.Schema.Types.Mixed, default: {} }
 })
+
+// Indexes to speed up summary sorting and race lookups
+racedaySchema.index({ firstStart: -1 })
+racedaySchema.index({ raceDayDate: 1 })
+racedaySchema.index({ 'raceList.raceId': 1 })
 
 export default mongoose.model('Raceday', racedaySchema)

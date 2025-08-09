@@ -10,11 +10,6 @@ const fetchRacedayDetails = async racedayId => {
   }
 }
 
-export default {
-  fetchRacedayDetails,
-  fetchSpelformer
-}
-
 async function fetchSpelformer(racedayId) {
   try {
     const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/spelformer/${racedayId}`)
@@ -23,4 +18,20 @@ async function fetchSpelformer(racedayId) {
     console.error('Error fetching spelformer:', error)
     throw error
   }
+}
+
+async function fetchRacedayAiList(racedayId) {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/ai-list`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching raceday AI list:', error)
+    throw error
+  }
+}
+
+export default {
+  fetchRacedayDetails,
+  fetchSpelformer,
+  fetchRacedayAiList
 }

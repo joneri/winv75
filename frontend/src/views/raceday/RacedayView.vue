@@ -5,6 +5,9 @@
         <!-- Display Raceday details if available, else show error message -->
         <div v-if="racedayDetails">
           <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
+          <div class="mb-4">
+            <v-btn color="primary" @click="downloadAiList" :loading="downloading">Generera AI-lista</v-btn>
+          </div>
           <div v-for="race in sortedRaceList" :key="race.id">
             <RaceCardComponent
               :race="race"
@@ -41,6 +44,7 @@ export default {
 
     const racedayDetails = ref(null)
     const errorMessage = ref(null)
+    const downloading = ref(false)
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
@@ -84,6 +88,49 @@ export default {
       return res
     }
 
+    const formatGameSuffix = (games) => {
+      if (!games || !games.length) return ''
+      return ' ' + games.map(g => `${g.game}-${g.leg}`).join(' ')
+    }
+
+    const formatInsights = (data) => {
+      const lines = []
+      lines.push(`# ${data.raceday.trackName} ${data.raceday.raceDayDate}`)
+      const races = [...data.races].sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
+      for (const r of races) {
+        const gameSuffix = formatGameSuffix(r.games)
+        lines.push(`\nLopp ${r.race.raceNumber}${gameSuffix} (${r.race.distance} m)`)      
+        lines.push(`Top ELO: ${r.topByElo.map(h => `${h.programNumber} ${h.name} (${h.elo})`).join(', ')}`)
+        lines.push(`Form: ${r.bestForm.map(h => `${h.programNumber} ${h.name} (${h.formScore})`).join(', ')}`)
+        if (r.plusPoints.length) {
+          lines.push(`Pluspoäng: ${r.plusPoints.map(h => `${h.programNumber} ${h.name} [${h.points.join(', ')}]`).join('; ')}`)
+        }
+        lines.push(`Ranking: ${r.ranking.map(h => `${h.programNumber} ${h.name}`).join(', ')}`)
+      }
+      return lines.join('\n')
+    }
+
+    const downloadAiList = async () => {
+      try {
+        downloading.value = true
+        const data = await RacedayService.fetchRacedayAiList(route.params.racedayId)
+        const text = formatInsights(data)
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${data.raceday.trackName}-${data.raceday.raceDayDate}-AI.txt`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+      } catch (e) {
+        console.error('Failed to generate AI list', e)
+      } finally {
+        downloading.value = false
+      }
+    }
+
     return {
       racedayDetails,
       errorMessage,
@@ -93,7 +140,9 @@ export default {
       spelformer,
       getRaceGames,
       isRecentlyUpdated,
-      refreshRaceday
+      refreshRaceday,
+      downloading,
+      downloadAiList
     }
   }
 }

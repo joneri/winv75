@@ -10,6 +10,7 @@ import {
   DEFAULT_DECAY_DAYS
 } from '../rating/elo-engine.js'
 import { seedFromHorseDoc } from '../rating/rating-seed.js'
+import { classFactorFromPurse } from '../rating/class-factor.js'
 
 const ensureConnection = async () => {
   if (mongoose.connection.readyState === 0) {
@@ -42,12 +43,14 @@ const updateRatings = async (
             '$results.placement.sortValue'
           ]
         },
-        withdrawn: '$results.withdrawn'
+        withdrawn: '$results.withdrawn',
+        prize: '$results.prizeMoney.sortValue'
     } },
     { $match: { withdrawn: { $ne: true }, raceDate: { $gt: lastDate } } },
     { $group: {
         _id: '$raceId',
         raceDate: { $first: '$raceDate' },
+        topPrize: { $max: '$prize' },
         horses: { $push: { horseId: '$horseId', placement: '$placement' } }
     } },
     { $sort: { raceDate: 1 } }
@@ -62,10 +65,13 @@ const updateRatings = async (
   }
   // Seed any horses missing ratings using ST points
   const allHorses = await Horse.find({}, { id: 1, points: 1 }).lean()
+  let seededCount = 0
   for (const h of allHorses) {
     const key = String(h.id)
     if (!ratings.has(key)) {
-      ratings.set(key, { rating: seedFromHorseDoc(h), numberOfRaces: 0 })
+      const seed = seedFromHorseDoc(h)
+      ratings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed })
+      seededCount++
     }
   }
 
@@ -75,12 +81,12 @@ const updateRatings = async (
     for (const h of race.horses) {
       placements[h.horseId] = h.placement
     }
-    // TODO: enrich with race class (purse) when available in aggregation
+    const classFactor = classFactorFromPurse(race.topPrize)
     processRace(placements, ratings, {
       k,
       raceDate: race.raceDate,
       decayDays,
-      classFactor: 1
+      classFactor
     })
     raceCount++
   }
@@ -112,7 +118,7 @@ const updateRatings = async (
     await mongoose.disconnect()
   }
 
-  console.log(`Processed ${raceCount} races, updated ${ratings.size} horses`)
+  console.log(`Processed ${raceCount} races, updated ${ratings.size} horses, seeded ${seededCount} new ratings`)
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
