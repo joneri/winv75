@@ -20,9 +20,11 @@ async function fetchSpelformer(racedayId) {
   }
 }
 
-async function fetchRacedayAiList(racedayId) {
+// Allow optional force flag to bypass cache
+async function fetchRacedayAiList(racedayId, { force = false } = {}) {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/ai-list`)
+    const url = `${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/ai-list${force ? '?force=true' : ''}`
+    const response = await axios.get(url)
     return response.data
   } catch (error) {
     console.error('Error fetching raceday AI list:', error)
@@ -30,8 +32,21 @@ async function fetchRacedayAiList(racedayId) {
   }
 }
 
+// Admin: force refresh AI cache for a raceday
+async function refreshRacedayAi(racedayId) {
+  try {
+    const url = `${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/_admin/refresh-ai`
+    const response = await axios.post(url)
+    return response.data
+  } catch (error) {
+    console.error('Error refreshing raceday AI cache:', error)
+    throw error
+  }
+}
+
 export default {
   fetchRacedayDetails,
   fetchSpelformer,
-  fetchRacedayAiList
+  fetchRacedayAiList,
+  refreshRacedayAi
 }

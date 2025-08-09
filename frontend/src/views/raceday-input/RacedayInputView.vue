@@ -6,13 +6,16 @@
     <v-row class="mt-4">
       <v-col>
         <v-text-field v-model="fetchDate" type="date" label="Fetch Racedays by Date"></v-text-field>
-        <v-btn @click="fetchRacedays" color="primary">Fetch</v-btn>
+        <v-btn @click="fetchRacedays" color="primary" :loading="loading">Fetch</v-btn>
         <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
       </v-col>
     </v-row>
 
     <!-- List of Racedays -->
     <v-list v-show="raceDays.length > 0" ref="listContainer" class="raceday-list">
+      <div class="list-loading-indicator" v-if="loading">
+        <v-progress-circular indeterminate color="primary" size="18" width="2" />
+      </div>
       <template v-for="raceDay in raceDays" :key="raceDay._id">
           <v-list-item
             class="clickable-row compact-row"
@@ -20,7 +23,10 @@
             :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText }"
           >
               <div class="row-grid">
-                  <div class="date">{{ formatDate(raceDay.firstStart) }}</div>
+                  <div class="date">
+                    <span class="dot" v-if="raceDay.hasResults" title="Resultat klara"></span>
+                    {{ formatDate(raceDay.firstStart) }}
+                  </div>
                   <div class="track">{{ raceDay.trackName }}</div>
                   <div class="time">{{ formatTime(raceDay.firstStart) }}</div>
                   <div class="count" v-if="typeof raceDay.raceCount === 'number'">{{ raceDay.raceCount }} lopp</div>
@@ -190,6 +196,13 @@ export default {
   .raceday-list {
     max-height: 80vh;
     overflow-y: auto;
+    position: relative;
+  }
+  .list-loading-indicator {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    z-index: 2;
   }
   .clickable-row {
     cursor: pointer;
@@ -206,10 +219,17 @@ export default {
     align-items: center;
     width: 100%;
   }
-  .compact-row .date { font-weight: 600; }
+  .compact-row .date { font-weight: 600; display: flex; align-items: center; gap: 6px; }
   .compact-row .track { color: #555; }
   .compact-row .time { color: #777; }
   .compact-row .count { color: #777; text-align: right; }
   .sentinel { display: flex; justify-content: center; padding: 16px; }
   .end-marker { color: #777; font-size: 0.9em; }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #10b981; /* emerald */
+    display: inline-block;
+  }
 </style>

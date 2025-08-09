@@ -7,6 +7,7 @@
           <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
           <div class="mb-4">
             <v-btn color="primary" @click="downloadAiList" :loading="downloading">Generera AI-lista</v-btn>
+            <v-btn class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating">Regenerera AI</v-btn>
           </div>
           <div v-for="race in sortedRaceList" :key="race.id">
             <RaceCardComponent
@@ -45,6 +46,7 @@ export default {
     const racedayDetails = ref(null)
     const errorMessage = ref(null)
     const downloading = ref(false)
+    const regenerating = ref(false)
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
@@ -131,6 +133,30 @@ export default {
       }
     }
 
+    const regenerateAiList = async () => {
+      try {
+        regenerating.value = true
+        // Force refresh on server
+        await RacedayService.refreshRacedayAi(route.params.racedayId)
+        // Fetch fresh list with force=true and download
+        const data = await RacedayService.fetchRacedayAiList(route.params.racedayId, { force: true })
+        const text = formatInsights(data)
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${data.raceday.trackName}-${data.raceday.raceDayDate}-AI.txt`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+      } catch (e) {
+        console.error('Failed to regenerate AI list', e)
+      } finally {
+        regenerating.value = false
+      }
+    }
+
     return {
       racedayDetails,
       errorMessage,
@@ -142,7 +168,9 @@ export default {
       isRecentlyUpdated,
       refreshRaceday,
       downloading,
-      downloadAiList
+      downloadAiList,
+      regenerating,
+      regenerateAiList
     }
   }
 }
