@@ -265,6 +265,12 @@ const getRacedayAiList = async (racedayId, { force = false } = {}) => {
   return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races }
 }
 
+// Precompute and cache AI list for a specific raceday id
+const precomputeRacedayAiList = async (racedayId) => {
+  await getRacedayAiList(racedayId, { force: true })
+  return { ok: true }
+}
+
 const precomputeUpcomingAiLists = async (daysAhead = 3) => {
   const today = new Date()
   const target = new Date(today)
