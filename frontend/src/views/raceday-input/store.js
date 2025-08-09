@@ -5,7 +5,10 @@ const state = {
   loading: false,
   error: null,
   successMessage: null,
-  raceDays: []
+  raceDays: [],
+  raceDaysPage: 1,
+  raceDaysPageSize: 20,
+  raceDaysTotal: 0,
 }
 
 const mutations = {
@@ -25,6 +28,12 @@ const mutations = {
   },
   setRaceDays(state, raceDays) {
     state.raceDays = raceDays
+  },
+  setRaceDaysPage(state, page) {
+    state.raceDaysPage = page
+  },
+  setRaceDaysTotal(state, total) {
+    state.raceDaysTotal = total
   }
 }
 
@@ -41,12 +50,18 @@ const actions = {
       commit('setLoading', false)
     }
   },
-  async fetchRacedays({ commit }) {
+  async fetchRacedays({ commit, state }, { page = 1 } = {}) {
     commit('setLoading', true)
     try {
       const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`)
-      const fetched = response.data.sort((a, b) => new Date(b.firstStart) - new Date(a.firstStart))
-      commit('setRaceDays', fetched)
+      const raceDaysArray = Array.isArray(response.data) ? response.data : response.data.racedays || [];
+      const sorted = raceDaysArray.sort((a, b) => new Date(b.firstStart) - new Date(a.firstStart));
+      const startIdx = (page - 1) * state.raceDaysPageSize;
+      const endIdx = startIdx + state.raceDaysPageSize;
+      const paged = sorted.slice(startIdx, endIdx);
+      commit('setRaceDays', paged)
+      commit('setRaceDaysPage', page)
+      commit('setRaceDaysTotal', sorted.length)
     } catch (error) {
       console.error('Error fetching racedays:', error)
       commit('setError', error.message)

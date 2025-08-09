@@ -62,6 +62,27 @@
                                       :past-race-comments="getAtgPastRaceCommentsForHorse(item.raw.id)"
                                       :withdrawn="item.columns.horseWithdrawn"
                                     />
+                                    <div class="mt-2">
+                                      <v-btn
+                                        size="x-small"
+                                        variant="outlined"
+                                        :loading="aiSummaryLoading[item.raw.id]"
+                                        @click="onGenerateSummary(item.raw)"
+                                      >
+                                        AI-sammanfattning
+                                      </v-btn>
+                                      <div v-if="aiSummary[item.raw.id] || item.raw.aiSummary" class="ai-summary-block mt-1">
+                                        <strong>AI:</strong>
+                                        <span style="white-space: pre-line">
+                                          {{ (aiSummary[item.raw.id] || item.raw.aiSummary)?.split(/(?<=\.|!|\?)\s+/).join('\n') }}
+                                        </span>
+                                        <span v-if="item.raw.aiSummary && !aiSummary[item.raw.id]" class="text-caption text-success ml-2">(sparad)</span>
+                                        <span v-if="aiSummary[item.raw.id]" class="text-caption text-warning ml-2">(ny)</span>
+                                      </div>
+                                      <div v-if="aiSummaryError[item.raw.id]" class="text-error mt-1">
+                                        {{ aiSummaryError[item.raw.id] }}
+                                      </div>
+                                    </div>
                                 </div>
                             </template>
                             <template v-slot:item.driverElo="{ item }">
@@ -141,12 +162,46 @@ import TrackService from '@/views/race/services/TrackService.js'
 import HorseService from '@/views/race/services/HorseService.js'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import HorseCommentBlock from './components/HorseCommentBlock.vue'
+import { fetchHorseSummary } from '@/ai/horseSummaryClient.js'
 
 export default {
     name: 'RaceHorsesView',
     components: { SpelformBadge, HorseCommentBlock },
 
     setup() {
+        // --- AI summary state and handler ---
+        const aiSummary = ref({})
+        const aiSummaryLoading = ref({})
+        const aiSummaryError = ref({})
+
+        const onGenerateSummary = async (horse) => {
+          aiSummaryLoading.value[horse.id] = true
+          aiSummaryError.value[horse.id] = ''
+          try {
+            // Compose data for the backend AI endpoint
+          const pastRaceCommentsArr = getAtgPastRaceCommentsForHorse(horse.id)
+          const pastRaceComments = pastRaceCommentsArr
+            .filter(c => c.comment && c.date)
+            .map(c => `${c.date}: ${c.comment}`)
+            .join(' ')
+
+            const summary = await fetchHorseSummary({
+              eloRating: horse.eloRating,
+              horseName: horse.name,
+              numberOfStarts: horse.numberOfStarts,
+              driverName: horse.driver?.name,
+              driverElo: horse.driver?.elo,
+              formStats: horse.statsFormatted,
+              conditions: getConditionLines(horse),
+              pastRaceComments,
+            }, currentRace.value.raceId, horse.id)
+            aiSummary.value[horse.id] = summary
+          } catch (e) {
+            aiSummaryError.value[horse.id] = 'Kunde inte generera AI-sammanfattning.'
+          } finally {
+            aiSummaryLoading.value[horse.id] = false
+          }
+        }
         // --- ATG comment/pastRaceComments extraction ---
         // All comment and past race comment logic is now single-source: atgExtendedRaw only.
         // This is robust to missing/undefined fields and never throws.
@@ -1010,6 +1065,10 @@ export default {
         }
 
         return {
+            aiSummary,
+            aiSummaryLoading,
+            aiSummaryError,
+            onGenerateSummary,
             headers,
             rankHorses,
             getTrackName,

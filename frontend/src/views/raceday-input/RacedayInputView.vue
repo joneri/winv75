@@ -29,6 +29,26 @@
           </v-list-item>
           <v-divider></v-divider>
       </template>
+      <!-- Pagination Buttons -->
+      <div class="d-flex justify-center mt-4">
+        <v-btn
+          :disabled="raceDaysPage <= 1 || loading"
+          @click="loadPrevPage"
+          class="mr-2"
+        >⟵ Previous</v-btn>
+        <span class="mx-2">Page {{ raceDaysPage }} / {{ totalPages }}</span>
+        <v-btn
+          :disabled="raceDaysPage >= totalPages || loading"
+          @click="loadNextPage"
+        >Next ⟶</v-btn>
+        <v-progress-circular
+          v-if="loading"
+          indeterminate
+          color="primary"
+          size="24"
+          class="ml-4"
+        />
+      </div>
     </v-list>
     <v-alert v-if="raceDays.length === 0" type="info" class="mt-4">No racedays found.</v-alert>
     <v-progress-linear
@@ -69,6 +89,10 @@ export default {
 
     const error = computed(() => store.state.racedayInput.error);
     const raceDays = computed(() => store.state.racedayInput.raceDays);
+    const raceDaysPage = computed(() => store.state.racedayInput.raceDaysPage);
+    const raceDaysPageSize = computed(() => store.state.racedayInput.raceDaysPageSize);
+    const raceDaysTotal = computed(() => store.state.racedayInput.raceDaysTotal);
+    const totalPages = computed(() => Math.ceil(raceDaysTotal.value / raceDaysPageSize.value));
     const loading = computed(() => store.state.racedayInput.loading);
     const successMessage = computed(() => store.state.racedayInput.successMessage);
     const listContainer = ref(null);
@@ -91,8 +115,19 @@ export default {
       }
     });
 
+    const loadPrevPage = () => {
+      if (raceDaysPage.value > 1) {
+        store.dispatch('racedayInput/fetchRacedays', { page: raceDaysPage.value - 1 });
+      }
+    };
+    const loadNextPage = () => {
+      if (raceDaysPage.value < totalPages.value) {
+        store.dispatch('racedayInput/fetchRacedays', { page: raceDaysPage.value + 1 });
+      }
+    };
+
     onMounted(() => {
-      store.dispatch('racedayInput/fetchRacedays');
+      store.dispatch('racedayInput/fetchRacedays', { page: 1 });
     });
 
     return {
@@ -101,13 +136,19 @@ export default {
       showSnackbar,
       error,
       raceDays,
+      raceDaysPage,
+      raceDaysPageSize,
+      raceDaysTotal,
+      totalPages,
       loading,
       successMessage,
       fetchRacedays,
       navigateToRaceDay,
       hoverBg,
       hoverText,
-      listContainer
+      listContainer,
+      loadPrevPage,
+      loadNextPage,
     };
   }
 }
