@@ -1,182 +1,126 @@
 # winv75
 
-This repository contains a Vue 3 front‑end and an Express/MongoDB back‑end used to rank horses in races.
+Vue 3 frontend + Express/MongoDB backend for trotting analytics: startlists, Elo-based ratings, and “Jonas AI” raceday/race insights.
+
+## Architecture
+- Frontend: Vue 3 + Vite (`frontend/`)
+- Backend: Express + Mongoose (`backend/`)
+- DB: MongoDB (local by default)
+
+Key features
+- Raceday summary API with pagination and lean projection for fast lists.
+- Infinite scroll UI showing date, track, first start, and race count.
+- Elo ratings with initial seeding from Svensk Travsport points and purse-based class weighting.
+- “Jonas AI” insights for a race and for an entire raceday, with caching and cron precompute.
+- Observability: timing/logging middleware and lightweight metrics endpoint.
 
 ## Prerequisites
+- Node.js 18+
+- Yarn
+- MongoDB running locally on mongodb://localhost:27017
 
-- **Node.js** 18 or later with `yarn` installed
-- **MongoDB** running locally on `mongodb://localhost:27017`
+## Quick start
+1) Install deps
+- Backend
+  - cd backend && yarn install
+- Frontend
+  - cd frontend && yarn install
 
-## Getting Started
+2) Configure .env
+- Frontend `frontend/.env`:
+  - `VITE_BE_URL=http://localhost:3001`
+- Backend: environment variables are optional; see Configuration below. Mongo URI is currently defined in `backend/src/config/db.js` and defaults to `mongodb://localhost:27017/winv75`.
 
-### 1. Clone and install dependencies
+3) Run
+- Backend: `cd backend && yarn dev`
+- Frontend: `cd frontend && yarn dev`
+- App: http://localhost:5173 (proxying to `VITE_BE_URL` for API)
 
-```bash
-# clone repository and change directory
-# git clone <repo-url>
-cd winv75
+## Configuration (backend env)
+General
+- `PORT` — API port (default 3001)
 
-# install backend dependencies
-cd backend
-yarn install
+Elo seeding (from ST points)
+- `ELO_SEED_BASE` — base for log-scale seeding
+- `ELO_SEED_ALPHA` — multiplier for log(points)
+- `ELO_SEED_MIN` — lower bound for seed
+- `ELO_SEED_MAX` — upper bound for seed
 
-# install frontend dependencies
-cd ../frontend
-yarn install
-```
+Class weighting (purse → class)
+- `ELO_CLASS_MIN` — min purse reference
+- `ELO_CLASS_MAX` — max purse reference
+- `ELO_CLASS_REF` — reference purse (neutral class)
+- `ELO_K_CLASS_MULTIPLIER` — scales K-factor by class
 
-### 2. Environment variables
+Ranking (AI composite ordering)
+- `AI_RANK_ELO_DIVISOR` — scales Elo contribution (default 50)
+- `AI_RANK_W_FORM` — weight for formScore (default 1.0)
+- `AI_RANK_BONUS_SHOE` — bonus for Skobyte (default 0.5)
+- `AI_RANK_BONUS_FAVORITE_TRACK` — bonus for Favoritbana (default 0.75)
+- `AI_RANK_BONUS_FAVORITE_SPAR` — bonus for Favoritspår (default 0.5)
 
-The frontend expects the URL of the back‑end API in `VITE_BE_URL`. Create a `.env` file inside `frontend`:
+“Jonas AI” raceday caching & cron
+- `AI_RACEDAY_CACHE_TTL_MINUTES` — cache freshness window (default 120)
+- `AI_RACEDAY_CRON` — cron schedule for precompute (default `15 6 * * *`)
+- `AI_RACEDAY_DAYS_AHEAD` — lookahead window for precompute (default 3)
 
-```bash
-VITE_BE_URL=http://localhost:3001
-```
+Evaluation/tuning
+- No env required; pass query params to the eval endpoint (see API).
 
-The back‑end server uses port `3001` by default. Adjust the value if you run the server on another port.
+## API quick reference
+Raceday
+- GET `/api/raceday/summary?skip=0&limit=40&fields=firstStart,trackName,raceDayDate,raceCount,hasResults`
+  - Server-side pagination; fields is a comma list of projected fields.
+- GET `/api/raceday/:id` — full raceday document
+- GET `/api/raceday/:id/ai-list?force=true|false`
+  - Returns cached raceday insights; force bypasses cache and refreshes.
+- POST `/api/raceday/_admin/precompute-ai?daysAhead=3`
+  - Precompute AI lists for upcoming racedays; body empty.
+- POST `/api/raceday/:id/_admin/refresh-ai`
+  - Force refresh cache for a specific raceday; body empty.
 
-The ranking logic uses a weighted score. You can override the default weights with environment variables in the back‑end:
+Race
+- GET `/api/race/:id/ai-list` — per‑race insights (Elo top, form, plus points, composite ranking)
+- GET `/api/race/:id` — raw race data
+- POST `/api/race/horse-summary` — AI-generated natural language summary for a horse (JSON payload)
 
-```bash
-# optional scoring weights
-SCORE_WEIGHT_POINTS=0.30
-SCORE_WEIGHT_CONSISTENCY=0.30
-SCORE_WEIGHT_WIN_RATE=0.25
-SCORE_WEIGHT_PLACEMENT_RATE=0.15
-```
+Ratings
+- POST `/api/rating/update` — run ratings update across recent results
+- GET `/api/rating/eval?from=YYYY-MM-DD&to=YYYY-MM-DD&kClassMultiplier=..&classMin=..&classMax=..&classRef=..`
+  - Simulates Elo over a range without writing to DB. Returns mean RMSE and purse coverage.
 
-### 3. Starting MongoDB
+Metrics
+- GET `/api/_metrics` — lightweight JSON counters for AI endpoints (incl. raceday cache hits/misses)
 
-Make sure a MongoDB instance is running on `mongodb://localhost:27017`. The back‑end connects to a database named `winv75`.
+## “Jonas AI” outputs
+- topByElo — top 3 by Elo
+- bestForm — top 3 by recent form (weighted last 5 starts)
+- plusPoints — shoe change, favorite track, favorite start position
+- ranking — composite list per race with fields:
+  - rating (Elo), formScore, plusPoints, compositeScore, rank
 
-### 4. Run the applications
+Composite ranking formula (tunable via env)
+- `compositeScore = rating/AI_RANK_ELO_DIVISOR + AI_RANK_W_FORM * formScore + bonuses`
+- Bonuses are sums of configured values for detected plusPoints.
 
-Start the back‑end server:
+## Tuning workflow
+1) Seed and class weighting are active by default. To analyze/tune:
+2) Call `/api/rating/eval` over a date window. Example parameters to vary:
+   - `kClassMultiplier`, `classMin`, `classMax`, `classRef`
+3) Compare mean RMSE before/after. Update env values accordingly.
+4) Optionally adjust composite rank envs to influence UI ordering.
 
-```bash
-cd backend
-yarn dev
-```
+## Dev tips
+- If precompute returns `{count: 0}`: there may be no racedays with `firstStart` in the lookahead window. Increase `daysAhead` or use the per‑raceday refresh endpoint.
+- Route ordering avoids param conflicts: fixed routes (e.g. `/summary`, `/ai-list`) are declared before `/:id`.
+- Raceday list uses narrow projections; fetch full details on navigation.
 
-In a second terminal, start the front‑end dev server:
+## Scripts (backend)
+- `yarn dev` — start API with nodemon
+- `yarn update-ratings` — manual ratings rebuild
+- `yarn build-drivers` — build driver collection
+- `yarn update-driver-elo` — recalc driver Elo
 
-```bash
-cd frontend
-yarn dev
-```
-
-The Vue application will be available at <http://localhost:5173> by default and communicates with the API via `VITE_BE_URL`.
-
-### 5. MongoDB aggregation scripts
-
-The `mongodb-scripts` folder contains aggregation pipelines exported from MongoDB Compass. They can be loaded in the Aggregations tab of Compass for experimenting with ranking logic.
-
-## Fetching raceday data automatically
-
-To import startlists from the official Travsport API, the back‑end exposes a POST
-endpoint:
-
-```
-POST /api/raceday/fetch?date=YYYY-MM-DD
-```
-
-It downloads all raceday startlists for the given date and stores them in MongoDB.
-The front‑end provides a date field in the **Raceday Input** view where you can
-trigger this fetch.
-
-## Race comments and past performance
-
-When a race is requested via `GET /api/race/:id`, the back‑end checks whether
-any horses are missing comments or past race comments. Missing data triggers a
-single fetch to ATG’s extended race endpoint, and the results are stored in
-MongoDB. Subsequent requests use the cached data so the external data source is
-only contacted when necessary.
-
-## Horse Ranking
-
-Each horse receives a score based on four weighted metrics:
-
-1. **Points** – the official rating points.
-2. **Consistency Score** – derived from placements where first place counts as three, second as two and third as one.
-3. **Win Rate** – percentage of starts that resulted in a win.
-4. **Placement Rate** – percentage of starts finishing in a paying position.
-
-The total score is simply the sum of each metric multiplied by its weight:
-
-```
-points * SCORE_WEIGHT_POINTS
-  + consistencyScore * SCORE_WEIGHT_CONSISTENCY
-  + winRate * SCORE_WEIGHT_WIN_RATE
-  + placementRate * SCORE_WEIGHT_PLACEMENT_RATE
-```
-
-Default weights are defined in the back‑end but can be overridden with optional
-environment variables (`SCORE_WEIGHT_*`). The weights determine how much each
-metric contributes to the final ranking.
-
-The ranking output also includes data such as favorite track, driver and start
-position, as well as the average odds when the horse finished in the top three.
-These values are currently informational only and do not affect the score.
-
-## Folder Naming Convention
-
-Both the back‑end and front‑end organize source files under singular, lower‑case folders.
-Core modules share the same names across the projects to keep imports predictable:
-
-- `horse`
-- `race`
-- `raceday`
-- `rating`
-
-Using the same folder names makes it clear where new functionality belongs and simplifies refactoring.
-
-## Building for production
-
-To create optimized builds:
-
-```bash
-# back-end (nothing to build, just run with Node)
-
-# front-end
-cd frontend
-yarn build
-```
-
-The compiled static files will be in `frontend/dist` and can be served by any static file server.
-
-## Scheduled Ratings Update
-
-The back‑end runs a cron job that recalculates Elo ratings every hour using
-`update-elo-ratings.js`. Ratings are stored in the `horse_ratings` collection and
-synced to the `horses` documents. The cron job can also be triggered manually via
-
-```
-POST /api/rating/update
-```
-
-which is helpful after importing new race results. The exported
-`startRatingsCronJob` function is invoked automatically when the Express server
-starts.
-
-## Driver Collection
-
-A helper script aggregates race results for each driver into its own `drivers` collection.
-Run it after importing horse data:
-
-```bash
-cd backend
-yarn build-drivers
-```
-
-The script is idempotent and rebuilds all driver documents from the current horse results.
-
-### Updating Driver Elo Ratings
-
-Drivers receive an Elo rating calculated from their race placements. Run the update script to recompute scores:
-
-```bash
-cd backend
-yarn update-driver-elo
-```
-
-The cron job in the backend automatically recalculates driver ratings once per day.
+## Notes
+- Mongo URI is currently defined in `backend/src/config/db.js`. Change there if needed.
+- Frontend lists can optionally request `raceCount` and `hasResults` in the summary fields for indicators without heavy payloads.

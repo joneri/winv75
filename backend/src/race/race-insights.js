@@ -71,7 +71,38 @@ export async function buildRaceInsights(raceId) {
     return { id: h.id, name: h.name, programNumber: h.programNumber, points: notes }
   }).filter(x => x.points.length)
 
-  const rankedList = ranking.map(r => ({ id: r.id, name: r.name, programNumber: r.programNumber, rating: Math.round(r.rating || 0), totalScore: r.totalScore }))
+  const plusPointsMap = new Map(plusPoints.map(p => [p.id, p.points]))
+
+  const eloDiv = Number(process.env.AI_RANK_ELO_DIVISOR || 50)
+  const wForm = Number(process.env.AI_RANK_W_FORM || 1.0)
+  const bShoe = Number(process.env.AI_RANK_BONUS_SHOE || 0.5)
+  const bFavTrack = Number(process.env.AI_RANK_BONUS_FAVORITE_TRACK || 0.75)
+  const bFavSpar = Number(process.env.AI_RANK_BONUS_FAVORITE_SPAR || 0.5)
+
+  const rankedList = [...ranking]
+    .map(r => {
+      const rating = Math.round(r.rating || 0)
+      const formScore = Number(((formScores.get(r.id) || 0)).toFixed(2))
+      const pts = plusPointsMap.get(r.id) || []
+      let bonus = 0
+      for (const p of pts) {
+        if (p === 'Skobyte') bonus += bShoe
+        else if (p === 'Favoritbana') bonus += bFavTrack
+        else if (p === 'Favoritspår') bonus += bFavSpar
+      }
+      const compositeScore = rating / eloDiv + wForm * formScore + bonus
+      return {
+        id: r.id,
+        name: r.name,
+        programNumber: r.programNumber,
+        rating,
+        formScore,
+        plusPoints: pts,
+        compositeScore
+      }
+    })
+    .sort((a, b) => (b.compositeScore || 0) - (a.compositeScore || 0))
+    .map((h, idx) => ({ ...h, rank: idx + 1 }))
 
   return {
     race: {
