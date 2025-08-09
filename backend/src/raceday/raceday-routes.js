@@ -62,6 +62,23 @@ router.put('/:raceDayId/race/:raceId', validateObjectIdParam('raceDayId'), valid
   }
 })
 
+// Lightweight paginated summary of racedays (placed before '/:id' to avoid param capture)
+router.get('/summary', async (req, res) => {
+  try {
+    const skip = parseInt(req.query.skip) || 0
+    const limit = req.query.limit ? parseInt(req.query.limit) : 40
+    const fields = typeof req.query.fields === 'string' && req.query.fields.trim().length
+      ? req.query.fields.split(',').map(s => s.trim())
+      : ['firstStart', 'raceDayDate', 'trackName', 'raceStandard']
+
+    const result = await raceDayService.getRacedaysPaged(skip, limit, fields)
+    res.json(result)
+  } catch (error) {
+    console.error('Error fetching raceday summary:', error)
+    res.status(500).send('Failed to fetch raceday summary. Please try again.')
+  }
+})
+
 // Fetch a specific raceday by its ID
 router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
     console.log('req:', req.originalUrl)
@@ -77,23 +94,6 @@ router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
         console.error(`Error fetching raceday with ID ${req.params.id}:`, error)
         res.status(500).send('Failed to fetch raceday. Please try again.')
     }
-})
-
-// Lightweight paginated summary of racedays
-router.get('/summary', async (req, res) => {
-  try {
-    const skip = parseInt(req.query.skip) || 0
-    const limit = req.query.limit ? parseInt(req.query.limit) : 40
-    const fields = typeof req.query.fields === 'string' && req.query.fields.trim().length
-      ? req.query.fields.split(',').map(s => s.trim())
-      : ['firstStart', 'raceDayDate', 'trackName', 'raceStandard']
-
-    const result = await raceDayService.getRacedaysPaged(skip, limit, fields)
-    res.json(result)
-  } catch (error) {
-    console.error('Error fetching raceday summary:', error)
-    res.status(500).send('Failed to fetch raceday summary. Please try again.')
-  }
 })
 
 export default router
