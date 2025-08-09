@@ -105,10 +105,16 @@ export default {
       return v && (v.$el || v)
     }
 
-    const fetchRacedays = () => {
-      if (fetchDate.value) {
-        store.dispatch('racedayInput/fetchRacedaysFromAPI', fetchDate.value);
-      }
+    const fetchRacedays = async () => {
+      if (!fetchDate.value) return
+      // Fetch from external API -> upsert into backend
+      await store.dispatch('racedayInput/fetchRacedaysFromAPI', fetchDate.value)
+      // Reload summary from page 1 so new items are visible and correctly sorted
+      await store.dispatch('racedayInput/fetchRacedays', { page: 1 })
+      await nextTick()
+      const el = getRootEl()
+      if (el) el.scrollTop = 0
+      setupObserver()
     };
 
     const navigateToRaceDay = (raceDayId) => {
