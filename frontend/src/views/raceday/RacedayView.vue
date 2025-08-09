@@ -6,8 +6,8 @@
         <div v-if="racedayDetails">
           <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
           <div class="mb-4">
-            <v-btn color="primary" @click="downloadAiList" :loading="downloading">Generera AI-lista</v-btn>
-            <v-btn class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating">Regenerera AI</v-btn>
+            <v-btn color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
+            <v-btn class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
           </div>
           <div v-for="race in sortedRaceList" :key="race.id">
             <RaceCardComponent
@@ -136,8 +136,9 @@ export default {
     const regenerateAiList = async () => {
       try {
         regenerating.value = true
-        // Force refresh on server
         await RacedayService.refreshRacedayAi(route.params.racedayId)
+        // Refresh UI data
+        await refreshRaceday()
         // Fetch fresh list with force=true and download
         const data = await RacedayService.fetchRacedayAiList(route.params.racedayId, { force: true })
         const text = formatInsights(data)
