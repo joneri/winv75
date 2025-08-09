@@ -1,7 +1,7 @@
 import HorseRating from '../horse/horse-rating-model.js'
 import RatingHistory from './rating-history-model.js'
 import Horse from '../horse/horse-model.js'
-import { processRace, DEFAULT_K, DEFAULT_DECAY_DAYS, DEFAULT_RATING } from './elo-engine.js'
+import { processRace, DEFAULT_K, DEFAULT_DECAY_DAYS, DEFAULT_RATING, K_CLASS_MULTIPLIER } from './elo-engine.js'
 import { seedFromHorseDoc } from './rating-seed.js'
 import { classFactorFromPurse } from './class-factor.js'
 
@@ -58,7 +58,7 @@ const updateRatingsForRace = async (raceId, raceData) => {
   // Run Elo update
   const k = process.env.ELO_K ? Number(process.env.ELO_K) : DEFAULT_K
   const decayDays = process.env.RATING_DECAY_DAYS ? Number(process.env.RATING_DECAY_DAYS) : DEFAULT_DECAY_DAYS
-  processRace(placements, ratings, { k, raceDate, decayDays, classFactor })
+  processRace(placements, ratings, { k, raceDate, decayDays, classFactor, kClassMultiplier: K_CLASS_MULTIPLIER })
 
   // Persist ratings and history
   const now = new Date()

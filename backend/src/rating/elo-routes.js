@@ -1,6 +1,7 @@
 import express from 'express'
 import updateRatings from '../horse/update-elo-ratings.js'
 import eloService from './elo-service.js'
+import { evaluateElo } from './elo-eval.js'
 
 const router = express.Router()
 
@@ -25,6 +26,27 @@ router.post('/race/:raceId', async (req, res) => {
   } catch (err) {
     console.error('Failed to update ratings for race', req.params.raceId, err)
     res.status(500).send('Failed to update ratings')
+  }
+})
+
+// Evaluate Elo RMSE over a date range with tunable class settings (no DB writes)
+router.get('/eval', async (req, res) => {
+  try {
+    const { from, to, k, decayDays, classMin, classMax, classRef, kClassMultiplier } = req.query
+    const result = await evaluateElo({
+      from,
+      to,
+      k: k ? Number(k) : undefined,
+      decayDays: decayDays ? Number(decayDays) : undefined,
+      classMin: classMin ? Number(classMin) : undefined,
+      classMax: classMax ? Number(classMax) : undefined,
+      classRef: classRef ? Number(classRef) : undefined,
+      kClassMultiplier: kClassMultiplier ? Number(kClassMultiplier) : undefined
+    })
+    res.json(result)
+  } catch (err) {
+    console.error('Elo evaluation failed', err)
+    res.status(500).send('Elo evaluation failed')
   }
 })
 

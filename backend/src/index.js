@@ -13,6 +13,7 @@ import driverRoutes from './driver/driver-routes.js'
 import gameRoutes from './game/game-routes.js'
 import { startRatingsCronJob } from './rating/ratings-scheduler.js'
 import { startDriverCronJob } from './driver/scheduler.js'
+import { startRacedayAICron } from './raceday/raceday-scheduler.js'
 
 // Middleware
 import errorHandler from './middleware/errorHandler.js'
@@ -26,11 +27,16 @@ const PORT = process.env.PORT || 3001
 app.use(express.json({ limit: '2mb' }));
 connectDB()
 startRatingsCronJob()
+startDriverCronJob()
+startRacedayAICron()
 
 app.use(cors())
 app.get('/', (req, res) => {
   res.send('200 OK')
 })
+
+// AI middleware early in chain to measure endpoints
+app.use(aiTimingMiddleware)
 
 // API routes
 app.use('/api/horses', horseRoutes)
@@ -40,9 +46,6 @@ app.use('/api/track', trackRoutes)
 app.use('/api/rating', eloRoutes)
 app.use('/api/driver', driverRoutes)
 app.use('/api/spelformer', gameRoutes)
-
-// AI middleware
-app.use(aiTimingMiddleware)
 
 // Lightweight metrics endpoint (avoid heavy data)
 app.get('/api/_metrics', (req, res) => {
@@ -60,4 +63,3 @@ app.use(errorHandler)
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
 })
-startDriverCronJob()

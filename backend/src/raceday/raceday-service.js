@@ -2,6 +2,8 @@ import Raceday from './raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import axios from 'axios'
 import horseService from '../horse/horse-service.js'
+import { buildRaceInsights } from '../race/race-insights.js'
+import { aiMetrics } from '../middleware/metrics.js'
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -163,7 +165,7 @@ const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
     const projection = { _id: 1 }
     if (selected) {
       for (const f of selected) {
-        if (f === 'raceCount') continue // handled below
+        if (f === 'raceCount' || f === 'hasResults') continue // handled below
         // Avoid exposing entire raceList by default unless explicitly asked
         if (f === 'raceList') {
           projection['raceList'] = 1
@@ -173,6 +175,22 @@ const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
       }
       if (selected.includes('raceCount')) {
         projection['raceCount'] = { $size: { $ifNull: ['$raceList', []] } }
+      }
+      if (selected.includes('hasResults')) {
+        projection['hasResults'] = {
+          $gt: [
+            {
+              $size: {
+                $filter: {
+                  input: { $ifNull: ['$raceList', []] },
+                  as: 'r',
+                  cond: { $eq: ['$$r.resultsReady', true] }
+                }
+              }
+            },
+            0
+          ]
+        }
       }
     } else {
       // Default minimal projection
@@ -201,11 +219,71 @@ const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
   }
 }
 
+// Return AI list for a raceday, using cache if fresh; rebuild and persist if stale/missing
+const getRacedayAiList = async (racedayId, { force = false } = {}) => {
+  const ttlMinutes = Number(process.env.AI_RACEDAY_CACHE_TTL_MINUTES || 120)
+  const now = Date.now()
+
+  const raceday = await Raceday.findById(
+    racedayId,
+    { aiListCache: 1, firstStart: 1, trackName: 1, raceDayDate: 1, raceList: 1, gameTypes: 1 }
+  )
+  if (!raceday) return null
+
+  const genAt = raceday.aiListCache?.generatedAt ? new Date(raceday.aiListCache.generatedAt).getTime() : 0
+  const fresh = !!genAt && (now - genAt) <= ttlMinutes * 60 * 1000
+
+  if (!force && fresh && Array.isArray(raceday.aiListCache?.races) && raceday.aiListCache.races.length) {
+    try { aiMetrics.raceday.cacheHits += 1 } catch {}
+    return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races: raceday.aiListCache.races }
+  }
+  try { aiMetrics.raceday.cacheMisses += 1 } catch {}
+
+  // Rebuild
+  const gamesMap = {}
+  const gt = raceday.gameTypes || {}
+  for (const [game, ids] of Object.entries(gt)) {
+    ids.forEach((rid, idx) => {
+      if (!gamesMap[rid]) gamesMap[rid] = []
+      gamesMap[rid].push({ game, leg: idx + 1 })
+    })
+  }
+
+  const raceIds = (raceday.raceList || []).map(r => r.raceId)
+  const races = []
+  for (const rid of raceIds) {
+    const insights = await buildRaceInsights(rid)
+    if (insights) {
+      races.push({ ...insights, games: gamesMap[rid] || [] })
+    }
+  }
+  races.sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
+
+  raceday.aiListCache = { generatedAt: new Date(), races }
+  await raceday.save()
+
+  return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races }
+}
+
+const precomputeUpcomingAiLists = async (daysAhead = 3) => {
+  const today = new Date()
+  const target = new Date(today)
+  target.setDate(target.getDate() + daysAhead)
+  const items = await Raceday.find({ firstStart: { $gte: today, $lte: target } }, { _id: 1 }).lean()
+  for (const it of items) {
+    try { await precomputeRacedayAiList(it._id) } catch (e) { console.error('AI precompute failed for', it._id, e) }
+  }
+  return { count: items.length }
+}
+
 export default {
     upsertStartlistData,
     getAllRacedays,
     getRacedayById,
     updateEarliestUpdatedHorseTimestamp,
     fetchAndStoreByDate,
-    getRacedaysPaged
+    getRacedaysPaged,
+    precomputeRacedayAiList,
+    precomputeUpcomingAiLists,
+    getRacedayAiList
 }

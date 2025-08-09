@@ -62,7 +62,7 @@ const actions = {
     if (state.loading) return
     commit('setLoading', true)
     try {
-      const fields = ['firstStart','raceDayDate','trackName','raceStandard','raceCount']
+      const fields = ['firstStart','raceDayDate','trackName','raceStandard','raceCount','hasResults']
       const { items, total } = await fetchRacedaysSummary({ page, pageSize: state.raceDaysPageSize, fields })
       if (page === 1) {
         commit('setRaceDays', items)

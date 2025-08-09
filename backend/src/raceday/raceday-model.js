@@ -96,7 +96,11 @@ const racedaySchema = new mongoose.Schema({
   raceDayDate: String,
   hasPdf: Boolean,
   atgCalendarGamesRaw: { type: mongoose.Schema.Types.Mixed, default: {} },
-  gameTypes: { type: mongoose.Schema.Types.Mixed, default: {} }
+  gameTypes: { type: mongoose.Schema.Types.Mixed, default: {} },
+  aiListCache: {
+    generatedAt: { type: Date, default: null },
+    races: { type: Array, default: [] }
+  }
 })
 
 // Indexes to speed up summary sorting and race lookups

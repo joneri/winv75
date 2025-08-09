@@ -1,8 +1,6 @@
 import express from 'express'
 import raceDayService from './raceday-service.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
-import { buildRaceInsights } from '../race/race-insights.js'
-import Raceday from './raceday-model.js'
 
 const router = express.Router()
 
@@ -81,41 +79,40 @@ router.get('/summary', async (req, res) => {
   }
 })
 
-// New: AI-style list for an entire raceday (each race)
+// New: AI-style list for an entire raceday (each race) with caching
 router.get('/:id/ai-list', validateObjectIdParam('id'), async (req, res) => {
   try {
-    const raceday = await Raceday.findById(
-      req.params.id,
-      { raceList: 1, trackName: 1, raceDayDate: 1, gameTypes: 1 }
-    ).lean()
-    if (!raceday) return res.status(404).send('Raceday not found')
-
-    // Build a map: raceId -> [{ game, leg }]
-    const gamesMap = {}
-    const gt = raceday.gameTypes || {}
-    for (const [game, ids] of Object.entries(gt)) {
-      ids.forEach((rid, idx) => {
-        if (!gamesMap[rid]) gamesMap[rid] = []
-        gamesMap[rid].push({ game, leg: idx + 1 })
-      })
-    }
-
-    const raceIds = (raceday.raceList || []).map(r => r.raceId)
-    const results = []
-    for (const rid of raceIds) {
-      const insights = await buildRaceInsights(rid)
-      if (insights) {
-        results.push({ ...insights, games: gamesMap[rid] || [] })
-      }
-    }
-
-    // Ensure Loppen sorted by raceNumber
-    results.sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
-
-    res.json({ raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races: results })
+    const force = String(req.query.force || '').toLowerCase() === 'true'
+    const data = await raceDayService.getRacedayAiList(req.params.id, { force })
+    if (!data) return res.status(404).send('Raceday not found')
+    res.json(data)
   } catch (err) {
     console.error('Failed to build raceday AI list', err)
     res.status(500).send('Failed to build raceday AI list')
+  }
+})
+
+// Admin: Precompute upcoming raceday AI lists (cron target)
+router.post('/_admin/precompute-ai', async (req, res) => {
+  try {
+    const daysAhead = req.query.daysAhead ? Number(req.query.daysAhead) : 3
+    const result = await raceDayService.precomputeUpcomingAiLists(daysAhead)
+    res.json(result)
+  } catch (e) {
+    console.error('Precompute failed', e)
+    res.status(500).send('Precompute failed')
+  }
+})
+
+// Admin: Force refresh cache for a raceday
+router.post('/:_id/_admin/refresh-ai', validateObjectIdParam('_id'), async (req, res) => {
+  try {
+    const data = await raceDayService.getRacedayAiList(req.params._id, { force: true })
+    if (!data) return res.status(404).send('Raceday not found')
+    res.json({ ok: true, generatedAt: new Date().toISOString() })
+  } catch (e) {
+    console.error('Refresh AI failed', e)
+    res.status(500).send('Refresh AI failed')
   }
 })
 

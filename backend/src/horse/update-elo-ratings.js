@@ -7,7 +7,8 @@ import { fileURLToPath } from 'url'
 import {
   processRace,
   DEFAULT_K,
-  DEFAULT_DECAY_DAYS
+  DEFAULT_DECAY_DAYS,
+  K_CLASS_MULTIPLIER
 } from '../rating/elo-engine.js'
 import { seedFromHorseDoc } from '../rating/rating-seed.js'
 import { classFactorFromPurse } from '../rating/class-factor.js'
@@ -95,7 +96,8 @@ const updateRatings = async (
       k,
       raceDate: race.raceDate,
       decayDays,
-      classFactor
+      classFactor,
+      kClassMultiplier: K_CLASS_MULTIPLIER
     })
     raceCount++
 

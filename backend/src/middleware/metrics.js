@@ -2,7 +2,7 @@
 
 export const aiMetrics = {
   race: { count: 0, totalMs: 0, errors: 0 },
-  raceday: { count: 0, totalMs: 0, errors: 0 },
+  raceday: { count: 0, totalMs: 0, errors: 0, cacheHits: 0, cacheMisses: 0 },
   horseSummary: { count: 0, totalMs: 0, errors: 0 }
 }
 

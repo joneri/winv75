@@ -9,6 +9,17 @@ const triggerRatingsUpdate = async () => {
   }
 }
 
+const precomputeRacedayAI = async (daysAhead = 3) => {
+  try {
+    const res = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/_admin/precompute-ai`, null, { params: { daysAhead } })
+    return res.data
+  } catch (error) {
+    console.error('Failed to precompute raceday AI', error)
+    throw error
+  }
+}
+
 export default {
-  triggerRatingsUpdate
+  triggerRatingsUpdate,
+  precomputeRacedayAI
 }

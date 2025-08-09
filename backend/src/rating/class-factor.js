@@ -3,11 +3,11 @@
 // Config via env:
 //  ELO_CLASS_MIN=0.9, ELO_CLASS_MAX=1.4, ELO_CLASS_REF=200000 (SEK)
 
-export function classFactorFromPurse(purse) {
+export function classFactorFromPurse(purse, opts = {}) {
   const p = Number(purse) || 0
-  const MIN = Number(process.env.ELO_CLASS_MIN ?? 0.9)
-  const MAX = Number(process.env.ELO_CLASS_MAX ?? 1.4)
-  const REF = Number(process.env.ELO_CLASS_REF ?? 200000) // reference purse
+  const MIN = Number(opts.min ?? process.env.ELO_CLASS_MIN ?? 0.9)
+  const MAX = Number(opts.max ?? process.env.ELO_CLASS_MAX ?? 1.4)
+  const REF = Number(opts.ref ?? process.env.ELO_CLASS_REF ?? 200000) // reference purse
 
   if (p <= 0) return 1
   // Smooth compression using log; log1p handles small values well
