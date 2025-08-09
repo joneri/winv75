@@ -16,6 +16,7 @@ import { startDriverCronJob } from './driver/scheduler.js'
 
 // Middleware
 import errorHandler from './middleware/errorHandler.js'
+import { aiTimingMiddleware, aiMetrics } from './middleware/metrics.js'
 
 config()
 
@@ -39,6 +40,14 @@ app.use('/api/track', trackRoutes)
 app.use('/api/rating', eloRoutes)
 app.use('/api/driver', driverRoutes)
 app.use('/api/spelformer', gameRoutes)
+
+// AI middleware
+app.use(aiTimingMiddleware)
+
+// Lightweight metrics endpoint (avoid heavy data)
+app.get('/api/_metrics', (req, res) => {
+  res.json({ ai: aiMetrics })
+})
 
 // 404 handler
 app.use((req, res) => {

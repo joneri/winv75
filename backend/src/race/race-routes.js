@@ -3,8 +3,24 @@ import raceService from './race-service.js'
 import eloService from '../rating/elo-service.js'
 import { validateNumericParam } from '../middleware/validators.js'
 import { buildRaceInsights } from './race-insights.js'
+import { generateHorseSummary } from '../ai-horse-summary.js'
 
 const router = express.Router()
+
+// AI: per-horse summary endpoint
+router.post('/horse-summary', async (req, res) => {
+  try {
+    const payload = req.body || {}
+    const summary = await generateHorseSummary(payload)
+    if (!summary || typeof summary !== 'string') {
+      return res.status(502).json({ error: 'AI summary service returned no text' })
+    }
+    res.json({ summary })
+  } catch (err) {
+    console.error('Failed to generate horse AI summary', err)
+    res.status(500).json({ error: 'Failed to generate AI summary' })
+  }
+})
 
 // New: per-race AI list endpoint
 router.get('/:id/ai-list', validateNumericParam('id'), async (req, res) => {

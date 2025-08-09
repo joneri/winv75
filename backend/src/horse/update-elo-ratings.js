@@ -75,11 +75,20 @@ const updateRatings = async (
     }
   }
 
+  // Telemetry accumulators
   let raceCount = 0
+  const perDateCounts = new Map()
+  const touchedHorses = new Set()
+  let firstProcessedDate = null
+  let lastProcessedDate = null
+
   for (const race of races) {
     const placements = {}
     for (const h of race.horses) {
       placements[h.horseId] = h.placement
+      if (typeof h.placement === 'number' && h.placement > 0) {
+        touchedHorses.add(String(h.horseId))
+      }
     }
     const classFactor = classFactorFromPurse(race.topPrize)
     processRace(placements, ratings, {
@@ -89,6 +98,12 @@ const updateRatings = async (
       classFactor
     })
     raceCount++
+
+    const d = new Date(race.raceDate)
+    const key = isNaN(d.getTime()) ? 'unknown' : d.toISOString().slice(0, 10)
+    perDateCounts.set(key, (perDateCounts.get(key) || 0) + 1)
+    if (!firstProcessedDate || d < firstProcessedDate) firstProcessedDate = d
+    if (!lastProcessedDate || d > lastProcessedDate) lastProcessedDate = d
   }
 
   const bulk = HorseRating.collection.initializeUnorderedBulkOp()
@@ -118,7 +133,15 @@ const updateRatings = async (
     await mongoose.disconnect()
   }
 
-  console.log(`Processed ${raceCount} races, updated ${ratings.size} horses, seeded ${seededCount} new ratings`)
+  // Log expanded telemetry
+  const perDateObject = Array.from(perDateCounts.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .reduce((acc, [k, v]) => (acc[k] = v, acc), {})
+  const fromStr = firstProcessedDate ? firstProcessedDate.toISOString().slice(0, 10) : 'n/a'
+  const toStr = lastProcessedDate ? lastProcessedDate.toISOString().slice(0, 10) : 'n/a'
+
+  console.log(`[ELO] Processed ${raceCount} races (${fromStr} -> ${toStr}), updated ${touchedHorses.size} horses, seeded ${seededCount} new ratings`)
+  console.log('[ELO] Races per date:', perDateObject)
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
