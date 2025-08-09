@@ -157,19 +157,40 @@ const fetchAndStoreByDate = async (date) => {
 
 const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
   try {
-    const projection = {}
-    if (Array.isArray(fields) && fields.length) {
-      for (const f of fields) projection[f] = 1
-    }
-    // Always include _id
-    projection._id = 1
+    const selected = Array.isArray(fields) && fields.length ? fields : null
 
-    const query = Raceday.find({}, projection).sort({ firstStart: -1 })
-    if (skip) query.skip(skip)
-    if (limit) query.limit(limit)
+    // Build projection for aggregation, allowing computed raceCount
+    const projection = { _id: 1 }
+    if (selected) {
+      for (const f of selected) {
+        if (f === 'raceCount') continue // handled below
+        // Avoid exposing entire raceList by default unless explicitly asked
+        if (f === 'raceList') {
+          projection['raceList'] = 1
+        } else {
+          projection[f] = 1
+        }
+      }
+      if (selected.includes('raceCount')) {
+        projection['raceCount'] = { $size: { $ifNull: ['$raceList', []] } }
+      }
+    } else {
+      // Default minimal projection
+      projection['firstStart'] = 1
+      projection['raceDayDate'] = 1
+      projection['trackName'] = 1
+      projection['raceStandard'] = 1
+    }
+
+    const pipeline = [
+      { $sort: { firstStart: -1 } },
+      ...(skip ? [{ $skip: skip }] : []),
+      ...(limit ? [{ $limit: limit }] : []),
+      { $project: projection }
+    ]
 
     const [items, total] = await Promise.all([
-      query.lean().exec(),
+      Raceday.aggregate(pipeline).exec(),
       Raceday.countDocuments().exec()
     ])
 
