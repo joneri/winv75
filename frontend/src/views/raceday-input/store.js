@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { fetchRacedaysByDate } from './services/RacedayInputService.js'
+import { fetchRacedaysByDate, fetchRacedaysSummary } from './services/RacedayInputService.js'
 
 const state = {
   loading: false,
@@ -53,15 +53,10 @@ const actions = {
   async fetchRacedays({ commit, state }, { page = 1 } = {}) {
     commit('setLoading', true)
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday`)
-      const raceDaysArray = Array.isArray(response.data) ? response.data : response.data.racedays || [];
-      const sorted = raceDaysArray.sort((a, b) => new Date(b.firstStart) - new Date(a.firstStart));
-      const startIdx = (page - 1) * state.raceDaysPageSize;
-      const endIdx = startIdx + state.raceDaysPageSize;
-      const paged = sorted.slice(startIdx, endIdx);
-      commit('setRaceDays', paged)
+      const { items, total } = await fetchRacedaysSummary({ page, pageSize: state.raceDaysPageSize })
+      commit('setRaceDays', items)
       commit('setRaceDaysPage', page)
-      commit('setRaceDaysTotal', sorted.length)
+      commit('setRaceDaysTotal', total)
     } catch (error) {
       console.error('Error fetching racedays:', error)
       commit('setError', error.message)

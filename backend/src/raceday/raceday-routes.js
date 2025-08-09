@@ -79,4 +79,21 @@ router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
     }
 })
 
+// Lightweight paginated summary of racedays
+router.get('/summary', async (req, res) => {
+  try {
+    const skip = parseInt(req.query.skip) || 0
+    const limit = req.query.limit ? parseInt(req.query.limit) : 40
+    const fields = typeof req.query.fields === 'string' && req.query.fields.trim().length
+      ? req.query.fields.split(',').map(s => s.trim())
+      : ['firstStart', 'raceDayDate', 'trackName', 'raceStandard']
+
+    const result = await raceDayService.getRacedaysPaged(skip, limit, fields)
+    res.json(result)
+  } catch (error) {
+    console.error('Error fetching raceday summary:', error)
+    res.status(500).send('Failed to fetch raceday summary. Please try again.')
+  }
+})
+
 export default router

@@ -155,10 +155,36 @@ const fetchAndStoreByDate = async (date) => {
     return stored
 }
 
+const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
+  try {
+    const projection = {}
+    if (Array.isArray(fields) && fields.length) {
+      for (const f of fields) projection[f] = 1
+    }
+    // Always include _id
+    projection._id = 1
+
+    const query = Raceday.find({}, projection).sort({ firstStart: -1 })
+    if (skip) query.skip(skip)
+    if (limit) query.limit(limit)
+
+    const [items, total] = await Promise.all([
+      query.lean().exec(),
+      Raceday.countDocuments().exec()
+    ])
+
+    return { items, total }
+  } catch (error) {
+    console.error('Error in getRacedaysPaged:', error)
+    throw error
+  }
+}
+
 export default {
     upsertStartlistData,
     getAllRacedays,
     getRacedayById,
     updateEarliestUpdatedHorseTimestamp,
-    fetchAndStoreByDate
+    fetchAndStoreByDate,
+    getRacedaysPaged
 }
