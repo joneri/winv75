@@ -1,14 +1,12 @@
 import mongoose from 'mongoose'
 
 const HorseRatingSchema = new mongoose.Schema({
-  horseId: { type: Number, required: true },
-  rating: { type: Number, default: 1500 },
+  horseId: { type: Number, index: true, unique: true },
+  rating: { type: Number, default: 1000 },
   numberOfRaces: { type: Number, default: 0 },
-  lastUpdated: { type: Date, default: Date.now }
+  lastUpdated: { type: Date, default: Date.now },
+  seedRating: { type: Number, default: null }
 })
-
-HorseRatingSchema.index({ horseId: 1 })
-HorseRatingSchema.index({ lastUpdated: 1 })
 
 export default mongoose.models.HorseRating ||
   mongoose.model('HorseRating', HorseRatingSchema)

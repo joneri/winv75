@@ -1,8 +1,10 @@
 import HorseRating from '../horse/horse-rating-model.js'
 import RatingHistory from './rating-history-model.js'
 import { expectedScore } from './elo-utils.js'
+import { seedFromHorseDoc } from './rating-seed.js'
+import Horse from '../horse/horse-model.js'
 
-const DEFAULT_RATING = 1500
+const DEFAULT_RATING = 1000
 const K_FACTOR = 32
 
 const updateRatingsForRace = async (raceId, raceData) => {
@@ -18,7 +20,10 @@ const updateRatingsForRace = async (raceId, raceData) => {
 
   for (const horse of horses) {
     if (!ratingMap.has(horse.id)) {
-      ratingMap.set(horse.id, new HorseRating({ horseId: horse.id, rating: DEFAULT_RATING }))
+      // Seed from ST points if available
+      const horseDoc = await Horse.findOne({ id: horse.id }).lean()
+      const seed = seedFromHorseDoc(horseDoc)
+      ratingMap.set(horse.id, new HorseRating({ horseId: horse.id, rating: seed, seedRating: seed }))
     }
   }
 
@@ -47,6 +52,7 @@ const updateRatingsForRace = async (raceId, raceData) => {
     const entry = ratingMap.get(horse.id)
     const oldRating = entry.rating
     entry.rating = Math.round(entry.rating + ratingChange)
+    if (entry.seedRating == null) entry.seedRating = seedFromHorseDoc(await Horse.findOne({ id: horse.id }).lean())
     entry.numberOfRaces += 1
     entry.lastUpdated = new Date()
 

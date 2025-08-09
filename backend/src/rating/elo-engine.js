@@ -3,6 +3,7 @@ import { expectedScore } from './elo-utils.js'
 export const DEFAULT_K = 20
 export const DEFAULT_RATING = 1000
 export const DEFAULT_DECAY_DAYS = 365
+export const K_CLASS_MULTIPLIER = Number(process.env.ELO_K_CLASS_MULTIPLIER || 1)
 
 export const getRecencyWeight = (date, decayDays = DEFAULT_DECAY_DAYS) => {
   const diff = Date.now() - new Date(date).getTime()
@@ -23,7 +24,8 @@ export const processRace = (
     k = DEFAULT_K,
     defaultRating = DEFAULT_RATING,
     raceDate = new Date(),
-    decayDays = DEFAULT_DECAY_DAYS
+    decayDays = DEFAULT_DECAY_DAYS,
+    classFactor = 1
   } = {}
 ) => {
   const ids = Object.keys(placements)
@@ -48,8 +50,9 @@ export const processRace = (
       const outcomeB = 1 - outcomeA
       const factorA = getExperienceMultiplier(entryA.numberOfRaces)
       const factorB = getExperienceMultiplier(entryB.numberOfRaces)
-      const deltaA = weight * k * factorA * (outcomeA - expectedA)
-      const deltaB = weight * k * factorB * (outcomeB - expectedB)
+      const kEff = k * classFactor * K_CLASS_MULTIPLIER
+      const deltaA = weight * kEff * factorA * (outcomeA - expectedA)
+      const deltaB = weight * kEff * factorB * (outcomeB - expectedB)
       deltas[idA] = (deltas[idA] || 0) + deltaA
       deltas[idB] = (deltas[idB] || 0) + deltaB
     }

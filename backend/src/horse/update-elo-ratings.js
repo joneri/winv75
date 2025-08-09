@@ -9,6 +9,7 @@ import {
   DEFAULT_K,
   DEFAULT_DECAY_DAYS
 } from '../rating/elo-engine.js'
+import { seedFromHorseDoc } from '../rating/rating-seed.js'
 
 const ensureConnection = async () => {
   if (mongoose.connection.readyState === 0) {
@@ -59,6 +60,14 @@ const updateRatings = async (
   for (const doc of existing) {
     ratings.set(String(doc.horseId), { rating: doc.rating, numberOfRaces: doc.numberOfRaces })
   }
+  // Seed any horses missing ratings using ST points
+  const allHorses = await Horse.find({}, { id: 1, points: 1 }).lean()
+  for (const h of allHorses) {
+    const key = String(h.id)
+    if (!ratings.has(key)) {
+      ratings.set(key, { rating: seedFromHorseDoc(h), numberOfRaces: 0 })
+    }
+  }
 
   let raceCount = 0
   for (const race of races) {
@@ -66,10 +75,12 @@ const updateRatings = async (
     for (const h of race.horses) {
       placements[h.horseId] = h.placement
     }
+    // TODO: enrich with race class (purse) when available in aggregation
     processRace(placements, ratings, {
       k,
       raceDate: race.raceDate,
-      decayDays
+      decayDays,
+      classFactor: 1
     })
     raceCount++
   }
@@ -81,7 +92,8 @@ const updateRatings = async (
       $set: {
         rating: info.rating,
         numberOfRaces: info.numberOfRaces,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
+        ...(info.seedRating ? { seedRating: info.seedRating } : {})
       }
     })
     if (syncHorses) {
