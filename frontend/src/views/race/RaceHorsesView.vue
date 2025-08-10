@@ -2,7 +2,7 @@
     <v-container class="tabbed-view-container">
         <v-row>
             <v-col>
-                <button @click="navigateToRaceDay(raceDayId)">Go to Race Day</button>
+                <button @click="navigateToRaceDay()">Go to Race Day</button>
             </v-col>
         </v-row>
         <v-row>
@@ -30,19 +30,46 @@
             <v-col>
                 <v-tabs v-model="activeTab">
                     <v-tab>Start List</v-tab>
-                    <v-tab :disabled="!allHorsesUpdated">Ranked Horses</v-tab>
                 </v-tabs>
                 <v-window v-model="activeTab">
                     <v-window-item value="0">
                     <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
                             class="elevation-1">
-                            <template v-if="showStartPositionColumn" v-slot:item.startPosition="{ item }">
-                                <span title="Startposition i volten">
-                                    {{ formatStartPosition(item.columns.actualStartPosition ?? item.columns.startPosition) }}
-                                </span>
-                            </template>
-                            <template v-if="hasHandicap" v-slot:item.actualDistance="{ item }">
-                                {{ item.columns.actualDistance ? `${item.columns.actualDistance} m` : '—' }}
+                            <template #item.programNumber="{ item }">
+                              <div class="start-cell">
+                                <div class="start-line1">#{{ item.raw.programNumber }}</div>
+                                <div class="start-line2">
+                                  <template v-if="raceStartMethod === 'Autostart'">
+                                    <span>
+                                      {{ (item.raw.actualStartPosition ?? item.raw.startPosition) ? `Spår ${formatStartPosition(item.raw.actualStartPosition ?? item.raw.startPosition)}` : 'oklart' }}
+                                    </span>
+                                  </template>
+                                  <template v-else>
+                                    <span v-if="item.raw.actualStartPosition">
+                                      {{ `Volte ${formatStartPosition(item.raw.actualStartPosition)}` }}
+                                    </span>
+                                    <span v-else-if="item.raw.startPosition">
+                                      {{ `Startpos ${formatStartPosition(item.raw.startPosition)}` }}
+                                    </span>
+                                    <span v-else>oklart</span>
+                                  </template>
+                                </div>
+                                <div class="start-line3" v-if="(item.raw.actualDistance || currentRace.distance)">
+                                  <span>
+                                    {{ (item.raw.actualDistance || currentRace.distance) ? `${(item.raw.actualDistance || currentRace.distance)} m` : '' }}
+                                  </span>
+                                  <template v-if="item.raw.actualDistance && currentRace.distance && item.raw.actualDistance !== currentRace.distance">
+                                    <span class="start-badge" :class="{ longer: item.raw.actualDistance > currentRace.distance, shorter: item.raw.actualDistance < currentRace.distance }">
+                                      <template v-if="item.raw.actualDistance > currentRace.distance">
+                                        Handicap +{{ item.raw.actualDistance - currentRace.distance }}
+                                      </template>
+                                      <template v-else>
+                                        Försprång −{{ currentRace.distance - item.raw.actualDistance }}
+                                      </template>
+                                    </span>
+                                  </template>
+                                </div>
+                              </div>
                             </template>
                             <template v-slot:item.numberOfStarts="{ item }">
                                 {{ item.raw.numberOfStarts }}
@@ -89,10 +116,19 @@
                             <template v-slot:item.stats="{ item }">
                                 {{ item.raw.statsFormatted || '—' }}
                             </template>
-                            <template #item.conditions="{ item }">
-                                <div class="flex flex-col gap-1 text-xs">
-                                    <template v-if="getConditionLines(item.raw).length">
-                                        <div v-for="(line, i) in getConditionLines(item.raw)" :key="i">{{ line }}</div>
+                            <template #item.advantages="{ item }">
+                                <div class="advantages-wrap">
+                                    <template v-if="getAdvantages(item.raw).length">
+                                        <template v-for="(chip, idx) in getAdvantages(item.raw).slice(0, maxAdvChips)" :key="chip.key">
+                                            <v-chip size="x-small" variant="tonal" class="mr-1 mb-1" :title="chip.tip">
+                                                <span class="mr-1">{{ chip.icon }}</span>{{ chip.label }}
+                                            </v-chip>
+                                        </template>
+                                        <template v-if="getAdvantages(item.raw).length > maxAdvChips">
+                                            <v-chip size="x-small" variant="outlined" class="mr-1 mb-1" :title="overflowTooltip(item.raw)">
+                                                +{{ getAdvantages(item.raw).length - maxAdvChips }}
+                                            </v-chip>
+                                        </template>
                                     </template>
                                     <template v-else>
                                         —
@@ -102,31 +138,6 @@
                             <template v-slot:item.shoeOption="{ item }">
                                 <span :title="startListShoeTooltip(item.raw) || null">
                                     {{ formatStartListShoe(item.raw) }}
-                                </span>
-                            </template>
-                        </v-data-table>
-                    </v-window-item>
-                    <v-window-item value="1">
-                        <v-data-table :headers="rankedHeaders" :items="rankedHorsesEnriched" :items-per-page="16" class="elevation-1">
-                            <template v-slot:item.favoriteIndicator="{ item }">
-                                <!-- Intentionally left blank: star moved to track column -->
-                            </template>
-                            <template v-if="showStartPositionColumn" v-slot:item.startPosition="{ item }">
-                                <span title="Startposition i volten">
-                                    {{ formatStartPosition(item.columns?.actualStartPosition ?? item.columns?.startPosition ?? item.startPosition) }}
-                                </span>
-                            </template>
-                            <template v-slot:item.favoriteTrack="{ item }">
-                                {{ getTrackName(item.columns?.favoriteTrack ?? item.favoriteTrack) }}
-                                <span v-if="(item.columns?.favoriteTrack ?? item.favoriteTrack) === racedayTrackCode">⭐</span>
-                            </template>
-                            <template v-slot:item.favoriteStartMethod="{ item }">
-                                {{ item.columns?.favoriteStartMethod ?? item.favoriteStartMethod }}
-                                <span v-if="(item.columns?.favoriteStartMethod ?? item.favoriteStartMethod) && (item.columns?.favoriteStartMethod ?? item.favoriteStartMethod).toUpperCase() === raceStartMethodCode.toUpperCase()" title="Favorite start method match" class="ml-1">⭐</span>
-                            </template>
-                            <template v-slot:item.shoeOption="{ item }">
-                                <span :title="getShoeTooltipById(item.raw?.id || item.id) || null">
-                                    {{ getShoeById(item.raw?.id || item.id) }}
                                 </span>
                             </template>
                         </v-data-table>
@@ -171,6 +182,11 @@ export default {
         const aiSummary = ref({})
         const aiSummaryLoading = ref({})
         const aiSummaryError = ref({})
+
+        // --- Router/Store ---
+        const store = useStore()
+        const route = useRoute()
+        const router = useRouter()
 
         const onGenerateSummary = async (horse) => {
           aiSummaryLoading.value[horse.id] = true
@@ -259,6 +275,68 @@ export default {
           if (!start || !start.horse || !start.horse.results) return [];
           return extractPastRaceComments(start.horse.results);
         };
+
+        // --- Helpers: formatters (ELO, start position) ---
+        const formatElo = (val) => {
+          const n = Number(val)
+          if (!isFinite(n) || n <= 0) return '—'
+          return Math.round(n).toString()
+        }
+
+        const formatStartPosition = (pos) => {
+          if (pos === null || pos === undefined) return '—'
+          const n = Number(pos)
+          if (!isFinite(n) || n <= 0) return '—'
+          return String(n)
+        }
+
+        // --- Helpers: shoe mapping/formatting ---
+        const shoeMap = {
+          0: { id: 0, text: 'Okänd', short: '—', tip: 'Okänd sko-info' },
+          4: { id: 4, text: 'Skor runt om', short: 'Skor', tip: 'Skor på alla hovar' },
+          3: { id: 3, text: 'Barfota fram', short: 'Bf fram', tip: 'Barfota fram' },
+          2: { id: 2, text: 'Barfota bak', short: 'Bf bak', tip: 'Barfota bak' },
+          1: { id: 1, text: 'Barfota runt om', short: 'Bf r.o.', tip: 'Barfota runt om' },
+        }
+
+        const getShoeById = (id) => {
+          const key = Number(id)
+          return shoeMap[key] || { id: key, text: `Kod ${id}`, short: `Kod ${id}`, tip: `Okänd kod ${id}` }
+        }
+        const getShoeTooltipById = (id) => getShoeById(id).tip
+
+        const formatShoe = (codeOrObj) => {
+          if (codeOrObj == null) return '—'
+          const code = typeof codeOrObj === 'object' ? codeOrObj.code : codeOrObj
+          return getShoeById(code).short
+        }
+        const shoeTooltip = (codeOrObj) => {
+          if (codeOrObj == null) return ''
+          const code = typeof codeOrObj === 'object' ? codeOrObj.code : codeOrObj
+          return getShoeById(code).text
+        }
+
+        const formatStartListShoe = (horse) => {
+          const prev = horse?.previousShoeOption?.code
+          const curr = horse?.shoeOption?.code
+          if (prev != null && curr != null && prev !== curr) {
+            return `${getShoeById(prev).short} → ${getShoeById(curr).short}`
+          }
+          if (curr != null) return getShoeById(curr).short
+          if (prev != null) return getShoeById(prev).short
+          return '—'
+        }
+        const startListShoeTooltip = (horse) => {
+          const prev = horse?.previousShoeOption?.code
+          const curr = horse?.shoeOption?.code
+          if (prev != null && curr != null && prev !== curr) {
+            return `Skobyte: ${getShoeById(prev).text} → ${getShoeById(curr).text}`
+          }
+          if (curr != null) return getShoeById(curr).text
+          if (prev != null) return `Föregående: ${getShoeById(prev).text}`
+          return ''
+        }
+
         // Helper to parse start method and handicaps from propTexts
         const parseStartMethodFromPropTexts = (propTexts = []) => {
           const text = propTexts
@@ -362,18 +440,18 @@ export default {
             }
             return res
         });
-        const store = useStore()
-        const route = useRoute()
-        const router = useRouter()
-        const navigateToRaceDay = () => {
+        
+        const navigateToRaceDay = (raceDayId) => {
             const currentPath = router.currentRoute.value.fullPath
             const segments = currentPath.split('/')
-            const raceDayId = segments[2]
-            router.push(`/raceday/${raceDayId}`)
+            const derivedId = segments[2]
+            const id = raceDayId || derivedId
+            if (id) router.push(`/raceday/${id}`)
         }
 
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
+        const rankedMap = computed(() => new Map((rankedHorses.value || []).map(r => [r.id, r])))
         const rankedHorsesEnriched = computed(() => {
             const horsesById = new Map((currentRace.value?.horses || []).map(h => [h.id, h]))
             return (rankedHorses.value || []).map((r, idx) => {
@@ -393,6 +471,7 @@ export default {
             const raceId = route.params.raceId
             await store.dispatch('raceHorses/rankHorses', raceId)
         }
+        const updatedHorses = ref([]) // A list to store IDs of updated horses
         const allHorsesUpdated = computed(() => {
             const horses = currentRace.value.horses || []
             const allUpdated = horses.every(horse => updatedHorses.value.includes(horse.id))
@@ -401,7 +480,6 @@ export default {
         })
         const activeTab = ref(0) // Default tab
         const items = ['Start List', 'Ranked Horses'] // Tabs
-        const updatedHorses = ref([]) // A list to store IDs of updated horses
         const racedayTrackName = ref('')
         const racedayTrackCode = ref('')
         const trackMeta = ref({})
@@ -422,6 +500,13 @@ export default {
                 : null
         })
         const scrollPosition = ref(0)
+
+        const goToRace = (raceId) => {
+            if (!raceId) return
+            const racedayId = route.params.racedayId
+            if (racedayId) router.push(`/raceday/${racedayId}/race/${raceId}`)
+            else router.push(`/race/${raceId}`)
+        }
 
         const getTrackCodeFromName = (name) => {
             for (const [code, n] of Object.entries(trackNames)) {
@@ -479,6 +564,19 @@ export default {
                 : (typeof stats.formScore === 'number' ? stats.formScore : null)
             const formDisplay = form !== null ? form : '—'
             return `${wins} segrar • ${top3} plats • Form: ${formDisplay}`
+        }
+
+        const fetchUpdatedHorses = async () => {
+            try {
+                const horses = currentRace.value?.horses || []
+                const results = await Promise.all(
+                  horses.map(async (h) => ({ id: h.id, updated: await checkIfUpdatedRecently(h.id) }))
+                )
+                updatedHorses.value = results.filter(r => r.updated).map(r => r.id)
+            } catch (e) {
+                console.error('Failed to check updated horses', e)
+                updatedHorses.value = []
+            }
         }
 
         const fetchDataAndUpdate = async (raceId) => {
@@ -830,15 +928,9 @@ export default {
 
         const headers = computed(() => {
             const base = [
-                { title: '#', key: 'programNumber', width: '50px' },
+                { title: 'Start', key: 'programNumber', width: '120px', sortable: true, sort: (a, b) => Number(a) - Number(b) },
                 { title: '# Starts', key: 'numberOfStarts', sortable: false },
             ]
-            if (showStartPositionColumn.value) {
-                base.push({ title: 'Pos', key: 'startPosition', width: '50px' })
-            }
-            if (hasHandicap.value) {
-                base.push({ title: 'Distans', key: 'actualDistance' })
-            }
             base.push({ title: 'Horse (Elo)', key: 'eloRating' })
             base.push({ title: 'Driver (Elo)', key: 'driverElo' })
             base.push({
@@ -855,8 +947,8 @@ export default {
                     return aVal - bVal
                 },
             })
-            base.push({ title: '🏁 Conditions', key: 'conditions', sortable: false })
-            base.push({ title: 'Shoe', key: 'shoeOption', sortable: false })
+            base.push({ title: 'Fördelar', key: 'advantages', sortable: false })
+            base.push({ title: 'Skor', key: 'shoeOption', sortable: false })
             base.push({ key: 'horseWithdrawn' })
             return base
         })
@@ -931,6 +1023,111 @@ export default {
             return trackNames[trackCode] || trackCode
         }
 
+        // Build combined advantages for a horse
+        const maxAdvChips = 4
+        const buildConditionAdvantages = (horse) => {
+            const stats = horse.stats || {}
+            const adv = []
+            if (
+                stats.bestTrackCode &&
+                (stats.bestTrackWins ?? 0) > 0 &&
+                stats.bestTrackCode === racedayTrackCode.value
+            ) {
+                const wins = stats.bestTrackWins
+                adv.push({
+                    key: `like-track-${horse.id}`,
+                    icon: '🏟️',
+                    label: 'Bana',
+                    tip: `Gillar banan: ${getTrackName(stats.bestTrackCode)} (${wins} seger${wins > 1 ? 'ar' : ''})`
+                })
+            }
+            const distStats = stats.bestDistanceStats
+            if (stats.bestDistanceLabel && distStats && (distStats.winPct ?? 0) > 0) {
+                let showDistance = false
+                const currentLabel = horse.currentDistanceLabel || horse.distanceLabel || horse.distance?.label
+                if (currentLabel) {
+                    showDistance = currentLabel === stats.bestDistanceLabel
+                } else {
+                    const parseLabel = (label) => {
+                        if (!label) return null
+                        if (label.includes('+')) return parseInt(label, 10)
+                        const [from, to] = label.split('-').map(n => parseInt(n, 10))
+                        if (!isNaN(from) && !isNaN(to)) return Math.round((from + to) / 2)
+                        return from
+                    }
+                    const liked = parseLabel(stats.bestDistanceLabel)
+                    const raceDist = Number(currentRace.value?.distance)
+                    if (liked && raceDist) {
+                        showDistance = Math.abs(liked - raceDist) <= 100
+                    }
+                }
+                if (showDistance) {
+                    const winPct = Math.round(distStats.winPct)
+                    const label = stats.bestDistanceLabel.replace('-', '–')
+                    adv.push({ key: `like-dist-${horse.id}` , icon: '📏', label: 'Distans', tip: `Gillar distans: ${label} (${winPct}% segrar)` })
+                }
+            }
+            const auto = stats.autoStats
+            if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
+                const winPct = Math.round(auto.winPct)
+                const top3Pct = Math.round(auto.top3Pct)
+                const preferred = stats.preferredStartMethod === 'A'
+                const tip = `Autostart: ${winPct}% vinster, ${top3Pct}% plats${preferred ? ' ⭐' : ''}`
+                adv.push({ key: `like-auto-${horse.id}`, icon: '🏁', label: 'Autostart', tip })
+            }
+            const volt = stats.voltStats
+            if (volt && ((volt.wins ?? 0) > 0 || (volt.top3 ?? 0) > 0)) {
+                const winPct = Math.round(volt.winPct)
+                const top3Pct = Math.round(volt.top3Pct)
+                const preferred = stats.preferredStartMethod === 'V'
+                const tip = `Voltstart: ${winPct}% vinster, ${top3Pct}% plats${preferred ? ' ⭐' : ''}`
+                adv.push({ key: `like-volt-${horse.id}`, icon: '🔄', label: 'Voltstart', tip })
+            }
+            return adv
+        }
+        const buildPlusAdvantages = (horse) => {
+            const adv = []
+            const prev = horse?.previousShoeOption?.code
+            const curr = horse?.shoeOption?.code
+            if (prev != null && curr != null && prev !== curr) {
+                const prevTxt = horse?.previousShoeOption?.text || prev
+                const currTxt = horse?.shoeOption?.text || curr
+                adv.push({ key: `shoe-${horse.id}`, icon: '🥿', label: 'Skobyte', tip: `Skobyte: ${prevTxt} → ${currTxt}` })
+            }
+            const agg = rankedMap.value.get(horse.id)
+            if (agg?.favoriteTrack && agg.favoriteTrack === racedayTrackCode.value) {
+                adv.push({ key: `fav-track-${horse.id}`, icon: '⭐', label: 'Favoritbana', tip: `Favoritbana: ${getTrackName(agg.favoriteTrack)}` })
+            }
+            const favPos = agg?.favoriteStartPosition != null ? String(agg.favoriteStartPosition).trim() : ''
+            const startPos = (horse?.actualStartPosition ?? horse?.startPosition)
+            if (favPos && startPos != null && favPos === String(startPos).trim()) {
+                adv.push({ key: `fav-spar-${horse.id}`, icon: '🎯', label: 'Favoritspår', tip: `Favoritspår: ${favPos}` })
+            }
+            return adv
+        }
+        const orderKeys = ['shoe-', 'fav-spar-', 'fav-track-', 'like-auto-', 'like-volt-', 'like-dist-', 'like-track-']
+        const getAdvantages = (horse) => {
+            const combined = [...buildPlusAdvantages(horse), ...buildConditionAdvantages(horse)]
+            // Deduplicate by key prefix category to avoid exact duplicates, while keeping distinct concepts
+            const seen = new Set()
+            const deduped = []
+            for (const c of combined) {
+                const cat = orderKeys.find(k => c.key.startsWith(k)) || c.key
+                const tag = `${cat}`
+                if (!seen.has(tag)) { seen.add(tag); deduped.push(c) }
+            }
+            // Sort by predefined order
+            deduped.sort((a, b) => {
+                const ai = orderKeys.findIndex(k => a.key.startsWith(k))
+                const bi = orderKeys.findIndex(k => b.key.startsWith(k))
+                return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
+            })
+            return deduped
+        }
+        const overflowTooltip = (horse) => {
+            const items = getAdvantages(horse).slice(maxAdvChips)
+            return items.map(i => `${i.icon} ${i.label}: ${i.tip.replace(/^[^:]+:\s*/, '')}`).join(' • ')
+        }
         const getConditionLines = (horse) => {
             const stats = horse.stats || {}
             const lines = []
@@ -992,92 +1189,7 @@ export default {
             return lines
         }
 
-        const fetchUpdatedHorses = async () => {
-            const horses = currentRace.value.horses || []
-            for (let horse of horses) {
-                const updated = await checkIfUpdatedRecently(horse.id)
-                if (updated) {
-                    updatedHorses.value.push(horse.id)
-                }
-            }
-        }
-
-        const shoeMap = {
-            4: { label: '', emoji: '👟👟👟👟' },
-            3: { label: '', emoji: '🦶🦶👟👟' },
-            2: { label: '', emoji: '👟👟🦶🦶' },
-            1: { label: '', emoji: '🦶🦶🦶🦶' },
-        }
-
-        const startListShoeMap = {
-            4: '👟👟',
-            3: '🦶👟',
-            2: '👟🦶',
-            1: '🦶🦶',
-        }
-
-        const formatStartListShoe = (horse) => {
-            const code = horse?.shoeOption?.code
-            if (code === undefined || code === null) return '—'
-            const prev = horse?.previousShoeOption?.code
-            const changed = prev !== undefined && prev !== null && prev !== code
-            const emoji = startListShoeMap[code] || ''
-            return changed ? `${emoji} 🔁` : emoji
-        }
-
-        const startListShoeTooltip = (horse) => {
-            const code = horse?.shoeOption?.code
-            const prev = horse?.previousShoeOption?.code
-            const changed = prev !== undefined && prev !== null && prev !== code
-            if (!changed) return ''
-            const prevEmoji = startListShoeMap[prev] || ''
-            return `Changed from: ${prevEmoji}`
-        }
-
-        const formatShoe = (horse) => {
-            const code = horse?.shoeOption?.code
-            if (code === undefined || code === null) return '—'
-            const prev = horse?.previousShoeOption?.code
-            const changed = prev !== undefined && prev !== null && prev !== code
-            const mapping = shoeMap[code] || { label: code, emoji: '' }
-            const text = `${mapping.emoji} ${mapping.label}`.trim()
-            return changed ? `${text} 🔁` : text
-        }
-
-        const shoeTooltip = (horse) => {
-            const code = horse?.shoeOption?.code
-            const prev = horse?.previousShoeOption?.code
-            const changed = prev !== undefined && prev !== null && prev !== code
-            if (!changed) return ''
-            const prevMapping = shoeMap[prev] || { label: prev, emoji: '' }
-            const prevText = `${prevMapping.emoji} ${prevMapping.label}`.trim()
-            return `Changed from: ${prevText}`
-        }
-
-        const getShoeById = (horseId) => {
-            const horse = currentRace.value?.horses?.find(h => h.id === horseId)
-            return horse ? formatShoe(horse) : '—'
-        }
-
-        const getShoeTooltipById = (horseId) => {
-            const horse = currentRace.value?.horses?.find(h => h.id === horseId)
-            return horse ? shoeTooltip(horse) : ''
-        }
-
-        const formatStartPosition = (value) => {
-            if (value === undefined || value === null) return '—'
-            return typeof value === 'number' ? `${value}` : value
-        }
-
-        const formatElo = (value) => {
-          return typeof value === 'number' ? Math.round(value) : '—'
-        }
-        const goToRace = (raceId) => {
-            if (!raceId) return
-            scrollPosition.value = window.scrollY
-            router.push(`/raceday/${route.params.racedayId}/race/${raceId}`)
-        }
-
+        // Expose to template
         return {
             aiSummary,
             aiSummaryLoading,
@@ -1119,6 +1231,9 @@ export default {
             previousRaceId,
             nextRaceId,
             goToRace,
+            maxAdvChips,
+            getAdvantages,
+            overflowTooltip,
         }
     },
 }
@@ -1169,4 +1284,27 @@ export default {
 .track-meta { margin-bottom: 12px; }
 .race-navigation { margin-top: 16px; }
 .withdrawn { text-decoration: line-through; }
+
+/* Simple layout for chips area */
+.advantages-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Unified Start cell styling */
+.start-cell { display: grid; grid-auto-rows: min-content; line-height: 1.1; }
+.start-line1 { font-weight: 600; }
+.start-line2 { font-size: 0.85rem; color: #6b7280; }
+.start-line3 { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 6px; }
+.start-badge { font-size: 0.72rem; padding: 1px 6px; border-radius: 999px; border: 1px solid #e5e7eb; }
+.start-badge.longer { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.start-badge.shorter { background: #ecfeff; color: #155e75; border-color: #67e8f9; }
+
+@media (prefers-color-scheme: dark) {
+  .start-line2, .start-line3 { color: #9ca3af; }
+  .start-badge { border-color: #374151; }
+  .start-badge.longer { background: #3b2518; color: #fdba74; border-color: #7c2d12; }
+  .start-badge.shorter { background: #082f35; color: #67e8f9; border-color: #164e63; }
+}
 </style>
