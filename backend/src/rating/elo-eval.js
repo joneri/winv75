@@ -17,31 +17,54 @@ export async function evaluateElo({
   const fromDate = from ? new Date(from) : new Date(0)
   const toDate = to ? new Date(to) : new Date()
 
-  // Build race set from horse results
+  // Build race set from horse results (robust to non-array results and string dates)
   const pipeline = [
-    { $unwind: '$results' },
-    { $project: {
+    {
+      $project: {
+        id: '$id',
+        points: '$points',
+        resultsArr: {
+          $cond: [{ $isArray: '$results' }, '$results', []]
+        }
+      }
+    },
+    { $unwind: '$resultsArr' },
+    {
+      $project: {
         horseId: '$id',
-        raceId: '$results.raceInformation.raceId',
-        raceDate: '$results.raceInformation.date',
-        placement: {
-          $cond: [
-            { $eq: ['$results.placement.sortValue', 99] },
-            null,
-            '$results.placement.sortValue'
-          ]
-        },
-        withdrawn: '$results.withdrawn',
-        prize: '$results.prizeMoney.sortValue',
+        raceId: '$resultsArr.raceInformation.raceId',
+        raceDateRaw: '$resultsArr.raceInformation.date',
+        placementSort: '$resultsArr.placement.sortValue',
+        withdrawn: '$resultsArr.withdrawn',
+        prize: '$resultsArr.prizeMoney.sortValue',
         points: '$points'
-    } },
+      }
+    },
+    {
+      $project: {
+        horseId: 1,
+        raceId: 1,
+        raceDate: {
+          $convert: { input: '$raceDateRaw', to: 'date', onError: null, onNull: null }
+        },
+        placement: {
+          $cond: [{ $eq: ['$placementSort', 99] }, null, '$placementSort']
+        },
+        withdrawn: 1,
+        prize: 1,
+        points: 1
+      }
+    },
     { $match: { withdrawn: { $ne: true }, raceDate: { $gte: fromDate, $lte: toDate } } },
-    { $group: {
+    { $match: { raceId: { $nin: [null, ''] } } },
+    {
+      $group: {
         _id: '$raceId',
         raceDate: { $first: '$raceDate' },
         topPrize: { $max: '$prize' },
         horses: { $push: { horseId: '$horseId', placement: '$placement' } }
-    } },
+      }
+    },
     { $sort: { raceDate: 1 } }
   ]
 
@@ -52,7 +75,8 @@ export async function evaluateElo({
   for (const r of races) for (const h of r.horses) ids.add(h.horseId)
   const idArr = Array.from(ids)
   const horseDocs = await Horse.find({ id: { $in: idArr } }, { id: 1, points: 1 }).lean()
-  const pointsMap = new Map(horseDocs.map(h => [Number(h.id), Number(h.points || 0)]))
+  // Use string keys to avoid Number/String mismatches
+  const pointsMap = new Map(horseDocs.map(h => [String(h.id), Number(h.points || 0)]))
 
   // Ratings state (in-memory)
   const ratings = new Map()
@@ -62,7 +86,7 @@ export async function evaluateElo({
     const key = String(hid)
     let entry = ratings.get(key)
     if (!entry) {
-      const seed = seedFromHorseDoc({ id: hid, points: pointsMap.get(Number(hid)) || 0 })
+      const seed = seedFromHorseDoc({ id: key, points: pointsMap.get(key) || 0 })
       entry = { rating: seed, numberOfRaces: 0, seedRating: seed }
       ratings.set(key, entry)
     }
