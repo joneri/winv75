@@ -105,6 +105,16 @@ const triggerRatingsUpdate = async () => {
     }
 }
 
+const fetchRaceAiList = async (raceId) => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/race/${raceId}/ai-list`)
+    return response.data
+  } catch (error) {
+    console.error('Failed to fetch race AI analysis', error)
+    throw error
+  }
+}
+
 export {
     updateHorse,
     checkIfUpdatedRecently,
@@ -113,5 +123,6 @@ export {
     setEarliestUpdatedHorseTimestamp,
     fetchHorseScores,
     fetchDriverRatings,
-    triggerRatingsUpdate
+    triggerRatingsUpdate,
+    fetchRaceAiList
 }

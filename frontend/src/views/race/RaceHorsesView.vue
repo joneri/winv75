@@ -7,18 +7,16 @@
         </v-row>
         <v-row>
           <v-col>
-            <h1>
-              Race Number: {{ currentRace.raceNumber }} - {{ currentRace.propTexts?.[0]?.text }} {{ currentRace.propTexts?.[1]?.text }}
-              <SpelformBadge v-for="g in raceGames" :key="g.game" :game="g.game" :leg="g.leg" />
-            </h1>
-            <div v-if="racedayTrackName" class="text-h6">
-              {{ racedayTrackName }}
-            </div>
-            <div class="race-meta text-subtitle-1">
-              {{ raceMetaString }}
-            </div>
-            <div class="track-meta text-subtitle-2">
-              {{ trackMetaString }}
+            <div class="race-header">
+              <div class="titles">
+                <div class="title">Lopp {{ currentRace.raceNumber }}</div>
+                <div class="subtitle" v-if="racedayTrackName">{{ racedayTrackName }}</div>
+                <div class="meta">{{ raceMetaString }}</div>
+                <div class="meta2">{{ trackMetaString }}</div>
+              </div>
+              <div class="games" v-if="raceGames.length">
+                <SpelformBadge v-for="g in raceGames" :key="`${g.game}-${g.leg}`" :game="g.game" :leg="g.leg" />
+              </div>
             </div>
           </v-col>
         </v-row>
@@ -109,26 +107,26 @@
                         </v-data-table>
                     </v-window-item>
                     <v-window-item value="1">
-                        <v-data-table :headers="rankedHeaders" :items="rankedHorses" :items-per-page="16" class="elevation-1">
+                        <v-data-table :headers="rankedHeaders" :items="rankedHorsesEnriched" :items-per-page="16" class="elevation-1">
                             <template v-slot:item.favoriteIndicator="{ item }">
                                 <!-- Intentionally left blank: star moved to track column -->
                             </template>
                             <template v-if="showStartPositionColumn" v-slot:item.startPosition="{ item }">
                                 <span title="Startposition i volten">
-                                    {{ formatStartPosition(item.columns.actualStartPosition ?? item.columns.startPosition) }}
+                                    {{ formatStartPosition(item.columns?.actualStartPosition ?? item.columns?.startPosition ?? item.startPosition) }}
                                 </span>
                             </template>
                             <template v-slot:item.favoriteTrack="{ item }">
-                                {{ getTrackName(item.columns.favoriteTrack) }}
-                                <span v-if="item.columns.favoriteTrack === racedayTrackCode">⭐</span>
+                                {{ getTrackName(item.columns?.favoriteTrack ?? item.favoriteTrack) }}
+                                <span v-if="(item.columns?.favoriteTrack ?? item.favoriteTrack) === racedayTrackCode">⭐</span>
                             </template>
                             <template v-slot:item.favoriteStartMethod="{ item }">
-                                {{ item.columns.favoriteStartMethod }}
-                                <span v-if="item.columns.favoriteStartMethod && item.columns.favoriteStartMethod.toUpperCase() === raceStartMethodCode.toUpperCase()" title="Favorite start method match" class="ml-1">⭐</span>
+                                {{ item.columns?.favoriteStartMethod ?? item.favoriteStartMethod }}
+                                <span v-if="(item.columns?.favoriteStartMethod ?? item.favoriteStartMethod) && (item.columns?.favoriteStartMethod ?? item.favoriteStartMethod).toUpperCase() === raceStartMethodCode.toUpperCase()" title="Favorite start method match" class="ml-1">⭐</span>
                             </template>
                             <template v-slot:item.shoeOption="{ item }">
-                                <span :title="getShoeTooltipById(item.raw.id) || null">
-                                    {{ getShoeById(item.raw.id) }}
+                                <span :title="getShoeTooltipById(item.raw?.id || item.id) || null">
+                                    {{ getShoeById(item.raw?.id || item.id) }}
                                 </span>
                             </template>
                         </v-data-table>
@@ -376,6 +374,21 @@ export default {
 
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
+        const rankedHorsesEnriched = computed(() => {
+            const horsesById = new Map((currentRace.value?.horses || []).map(h => [h.id, h]))
+            return (rankedHorses.value || []).map((r, idx) => {
+                const h = horsesById.get(r.id)
+                const notes = []
+                const prev = h?.previousShoeOption?.code
+                const curr = h?.shoeOption?.code
+                if (prev != null && curr != null && prev !== curr) notes.push('Skobyte')
+                if (r.favoriteTrack && r.favoriteTrack === racedayTrackCode.value) notes.push('Favoritbana')
+                const favPos = r.favoriteStartPosition != null ? String(r.favoriteStartPosition).trim() : ''
+                const startPos = (h?.actualStartPosition ?? h?.startPosition)
+                if (favPos && startPos != null && favPos === String(startPos).trim()) notes.push('Favoritspår')
+                return { ...r, rank: idx + 1, plusPoints: notes.join(', ') }
+            })
+        })
         const rankHorses = async () => {
             const raceId = route.params.raceId
             await store.dispatch('raceHorses/rankHorses', raceId)
@@ -851,6 +864,7 @@ export default {
         const rankedHeaders = computed(() => {
             const base = [
                 { title: '', key: 'favoriteIndicator', sortable: false },
+                { title: '#', key: 'rank', width: '40px' },
                 { title: 'Programnummer', key: 'programNumber' },
                 { title: 'Driver Name', key: 'driver.name' },
                 { title: 'Name', key: 'name' },
@@ -863,10 +877,10 @@ export default {
                 { title: 'Favorite Track', key: 'favoriteTrack' },
                 { title: 'Horse Label', key: 'horseLabel' },
                 { title: 'Placements', key: 'placements' },
-                { title: 'Total Score', key: 'totalScore' },
+                { title: 'Plus', key: 'plusPoints', sortable: false },
             ]
             if (showStartPositionColumn.value) {
-                base.splice(2, 0, { title: 'Startposition', key: 'startPosition' })
+                base.splice(3, 0, { title: 'Startposition', key: 'startPosition' })
             }
             return base
         })
@@ -1082,7 +1096,8 @@ export default {
             getAtgCommentForHorse,
             getAtgPastRaceCommentsForHorse,
             rankedHeaders,
-            rankedHorses,
+            rankedHorses: rankedHorses, // keep original exposure
+            rankedHorsesEnriched,
             raceStartMethodCode,
             raceStartMethod,
             hasHandicap,
@@ -1114,20 +1129,44 @@ export default {
     margin-top: 64px;
 }
 
-.race-meta {
-    margin-top: 4px;
-    margin-bottom: 8px;
+.race-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+.race-header .titles { display: grid; gap: 2px; }
+.race-header .title { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+.race-header .subtitle { color: #6b7280; }
+.race-header .meta, .race-header .meta2 { color: #6b7280; font-size: 0.95rem; }
+.race-header .games { display: flex; gap: 6px; }
+
+/* AI summary panel: compact, scrollable, theme-aware */
+.ai-summary-block {
+  max-height: 140px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  padding: 8px;
+  background: #f9fafb;      /* light bg */
+  color: #111827;            /* light fg */
+  border: 1px solid #e5e7eb; /* light border */
+  border-radius: 6px;
 }
 
-.track-meta {
-    margin-bottom: 12px;
+/* Prefer dark overrides (OS setting) */
+@media (prefers-color-scheme: dark) {
+  .ai-summary-block {
+    background: #000;       /* pure black per user preference */
+    color: #e5e7eb;         /* light gray text */
+    border-color: #222;     /* subtle dark border */
+  }
 }
 
-.race-navigation {
-    margin-top: 16px;
+/* Vuetify dark theme override (app-level) */
+.v-theme--dark .ai-summary-block {
+  background: #000;       /* pure black */
+  color: #e5e7eb;         /* readable text */
+  border-color: #222;     /* subtle border */
 }
 
-.withdrawn {
-    text-decoration: line-through;
-}
+.race-meta { margin-top: 4px; margin-bottom: 8px; }
+.track-meta { margin-bottom: 12px; }
+.race-navigation { margin-top: 16px; }
+.withdrawn { text-decoration: line-through; }
 </style>

@@ -4,12 +4,23 @@
       <v-col>
         <!-- Display Raceday details if available, else show error message -->
         <div v-if="racedayDetails">
-          <h1>{{ formatDate(racedayDetails.firstStart) }}</h1>
-          <div class="mb-4">
-            <v-btn color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
-            <v-btn class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
+          <div class="raceday-header">
+            <div class="titles">
+              <div class="title">{{ racedayDetails.trackName }}</div>
+              <div class="subtitle">{{ formatDate(racedayDetails.firstStart) }}</div>
+            </div>
+            <div class="header-actions">
+              <div class="games" v-if="racedayGames.length">
+                <SpelformBadge v-for="g in racedayGames" :key="g" :game="g" :leg="1" />
+              </div>
+              <div class="buttons">
+                <v-btn color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
+                <v-btn class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
+              </div>
+            </div>
           </div>
-          <div v-for="race in sortedRaceList" :key="race.id">
+
+          <div v-for="race in sortedRaceList" :key="race.id" class="race-row">
             <RaceCardComponent
               :race="race"
               :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp"
@@ -33,10 +44,12 @@ import RaceCardComponent from './components/RaceCardComponent.vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
+import SpelformBadge from '@/components/SpelformBadge.vue'
 
 export default {
   components: {
-    RaceCardComponent
+    RaceCardComponent,
+    SpelformBadge
   },
   setup(props, { root }) {
     const route = useRoute()
@@ -66,6 +79,12 @@ export default {
         errorMessage.value = 'Error fetching raceday details. Please try again later.'
         return
       }
+    })
+
+    const racedayGames = computed(() => {
+      const order = ['V75','V86','V64','V65','GS75','V5','V4','DD']
+      const keys = Object.keys(spelformer.value || {})
+      return keys.sort((a,b) => (order.indexOf(a) === -1 ? 999 : order.indexOf(a)) - (order.indexOf(b) === -1 ? 999 : order.indexOf(b)))
     })
 
     const refreshRaceday = async () => {
@@ -171,19 +190,27 @@ export default {
       downloading,
       downloadAiList,
       regenerating,
-      regenerateAiList
+      regenerateAiList,
+      racedayGames
     }
   }
 }
 </script>
 
 <style scoped>
-  .main-content {
-    padding-top: 70px;
+  .main-content { padding-top: 70px; }
+  .raceday-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
   }
-.error-message {
-  color: red;
-  font-size: 1rem;
-  margin-top: 1rem;
-}
+  .titles .title { font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
+  .titles .subtitle { color: #6b7280; margin-top: 2px; }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .games { display: flex; gap: 6px; }
+  .race-row { margin-bottom: 10px; }
+  .error-message { color: red; font-size: 1rem; margin-top: 1rem; }
 </style>

@@ -19,7 +19,18 @@ const precomputeRacedayAI = async (daysAhead = 3) => {
   }
 }
 
+const evalElo = async (params) => {
+  try {
+    const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/elo/eval`, { params })
+    return res.data
+  } catch (error) {
+    console.error('Failed to evaluate Elo', error)
+    throw error
+  }
+}
+
 export default {
   triggerRatingsUpdate,
-  precomputeRacedayAI
+  precomputeRacedayAI,
+  evalElo
 }
