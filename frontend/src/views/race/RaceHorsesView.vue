@@ -82,21 +82,20 @@
                                     <div v-else>
                                         {{ item.raw.name }} – För få starter.
                                     </div>
-                                    <!-- Recent results block: shown before ATG comments and AI summary -->
-                                    <div class="recent-results mt-1">
-                                      <strong>Senaste 5:</strong>
-                                      <div v-if="item.raw.recentResultsDisplay && item.raw.recentResultsDisplay.length">
-                                        <div v-for="(line, idx) in item.raw.recentResultsDisplay" :key="idx" class="text-caption">
-                                          {{ line }}
-                                        </div>
+                                    <!-- Unified past performances: Date, Track, Placement, Comment -->
+                                    <div class="mt-1">
+                                      <div
+                                        v-for="(line, idx) in buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore)"
+                                        :key="idx"
+                                        class="text-caption"
+                                      >
+                                        {{ line }}
                                       </div>
-                                      <div v-else class="text-caption">Inga tidigare starter tillgängliga</div>
+                                      <div v-if="!buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore).length" class="text-caption">
+                                        Inga tidigare starter tillgängliga
+                                      </div>
                                     </div>
-                                    <HorseCommentBlock
-                                      :comment="getAtgCommentForHorse(item.raw.id)"
-                                      :past-race-comments="getUiPastComments(item.raw.id)"
-                                      :withdrawn="item.columns.horseWithdrawn"
-                                    />
+                                    <!-- AI summary block remains -->
                                     <div class="mt-2">
                                       <v-btn
                                         size="x-small"
@@ -183,13 +182,13 @@ import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
 import HorseService from '@/views/race/services/HorseService.js'
 import SpelformBadge from '@/components/SpelformBadge.vue'
-import HorseCommentBlock from './components/HorseCommentBlock.vue'
+// Removed HorseCommentBlock – unified view replaces separate blocks
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
 import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
 
 export default {
     name: 'RaceHorsesView',
-    components: { SpelformBadge, HorseCommentBlock },
+    components: { SpelformBadge },
 
     setup() {
         // --- AI summary state and handler ---
@@ -307,7 +306,8 @@ export default {
                   .map(rec => ({
                     date: rec?.date,
                     comment: rec.trMediaInfo.comment.trim(),
-                    place: rec?.place ?? r?.place ?? '—'
+                    place: rec?.place ?? r?.place ?? '—',
+                    raceKey: rec?.raceId || rec?.id || r?.raceId || r?.id || null
                   }))
                 : []
               )
@@ -320,7 +320,8 @@ export default {
               .map(rec => ({
                 date: rec?.date,
                 comment: rec.trMediaInfo.comment.trim(),
-                place: rec?.place ?? '—'
+                place: rec?.place ?? '—',
+                raceKey: rec?.raceId || rec?.id || null
               }))
               .sort((a, b) => new Date(b.date) - new Date(a.date))
               .slice(0, 5);
@@ -651,8 +652,9 @@ export default {
             }
         }
 
-        // Build "Senaste 5" from our persisted results
-        const buildRecentResultsDisplay = (horseData) => {
+        // Core builder for unified past performances from persisted results
+        // Returns array of entries: { date: 'YYYY-MM-DD', track: 'Name', placing: '1|2|3|np', raceKey?: string }
+        const buildRecentResultsCore = (horseData) => {
             const raw = horseData?.results
             const list = Array.isArray(raw?.records) ? raw.records.slice() : (Array.isArray(raw) ? raw.slice() : [])
             if (!list.length) return []
@@ -665,11 +667,11 @@ export default {
             const isQualifierOrTrial = (r) => {
                 const t = getRaceTypeText(r)
                 return (
-                    t.includes('qual') || // qualifier
-                    t.includes('kval') || // Swedish
+                    t.includes('qual') ||
+                    t.includes('kval') ||
                     t.includes('trial') ||
                     t.includes('premie') ||
-                    t.includes('prov') // provlopp
+                    t.includes('prov')
                 )
             }
             const getTrackCode = (r) => r?.track?.code || r?.trackCode || r?.raceInformation?.track?.code || ''
@@ -692,16 +694,39 @@ export default {
                 const key = getRaceKey(r)
                 if (seen.has(key)) continue
                 seen.add(key)
-                const date = normalizeDate(r) ? new Date(normalizeDate(r)).toISOString().slice(0, 10) : '—'
+                const dateStr = normalizeDate(r) ? new Date(normalizeDate(r)).toISOString().slice(0, 10) : '—'
                 const code = getTrackCode(r)
                 const nameFromCode = code ? getTrackName(code) : ''
                 const nameFromPayload = getTrackNameFromR(r)
                 const trackStr = nameFromCode || nameFromPayload || '—'
                 const placing = getPlacing(r)
-                out.push(`${date} • ${trackStr} • ${placing}`)
+                out.push({ date: dateStr, track: trackStr, placing, raceKey: key })
                 if (out.length >= 5) break
             }
             return out
+        }
+
+        // Merge our core results with ATG comments by date (prefer race id when available) and format uniformly
+        const buildUnifiedPastDisplay = (horseId, coreEntries = []) => {
+            if (!Array.isArray(coreEntries) || coreEntries.length === 0) return []
+            const commentsArr = (getUiPastComments(horseId) || [])
+                .map(c => ({
+                  date: (c.date || '').split('T')[0],
+                  comment: (c.comment || '').trim(),
+                  raceKey: c.raceKey || null
+                }))
+                .filter(c => c.date)
+            const commentByRaceKey = new Map()
+            const commentByDate = new Map()
+            for (const c of commentsArr) {
+                if (c.raceKey && !commentByRaceKey.has(c.raceKey) && c.comment) commentByRaceKey.set(String(c.raceKey), c.comment)
+                if (!commentByDate.has(c.date) && c.comment) commentByDate.set(c.date, c.comment)
+            }
+            return coreEntries.map(e => {
+                const byId = e.raceKey ? commentByRaceKey.get(String(e.raceKey)) : ''
+                const comment = byId || commentByDate.get(e.date) || ''
+                return comment ? `${e.date}, ${e.track}, ${e.placing}, ${comment}` : `${e.date}, ${e.track}, ${e.placing}`
+            })
         }
 
         const fetchDataAndUpdate = async (raceId) => {
@@ -963,6 +988,7 @@ export default {
                     const driverElo = driverRatingMap[String(driverId)]
                     const fullHorse = await HorseService.getHorseById(h.id)
                     const stats = statsFor(fullHorse)
+                    const recentCore = buildRecentResultsCore(fullHorse)
                     const enriched = {
                         ...h,
                         stats,
@@ -996,8 +1022,8 @@ export default {
                             id: driverId,
                             elo: driverElo,
                         },
-                        // our persisted last 5 results, pre-formatted
-                        recentResultsDisplay: buildRecentResultsDisplay(fullHorse)
+                        // core persisted last 5 results for unified display
+                        recentResultsCore: recentCore
                     }
                     return enriched
                 }))
@@ -1390,6 +1416,7 @@ export default {
             getUiPastComments,
             preloadSavedPastCommentsForRace,
             displayFavStartPos,
+            buildUnifiedPastDisplay,
         }
     },
 }
