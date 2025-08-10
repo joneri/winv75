@@ -5,11 +5,12 @@ import { evaluateElo } from './elo-eval.js'
 
 const router = express.Router()
 
-// Trigger full Elo ratings recalculation
+// Trigger Elo ratings recalculation (supports full rebuild via ?full=true)
 router.post('/update', async (req, res) => {
   try {
-    await updateRatings()
-    res.json({ message: 'Ratings updated' })
+    const isFull = req.query.full === 'true' || req.query.full === '1'
+    await updateRatings(undefined, undefined, true, { fullRecalc: isFull })
+    res.json({ message: isFull ? 'Ratings fully rebuilt' : 'Ratings updated' })
   } catch (err) {
     console.error('Manual rating update failed', err)
     res.status(500).send('Failed to update ratings')

@@ -2,20 +2,30 @@
   <v-container class="main-content">
     <v-row>
       <v-col>
+        <!-- Loading state -->
+        <div v-if="loading" class="loading-wrap">
+          <v-skeleton-loader type="heading, text" class="mb-4" />
+          <v-skeleton-loader v-for="i in 3" :key="i" type="image, text" class="mb-3" />
+        </div>
+
         <!-- Display Raceday details if available, else show error message -->
-        <div v-if="racedayDetails">
+        <div v-else-if="racedayDetails">
           <div class="raceday-header">
             <div class="titles">
               <div class="title">{{ racedayDetails.trackName }}</div>
-              <div class="subtitle">{{ formatDate(racedayDetails.firstStart) }}</div>
+              <div class="meta">
+                <span class="muted">{{ formattedFirstStart }}</span>
+                <span class="dot" aria-hidden="true">•</span>
+                <span class="muted">{{ totalRaces }} lopp</span>
+              </div>
             </div>
             <div class="header-actions">
               <div class="games" v-if="racedayGames.length">
                 <SpelformBadge v-for="g in racedayGames" :key="g" :game="g" :leg="1" />
               </div>
               <div class="buttons">
-                <v-btn color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
-                <v-btn class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
+                <v-btn density="compact" color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
+                <v-btn density="compact" class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
               </div>
             </div>
           </div>
@@ -60,6 +70,7 @@ export default {
     const errorMessage = ref(null)
     const downloading = ref(false)
     const regenerating = ref(false)
+    const loading = ref(true)
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
@@ -69,15 +80,27 @@ export default {
       const raceUpdateTime = new Date(timestamp)
       return raceUpdateTime >= sixDaysAgo
     }
-    
+
+    const formatTimeShort = (dateString) => {
+      try {
+        const d = new Date(dateString)
+        return new Intl.DateTimeFormat('sv-SE', { hour: '2-digit', minute: '2-digit' }).format(d)
+      } catch {
+        return ''
+      }
+    }
+
     onMounted(async () => {
       try {
+        loading.value = true
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
       } catch (error) {
         console.error('Error fetching raceday details:', error)
         errorMessage.value = 'Error fetching raceday details. Please try again later.'
         return
+      } finally {
+        loading.value = false
       }
     })
 
@@ -98,6 +121,12 @@ export default {
 
     const sortedRaceList = computed(() => {
       return racedayDetails.value?.raceList.sort((a, b) => a.raceNumber - b.raceNumber) || []
+    })
+
+    const totalRaces = computed(() => sortedRaceList.value.length)
+    const formattedFirstStart = computed(() => {
+      const ts = racedayDetails.value?.firstStart
+      return ts ? `Start ${formatTimeShort(ts)}` : ''
     })
 
     const getRaceGames = raceId => {
@@ -191,7 +220,10 @@ export default {
       downloadAiList,
       regenerating,
       regenerateAiList,
-      racedayGames
+      racedayGames,
+      loading,
+      totalRaces,
+      formattedFirstStart
     }
   }
 }
@@ -204,13 +236,26 @@ export default {
     justify-content: space-between;
     align-items: flex-end;
     margin-bottom: 12px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
     padding-bottom: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
   }
-  .titles .title { font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
-  .titles .subtitle { color: #6b7280; margin-top: 2px; }
-  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .titles .title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+  .titles .meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .muted { color: #6b7280; font-size: 0.92rem; }
+  .dot { color: #9ca3af; }
+  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .games { display: flex; gap: 6px; }
+  .buttons { display: flex; gap: 8px; }
   .race-row { margin-bottom: 10px; }
-  .error-message { color: red; font-size: 1rem; margin-top: 1rem; }
+  .error-message { color: #ef4444; font-size: 0.95rem; margin-top: 1rem; }
+  .loading-wrap { padding-top: 24px; }
+
+  @media (prefers-color-scheme: dark) {
+    .raceday-header { border-bottom-color: rgba(255,255,255,0.08); }
+    .muted { color: #9ca3af; }
+    .dot { color: #6b7280; }
+    .error-message { color: #f87171; }
+  }
 </style>

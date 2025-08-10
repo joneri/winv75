@@ -1,8 +1,9 @@
 import axios from 'axios'
 
-const triggerRatingsUpdate = async () => {
+const triggerRatingsUpdate = async (full = false) => {
   try {
-    await axios.post(`${import.meta.env.VITE_BE_URL}/api/elo/update`)
+    const params = full ? { full: true } : undefined
+    await axios.post(`${import.meta.env.VITE_BE_URL}/api/rating/update`, null, { params })
   } catch (error) {
     console.error('Failed to trigger ratings update', error)
     throw error

@@ -1,9 +1,8 @@
 <template>
   <v-card
-    class="clickable-card"
-    :class="gameClass"
+    :class="['clickable-card', gameClass, { 'has-major': hasMajorGame }]"
     @click="viewRaceDetails"
-    :style="{ '--hover-bg': hoverBg }"
+    :style="{ '--hover-bg': hoverBg, '--hover-fg': hoverFg, '--accent-color': accentColor, '--accent-tint': accentTint }"
   >
     <v-card-title class="card-title">
       <div class="title-line">
@@ -32,8 +31,8 @@
     </div>
 
     <v-card-actions class="card-actions">
-      <v-btn @click.stop="viewRaceDetails" size="small" variant="text">Visa detaljer</v-btn>
-      <v-btn @click.stop="updateRace" :disabled="loading" class="ml-2" size="small" variant="outlined">
+      <v-btn @click.stop="viewRaceDetails" size="small" variant="text" color="primary">Visa detaljer</v-btn>
+      <v-btn @click.stop="updateRace" :disabled="loading" class="ml-2" size="small" variant="outlined" color="primary">
         {{ loading ? 'Uppdaterar…' : 'Uppdatera lopp' }}
       </v-btn>
     </v-card-actions>
@@ -48,6 +47,7 @@ import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import { updateHorse, setEarliestUpdatedHorseTimestamp } from '@/views/race/services/RaceHorsesService.js'
+import { getGameColor } from '@/utils/gameColors'
 
 export default {
   components: { SpelformBadge },
@@ -64,7 +64,19 @@ export default {
     const loading = ref(false)
     const errorMessage = ref('')
 
-    const hoverBg = '#f8fafc' // a subtle hover background
+    const majorGames = ['V75', 'V64', 'V65', 'V86', 'GS75']
+    const primaryMajorGame = computed(() => games.value.find(g => majorGames.includes(g.game))?.game)
+    const accentColor = computed(() => primaryMajorGame.value ? getGameColor(primaryMajorGame.value) : '#e5e7eb')
+    const hexToRgba = (hex, alpha = 0.08) => {
+      const h = hex.replace('#','')
+      const r = parseInt(h.substring(0,2),16)
+      const g = parseInt(h.substring(2,4),16)
+      const b = parseInt(h.substring(4,6),16)
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    }
+    const hasMajorGame = computed(() => Boolean(primaryMajorGame.value))
+    const accentTint = computed(() => hasMajorGame.value ? hexToRgba(accentColor.value, 0.08) : 'transparent')
+
     const startTime = computed(() => {
       const dt = props.race?.startDateTime
       if (!dt) return ''
@@ -87,9 +99,11 @@ export default {
     const gameClass = computed(() => {
       if (!games.value.length) return ''
       const code = games.value[0].game
-      const majorGames = ['V75', 'V64', 'V65', 'V86', 'GS75']
       return majorGames.includes(code) ? `${code.toLowerCase()}-accent` : ''
     })
+
+    const hoverBg = computed(() => hasMajorGame.value ? hexToRgba(accentColor.value, 0.14) : 'rgba(59,130,246,0.08)')
+    const hoverFg = computed(() => hasMajorGame.value ? '#0b1021' : '#0b1021')
 
     const viewRaceDetails = () => {
       store.commit('raceHorses/setCurrentRace', props.race);
@@ -130,10 +144,14 @@ export default {
       updateRace,
       loading,
       errorMessage,
-      hoverBg,
       startTime,
       formattedUpdated,
-      gameClass
+      gameClass,
+      hoverBg,
+      hoverFg,
+      hasMajorGame,
+      accentColor,
+      accentTint
     }
   }
 }
@@ -151,9 +169,33 @@ export default {
   border: 1px solid #e5e7eb;
   border-left-width: 4px; /* accent border via game class */
 }
-.clickable-card:hover {
+/* stronger hover/selection to ensure content stays visible */
+.clickable-card:hover,
+.clickable-card:focus-within {
   background-color: var(--hover-bg) !important;
+  color: var(--hover-fg);
   box-shadow: 0 2px 12px rgba(2, 6, 23, 0.06);
+}
+/* subtle always-on tint for major games */
+.has-major {
+  background-color: var(--accent-tint);
+  border-left-width: 8px;
+}
+/* ensure nested text maintains readable color on hover */
+.clickable-card:hover .meta,
+.clickable-card:hover .muted,
+.clickable-card:hover .card-body,
+.clickable-card:hover .updated-indication,
+.clickable-card:focus-within .meta,
+.clickable-card:focus-within .muted,
+.clickable-card:focus-within .card-body,
+.clickable-card:focus-within .updated-indication {
+  color: #0b1021;
+}
+/* keep actions visible on hover */
+.clickable-card:hover .card-actions .v-btn,
+.clickable-card:focus-within .card-actions .v-btn {
+  --v-theme-primary: #2563eb; /* ensure primary is visible */
 }
 .card-title {
   padding-bottom: 4px !important;
@@ -173,6 +215,32 @@ export default {
 .v75-accent { border-left-color: #1e3a8a; }
 .v64-accent { border-left-color: #ed6c15; }
 .v65-accent { border-left-color: #c00a26; }
-.v86-accent { border-left-color: #802c7e; }
+.v86-accent { border-left-color: #6b21a8; }
 .gs75-accent { border-left-color: #be123c; }
+
+/* Accessibility: focus outline */
+.clickable-card:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Dark mode tweaks */
+@media (prefers-color-scheme: dark) {
+  .clickable-card { border-color: rgba(255,255,255,0.08); }
+  .has-major { background-color: color-mix(in srgb, var(--accent-color) 18%, transparent); }
+  .clickable-card:hover, .clickable-card:focus-within {
+    background-color: color-mix(in srgb, var(--accent-color) 26%, transparent) !important;
+    color: #e5e7eb;
+  }
+  .clickable-card:hover .meta,
+  .clickable-card:hover .muted,
+  .clickable-card:hover .card-body,
+  .clickable-card:hover .updated-indication,
+  .clickable-card:focus-within .meta,
+  .clickable-card:focus-within .muted,
+  .clickable-card:focus-within .card-body,
+  .clickable-card:focus-within .updated-indication {
+    color: #e5e7eb;
+  }
+}
 </style>
