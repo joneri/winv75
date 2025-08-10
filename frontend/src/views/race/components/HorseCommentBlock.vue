@@ -3,24 +3,22 @@
     <div v-if="comment" class="main-comment" :class="commentClass(comment)">
       {{ comment }}
     </div>
-    <ul v-if="formattedPastComments.length" class="past-comments">
-      <li v-for="(pc, idx) in visiblePastComments" :key="idx">
-        <span class="arrow">→</span>
-        <span>
-          <strong>{{ pc.date }}</strong>
-          <span> ({{ formatPlace(pc.place) }})</span>
-          <span v-if="pc.comment && pc.comment.length" :class="commentClass(pc.comment)"> – {{ pc.comment }}</span>
-          <span v-else class="text-muted"> – Ingen kommentar</span>
-        </span>
-      </li>
-      <li
-        v-if="!showAll && extraCommentsCount > 0"
-        class="more-comments"
-        @click="showAll = true"
-      >
-        +{{ extraCommentsCount }} fler tidigare kommentarer
-      </li>
-    </ul>
+    <template v-if="formattedPastComments.length">
+      <div class="saved-label">ATG-kommentarer (sparade)</div>
+      <ul class="past-comments">
+        <li v-for="(pc, idx) in visiblePastComments" :key="idx">
+          <span class="arrow">→</span>
+          <span :class="commentClass(pc.comment)">{{ pc.comment }}</span>
+        </li>
+        <li
+          v-if="!showAll && extraCommentsCount > 0"
+          class="more-comments"
+          @click="showAll = true"
+        >
+          +{{ extraCommentsCount }} fler tidigare kommentarer
+        </li>
+      </ul>
+    </template>
     <div v-else-if="!comment && formattedPastComments.length === 0" class="text-muted" style="font-size:10px;">
       Inga tidigare starter tillgängliga
     </div>
@@ -48,8 +46,9 @@ export default {
         .map(pc => ({
           date: pc.date?.split('T')[0] || '',
           place: pc.place,
-          comment: pc.comment || ''
+          comment: (pc.comment || '').trim()
         }))
+        .filter(pc => pc.comment.length > 0)
     })
 
     const visiblePastComments = computed(() =>
@@ -107,6 +106,11 @@ export default {
   font-weight: 700;
   font-size: 13px;
   color: #cfc8c8;
+}
+.saved-label {
+  font-size: 10px;
+  color: #9aa;
+  margin-top: 4px;
 }
 .past-comments {
   padding-left: 0;

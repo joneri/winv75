@@ -1,5 +1,6 @@
 import Track from './track-model.js'
 import Horse from '../horse/horse-model.js'
+import { getSeededMetaForTrack } from './track-meta.js'
 
 const computeStatsForTrack = async (trackCode) => {
   const winners = await Horse.aggregate([
@@ -58,7 +59,31 @@ const computeStatsForTrack = async (trackCode) => {
 }
 
 const getTrackByCode = async (trackCode) => {
-  return await Track.findOne({ trackCode }).lean()
+  const doc = await Track.findOne({ trackCode }).lean()
+  const seeded = getSeededMetaForTrack(trackCode)
+  if (!doc) {
+    // No DB row: return seeded defaults with minimal identity
+    return {
+      trackCode,
+      trackName: undefined,
+      trackLength: seeded.trackLengthMeters,
+      trackLengthMeters: seeded.trackLengthMeters,
+      hasOpenStretch: seeded.hasOpenStretch,
+      openStretchLanes: seeded.openStretchLanes
+    }
+  }
+  // Merge: DB wins, but fill missing new fields from seeded
+  const trackLengthMeters = doc.trackLengthMeters ?? doc.trackLength ?? seeded.trackLengthMeters
+  const hasOpenStretch = (doc.hasOpenStretch != null) ? doc.hasOpenStretch : seeded.hasOpenStretch
+  let openStretchLanes = (doc.openStretchLanes != null) ? doc.openStretchLanes : seeded.openStretchLanes
+  if (hasOpenStretch && (!openStretchLanes || openStretchLanes < 1)) openStretchLanes = 1
+  return {
+    ...doc,
+    trackLength: trackLengthMeters, // keep legacy key aligned to meters
+    trackLengthMeters,
+    hasOpenStretch,
+    openStretchLanes
+  }
 }
 
 const updateTrackStats = async (trackCode) => {

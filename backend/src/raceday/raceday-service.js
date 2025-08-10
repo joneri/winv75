@@ -55,6 +55,29 @@ const upsertStartlistData = async (racedayJSON) => {
     const raceDayId = racedayJSON.raceDayId
     let raceDay
     try {
+        // Merge previously saved per-horse AI summaries and meta into incoming JSON
+        const existing = await Raceday.findOne({ raceDayId: raceDayId }).lean()
+        if (existing && Array.isArray(existing.raceList) && Array.isArray(racedayJSON.raceList)) {
+            const savedMap = new Map()
+            for (const r of existing.raceList) {
+                const keyR = String(r.raceId)
+                const horseMap = new Map()
+                for (const h of (r.horses || [])) {
+                    horseMap.set(String(h.id), { aiSummary: h.aiSummary, aiSummaryMeta: h.aiSummaryMeta })
+                }
+                savedMap.set(keyR, horseMap)
+            }
+            for (const r of racedayJSON.raceList) {
+                const keyR = String(r.raceId)
+                const horseMap = savedMap.get(keyR)
+                if (!horseMap) continue
+                r.horses = (r.horses || []).map(h => {
+                    const saved = horseMap.get(String(h.id))
+                    return saved ? { ...h, ...saved } : h
+                })
+            }
+        }
+
         raceDay = await Raceday.findOneAndUpdate(
             { raceDayId: raceDayId },
             racedayJSON,
@@ -63,6 +86,36 @@ const upsertStartlistData = async (racedayJSON) => {
     } catch (error) {
         console.error(`Error while upserting the startlist with raceDayId ${raceDayId}:`, error)
         throw error
+    }
+    // Persist unique ATG comments from atgExtendedRaw into Horse.atgPastComments without deleting previous
+    try {
+      const starts = racedayJSON?.raceList?.flatMap(r => (r.atgExtendedRaw?.starts || []).map(s => ({ s, race: r }))) || []
+      for (const { s, race } of starts) {
+        const horseId = s?.horse?.id
+        if (!horseId) continue
+        const saved = (Array.isArray(s?.horse?.results?.records) ? s.horse.results.records : [])
+          .filter(rec => rec?.trMediaInfo?.comment && rec.trMediaInfo.comment.trim())
+          .map(rec => ({
+            date: rec?.date ? new Date(rec.date) : null,
+            comment: rec.trMediaInfo.comment.trim(),
+            place: rec?.place || race?.trackName || '',
+            raceId: race?.raceId || 0,
+            source: 'ATG'
+          }))
+        if (!saved.length) continue
+        const horseDoc = await Horse.findOne({ id: horseId })
+        if (!horseDoc) continue
+        const existing = horseDoc.atgPastComments || []
+        const key = (c) => `${(c.date ? new Date(c.date).toISOString().slice(0,10) : '')}::${c.comment}`
+        const seen = new Set(existing.map(key))
+        const toAdd = saved.filter(c => !seen.has(key(c)))
+        if (toAdd.length) {
+          horseDoc.atgPastComments.push(...toAdd)
+          await horseDoc.save()
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to persist ATG past comments (non-fatal):', e.message)
     }
     updateHorsesForRaceday(raceDay).catch(err => console.error('Failed updating horses for raceday', err))
     return raceDay

@@ -158,7 +158,17 @@ const HorseSchema = new mongoose.Schema({
     points: { type: String, default: '' },
     rating: { type: Number, default: 0 },
     statistics: [StatisticSchema],
-    results: [RaceResultSchema]
+    results: [RaceResultSchema],
+    // Persisted ATG past race comments; never deleted by reimports
+    atgPastComments: [
+        {
+            date: { type: Date, default: null },
+            comment: { type: String, default: '' },
+            place: { type: String, default: '' },
+            raceId: { type: Number, default: 0 },
+            source: { type: String, default: 'ATG' }
+        }
+    ]
 },
 {
     timestamps: true

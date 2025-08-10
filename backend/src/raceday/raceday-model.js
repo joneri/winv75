@@ -54,7 +54,32 @@ const horseSchema = new mongoose.Schema({
   linkable: Boolean,
   comment: String,
   // pastRaceComments removed: all past race comments are now only in atgExtendedRaw
-  aiSummary: { type: String, default: '' }
+  aiSummary: { type: String, default: '' },
+  aiSummaryMeta: {
+    // minimal audit of context used
+    generatedAt: { type: Date, default: null },
+    userId: { type: String, default: '' },
+    context: {
+      raceId: Number,
+      horseId: Number,
+      programNumber: Number,
+      startMethod: String,
+      startPosition: Number,
+      baseDistance: Number,
+      actualDistance: Number,
+      eloRating: Number,
+      driverElo: Number,
+      fieldElo: {
+        avg: Number,
+        median: Number,
+        percentile: Number
+      },
+      hasOpenStretch: Boolean,
+      openStretchLanes: Number,
+      trackLengthMeters: Number,
+      usedPastComments: { type: Boolean, default: false }
+    }
+  }
 })
 
 const propTextsSchema = new mongoose.Schema({

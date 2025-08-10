@@ -82,9 +82,19 @@
                                     <div v-else>
                                         {{ item.raw.name }} – För få starter.
                                     </div>
+                                    <!-- Recent results block: shown before ATG comments and AI summary -->
+                                    <div class="recent-results mt-1">
+                                      <strong>Senaste 5:</strong>
+                                      <div v-if="item.raw.recentResultsDisplay && item.raw.recentResultsDisplay.length">
+                                        <div v-for="(line, idx) in item.raw.recentResultsDisplay" :key="idx" class="text-caption">
+                                          {{ line }}
+                                        </div>
+                                      </div>
+                                      <div v-else class="text-caption">Inga tidigare starter tillgängliga</div>
+                                    </div>
                                     <HorseCommentBlock
                                       :comment="getAtgCommentForHorse(item.raw.id)"
-                                      :past-race-comments="getAtgPastRaceCommentsForHorse(item.raw.id)"
+                                      :past-race-comments="getUiPastComments(item.raw.id)"
                                       :withdrawn="item.columns.horseWithdrawn"
                                     />
                                     <div class="mt-2">
@@ -101,8 +111,11 @@
                                         <span style="white-space: pre-line">
                                           {{ (aiSummary[item.raw.id] || item.raw.aiSummary)?.split(/(?<=\.|!|\?)\s+/).join('\n') }}
                                         </span>
-                                        <span v-if="item.raw.aiSummary && !aiSummary[item.raw.id]" class="text-caption text-success ml-2">(sparad)</span>
-                                        <span v-if="aiSummary[item.raw.id]" class="text-caption text-warning ml-2">(ny)</span>
+                                        <span v-if="(aiSummaryMeta[item.raw.id]?.generatedAt)" class="text-caption text-success ml-2">(sparad)</span>
+                                        <span v-else class="text-caption text-warning ml-2">(ny)</span>
+                                        <div v-if="aiSummaryMeta[item.raw.id]?.context" class="text-caption mt-1">
+                                          Kontext: ELO {{ aiSummaryMeta[item.raw.id].context.eloRating || '—' }}, fält {{ aiSummaryMeta[item.raw.id].context.fieldElo?.median || '—' }}, start {{ aiSummaryMeta[item.raw.id].context.startMethod || '—' }} {{ aiSummaryMeta[item.raw.id].context.startPosition || '—' }}, distans {{ aiSummaryMeta[item.raw.id].context.actualDistance || aiSummaryMeta[item.raw.id].context.baseDistance || '—' }}<template v-if="aiSummaryMeta[item.raw.id].context.hasOpenStretch"> • open stretch (x{{ aiSummaryMeta[item.raw.id].context.openStretchLanes || 1 }})</template>
+                                         </div>
                                       </div>
                                       <div v-if="aiSummaryError[item.raw.id]" class="text-error mt-1">
                                         {{ aiSummaryError[item.raw.id] }}
@@ -171,7 +184,8 @@ import TrackService from '@/views/race/services/TrackService.js'
 import HorseService from '@/views/race/services/HorseService.js'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import HorseCommentBlock from './components/HorseCommentBlock.vue'
-import { fetchHorseSummary } from '@/ai/horseSummaryClient.js'
+import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
+import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -182,6 +196,28 @@ export default {
         const aiSummary = ref({})
         const aiSummaryLoading = ref({})
         const aiSummaryError = ref({})
+        const aiSummaryMeta = ref({})
+        const userId = ref('anon')
+        // Saved ATG past comments fallback (from backend persistence)
+        const savedPastComments = ref({})
+
+        // helper: preload saved past comments when ATG extended missing
+        const preloadSavedPastCommentsForRace = async () => {
+          try {
+            const horses = currentRace.value?.horses || []
+            const map = {}
+            for (const h of horses) {
+              // If ATG extended data has comments, skip fetch
+              const atg = getAtgPastRaceCommentsForHorse(h.id)
+              if (atg && atg.length) continue
+              const arr = await fetchSavedPastComments(h.id)
+              if (Array.isArray(arr) && arr.length) map[h.id] = arr
+            }
+            savedPastComments.value = map
+          } catch (e) {
+            console.warn('Could not preload saved past comments', e)
+          }
+        }
 
         // --- Router/Store ---
         const store = useStore()
@@ -192,14 +228,20 @@ export default {
           aiSummaryLoading.value[horse.id] = true
           aiSummaryError.value[horse.id] = ''
           try {
-            // Compose data for the backend AI endpoint
-          const pastRaceCommentsArr = getAtgPastRaceCommentsForHorse(horse.id)
-          const pastRaceComments = pastRaceCommentsArr
-            .filter(c => c.comment && c.date)
-            .map(c => `${c.date}: ${c.comment}`)
-            .join(' ')
+            const pastRaceCommentsArr = getUiPastComments(horse.id)
+            const pastRaceComments = pastRaceCommentsArr
+              .filter(c => c.comment && c.date)
+              .map(c => `${c.date}: ${c.comment}`)
+              .join(' ')
 
-            const summary = await fetchHorseSummary({
+            const fieldElos = (currentRace.value?.horses || []).map(h => Number(h.eloRating || h.rating || 0)).filter(n => n>0)
+            const avgElo = fieldElos.length ? Math.round(fieldElos.reduce((a,b)=>a+b,0)/fieldElos.length) : null
+            const sorted = [...fieldElos].sort((a,b)=>a-b)
+            const medianElo = sorted.length ? Math.round((sorted[Math.floor((sorted.length-1)/2)] + sorted[Math.ceil((sorted.length-1)/2)]) / 2) : null
+            const myElo = Math.round(Number(horse.eloRating || horse.rating || 0)) || null
+            const percentile = fieldElos.length && myElo!=null ? Math.round((fieldElos.filter(v=>v<=myElo).length/fieldElos.length)*100) : null
+
+            const ctx = {
               eloRating: horse.eloRating,
               horseName: horse.name,
               numberOfStarts: horse.numberOfStarts,
@@ -208,8 +250,24 @@ export default {
               formStats: horse.statsFormatted,
               conditions: getConditionLines(horse),
               pastRaceComments,
-            }, currentRace.value.raceId, horse.id)
+              programNumber: horse.programNumber,
+              startMethod: raceStartMethod.value,
+              startPosition: horse.actualStartPosition ?? horse.startPosition ?? null,
+              baseDistance: currentRace.value?.distance ?? null,
+              actualDistance: horse.actualDistance ?? null,
+              fieldElo: { avg: avgElo, median: medianElo, percentile },
+              hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
+              openStretchLanes: trackMeta.value?.openStretchLanes || (trackMeta.value?.hasOpenStretch ? 1 : 0),
+              trackLengthMeters: trackMeta.value?.trackLengthMeters ?? trackMeta.value?.trackLength ?? null
+            }
+
+            const summary = await fetchHorseSummary(ctx, currentRace.value.raceId, horse.id, userId.value)
             aiSummary.value[horse.id] = summary
+            // Fetch saved meta after persistence
+            try {
+              const saved = await fetchSavedHorseSummary(currentRace.value.raceId, horse.id)
+              aiSummaryMeta.value[horse.id] = saved.meta || null
+            } catch {}
           } catch (e) {
             aiSummaryError.value[horse.id] = 'Kunde inte generera AI-sammanfattning.'
           } finally {
@@ -275,6 +333,12 @@ export default {
           if (!start || !start.horse || !start.horse.results) return [];
           return extractPastRaceComments(start.horse.results);
         };
+
+        const getUiPastComments = (horseId) => {
+          const atg = getAtgPastRaceCommentsForHorse(horseId)
+          if (atg && atg.length) return atg
+          return savedPastComments.value[horseId] || []
+        }
 
         // --- Helpers: formatters (ELO, start position) ---
         const formatElo = (val) => {
@@ -413,9 +477,16 @@ export default {
         });
 
         const displayTrackLength = computed(() => {
-          const len = trackMeta.value?.trackLength
+          const len = trackMeta.value?.trackLengthMeters ?? trackMeta.value?.trackLength
           return typeof len === 'number' ? `${len} m` : '—'
         });
+
+        const displayOpenStretch = computed(() => {
+          const has = !!trackMeta.value?.hasOpenStretch
+          if (!has) return ''
+          const lanes = trackMeta.value?.openStretchLanes || 1
+          return `• open stretch (x${lanes})`
+        })
 
         const displayTrackRecord = computed(() => {
           return trackMeta.value?.trackRecord || '—'
@@ -423,12 +494,13 @@ export default {
 
         const displayFavStartPos = computed(() => {
           const pos = trackMeta.value?.favouriteStartingPosition
-          return typeof pos === 'number' ? pos : '—'
-        });
+          return (typeof pos === 'number' && pos > 0) ? String(pos) : '—'
+        })
 
         const trackMetaString = computed(() => {
           const name = getTrackName(racedayTrackCode.value)
-          return `Track: ${name} | Length: ${displayTrackLength.value} | Fav. pos: ${displayFavStartPos.value} | Record: ${displayTrackRecord.value}`
+          const extra = displayOpenStretch.value ? ` ${displayOpenStretch.value}` : ''
+          return `Track: ${name} | Length: ${displayTrackLength.value}${extra} | Fav. pos: ${displayFavStartPos.value} | Record: ${displayTrackRecord.value}`
         });
         const raceGames = computed(() => {
             const res = []
@@ -577,6 +649,59 @@ export default {
                 console.error('Failed to check updated horses', e)
                 updatedHorses.value = []
             }
+        }
+
+        // Build "Senaste 5" from our persisted results
+        const buildRecentResultsDisplay = (horseData) => {
+            const raw = horseData?.results
+            const list = Array.isArray(raw?.records) ? raw.records.slice() : (Array.isArray(raw) ? raw.slice() : [])
+            if (!list.length) return []
+
+            const normalizeDate = (r) => r?.raceInformation?.date || r?.startTime || r?.date || null
+            const isWithdrawn = (r) => !!(r?.withdrawn || r?.wasWithdrawn)
+            const getRaceTypeText = (r) => String(
+                r?.race?.type || r?.type || r?.raceInformation?.raceType?.code || r?.raceInformation?.raceType?.name || ''
+            ).toLowerCase()
+            const isQualifierOrTrial = (r) => {
+                const t = getRaceTypeText(r)
+                return (
+                    t.includes('qual') || // qualifier
+                    t.includes('kval') || // Swedish
+                    t.includes('trial') ||
+                    t.includes('premie') ||
+                    t.includes('prov') // provlopp
+                )
+            }
+            const getTrackCode = (r) => r?.track?.code || r?.trackCode || r?.raceInformation?.track?.code || ''
+            const getTrackNameFromR = (r) => r?.track?.name || r?.raceInformation?.track?.name || ''
+            const getPlacing = (r) => {
+                const p = parseInt(r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0, 10)
+                return (!Number.isNaN(p) && p > 0) ? String(p) : 'np'
+            }
+            const getRaceKey = (r) => String(
+                r?.raceInformation?.id || r?.race?.id || r?.raceId || r?.id || `${normalizeDate(r)}|${getTrackCode(r)}|${r?.distance?.sortValue ?? r?.distance ?? ''}`
+            )
+
+            const filtered = list
+              .filter(r => !isWithdrawn(r) && !isQualifierOrTrial(r))
+              .sort((a, b) => new Date(normalizeDate(b) || 0) - new Date(normalizeDate(a) || 0))
+
+            const seen = new Set()
+            const out = []
+            for (const r of filtered) {
+                const key = getRaceKey(r)
+                if (seen.has(key)) continue
+                seen.add(key)
+                const date = normalizeDate(r) ? new Date(normalizeDate(r)).toISOString().slice(0, 10) : '—'
+                const code = getTrackCode(r)
+                const nameFromCode = code ? getTrackName(code) : ''
+                const nameFromPayload = getTrackNameFromR(r)
+                const trackStr = nameFromCode || nameFromPayload || '—'
+                const placing = getPlacing(r)
+                out.push(`${date} • ${trackStr} • ${placing}`)
+                if (out.length >= 5) break
+            }
+            return out
         }
 
         const fetchDataAndUpdate = async (raceId) => {
@@ -870,7 +995,9 @@ export default {
                             ...h.driver,
                             id: driverId,
                             elo: driverElo,
-                        }
+                        },
+                        // our persisted last 5 results, pre-formatted
+                        recentResultsDisplay: buildRecentResultsDisplay(fullHorse)
                     }
                     return enriched
                 }))
@@ -891,6 +1018,17 @@ export default {
             await fetchDataAndUpdate(raceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            // Preload saved AI summaries for horses in this race
+            try {
+              const horses = currentRace.value?.horses || []
+              for (const h of horses) {
+                const saved = await fetchSavedHorseSummary(raceId, h.id)
+                if (saved.summary) aiSummary.value[h.id] = saved.summary
+                if (saved.meta) aiSummaryMeta.value[h.id] = saved.meta
+              }
+            } catch {}
+            // Preload saved past comments if ATG data missing/offline
+            await preloadSavedPastCommentsForRace()
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -898,9 +1036,21 @@ export default {
         watch(() => route.params.raceId, async (newRaceId) => {
             store.commit('raceHorses/clearRankedHorses')
             store.commit('raceHorses/clearCurrentRace')
+            aiSummary.value = {}
+            aiSummaryMeta.value = {}
+            savedPastComments.value = {}
             await fetchDataAndUpdate(newRaceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            try {
+              const horses = currentRace.value?.horses || []
+              for (const h of horses) {
+                const saved = await fetchSavedHorseSummary(newRaceId, h.id)
+                if (saved.summary) aiSummary.value[h.id] = saved.summary
+                if (saved.meta) aiSummaryMeta.value[h.id] = saved.meta
+              }
+            } catch {}
+            await preloadSavedPastCommentsForRace()
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -1234,6 +1384,12 @@ export default {
             maxAdvChips,
             getAdvantages,
             overflowTooltip,
+            aiSummaryMeta,
+            userId,
+            savedPastComments,
+            getUiPastComments,
+            preloadSavedPastCommentsForRace,
+            displayFavStartPos,
         }
     },
 }
