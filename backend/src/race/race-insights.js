@@ -238,8 +238,11 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   // --- Race guidance flags --- (overrides-aware)
   const WIDE_OPEN_MAX_TOP_PROB = toNum(overrides.wideOpenMaxTopProb, Number(process.env.AI_GUIDE_WIDE_OPEN_MAX_TOP_PROB || 0.22))
   const SPIK_MIN_TOP_PROB = toNum(overrides.spikMinTopProb, Number(process.env.AI_GUIDE_SPIK_MIN_TOP_PROB || 0.45))
+  // Additional calibration knobs (defaults keep current behavior)
+  const SPIK_MIN_GAP = toNum(overrides.spikMinGap, Number(process.env.AI_GUIDE_SPIK_MIN_GAP || 0)) // require topProb - p2 ≥ gap
+  const SPIK_MAX_A_COVERAGE = toNum(overrides.spikMaxACoverage, Number(process.env.AI_GUIDE_SPIK_MAX_A_COVERAGE || 1.0)) // disallow spik if A-coverage too high (field too top-heavy)
   const wideOpen = topProb <= WIDE_OPEN_MAX_TOP_PROB
-  const spikAllowed = topProb >= SPIK_MIN_TOP_PROB
+  const spikAllowed = (topProb >= SPIK_MIN_TOP_PROB) && ((topProb - p2) >= SPIK_MIN_GAP) && (aCoverage <= SPIK_MAX_A_COVERAGE)
 
   // --- Adaptive Highlights group --- (overrides-aware)
   const TOP_N_BASE = toNum(overrides.topNbase, Number(process.env.AI_TOP_N_BASE || 3))
@@ -312,6 +315,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       aCoverage,
       wideOpen,
       spikAllowed,
+        spikMinGap: SPIK_MIN_GAP,
+        spikMaxACoverage: SPIK_MAX_A_COVERAGE,
       topN: { base: TOP_N_BASE, max: TOP_N_MAX, chosen: highlightsN },
       zGapMax: ZGAP_MAX,
       formEloEpsTop: FORM_ELO_EPS_TOP,

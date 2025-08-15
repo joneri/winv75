@@ -48,6 +48,7 @@
                 <v-window v-model="activeTab">
                     <v-window-item value="0">
                     <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
+                            :custom-key-sort="customKeySort"
                             class="elevation-1">
                             <template #item.ai="{ item }">
                               <div class="ai-cell">
@@ -268,9 +269,26 @@ export default {
         }
         const tierColor = (tier) => tier === 'A' ? 'green' : tier === 'B' ? 'orange' : 'grey'
 
+        // Custom sort: AI column by A/B/C tier, then probability
+        const tierOrderMap = { A: 3, B: 2, C: 1 }
+        const customKeySort = computed(() => ({
+          // We store horse.id in each row's `ai` field and look up details from aiById
+          ai: (idA, idB) => {
+            const A = (aiById.value && aiById.value[idA]) || {}
+            const B = (aiById.value && aiById.value[idB]) || {}
+            const tA = tierOrderMap[A.tier] || 0
+            const tB = tierOrderMap[B.tier] || 0
+            if (tA !== tB) return tA - tB // ascending: C < B < A
+            const pA = Number(A.prob || 0)
+            const pB = Number(B.prob || 0)
+            if (pA !== pB) return pA - pB // ascending by prob
+            return 0
+          }
+        }))
+
         // Data-table headers used by the Start List
         const headers = [
-          { title: 'AI', key: 'ai', sortable: false, width: 84 },
+          { title: 'AI', key: 'ai', sortable: true, width: 84 },
           { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
           { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
           { title: 'Form Elo', key: 'formRating', align: 'end', width: 110 },
@@ -1105,6 +1123,8 @@ export default {
                     const recentCore = buildRecentResultsCore(fullHorse)
                     const enriched = {
                         ...h,
+                        // Provide a stable per-row key for AI sorting (looked up in customKeySort)
+                        ai: h.id,
                         stats,
                         statsFormatted: formatStats(stats),
                         score: scoreMap[h.id],
@@ -1475,6 +1495,7 @@ export default {
             formatPct,
             formatNum,
             tierColor,
+            customKeySort,
         }
     },
 }

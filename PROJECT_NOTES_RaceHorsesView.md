@@ -83,3 +83,22 @@ Investigative actions (workspace tooling)
 - Searched workspace for key identifiers (start parsing, shoe helpers, advantages, AI summary/insights, rankings) to locate implementations and contracts.
 - Read/validated key frontend/back-end files to confirm data flow (RaceHorsesView.vue, store, services; horse-ranking, race-insights, ai-horse-summary, race-routes).
 - Listed directories and searched by glob to map components/services and spot legacy/duplicate files.
+
+<!-- Additions 2025-08-15: AI sort + banner calibration -->
+
+Updates
+- Start List “AI” column is now sortable (tier A>B>C, then probability). Useful for sanity checking tiers vs. prob bars.
+- Banner calibration knobs added server-side to reduce false “spik möjlig”:
+  - AI_GUIDE_SPIK_MIN_GAP (default 0): require topProb - p2 ≥ gap.
+  - AI_GUIDE_SPIK_MAX_A_COVERAGE (default 1.0): disallow spik when A-coverage is too high.
+
+Why A/B/C can differ from the Form Elo column
+- Tiering basis can be “composite” while the Form Elo column shows short‑horizon formRating.
+- Upgrades to A-tier may be applied via class rank and plus points (Skobyte, Favoritbana/spår, barfota) and handicap adjustments.
+- Probabilities are derived from composite via softmax; A-coverage and “spik” are tied to those probs and thresholds, not the raw Form Elo list.
+
+Operational tips
+- To align tiers more closely with Form Elo, set AI_RANK_TIER_BY=formElo and lower upgrade bonuses; or expose tierBy/tierReason in UI during QA.
+- Tune softmax and banner thresholds for field calibration:
+  - AI_TIER_SOFTMAX_BETA, AI_GUIDE_WIDE_OPEN_MAX_TOP_PROB, AI_GUIDE_SPIK_MIN_TOP_PROB,
+  - AI_GUIDE_SPIK_MIN_GAP, AI_GUIDE_SPIK_MAX_A_COVERAGE.
