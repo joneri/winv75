@@ -157,6 +157,8 @@ const HorseSchema = new mongoose.Schema({
     placementRate: { type: String, default: '' },
     points: { type: String, default: '' },
     rating: { type: Number, default: 0 },
+    // Parallel short-horizon Form Elo for quick reads
+    formRating: { type: Number, default: 0 },
     statistics: [StatisticSchema],
     results: [RaceResultSchema],
     // Persisted ATG past race comments; never deleted by reimports

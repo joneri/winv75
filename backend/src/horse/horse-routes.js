@@ -9,7 +9,7 @@ router.get('/ratings', async (req, res) => {
     try {
         const ids = req.query.ids ? req.query.ids.split(',').map(id => parseInt(id)) : undefined
         const ratings = await HorseRating.find(ids ? { horseId: { $in: ids } } : {}).lean()
-        res.json(ratings.map(r => ({ id: r.horseId, rating: r.rating })))
+        res.json(ratings.map(r => ({ id: r.horseId, rating: r.rating, formRating: r.formRating ?? r.rating })))
     } catch (error) {
         console.error('Error fetching horse ratings:', error)
         res.status(500).send('Failed to fetch horse ratings.')

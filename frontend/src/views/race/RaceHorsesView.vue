@@ -18,6 +18,20 @@
                 <SpelformBadge v-for="g in raceGames" :key="`${g.game}-${g.leg}`" :game="g.game" :leg="g.leg" />
               </div>
             </div>
+            <!-- AI guidance banner -->
+            <div v-if="aiRankConfig" class="ai-banner" :class="{ wide: aiRankConfig.wideOpen, spik: aiRankConfig.spikAllowed }">
+              <div class="ai-banner-text">
+                <template v-if="aiRankConfig.wideOpen">Vidöppet lopp – flera segerbud.</template>
+                <template v-else-if="aiRankConfig.spikAllowed">Favorit-tungt – spik möjlig.</template>
+                <template v-else>Jämnt lopp.</template>
+              </div>
+              <div class="ai-coverage" v-if="aiRankConfig && typeof aiRankConfig.aCoverage === 'number'">
+                A-täckning: <strong>{{ Math.round(aiRankConfig.aCoverage * 100) }}%</strong>
+                <div class="coverage-bar">
+                  <div class="coverage-fill" :style="{ width: Math.round(aiRankConfig.aCoverage * 100) + '%' }"></div>
+                </div>
+              </div>
+            </div>
           </v-col>
         </v-row>
         <v-row v-if="raceList.length" class="race-navigation">
@@ -35,9 +49,37 @@
                     <v-window-item value="0">
                     <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
                             class="elevation-1">
+                            <template #item.ai="{ item }">
+                              <div class="ai-cell">
+                                <template v-if="aiById[item.raw.id]">
+                                  <v-tooltip location="top">
+                                    <template #activator="{ props }">
+                                      <v-chip
+                                        v-bind="props"
+                                        size="x-small"
+                                        :color="tierColor(aiById[item.raw.id].tier)"
+                                        :class="['mr-1', 'tier-chip', { highlight: aiById[item.raw.id].highlight }]"
+                                        label
+                                      >
+                                        {{ aiById[item.raw.id].tier || '-' }}
+                                      </v-chip>
+                                    </template>
+                                    <div class="tier-tip">
+                                      <div><strong>Varför i {{ aiById[item.raw.id].tier || '-' }}</strong></div>
+                                      <div>p: {{ formatPct(aiById[item.raw.id].prob) }}, z: {{ formatNum(aiById[item.raw.id].zScore) }}, comp: {{ formatNum(aiById[item.raw.id].compositeScore) }}</div>
+                                      <div v-if="aiById[item.raw.id].tierReason">{{ aiById[item.raw.id].tierReason }}</div>
+                                    </div>
+                                  </v-tooltip>
+                                  <div class="prob-bar" :class="{ a: aiById[item.raw.id].tier === 'A', hl: aiById[item.raw.id].highlight }">
+                                    <div class="prob-fill" :style="{ width: Math.round((aiById[item.raw.id].prob||0)*100) + '%' }"></div>
+                                  </div>
+                                </template>
+                                <template v-else>—</template>
+                              </div>
+                            </template>
                             <template #item.programNumber="{ item }">
                               <div class="start-cell">
-                                <div class="start-line1">#{{ item.raw.programNumber }}</div>
+                                <div class="start-line1">#{{ item.raw.programNumber }} <span v-if="aiById[item.raw.id]?.highlight" class="hl-star" title="Highlight">★</span></div>
                                 <div class="start-line2">
                                   <template v-if="raceStartMethod === 'Autostart'">
                                     <span>
@@ -87,11 +129,11 @@
                                       <div
                                         v-for="(line, idx) in buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore)"
                                         :key="idx"
-                                        class="text-caption"
+                                        class="text-caption past-line"
                                       >
                                         {{ line }}
                                       </div>
-                                      <div v-if="!buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore).length" class="text-caption">
+                                      <div v-if="!buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore).length" class="text-caption past-line">
                                         Inga tidigare starter tillgängliga
                                       </div>
                                     </div>
@@ -121,6 +163,9 @@
                                       </div>
                                     </div>
                                 </div>
+                            </template>
+                            <template v-slot:item.formRating="{ item }">
+                                {{ formatElo(item.raw.formRating ?? item.columns.formRating) }}
                             </template>
                             <template v-slot:item.driverElo="{ item }">
                                 {{ item.raw.driver?.name || '—' }} – {{ formatElo(item.columns.driverElo) }}
@@ -176,7 +221,8 @@ import {
     fetchRaceFromRaceId,
     fetchHorseScores,
     fetchDriverRatings,
-    triggerRatingsUpdate
+    triggerRatingsUpdate,
+    fetchRaceAiList
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
@@ -199,6 +245,50 @@ export default {
         const userId = ref('anon')
         // Saved ATG past comments fallback (from backend persistence)
         const savedPastComments = ref({})
+
+        // Per-race AI insights state
+        const aiInsights = ref(null)
+        const aiById = computed(() => {
+          const map = {}
+          const list = aiInsights.value?.ranking || []
+          for (const h of list) map[h.id] = h
+          return map
+        })
+        const aiRankConfig = computed(() => aiInsights.value?.rankConfig || null)
+
+        const formatPct = (p) => {
+          const n = Number(p)
+          if (!isFinite(n)) return '—'
+          return `${Math.round(n * 100)}%`
+        }
+        const formatNum = (v) => {
+          const n = Number(v)
+          if (!isFinite(n)) return '—'
+          return (Math.abs(n) >= 10 ? n.toFixed(1) : n.toFixed(2))
+        }
+        const tierColor = (tier) => tier === 'A' ? 'green' : tier === 'B' ? 'orange' : 'grey'
+
+        // Data-table headers used by the Start List
+        const headers = [
+          { title: 'AI', key: 'ai', sortable: false, width: 84 },
+          { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
+          { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
+          { title: 'Form Elo', key: 'formRating', align: 'end', width: 110 },
+          { title: 'Kusk', key: 'driverElo', align: 'end', width: 110 },
+          { title: 'Stats', key: 'stats', sortable: false, width: 180 },
+          { title: 'Fördelar', key: 'advantages', sortable: false, width: 220 },
+          { title: 'Skor', key: 'shoeOption', sortable: false, width: 110 },
+        ]
+
+        const fetchAi = async () => {
+          try {
+            const raceId = route.params.raceId
+            if (!raceId) return
+            aiInsights.value = await fetchRaceAiList(raceId)
+          } catch (e) {
+            console.warn('Failed to fetch AI insights', e)
+          }
+        }
 
         // helper: preload saved past comments when ATG extended missing
         const preloadSavedPastCommentsForRace = async () => {
@@ -231,7 +321,7 @@ export default {
             const pastRaceComments = pastRaceCommentsArr
               .filter(c => c.comment && c.date)
               .map(c => `${c.date}: ${c.comment}`)
-              .join(' ')
+              .join('\n')
 
             const fieldElos = (currentRace.value?.horses || []).map(h => Number(h.eloRating || h.rating || 0)).filter(n => n>0)
             const avgElo = fieldElos.length ? Math.round(fieldElos.reduce((a,b)=>a+b,0)/fieldElos.length) : null
@@ -257,7 +347,9 @@ export default {
               fieldElo: { avg: avgElo, median: medianElo, percentile },
               hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
               openStretchLanes: trackMeta.value?.openStretchLanes || (trackMeta.value?.hasOpenStretch ? 1 : 0),
-              trackLengthMeters: trackMeta.value?.trackLengthMeters ?? trackMeta.value?.trackLength ?? null
+              trackLengthMeters: trackMeta.value?.trackLengthMeters ?? trackMeta.value?.trackLength ?? null,
+              trackFavouriteStartingPosition: trackMeta.value?.favouriteStartingPosition ?? null,
+              recentResultsCore: horse.recentResultsCore ?? []
             }
 
             const summary = await fetchHorseSummary(ctx, currentRace.value.raceId, horse.id, userId.value)
@@ -678,6 +770,8 @@ export default {
             const getTrackNameFromR = (r) => r?.track?.name || r?.raceInformation?.track?.name || ''
             const getPlacing = (r) => {
                 const p = parseInt(r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0, 10)
+                // Treat 989 (pending) and 99 (no placing) as np
+                if (p === 989 || p === 99) return 'np'
                 return (!Number.isNaN(p) && p > 0) ? String(p) : 'np'
             }
             const getRaceKey = (r) => String(
@@ -685,7 +779,13 @@ export default {
             )
 
             const filtered = list
-              .filter(r => !isWithdrawn(r) && !isQualifierOrTrial(r))
+              .filter(r => {
+                if (isWithdrawn(r) || isQualifierOrTrial(r)) return false
+                const p = parseInt(r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0, 10)
+                // drop placement 989 from core selection
+                if (p === 989) return false
+                return true
+              })
               .sort((a, b) => new Date(normalizeDate(b) || 0) - new Date(normalizeDate(a) || 0))
 
             const seen = new Set()
@@ -749,9 +849,11 @@ export default {
                 const ratingMap = {}
                 const numberOfStartsMap = {}
                 const driverRatingMap = {}
+                const formRatingMap = {}
                 scores.forEach(r => {
                     scoreMap[r.id] = r.score
                     ratingMap[r.id] = r.rating
+                    formRatingMap[r.id] = r.formRating
                     numberOfStartsMap[r.id] = parseInt(r.statistics?.[0]?.numberOfStarts) || 0
                 })
                 driverRatings.forEach(d => {
@@ -808,29 +910,41 @@ export default {
                         return null
                     }
 
-                    results.forEach((r, idx) => {
+                    let formCount = 0
+                    results.forEach((r) => {
                         if (r.withdrawn) return
-                        totalStarts++
 
                         // Travsport stores placing under `placement.sortValue`
                         // while other data sources might expose `place`.
-                        const placement = parseInt(
-                            r?.placement?.sortValue ?? r?.place ?? 0,
+                        const placementRaw = parseInt(
+                            r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0,
                             10
                         )
-                        if (!Number.isNaN(placement) && placement > 0) {
-                            if (placement === 1) wins++
-                            else if (placement === 2) seconds++
-                            else if (placement === 3) thirds++
+                        // Normalize invalids: 989 (no official result), 99 (no placing), 999 (scratched)
+                        const isScratch = placementRaw >= 999
+                        if (isScratch) return
 
-                            sumPlacings += placement
+                        const isInvalidPlacing = placementRaw === 989 || placementRaw >= 99
+                        const isValidPlacing = Number.isFinite(placementRaw) && placementRaw > 0 && placementRaw < 99
+
+                        // Count starts except scratches
+                        totalStarts++
+
+                        if (isValidPlacing) {
+                            if (placementRaw === 1) wins++
+                            else if (placementRaw === 2) seconds++
+                            else if (placementRaw === 3) thirds++
+
+                            sumPlacings += placementRaw
                             racesWithPlace++
                         }
 
-                        if (idx < 5) {
-                            if (placement === 1) formScore += 3
-                            else if (placement === 2) formScore += 2
-                            else if (placement === 3) formScore += 1
+                        // Count form on first 5 valid recent starts (exclude 99/989/999)
+                        if (isValidPlacing && formCount < 5) {
+                            if (placementRaw === 1) formScore += 3
+                            else if (placementRaw === 2) formScore += 2
+                            else if (placementRaw === 3) formScore += 1
+                            formCount++
                         }
 
                         const driverObj = r?.driver || {}
@@ -855,9 +969,9 @@ export default {
                             }
                             const t = trackStats[track]
                             t.starts++
-                            if (placement === 1) t.wins++
-                            if (!Number.isNaN(placement) && placement > 0) {
-                                t.sumPlacings += placement
+                            if (placementRaw === 1) t.wins++
+                            if (isValidPlacing) {
+                                t.sumPlacings += placementRaw
                                 t.placements++
                             }
                         }
@@ -869,9 +983,9 @@ export default {
                         if (bucket) {
                             const b = distanceStats[bucket]
                             b.starts++
-                            if (placement === 1) b.wins++
-                            if (!Number.isNaN(placement) && placement > 0) {
-                                b.sumPlacings += placement
+                            if (placementRaw === 1) b.wins++
+                            if (isValidPlacing) {
+                                b.sumPlacings += placementRaw
                                 b.placements++
                             }
                         }
@@ -880,10 +994,10 @@ export default {
                         if (method && methodStats[method]) {
                             const m = methodStats[method]
                             m.starts++
-                            if (placement === 1) m.wins++
-                            if (placement >= 1 && placement <= 3) m.top3++
-                            if (!Number.isNaN(placement) && placement > 0) {
-                                m.sumPlacings += placement
+                            if (placementRaw === 1) m.wins++
+                            if (placementRaw >= 1 && placementRaw <= 3) m.top3++
+                            if (isValidPlacing) {
+                                m.sumPlacings += placementRaw
                                 m.placements++
                             }
                         }
@@ -1023,7 +1137,9 @@ export default {
                             elo: driverElo,
                         },
                         // core persisted last 5 results for unified display
-                        recentResultsCore: recentCore
+                        recentResultsCore: recentCore,
+                        // short-horizon Form Elo (90d decay)
+                        formRating: formRatingMap[h.id]
                     }
                     return enriched
                 }))
@@ -1044,6 +1160,7 @@ export default {
             await fetchDataAndUpdate(raceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            await fetchAi()
             // Preload saved AI summaries for horses in this race
             try {
               const horses = currentRace.value?.horses || []
@@ -1065,9 +1182,11 @@ export default {
             aiSummary.value = {}
             aiSummaryMeta.value = {}
             savedPastComments.value = {}
+            aiInsights.value = null
             await fetchDataAndUpdate(newRaceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            await fetchAi()
             try {
               const horses = currentRace.value?.horses || []
               for (const h of horses) {
@@ -1085,74 +1204,6 @@ export default {
             await fetchTrackInfo()
             await fetchSpelformer()
         })
-
-        watch(allHorsesUpdated, async (newValue) => {
-            if (newValue && typeof updatedHorses !== 'undefined') {
-                const raceId = route.params.raceId
-                if (raceId) {
-                    await store.dispatch('raceHorses/rankHorses', raceId)
-                }
-            }
-        }, { immediate: true })
-
-        watch(currentRace, async () => {
-            if (allHorsesUpdated.value) {
-                const raceId = route.params.raceId
-                await store.dispatch('raceHorses/rankHorses', raceId)
-            }
-        }, { immediate: true })
-
-        const headers = computed(() => {
-            const base = [
-                { title: 'Start', key: 'programNumber', width: '120px', sortable: true, sort: (a, b) => Number(a) - Number(b) },
-                { title: '# Starts', key: 'numberOfStarts', sortable: false },
-            ]
-            base.push({ title: 'Horse (Elo)', key: 'eloRating' })
-            base.push({ title: 'Driver (Elo)', key: 'driverElo' })
-            base.push({
-                title: 'Form stats',
-                key: 'stats',
-                sortable: true,
-                sort: (a, b) => {
-                    const getVal = v => v?.formIndex ?? v?.formScore
-                    const aVal = getVal(a)
-                    const bVal = getVal(b)
-                    if (aVal == null && bVal == null) return 0
-                    if (aVal == null) return 1
-                    if (bVal == null) return -1
-                    return aVal - bVal
-                },
-            })
-            base.push({ title: 'Fördelar', key: 'advantages', sortable: false })
-            base.push({ title: 'Skor', key: 'shoeOption', sortable: false })
-            base.push({ key: 'horseWithdrawn' })
-            return base
-        })
-
-        const rankedHeaders = computed(() => {
-            const base = [
-                { title: '', key: 'favoriteIndicator', sortable: false },
-                { title: '#', key: 'rank', width: '40px' },
-                { title: 'Programnummer', key: 'programNumber' },
-                { title: 'Driver Name', key: 'driver.name' },
-                { title: 'Name', key: 'name' },
-                { title: 'Sko', key: 'shoeOption', sortable: false },
-                { title: 'Elo Rating', key: 'rating' },
-                { title: 'Favorite Start Position', key: 'favoriteStartPosition' },
-                { title: 'Avg Top 3 Odds', key: 'avgTop3Odds' },
-                { title: 'Consistency Score', key: 'consistencyScore' },
-                { title: 'Favorite Start Method', key: 'favoriteStartMethod' },
-                { title: 'Favorite Track', key: 'favoriteTrack' },
-                { title: 'Horse Label', key: 'horseLabel' },
-                { title: 'Placements', key: 'placements' },
-                { title: 'Plus', key: 'plusPoints', sortable: false },
-            ]
-            if (showStartPositionColumn.value) {
-                base.splice(3, 0, { title: 'Startposition', key: 'startPosition' })
-            }
-            return base
-        })
-
         const trackNames = {
             'Ar': 'Arvika',
             'Ax': 'Axevalla',
@@ -1383,7 +1434,7 @@ export default {
             activeTab,
             getAtgCommentForHorse,
             getAtgPastRaceCommentsForHorse,
-            rankedHeaders,
+            // rankedHeaders, // removed unused export
             rankedHorses: rankedHorses, // keep original exposure
             rankedHorsesEnriched,
             raceStartMethodCode,
@@ -1417,6 +1468,13 @@ export default {
             preloadSavedPastCommentsForRace,
             displayFavStartPos,
             buildUnifiedPastDisplay,
+            // AI insights
+            aiInsights,
+            aiById,
+            aiRankConfig,
+            formatPct,
+            formatNum,
+            tierColor,
         }
     },
 }
@@ -1434,6 +1492,23 @@ export default {
 .race-header .meta, .race-header .meta2 { color: #6b7280; font-size: 0.95rem; }
 .race-header .games { display: flex; gap: 6px; }
 
+/* AI guidance banner */
+.ai-banner { margin: 8px 0 4px; padding: 8px 12px; border-radius: 8px; display:flex; align-items:center; justify-content: space-between; border:1px solid #e5e7eb; background: #f9fafb; color: #111827; }
+.ai-banner.wide { background: #fff7ed; border-color: #fdba74; color:#9a3412; }
+.ai-banner.spik { background: #ecfeff; border-color:#67e8f9; color:#155e75; }
+.ai-coverage { font-size: 0.85rem; }
+.coverage-bar { position: relative; height: 6px; width: 120px; background: #e5e7eb; border-radius: 999px; margin-top: 4px; }
+.coverage-fill { height: 100%; background: #10b981; border-radius: 999px; }
+
+/* AI cell: tier chip + probability bar */
+.ai-cell { display: grid; gap: 4px; align-items: center; }
+.tier-chip { min-width: 28px; justify-content: center; }
+.tier-chip.highlight { border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.1); color: #92400e; }
+.prob-bar { height: 6px; width: 76px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+.prob-bar.a { background: #d1fae5; }
+.prob-bar.hl { box-shadow: inset 0 0 0 1px #f59e0b, inset 0 0 10px rgba(245, 158, 11, 0.35); }
+.prob-fill { height: 100%; background: #60a5fa; }
+
 /* AI summary panel: compact, scrollable, theme-aware */
 .ai-summary-block {
   max-height: 140px;
@@ -1447,6 +1522,9 @@ export default {
   border-radius: 6px;
 }
 
+/* Past races readability */
+.past-line { color: #374151; }
+
 /* Prefer dark overrides (OS setting) */
 @media (prefers-color-scheme: dark) {
   .ai-summary-block {
@@ -1454,6 +1532,15 @@ export default {
     color: #e5e7eb;         /* light gray text */
     border-color: #222;     /* subtle dark border */
   }
+  .ai-banner { border-color: #374151; background: #0b0b0b; color: #d1d5db; }
+  .ai-banner.wide { background: #3b2518; color: #fdba74; border-color: #7c2d12; }
+  .ai-banner.spik { background: #082f35; color: #67e8f9; border-color: #164e63; }
+  .prob-bar { background: #374151; }
+  .prob-bar.a { background: #064e3b; }
+  .prob-bar.hl { box-shadow: inset 0 0 0 1px #f59e0b, inset 0 0 10px rgba(245, 158, 11, 0.45); }
+  .prob-fill { background: #60a5fa; }
+  .tier-chip.highlight { border-color: #fbbf24; background: rgba(251, 191, 36, 0.12); color: #fde68a; }
+  .past-line { color: #cbd5e1; }
 }
 
 /* Vuetify dark theme override (app-level) */
@@ -1483,6 +1570,9 @@ export default {
 .start-badge { font-size: 0.72rem; padding: 1px 6px; border-radius: 999px; border: 1px solid #e5e7eb; }
 .start-badge.longer { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
 .start-badge.shorter { background: #ecfeff; color: #155e75; border-color: #67e8f9; }
+
+/* Highlight star */
+.hl-star { color: #f59e0b; margin-left: 4px; }
 
 @media (prefers-color-scheme: dark) {
   .start-line2, .start-line3 { color: #9ca3af; }

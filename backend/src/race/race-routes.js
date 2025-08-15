@@ -6,6 +6,7 @@ import { buildRaceInsights } from './race-insights.js'
 import { generateHorseSummary } from '../ai-horse-summary.js'
 import Raceday from '../raceday/raceday-model.js'
 import Horse from '../horse/horse-model.js'
+import HorseRating from '../horse/horse-rating-model.js'
 
 const router = express.Router()
 
@@ -34,18 +35,40 @@ router.post('/horse-summary', async (req, res) => {
     const startMethod = (race.propTexts || []).some(pt => /Autostart/i.test(pt.text || '')) ? 'Autostart' : 'Voltstart'
     const startPosition = me.actualStartPosition ?? me.startPosition ?? null
 
-    // Past comments: read once from our persisted horses collection (never delete duplicates)
+    // Past comments: prefer non-empty payload.pastRaceComments; fallback to persisted ATG comments from DB
     const horseDoc = await Horse.findOne({ id: Number(horseId) }, { atgPastComments: 1, results: 1, name: 1 }).lean()
-    const pastComments = (horseDoc?.atgPastComments || [])
+    const requestComments = (payload.pastRaceComments || '').trim()
+    const dbComments = (horseDoc?.atgPastComments || [])
       .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
       .slice(0, 6)
       .map(c => `${c.date ? new Date(c.date).toISOString().slice(0,10) : ''}: ${c.comment}`)
-      .join(' ')
+      .join('\n')
+    const pastComments = requestComments.length ? requestComments : dbComments
+
+    // ELO extras: rank in field, delta to top, and implied win probability (Bradley-Terry approximation)
+    const withIds = (field || []).map(h => ({ id: String(h.id), rating: Number(h.rating || h.eloRating || 0) }))
+    const sortedDesc = [...withIds].sort((a, b) => b.rating - a.rating)
+    const horseRating = Number(me.rating || me.eloRating || 0)
+    const rank = sortedDesc.findIndex(h => h.id === String(horseId)) + 1 || 0
+    const topRating = sortedDesc[0]?.rating || 0
+    const deltaToTop = topRating - horseRating
+    const scores = withIds.map(h => Math.pow(10, (h.rating || 0) / 400))
+    const sumScores = scores.reduce((a, b) => a + b, 0) || 1
+    const horseScore = Math.pow(10, (horseRating || 0) / 400)
+    const impliedWinPct = Math.round((horseScore / sumScores) * 100)
 
     const promptInputs = {
       ...payload,
       conditions: payload.conditions || [],
-      pastRaceComments: pastComments
+      pastRaceComments: pastComments,
+      trackName: race.trackName || raceday.trackName || '',
+      fieldEloExtras: {
+        rank,
+        fieldSize: withIds.length,
+        topRating,
+        deltaToTop,
+        impliedWinPct
+      }
     }
     const summary = await generateHorseSummary(promptInputs)
     if (!summary || typeof summary !== 'string') {
@@ -71,6 +94,7 @@ router.post('/horse-summary', async (req, res) => {
             eloRating: h.rating || h.eloRating,
             driverElo: h.driver?.elo,
             fieldElo: { avg, median, percentile },
+            fieldEloExtras: { rank, fieldSize: withIds.length, topRating, deltaToTop, impliedWinPct },
             hasOpenStretch: !!payload.hasOpenStretch,
             openStretchLanes: payload.openStretchLanes || (payload.hasOpenStretch ? 1 : 0),
             trackLengthMeters: payload.trackLengthMeters || race.trackLength || undefined,
@@ -109,6 +133,21 @@ router.get('/:id', validateNumericParam('id'), async (req, res) => {
         const raceId = req.params.id;
         const race = await raceService.getRaceById(raceId)
         if (race) {
+            try {
+                const horseIds = (race.horses || []).map(h => h.id)
+                if (horseIds.length) {
+                    const ratingDocs = await HorseRating.find({ horseId: { $in: horseIds } }).lean()
+                    const map = new Map(ratingDocs.map(r => [r.horseId, r]))
+                    race.horses = (race.horses || []).map(h => ({
+                        ...h,
+                        rating: map.get(h.id)?.rating ?? h.rating,
+                        eloRating: map.get(h.id)?.rating ?? h.eloRating,
+                        formRating: map.get(h.id)?.formRating ?? map.get(h.id)?.rating ?? h.formRating
+                    }))
+                }
+            } catch (e) {
+                console.warn('Failed enriching race horses with ratings', e)
+            }
             res.send(race)
         } else {
             res.status(404).send('Race not found.')

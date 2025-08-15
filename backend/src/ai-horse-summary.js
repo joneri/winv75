@@ -31,7 +31,7 @@ const applyLexicon = (text = '') => {
 // Filtrera bort ledande placeringar (etta, tvåa, trea, ...)
 const stripLeadingPlacements = (text = '') => {
   const placements = ['etta', 'tvåa', 'trea', 'fyra', 'femma', 'sexa', 'sjua', 'åtta', 'nia', 'tia']
-  const pattern = new RegExp(`^(${placements.join('|')})[,\s]`, 'i')
+  const pattern = new RegExp(`^(${placements.join('|')})[,\\s]`, 'i')
   return text
     .split('\n')
     .map(line => line.replace(pattern, '').trim())
@@ -65,61 +65,202 @@ export async function generateHorseSummary(horseData) {
     fieldElo,
     hasOpenStretch,
     openStretchLanes,
-    trackLengthMeters
+    trackLengthMeters,
+    // Additional optional context for richer analysis
+    programNumber,
+    trackFavouriteStartingPosition,
+    recentResultsCore,
+    trackName,
+    // New optional ELO extras
+    fieldEloExtras
   } = horseData
 
-console.log(horseData)
-
-  // 1. Ta bort ledande placeringar
-  const cleanedComments = stripLeadingPlacements(pastRaceComments)
-  // 2. Applicera lexikon (inkl. specialhantering för gdk)
-  const interpretedComments = applyLexicon(cleanedComments)
   const conditionsStr = Array.isArray(conditions) ? conditions.join(', ') : (conditions || '')
 
-  // Isolera Form-värdet (Form: X)
-  let formValue = null
-  if (typeof formStats === 'string') {
-    const match = formStats.match(/Form:\s*(\d+)/i)
-    if (match) {
-      formValue = parseInt(match[1], 10)
+  // Parse ATG comments from string: lines like YYYY-MM-DD: comment
+  const atgEntriesRaw = (typeof pastRaceComments === 'string' ? pastRaceComments.split(/\n+/) : [])
+    .map(line => {
+      const m = line.match(/^(\d{4}-\d{2}-\d{2}):\s*(.+)$/)
+      if (!m) return null
+      return { date: m[1], comment: m[2] }
+    })
+    .filter(Boolean)
+
+  // Filter out qualification races (Kvallopp) entirely from the prompt
+  const isKvalComment = (txt = '') => /kval\s*-?lopp/i.test(txt)
+  const kvalDates = new Set(atgEntriesRaw.filter(e => isKvalComment(e.comment)).map(e => e.date))
+  const atgEntries = atgEntriesRaw.filter(e => !isKvalComment(e.comment))
+
+  const hasAtgComments = atgEntries.length > 0
+  const atgPool = atgEntries.map(e => ({ ...e, time: Date.parse(e.date) || 0 }))
+
+  // Build unified lines: "YYYY-MM-DD, Track, Placing[, Comment]"
+  const mapPlacing = (p) => {
+    if (p === '99' || p === 99 || p === '989' || p === 989 || p === '990' || p === 990) return 'np'
+    return String(p)
+  }
+
+  const MAX_DAYS_DIFF = 2 // tolerate small date mismatches
+  const dayMs = 24 * 60 * 60 * 1000
+  let unifiedLines = []
+  let attachedCount = 0
+  if (Array.isArray(recentResultsCore) && recentResultsCore.length) {
+    unifiedLines = recentResultsCore.slice(0, 5).map(e => {
+      const placing = mapPlacing(e.placing)
+      const eTime = Date.parse(e.date) || 0
+      // exact date first
+      let idx = atgPool.findIndex(x => x.date === e.date)
+      if (idx === -1 && eTime) {
+        // nearest within window
+        let bestIdx = -1
+        let bestDiff = Infinity
+        for (let i = 0; i < atgPool.length; i++) {
+          const diff = Math.abs((atgPool[i].time || 0) - eTime)
+          if (diff <= MAX_DAYS_DIFF * dayMs && diff < bestDiff) {
+            bestDiff = diff
+            bestIdx = i
+          }
+        }
+        idx = bestIdx
+      }
+      const rawComment = idx !== -1 ? (atgPool.splice(idx, 1)[0].comment || '') : ''
+      const cleanedComment = rawComment ? stripLeadingPlacements(rawComment) : ''
+      if (cleanedComment) attachedCount++
+      return `${e.date}, ${e.track}, ${placing}${cleanedComment ? `, ${cleanedComment}` : ''}`
+    })
+  } else if (hasAtgComments) {
+    // Fallback: only ATG comments by date
+    unifiedLines = atgEntries.slice(0, 5).map(e => {
+      const cleanedComment = e.comment ? stripLeadingPlacements(e.comment) : ''
+      if (cleanedComment) attachedCount++
+      return `${e.date}, ${cleanedComment}`
+    })
+  } else {
+    unifiedLines = []
+  }
+
+  // Remove any lines that correspond to Kvallopp dates (do not include them at all)
+  if (kvalDates.size) {
+    unifiedLines = unifiedLines.filter(line => {
+      const m = line.match(/^(\d{4}-\d{2}-\d{2})/)
+      return !(m && kvalDates.has(m[1]))
+    })
+  }
+
+  // If we failed to attach any ATG comment text but such comments exist, append a short block so they are visible
+  if (attachedCount === 0 && hasAtgComments) {
+    const extra = atgEntries.slice(0, Math.max(0, 5 - unifiedLines.length)).map(e => `${e.date}, ${stripLeadingPlacements(e.comment || '')}`)
+    if (extra.length) {
+      unifiedLines.push('Kommentarer:')
+      unifiedLines.push(...extra)
     }
   }
 
-  // Build a compact context line about start/distance/ELO-in-field
-  const parts = []
-  if (startMethod) {
-    const sp = startPosition ? (startMethod === 'Autostart' ? `Spår ${startPosition}` : `Startpos ${startPosition}`) : 'Spår oklart'
-    parts.push(`Start: ${startMethod}${startPosition ? `, ${sp}` : ''}`)
+  // Apply lexicon to the final unified text
+  const interpretedComments = applyLexicon(unifiedLines.join('\n'))
+  // Flatten comments to one line with separators
+  const interpretedCommentsOneLine = interpretedComments.replace(/\s*\n+\s*/g, ' | ').trim()
+
+  // Heuristik: stark avslutning/spurt
+  const strongCloseKeywords = [
+    'bra avslutning', 'rejäl spurt', 'stark spurt', 'fullföljde bra', 'vass spurt', 'avslutade vasst', 'spurtade'
+  ]
+  const isStrongCloser = (() => {
+    const txt = interpretedComments.toLowerCase()
+    return strongCloseKeywords.some(k => txt.includes(k))
+  })()
+
+  // Ny kontext: skriv hela meningar istället för pipe-separerad rad
+  const ctxSentences = []
+  // Startmetod och startposition
+  if (startMethod || (typeof startPosition === 'number' && startPosition > 0)) {
+    let s = `Dagens lopp startas med: ${startMethod || 'okänd startmetod'}`
+    if (typeof startPosition === 'number' && startPosition > 0) {
+      s += ` och ${horseName} har startposition ${startPosition}.`
+    } else {
+      s += '.'
+    }
+    ctxSentences.push(s)
   }
+  // Distans med tillägg/försprång
   if (actualDistance || baseDistance) {
     const dist = actualDistance || baseDistance
     let badge = ''
     if (actualDistance && baseDistance && actualDistance !== baseDistance) {
       const diff = actualDistance - baseDistance
-      badge = diff > 0 ? ` (Handicap +${diff} m)` : ` (Försprång ${Math.abs(diff)} m)`
+      badge = diff > 0 ? ` (Tillägg +${diff} m)` : ` (Försprång ${Math.abs(diff)} m)`
     }
-    parts.push(`Distans: ${dist} m${badge}`)
+    ctxSentences.push(`Distansen för dagen är ${dist} m${badge}.`)
   }
-  if (fieldElo && (fieldElo.avg || fieldElo.median || fieldElo.percentile != null)) {
+  // ELO i fält (snitt/median)
+  if (fieldElo && (fieldElo.avg || fieldElo.median)) {
     const avgStr = fieldElo.avg ? Math.round(fieldElo.avg) : null
     const medStr = fieldElo.median ? Math.round(fieldElo.median) : null
-    const pctStr = (fieldElo.percentile != null) ? `${fieldElo.percentile}%` : null
-    const segs = [avgStr ? `snitt ${avgStr}` : null, medStr ? `median ${medStr}` : null, pctStr ? `percentil ${pctStr}` : null].filter(Boolean).join(', ')
-    if (segs) parts.push(`ELO i fält: ${segs}`)
+    if (avgStr && medStr) ctxSentences.push(`Alla hästar i loppet har ELO-snitt på ${avgStr} och en median på ${medStr}.`)
+    else if (avgStr) ctxSentences.push(`Alla hästar i loppet har ELO-snitt på ${avgStr}.`)
+    else if (medStr) ctxSentences.push(`Alla hästar i loppet har en ELO-median på ${medStr}.`)
   }
+  // Hästens ELO-läge: rank/delta/impl. vinst
+  if (fieldEloExtras && (fieldEloExtras.rank || fieldEloExtras.impliedWinPct != null || fieldEloExtras.deltaToTop != null)) {
+    const segs = []
+    if (fieldEloExtras.rank && fieldEloExtras.fieldSize) segs.push(`rankad ${fieldEloExtras.rank}/${fieldEloExtras.fieldSize}`)
+    if (fieldEloExtras.deltaToTop != null) segs.push(`Δ topp ${Math.round(fieldEloExtras.deltaToTop)}`)
+    if (fieldEloExtras.impliedWinPct != null) segs.push(`impl. vinst ${fieldEloExtras.impliedWinPct}%`)
+    if (segs.length) ctxSentences.push(`${horseName} är enligt ELO ${segs.join(', ')}.`)
+  }
+  // Bana, favoritspår, längd
+  const favSp = (typeof trackFavouriteStartingPosition === 'number' && trackFavouriteStartingPosition > 0) ? trackFavouriteStartingPosition : null
+  if (trackName && favSp && trackLengthMeters) {
+    ctxSentences.push(`Banan är ${trackName} vars favoritspår är ${favSp} och har en längd på ${trackLengthMeters} m.`)
+  } else if (trackName && favSp) {
+    ctxSentences.push(`Banan är ${trackName} vars favoritspår är ${favSp}.`)
+  } else if (trackName && trackLengthMeters) {
+    ctxSentences.push(`Banan är ${trackName} och har en längd på ${trackLengthMeters} m.`)
+  } else if (trackName) {
+    ctxSentences.push(`Banan är ${trackName}.`)
+  } else if (trackLengthMeters) {
+    ctxSentences.push(`Banans längd är ${trackLengthMeters} m.`)
+  }
+  // Open stretch
   if (hasOpenStretch) {
     const lanes = openStretchLanes || 1
-    parts.push(`Bana: open stretch (x${lanes})${trackLengthMeters ? `, längd ${trackLengthMeters} m` : ''}`)
-  } else if (trackLengthMeters) {
-    parts.push(`Bana: längd ${trackLengthMeters} m`)
+    ctxSentences.push(`Banan har open stretch (x${lanes})${isStrongCloser ? ', vilket kan gynna sen spurt.' : '.'}`)
   }
-  const contextLine = parts.length ? `\n\nKontext: ${parts.join(' | ')}` : ''
 
-const newprompt = `Det här är hästens namn: ${horseName}. Kalla bara hästen för ${horseName}. Lista 3–4 observationer direkt baserat på de senaste loppkommentarerna. En sammanfattande kommentar om alla loppen som ger en bild av ${horseName}s form baserat på loppen. Tolka inte mer än vad som står här. OBS! Kommentarerna är listade i datumordning – den första kommentaren är från det senaste loppet, den sista kommentaren gäller det äldsta loppet. Alla kommentarer gäller en och samma häst. ${interpretedComments} (Eventuella mönster i kommentarerna? Tänk på att galopper alltid ses som negativt. Flera galopper inom en kort period är ett tydligt svaghetstecken. Om galopperna sker vid press, i strid eller under anfall bör detta uppmärksammas. Om hästen visar fart men galopperar under tryck är detta en indikation på instabilitet. Kommentera bara galopp om den påverkar helhetsintrycket.) Sammanfatta ${horseName} och dess kapabiliteter baserat på ovan data och följande ytterligare information: ${horseName} har startat i ${numberOfStarts} lopp. Utav dessa blev det ${formStats}. Form anges mellan 0 och 10. 0 är mycket dålig form. 5 är neutral medelform. 10 är toppform. Form 3 betyder att hästen är klart ur form, och bör beskrivas som svag eller formsvacka. Eventuell favoritbana/favoritkusk/favoritspår (bara om denna information skickas in här: ${conditionsStr})  Denna hästs ELO rating: ${eloRating} (0–1800)  Kuskens namn: ${driverName} (och kuskens ELO ${driverElo}).${contextLine} Undvik uttryck som “hästens sträckning” – skriv “hästens karriär” eller “antal starter”. Undvik även vaga formuleringar som “relativt stabil prestation” – var tydlig, nyanserad och konkret.`
+  // Build single-line context
+  const contextLine = ctxSentences.length ? ctxSentences.join(' ') : ''
+  
+  // Fakta-lista: visa bara om vi inte lyckades koppla in några ATG-kommentarer (för att undvika dubblett)
+  const factsList = ((attachedCount === 0) && hasAtgComments && Array.isArray(recentResultsCore) && recentResultsCore.length)
+    ? recentResultsCore.filter(e => !kvalDates.has(e.date)).map(e => `${e.date}, ${e.track}, ${mapPlacing(e.placing)}`).join('\n')
+    : ''
 
-console.log('-----------------------------------')
-console.log(newprompt)
-console.log('-----------------------------------')
+  const newprompt = [
+    `Det här är hästens namn: ${horseName}. Kalla bara hästen för ${horseName}.`,
+    'Svara som en sammanhängande text men i denna ordning: först observationer, sedan förutsättningar och avsluta med en kort helhetsbedömning.',
+    'Observationer om tidigare lopp och prestationer:',
+    '• 3–4 punkter direkt från de senaste loppkommentarerna (nyast först).',
+    '• Om "gal" eller "galopp" nämns i senaste eller näst senaste loppet: nämn det tydligt.',
+    '• Placering "np" eller "99" = inte placerad – tolka inte som topp 3.',
+    interpretedCommentsOneLine,
+    'Förutsättningar i detta lopp (baserat på datan nedan):',
+    contextLine,
+    `Hästens ELO: ${eloRating}. Kusk: ${driverName} (ELO ${driverElo}).`,
+    `Ytterligare data: ${horseName} har startat i ${numberOfStarts} lopp. Utav dessa blev det ${formStats}.`,
+    'Form 0–10: 0 = mycket dålig, 5 = medel, 10 = toppform.',
+    `Förhållanden (om finns): ${conditionsStr}.`,
+    'Viktiga regler (följ strikt):',
+    '• Hitta aldrig på segrar om det inte uttryckligen står att hästen vann.',
+    '• Beskriv startläget kort, och ge extra plus om banans favoritspår matchas.',
+    '• Använd "Tillägg +X m" eller "Försprång X m" – inte ordet "handicap".',
+    '• Open stretch = extra innerspår; nämn bara om relevant för upplägg eller styrka.',
+    '• All information som inte finns i underlaget ska utelämnas.',
+    'Var konkret och nyanserad; undvik vaga formuleringar.'
+  ].filter(Boolean).join(' ')
 
-  return await callOllama(newprompt)
+  // Ensure absolutely no CR/LF characters and collapse extra spaces
+  const singleLinePrompt = newprompt.replace(/[\r\n]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+  console.log(`Generated prompt for horse ${horseName} (${horseData.id}): ${singleLinePrompt}`)
+
+  return await callOllama(singleLinePrompt)
 }

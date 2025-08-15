@@ -19,12 +19,13 @@ const headers = [
   { title: 'Horse ID', key: 'id' },
   { title: 'Name', key: 'name' },
   { title: 'Elo Rating', key: 'rating' },
+  { title: 'Form Elo', key: 'formRating' },
   { title: 'Score', key: 'score' }
 ]
 
 const load = async () => {
   const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/scores`)
-  items.value = res.data.map(h => ({ id: h.id, name: h.name, rating: h.rating, score: h.score }))
+  items.value = res.data.map(h => ({ id: h.id, name: h.name, rating: h.rating, formRating: h.formRating ?? h.rating, score: h.score }))
 }
 
 const refresh = async () => {

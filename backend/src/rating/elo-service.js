@@ -21,6 +21,7 @@ const updateRatingsForRace = async (raceId, raceData) => {
   // Fetch existing ratings
   const existing = await HorseRating.find({ horseId: { $in: horseIds } })
   const ratings = new Map(existing.map(r => [String(r.horseId), { rating: r.rating, numberOfRaces: r.numberOfRaces }]))
+  const formRatings = new Map(existing.map(r => [String(r.horseId), { rating: r.formRating ?? r.rating, numberOfRaces: r.formNumberOfRaces ?? r.numberOfRaces }]))
 
   // Seed any missing horses from ST points
   const missingIds = horseIds.filter(id => !ratings.has(String(id)))
@@ -29,6 +30,7 @@ const updateRatingsForRace = async (raceId, raceData) => {
     for (const h of horseDocs) {
       const seed = seedFromHorseDoc(h)
       ratings.set(String(h.id), { rating: seed, numberOfRaces: 0, seedRating: seed })
+      formRatings.set(String(h.id), { rating: seed, numberOfRaces: 0, seedRating: seed })
     }
   }
 
@@ -47,18 +49,26 @@ const updateRatingsForRace = async (raceId, raceData) => {
 
   // Snapshot old ratings for history
   const before = new Map()
+  const formBefore = new Map()
   for (const id of horseIds) {
     const key = String(id)
     const entry = ratings.get(key) || { rating: DEFAULT_RATING, numberOfRaces: 0 }
     before.set(key, entry.rating)
     // Ensure map has an entry for all horses
     if (!ratings.has(key)) ratings.set(key, entry)
+    const fEntry = formRatings.get(key) || { rating: DEFAULT_RATING, numberOfRaces: 0 }
+    formBefore.set(key, fEntry.rating)
+    if (!formRatings.has(key)) formRatings.set(key, fEntry)
   }
 
   // Run Elo update
   const k = process.env.ELO_K ? Number(process.env.ELO_K) : DEFAULT_K
   const decayDays = process.env.RATING_DECAY_DAYS ? Number(process.env.RATING_DECAY_DAYS) : DEFAULT_DECAY_DAYS
+  const formDecayDays = process.env.FORM_RATING_DECAY_DAYS ? Number(process.env.FORM_RATING_DECAY_DAYS) : 90
+  // Classic Elo
   processRace(placements, ratings, { k, raceDate, decayDays, classFactor, kClassMultiplier: K_CLASS_MULTIPLIER })
+  // Form Elo (short horizon)
+  processRace(placements, formRatings, { k, raceDate, decayDays: formDecayDays, classFactor, kClassMultiplier: K_CLASS_MULTIPLIER })
 
   // Persist ratings and history
   const now = new Date()
@@ -67,13 +77,18 @@ const updateRatingsForRace = async (raceId, raceData) => {
   for (const id of horseIds) {
     const key = String(id)
     const info = ratings.get(key)
+    const fInfo = formRatings.get(key)
     const oldRating = before.get(key)
+    const oldForm = formBefore.get(key)
     bulk.find({ horseId: Number(id) }).upsert().updateOne({
       $set: {
         rating: Math.round(info.rating),
         numberOfRaces: info.numberOfRaces,
         lastUpdated: now,
-        ...(info.seedRating ? { seedRating: info.seedRating } : {})
+        ...(info.seedRating ? { seedRating: info.seedRating } : {}),
+        formRating: Math.round(fInfo.rating),
+        formNumberOfRaces: fInfo.numberOfRaces,
+        formLastUpdated: now
       }
     })
     history.push({
@@ -83,12 +98,24 @@ const updateRatingsForRace = async (raceId, raceData) => {
       oldRating,
       newRating: Math.round(info.rating)
     })
+    history.push({
+      raceId: Number(raceId),
+      timestamp: now,
+      horseId: Number(id),
+      oldRating: oldForm,
+      newRating: Math.round(fInfo.rating),
+      ratingType: 'form'
+    })
   }
   if (bulk.length > 0) await bulk.execute()
   if (history.length) await RatingHistory.insertMany(history)
 
   // Return updated current ratings for requested horses
-  const out = horseIds.map(id => ({ id, rating: Math.round(ratings.get(String(id)).rating) }))
+  const out = horseIds.map(id => ({
+    id,
+    rating: Math.round(ratings.get(String(id)).rating),
+    formRating: Math.round(formRatings.get(String(id)).rating)
+  }))
   return out
 }
 

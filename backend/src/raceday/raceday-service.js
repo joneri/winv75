@@ -273,7 +273,7 @@ const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
 }
 
 // Return AI list for a raceday, using cache if fresh; rebuild and persist if stale/missing
-const getRacedayAiList = async (racedayId, { force = false } = {}) => {
+const getRacedayAiList = async (racedayId, { force = false, overrides = null } = {}) => {
   const ttlMinutes = Number(process.env.AI_RACEDAY_CACHE_TTL_MINUTES || 120)
   const now = Date.now()
 
@@ -305,7 +305,7 @@ const getRacedayAiList = async (racedayId, { force = false } = {}) => {
   const raceIds = (raceday.raceList || []).map(r => r.raceId)
   const races = []
   for (const rid of raceIds) {
-    const insights = await buildRaceInsights(rid)
+    const insights = await buildRaceInsights(rid, overrides || undefined)
     if (insights) {
       races.push({ ...insights, games: gamesMap[rid] || [] })
     }

@@ -90,6 +90,8 @@ const getHorseData = async (horseId) => {
         obj.score = calculateHorseScore(obj)
         const ratingDoc = await HorseRating.findOne({ horseId })
         obj.rating = ratingDoc ? ratingDoc.rating : obj.rating
+        // expose formRating for fast reads as well
+        obj.formRating = ratingDoc ? (ratingDoc.formRating ?? obj.formRating) : obj.formRating
         return obj
     } catch (error) {
         console.error(`Error retrieving horse ${horseId}:`, error.message)
@@ -102,7 +104,8 @@ const getHorseRankings = async (raceId) => {
         const ranked = await horseRanking.aggregateHorses(raceId)
         const ratingDocs = await HorseRating.find({ horseId: { $in: ranked.map(r => r.id) } })
         const ratingMap = new Map(ratingDocs.map(r => [r.horseId, r.rating]))
-        return ranked.map(r => ({ ...r, rating: ratingMap.get(r.id) || 0 }))
+        const formRatingMap = new Map(ratingDocs.map(r => [r.horseId, r.formRating ?? r.rating]))
+        return ranked.map(r => ({ ...r, rating: ratingMap.get(r.id) || 0, formRating: formRatingMap.get(r.id) || 0 }))
     } catch (error) {
         console.error(`Error retrieving horse rankings for raceId ${raceId}:`, error.message)
         throw new Error('Failed to retrieve horse rankings')
@@ -124,8 +127,10 @@ const getHorsesByScore = async ({ ids, minScore } = {}) => {
     })
     const ratingDocs = await HorseRating.find({ horseId: { $in: results.map(r => r.id) } })
     const ratingMap = new Map(ratingDocs.map(r => [r.horseId, r.rating]))
+    const formRatingMap = new Map(ratingDocs.map(r => [r.horseId, r.formRating ?? r.rating]))
     results.forEach(r => {
         r.rating = ratingMap.get(r.id) || r.rating
+        r.formRating = formRatingMap.get(r.id) || r.formRating
     })
     if (typeof minScore === 'number') {
         results = results.filter(h => h.score >= minScore)

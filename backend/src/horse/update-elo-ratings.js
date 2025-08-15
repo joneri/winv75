@@ -60,9 +60,11 @@ const updateRatings = async (
   const races = await Horse.aggregate(pipeline)
 
   const ratings = new Map()
+  const formRatings = new Map()
   const existing = await HorseRating.find().lean()
   for (const doc of existing) {
     ratings.set(String(doc.horseId), { rating: doc.rating, numberOfRaces: doc.numberOfRaces })
+    formRatings.set(String(doc.horseId), { rating: doc.formRating ?? doc.rating, numberOfRaces: doc.formNumberOfRaces ?? doc.numberOfRaces })
   }
   // Seed any horses missing ratings using ST points
   const allHorses = await Horse.find({}, { id: 1, points: 1 }).lean()
@@ -72,6 +74,7 @@ const updateRatings = async (
     if (!ratings.has(key)) {
       const seed = seedFromHorseDoc(h)
       ratings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed })
+      formRatings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed })
       seededCount++
     }
   }
@@ -99,6 +102,14 @@ const updateRatings = async (
       classFactor,
       kClassMultiplier: K_CLASS_MULTIPLIER
     })
+    const formDecayDays = process.env.FORM_RATING_DECAY_DAYS ? Number(process.env.FORM_RATING_DECAY_DAYS) : 90
+    processRace(placements, formRatings, {
+      k,
+      raceDate: race.raceDate,
+      decayDays: formDecayDays,
+      classFactor,
+      kClassMultiplier: K_CLASS_MULTIPLIER
+    })
     raceCount++
 
     const d = new Date(race.raceDate)
@@ -111,17 +122,21 @@ const updateRatings = async (
   const bulk = HorseRating.collection.initializeUnorderedBulkOp()
   const horseBulk = Horse.collection.initializeUnorderedBulkOp()
   for (const [horseId, info] of ratings.entries()) {
+    const fInfo = formRatings.get(horseId) || { rating: info.rating, numberOfRaces: info.numberOfRaces }
     bulk.find({ horseId: Number(horseId) }).upsert().updateOne({
       $set: {
         rating: info.rating,
         numberOfRaces: info.numberOfRaces,
         lastUpdated: new Date(),
-        ...(info.seedRating ? { seedRating: info.seedRating } : {})
+        ...(info.seedRating ? { seedRating: info.seedRating } : {}),
+        formRating: fInfo.rating,
+        formNumberOfRaces: fInfo.numberOfRaces,
+        formLastUpdated: new Date()
       }
     })
     if (syncHorses) {
       horseBulk.find({ id: Number(horseId) }).updateOne({
-        $set: { rating: info.rating }
+        $set: { rating: info.rating, formRating: fInfo.rating }
       })
     }
   }

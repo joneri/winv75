@@ -150,12 +150,51 @@ export default {
       for (const r of races) {
         const gameSuffix = formatGameSuffix(r.games)
         lines.push(`\nLopp ${r.race.raceNumber}${gameSuffix} (${r.race.distance} m)`)      
-        lines.push(`Top ELO: ${r.topByElo.map(h => `${h.programNumber} ${h.name} (${h.elo})`).join(', ')}`)
-        lines.push(`Form: ${r.bestForm.map(h => `${h.programNumber} ${h.name} (${h.formScore})`).join(', ')}`)
+        const topFormEloStr = r.topByElo.map(h => `${h.programNumber} ${h.name} (${h.elo})`).join(', ')
+        const bestFormStr = r.bestForm.map(h => `${h.programNumber} ${h.name} (${h.formScore})`).join(', ')
+        lines.push(`Top Form Elo: ${topFormEloStr}`)
+        lines.push(`Form: ${bestFormStr}`)
         if (r.plusPoints.length) {
-          lines.push(`Pluspoäng: ${r.plusPoints.map(h => `${h.programNumber} ${h.name} [${h.points.join(', ')}]`).join('; ')}`)
+          const plusStr = r.plusPoints.map(h => `${h.programNumber} ${h.name} [${h.points.join(', ')}]`).join('; ')
+          lines.push(`Pluspoäng: ${plusStr}`)
         }
+        // Tier summary line
+        const tiers = (r.ranking || []).reduce((acc, h) => { acc[h.tier] = (acc[h.tier]||0)+1; return acc }, {})
+        const tierStr = ['A','B','C'].filter(t=>tiers[t]).map(t=>`${t}:${tiers[t]}`).join(' ')
+        if (tierStr) lines.push(`Tiers: ${tierStr} (by ${r.rankConfig?.tierBy || 'formElo'})`)
         lines.push(`Ranking: ${r.ranking.map(h => `${h.programNumber} ${h.name}`).join(', ')}`)
+
+        // Pretty console logging (browser devtools)
+        try {
+          if (typeof window !== 'undefined' && window.console) {
+            const title = `[AI] ${data.raceday.trackName} — Lopp ${r.race.raceNumber} (${r.race.distance} m)`
+            console.groupCollapsed(title)
+            console.log('Top Form Elo:', topFormEloStr)
+            console.log('Form:', bestFormStr)
+            if (r.plusPoints.length) {
+              console.log('Pluspoäng:', r.plusPoints.map(h => `${h.programNumber} ${h.name} [${h.points.join(', ')}]`).join('; '))
+            }
+            if (r.rankConfig) {
+              console.log('Rank config:', r.rankConfig)
+            }
+            console.table((r.ranking || []).map(h => ({
+              '#': h.rank,
+              Tier: h.tier || '-',
+              Nr: h.programNumber,
+              Häst: h.name,
+              FormElo: h.rating,
+              EloTerm: Number(h.eloTerm?.toFixed ? h.eloTerm.toFixed(3) : h.eloTerm),
+              Form: h.formScore,
+              FormTerm: Number(h.formTerm?.toFixed ? h.formTerm.toFixed(3) : h.formTerm),
+              Bonus: Number(h.bonus?.toFixed ? h.bonus.toFixed(3) : h.bonus),
+              HandicapAdj: Number(h.handicapAdj?.toFixed ? h.handicapAdj.toFixed(3) : h.handicapAdj),
+              Dist: h.baseDistance ? `${h.baseDistance}${h.distanceDiff ? ` (${h.distanceDiff > 0 ? '+' : ''}${h.distanceDiff})` : ''}` : '',
+              Pluspoäng: (h.plusPoints || []).join(', '),
+              Composite: Number(h.compositeScore?.toFixed ? h.compositeScore.toFixed(3) : h.compositeScore)
+            })))
+            console.groupEnd()
+          }
+        } catch {}
       }
       return lines.join('\n')
     }
