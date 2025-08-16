@@ -2,6 +2,13 @@
 
 Purpose: concise, persistent note to resume work on RaceHorsesView and related race/raceday flows.
 
+Refactor 2025-08-16
+- RaceHorsesView now delegates header banner and navigation to `RaceHeader.vue` and `RaceNavigation.vue`.
+- Race/track meta and spelformer parsing moved to `useRaceMeta` composable.
+- Track name lookup extracted to `src/utils/track.js`.
+- Legacy `RaceInfo.vue` removed.
+- Data flow: RaceHorsesView (container) → composables/services → presentational components.
+
 Essential requirements (scope)
 - Start info parsing from propTexts → start method/code + handicap; dynamic columns via showStartPositionColumn.
 - Horse enrichment: stats/buckets, preferred start method, driver ELO, short-horizon form rating.

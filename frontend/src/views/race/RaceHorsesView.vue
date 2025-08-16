@@ -1,61 +1,23 @@
 <template>
     <v-container class="tabbed-view-container">
-        <v-row>
-            <v-col>
-                <button @click="navigateToRaceDay()">Go to Race Day</button>
-            </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="race-header">
-              <div class="titles">
-                <div class="title">Lopp {{ currentRace.raceNumber }}</div>
-                <div class="subtitle" v-if="racedayTrackName">{{ racedayTrackName }}</div>
-                <div class="meta">{{ raceMetaString }}</div>
-                <div class="meta2">{{ trackMetaString }}</div>
-              </div>
-              <div class="games" v-if="raceGames.length">
-                <SpelformBadge v-for="g in raceGames" :key="`${g.game}-${g.leg}`" :game="g.game" :leg="g.leg" />
-              </div>
-              <!-- Active AI preset badge -->
-              <div class="ai-preset" v-if="aiPresetKey">
-                <v-tooltip location="top">
-                  <template #activator="{ props }">
-                    <v-chip v-bind="props" size="x-small" variant="outlined" color="info">
-                      AI‑profil: {{ aiPresetLabel || aiPresetKey }}
-                    </v-chip>
-                  </template>
-                  <div>
-                    Denna profil styr AI‑tiering, sannolikheter och banner i denna vy.
-                    <div v-if="activeProfile && activeProfile.key !== aiPresetKey" class="mt-1 text-warning">
-                      Obs: Förhandsvisning/annat preset (inte samma som aktiv: {{ activeProfile.label }} ({{ activeProfile.key }}))
-                    </div>
-                  </div>
-                </v-tooltip>
-              </div>
-            </div>
-            <!-- AI guidance banner -->
-            <div v-if="aiRankConfig" class="ai-banner" :class="{ wide: aiRankConfig.wideOpen, spik: aiRankConfig.spikAllowed }">
-              <div class="ai-banner-text">
-                <template v-if="aiRankConfig.wideOpen">Vidöppet lopp – flera segerbud.</template>
-                <template v-else-if="aiRankConfig.spikAllowed">Favorit-tungt – spik möjlig.</template>
-                <template v-else>Jämnt lopp.</template>
-              </div>
-              <div class="ai-coverage" v-if="aiRankConfig && typeof aiRankConfig.aCoverage === 'number'">
-                A-täckning: <strong>{{ Math.round(aiRankConfig.aCoverage * 100) }}%</strong>
-                <div class="coverage-bar">
-                  <div class="coverage-fill" :style="{ width: Math.round(aiRankConfig.aCoverage * 100) + '%' }"></div>
-                </div>
-              </div>
-            </div>
-          </v-col>
-        </v-row>
-        <v-row v-if="raceList.length" class="race-navigation">
-            <v-col class="d-flex justify-space-between">
-                <v-btn variant="text" @click="goToRace(previousRaceId)" :disabled="!previousRaceId">⟵ Previous race</v-btn>
-                <v-btn variant="text" @click="goToRace(nextRaceId)" :disabled="!nextRaceId">Next race ⟶</v-btn>
-            </v-col>
-        </v-row>
+        <RaceHeader
+          :current-race="currentRace"
+          :raceday-track-name="racedayTrackName"
+          :race-meta-string="raceMetaString"
+          :track-meta-string="trackMetaString"
+          :race-games="raceGames"
+          :ai-preset-key="aiPresetKey"
+          :ai-preset-label="aiPresetLabel"
+          :active-profile="activeProfile"
+          :ai-rank-config="aiRankConfig"
+          @navigate-to-raceday="navigateToRaceDay"
+        />
+        <RaceNavigation
+          v-if="raceList.length"
+          :previous-race-id="previousRaceId"
+          :next-race-id="nextRaceId"
+          @navigate="goToRace"
+        />
         <v-row>
             <v-col>
                 <v-tabs v-model="activeTab">
@@ -233,6 +195,10 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import { useRaceMeta } from '@/composables/useRaceMeta.js'
+import { getTrackName, trackNames } from '@/utils/track'
+import RaceHeader from './components/RaceHeader.vue'
+import RaceNavigation from './components/RaceNavigation.vue'
 import {
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
@@ -244,7 +210,6 @@ import {
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
 import HorseService from '@/views/race/services/HorseService.js'
-import SpelformBadge from '@/components/SpelformBadge.vue'
 // Removed HorseCommentBlock – unified view replaces separate blocks
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
 import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
@@ -252,7 +217,7 @@ import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
 
 export default {
     name: 'RaceHorsesView',
-    components: { SpelformBadge },
+    components: { RaceHeader, RaceNavigation },
 
     setup() {
         // --- AI summary state and handler ---
@@ -599,78 +564,6 @@ export default {
           return raceStartMethod.value === 'Voltstart' || anyDiff;
         });
 
-        const displayStartMethod = computed(() => {
-          if (raceStartMethod.value === 'Voltstart' && hasHandicap.value) {
-            return 'Voltstart med tillägg';
-          }
-          return raceStartMethod.value;
-        });
-
-        const displayDistance = computed(() => {
-          const d = currentRace.value?.distance;
-          return d ? `${d} m` : '—';
-        });
-
-        const displayRaceType = computed(() => {
-          if (currentRace.value?.propositionName) return currentRace.value.propositionName;
-          const p1 = currentRace.value?.propTexts?.[0]?.text || '';
-          const p2 = currentRace.value?.propTexts?.[1]?.text || '';
-          const combined = `${p1} ${p2}`.trim();
-          return combined || '—';
-        });
-
-        const displayPrizeMoney = computed(() => {
-          const prize = currentRace.value?.totalPrizeMoney;
-          if (typeof prize === 'number' && prize > 0) {
-            return `${prize.toLocaleString('sv-SE')} kr`;
-          }
-          const prizeObj = currentRace.value?.propTexts?.find(pt => pt.typ === 'P');
-          if (prizeObj?.text) {
-            return prizeObj.text.replace(/\./g, ' ');
-          }
-          return '—';
-        });
-
-        const raceMetaString = computed(() => {
-          return `Start: ${displayStartMethod.value} | Distance: ${displayDistance.value} | ${displayPrizeMoney.value}`;
-        });
-
-        const displayTrackLength = computed(() => {
-          const len = trackMeta.value?.trackLengthMeters ?? trackMeta.value?.trackLength
-          return typeof len === 'number' ? `${len} m` : '—'
-        });
-
-        const displayOpenStretch = computed(() => {
-          const has = !!trackMeta.value?.hasOpenStretch
-          if (!has) return ''
-          const lanes = trackMeta.value?.openStretchLanes || 1
-          return `• open stretch (x${lanes})`
-        })
-
-        const displayTrackRecord = computed(() => {
-          return trackMeta.value?.trackRecord || '—'
-        });
-
-        const displayFavStartPos = computed(() => {
-          const pos = trackMeta.value?.favouriteStartingPosition
-          return (typeof pos === 'number' && pos > 0) ? String(pos) : '—'
-        })
-
-        const trackMetaString = computed(() => {
-          const name = getTrackName(racedayTrackCode.value)
-          const extra = displayOpenStretch.value ? ` ${displayOpenStretch.value}` : ''
-          return `Track: ${name} | Length: ${displayTrackLength.value}${extra} | Fav. pos: ${displayFavStartPos.value} | Record: ${displayTrackRecord.value}`
-        });
-        const raceGames = computed(() => {
-            const res = []
-            const raceId = currentRace.value?.raceId
-            if (!raceId) return res
-            for (const [game, ids] of Object.entries(spelformer.value)) {
-                const idx = ids.indexOf(raceId)
-                if (idx !== -1) res.push({ game, leg: idx + 1 })
-            }
-            return res
-        });
         
         const navigateToRaceDay = (raceDayId) => {
             const currentPath = router.currentRoute.value.fullPath
@@ -716,6 +609,15 @@ export default {
         const trackMeta = ref({})
         const spelformer = ref({})
         const racedayDetails = ref(null)
+
+        const { raceMetaString, trackMetaString, raceGames } = useRaceMeta({
+          currentRace,
+          trackMeta,
+          spelformer,
+          racedayTrackCode,
+          raceStartMethod,
+          hasHandicap
+        })
         const raceList = computed(() => {
             return racedayDetails.value?.raceList?.sort((a, b) => a.raceNumber - b.raceNumber) || []
         })
@@ -1289,52 +1191,6 @@ export default {
             await fetchTrackInfo()
             await fetchSpelformer()
         })
-        const trackNames = {
-            'Ar': 'Arvika',
-            'Ax': 'Axevalla',
-            'Bo': 'Bodentravet',
-            'Bs': 'Bollnäs',
-            'B': 'Bergsåker',
-            'C': 'Charlottenlund',
-            'D': 'Dannero',
-            'E': 'Eskilstuna',
-            'F': 'Färjestad',
-            'G': 'Gävle',
-            'H': 'Hagmyren',
-            'Ha': 'Hagmyren',
-            'Hd': 'Halmstad',
-            'Hg': 'Hoting',
-            'J': 'Jägersro',
-            'Kr': 'Kalmar',
-            'Ka': 'Kalmar',
-            'Kh': 'Karlshamn',
-            'L': 'Lindesberg',
-            'Ly': 'Lycksele',
-            'Mp': 'Mantorp',
-            'Ov': 'Oviken',
-            'Ro': 'Romme',
-            'Rä': 'Rättvik',
-            'Rm': 'Roma',
-            'S': 'Solvalla',
-            'Sk': 'Skellefteå',
-            'Sä': 'Solänget',
-            'T': 'Tingsryd',
-            'Ti': 'Tingsryd',
-            'U': 'Umåker',
-            'Vg': 'Vaggeryd',
-            'Vi': 'Visby',
-            'Å': 'Åby',
-            'Ål': 'Åland',
-            'Åm': 'Åmål',
-            'År': 'Årjäng',
-            'Ö': 'Örebro',
-            'Ös': 'Östersund'
-        }
-
-        const getTrackName = (trackCode) => {
-            return trackNames[trackCode] || trackCode
-        }
-
         // Build combined advantages for a horse
         const maxAdvChips = 4
         const buildConditionAdvantages = (horse) => {
@@ -1509,7 +1365,6 @@ export default {
             onGenerateSummary,
             headers,
             rankHorses,
-            getTrackName,
             racedayTrackName,
             racedayTrackCode,
             navigateToRaceDay,
@@ -1526,7 +1381,6 @@ export default {
             raceStartMethod,
             hasHandicap,
             showStartPositionColumn,
-            displayStartMethod,
             raceMetaString,
             trackMetaString,
             raceGames,
@@ -1551,7 +1405,6 @@ export default {
             savedPastComments,
             getUiPastComments,
             preloadSavedPastCommentsForRace,
-            displayFavStartPos,
             buildUnifiedPastDisplay,
             // AI insights
             aiInsights,
