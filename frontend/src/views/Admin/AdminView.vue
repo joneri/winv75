@@ -135,6 +135,85 @@
       </v-col>
     </v-row>
 
+    <v-row class="mt-10">
+      <v-col>
+        <h2>Inställningar & profiler för Jonas‑AI</h2>
+        <div class="profiles-grid">
+          <div class="left">
+            <div class="toolbar">
+              <v-btn size="small" variant="tonal" @click="reloadProfiles" :loading="loadingProfiles">Ladda</v-btn>
+              <v-btn size="small" color="primary" variant="elevated" @click="newProfileDialog = true">Ny profil</v-btn>
+              <v-chip v-if="activeProfile" color="success" class="ml-2">Aktiv: {{ activeProfile.label }} ({{ activeProfile.key }})</v-chip>
+            </div>
+            <v-list density="compact" class="mt-2">
+              <v-list-item
+                v-for="p in profiles"
+                :key="p.key"
+                :title="`${p.label} (${p.key})`"
+                :subtitle="p.description"
+                :active="editKey === p.key"
+                @click="selectProfile(p)"
+              >
+                <template #append>
+                  <v-btn size="x-small" variant="text" @click.stop="duplicate(p)">Duplicera</v-btn>
+                  <v-btn size="x-small" color="success" variant="text" @click.stop="activate(p)">Aktivera</v-btn>
+                </template>
+              </v-list-item>
+            </v-list>
+          </div>
+          <div class="right" v-if="editProfile">
+            <h3>Redigera: {{ editProfile.label }} <small>({{ editProfile.key }})</small></h3>
+            <div class="knobs">
+              <v-text-field v-model="editProfile.label" label="Namn" density="compact" />
+              <v-textarea v-model="editProfile.description" label="Beskrivning" density="compact" rows="2" />
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.softmaxBeta" label="softmaxBeta" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.tierBy" label="tierBy (composite|form)" density="compact" />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.aWithinComp" label="A inom (composite)" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.bWithinComp" label="B inom (composite)" type="number" density="compact" />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.spikMinTopProb" label="Spik min topprob" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.spikMinGap" label="Spik min gap" type="number" density="compact" />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.spikMaxACoverage" label="Spik max A‑täckt" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.wideOpenMaxTopProb" label="Öppet lopp max topprob" type="number" density="compact" />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.minProbForA" label="Min p för A" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.minZForA" label="Min z för A" type="number" density="compact" />
+              </div>
+            </div>
+            <div class="actions">
+              <v-btn color="primary" @click="saveProfile" :loading="saving">Spara</v-btn>
+              <v-btn class="ml-2" variant="tonal" @click="previewProfile" :loading="previewing">Förhandsvisa…</v-btn>
+            </div>
+            <div v-if="previewResult" class="mt-4">
+              <v-card variant="tonal">
+                <v-card-title>Preview</v-card-title>
+                <v-card-text>
+                  <div>Races: {{ previewResult.count }} | avgBrier: {{ fmt(previewResult.metrics?.avgBrier) }} | RMSE(win): {{ fmt(previewResult.metrics?.rmseWinner) }}</div>
+                  <div class="scroll">
+                    <pre class="pre-json">{{ JSON.stringify(previewResult.metrics || {}, null, 2) }}</pre>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </div>
+            <div class="mt-6">
+              <h4>Historik</h4>
+              <v-btn size="x-small" variant="tonal" @click="loadHistory" :loading="loadingHistory">Ladda</v-btn>
+              <div class="scroll" v-if="historyItems.length">
+                <pre class="pre-json">{{ JSON.stringify(historyItems, null, 2) }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
+
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.text }}
     </v-snackbar>
@@ -145,6 +224,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import AdminService from './services/AdminService.js'
 import AutoTune from './services/AutoTuneService.js'
+import AiProfiles from './services/AiProfilesService.js'
 
 export default {
   name: 'AdminView',
@@ -424,6 +504,106 @@ export default {
 
     const fmt = (v) => (Number.isFinite(v) ? v.toFixed(3) : '-')
 
+    // Profiles state
+    const profiles = ref([])
+    const activeProfile = ref(null)
+    const loadingProfiles = ref(false)
+    const newProfileDialog = ref(false)
+    const editKey = ref('')
+    const editProfile = ref(null)
+    const editSettings = ref({})
+    const saving = ref(false)
+    const previewing = ref(false)
+    const previewResult = ref(null)
+    const historyItems = ref([])
+    const loadingHistory = ref(false)
+
+    const reloadProfiles = async () => {
+      loadingProfiles.value = true
+      try {
+        const [list, active] = await Promise.all([AiProfiles.list(), AiProfiles.active()])
+        profiles.value = list
+        activeProfile.value = active
+        if (editKey.value) {
+          const found = list.find(p => p.key === editKey.value)
+          if (found) selectProfile(found)
+        }
+      } catch (e) {
+        console.error('Failed to load profiles', e)
+      } finally {
+        loadingProfiles.value = false
+      }
+    }
+
+    const selectProfile = (p) => {
+      editKey.value = p.key
+      editProfile.value = JSON.parse(JSON.stringify(p))
+      editSettings.value = { ...(p.settings || {}) }
+      previewResult.value = null
+    }
+
+    const saveProfile = async () => {
+      try {
+        saving.value = true
+        await AiProfiles.update(editKey.value, { label: editProfile.value.label, description: editProfile.value.description, settings: editSettings.value })
+        await reloadProfiles()
+        snackbar.value = { show: true, text: 'Sparat', color: 'success' }
+      } catch (e) {
+        console.error('Save failed', e)
+        snackbar.value = { show: true, text: 'Kunde inte spara', color: 'error' }
+      } finally { saving.value = false }
+    }
+
+    const activate = async (p) => {
+      try {
+        await AiProfiles.activate(p.key)
+        await reloadProfiles()
+        snackbar.value = { show: true, text: 'Aktiverad', color: 'success' }
+      } catch (e) {
+        console.error('Activate failed', e)
+        snackbar.value = { show: true, text: 'Kunde inte aktivera', color: 'error' }
+      }
+    }
+
+    const duplicate = async (p) => {
+      try {
+        const newKey = `${p.key}-${Date.now().toString().slice(-5)}`
+        await AiProfiles.duplicate(p.key, newKey)
+        await reloadProfiles()
+        snackbar.value = { show: true, text: 'Kopierad', color: 'success' }
+      } catch (e) {
+        console.error('Duplicate failed', e)
+        snackbar.value = { show: true, text: 'Kunde inte kopiera', color: 'error' }
+      }
+    }
+
+    const previewProfile = async () => {
+      try {
+        previewing.value = true
+        // Preview last 7 days with current edited settings
+        const dateTo = new Date().toISOString().slice(0,10)
+        const dt = new Date(); dt.setDate(dt.getDate() - 7); const dateFrom = dt.toISOString().slice(0,10)
+        const payload = { dateFrom, dateTo, overrides: editSettings.value }
+        const res = await AiProfiles.preview(payload)
+        previewResult.value = res
+      } catch (e) {
+        console.error('Preview failed', e)
+        snackbar.value = { show: true, text: 'Preview misslyckades', color: 'error' }
+      } finally { previewing.value = false }
+    }
+
+    const loadHistory = async () => {
+      try {
+        loadingHistory.value = true
+        const res = await AiProfiles.history(editKey.value, 100)
+        historyItems.value = res.items || []
+      } catch (e) {
+        console.error('History failed', e)
+      } finally { loadingHistory.value = false }
+    }
+
+    onMounted(() => { reloadProfiles() })
+
     return {
       updateRatings,
       precomputeAI,
@@ -450,7 +630,11 @@ export default {
       autoRunning, autoStatus, autoResults, autoResultsSorted, autoBest,
       runAutoTune, cancelAutoTune, applyBest, applyRow,
       autoProcessed, autoTotal, autoPercent,
-      fmt
+      fmt,
+      // Profiles
+      profiles, activeProfile, loadingProfiles, newProfileDialog, editKey, editProfile, editSettings,
+      saving, previewing, previewResult, historyItems, loadingHistory,
+      reloadProfiles, selectProfile, saveProfile, activate, duplicate, previewProfile, loadHistory
     }
   }
 }
@@ -468,6 +652,12 @@ export default {
 .results-table .row { display: grid; grid-template-columns: 90px 70px 70px 70px 80px 60px 70px 1fr 70px; gap: 8px; align-items: center; padding: 6px 8px; border-bottom: 1px dashed rgba(125,125,125,0.2); }
 .results-table .row.header { font-weight: 600; }
 .results-table .row .url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profiles-grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
+.profiles-grid .left { border-right: 1px solid rgba(255,255,255,0.08); padding-right: 8px; }
+.knobs { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.knobs .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pre-json { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+.scroll { max-height: 240px; overflow: auto; }
 @media (prefers-color-scheme: dark) {
   .pre-json { background: #0b1021; color: #e5e7eb; }
 }

@@ -2,6 +2,7 @@ import Horse from '../horse/horse-model.js'
 import horseService from '../horse/horse-service.js'
 import Raceday from '../raceday/raceday-model.js'
 import trackService from '../track/track-service.js'
+import { getActiveProfile } from '../ai-profile/ai-profile-service.js'
 
 export async function computeFormScores(horseIds, maxStarts = 5) {
   const horses = await Horse.find({ id: { $in: horseIds } }, { id: 1, name: 1, results: 1 }).lean()
@@ -33,6 +34,19 @@ async function getRaceTrackCode(raceId) {
 }
 
 export async function buildRaceInsights(raceId, overrides = {}) {
+  // Merge active profile settings by default unless a preset is already provided (e.g., preview)
+  let cfg = { ...(overrides || {}) }
+  if (!cfg.preset) {
+    try {
+      const active = await getActiveProfile()
+      if (active?.settings) {
+        cfg = { ...active.settings, ...cfg, preset: active.key }
+      }
+    } catch (e) {
+      // Fallback silently to env-only when no profile available
+    }
+  }
+
   const raceDay = await Raceday.findOne({ 'raceList.raceId': Number(raceId) }, { trackName: 1, raceList: { $elemMatch: { raceId: Number(raceId) } } }).lean()
   if (!raceDay) return null
   const race = raceDay.raceList?.[0]
@@ -98,14 +112,14 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const plusPointsMap = new Map(plusPoints.map(p => [p.id, p.points]))
 
   // Ranking weights (form-first) — allow overrides
-  const eloDiv = toNum(overrides.formEloDivisor, Number(process.env.AI_RANK_FORM_ELO_DIVISOR || process.env.AI_RANK_ELO_DIVISOR || 50))
-  const wForm = toNum(overrides.wForm, Number(process.env.AI_RANK_W_FORM || 0)) // legacy recent-form curve now off by default
-  const bShoe = toNum(overrides.bonusShoe, Number(process.env.AI_RANK_BONUS_SHOE || 0.5))
-  const bFavTrack = toNum(overrides.bonusFavoriteTrack, Number(process.env.AI_RANK_BONUS_FAVORITE_TRACK || 0.75))
-  const bFavSpar = toNum(overrides.bonusFavoriteSpar, Number(process.env.AI_RANK_BONUS_FAVORITE_SPAR || 0.5))
-  const bBarfota = toNum(overrides.bonusBarfotaRuntom, Number(process.env.AI_RANK_BONUS_BARFOTA_RUNTOM || 0.6))
-  const bTrackFavSpar = toNum(overrides.bonusTrackFavoriteSpar, Number(process.env.AI_RANK_BONUS_TRACK_FAVORITE_SPAR || 0.6))
-  const handicapDiv = toNum(overrides.handicapDivisor, Number(process.env.AI_RANK_HANDICAP_DIVISOR || 40))
+  const eloDiv = toNum(cfg.formEloDivisor, Number(process.env.AI_RANK_FORM_ELO_DIVISOR || process.env.AI_RANK_ELO_DIVISOR || 50))
+  const wForm = toNum(cfg.wForm, Number(process.env.AI_RANK_W_FORM || 0)) // legacy recent-form curve now off by default
+  const bShoe = toNum(cfg.bonusShoe, Number(process.env.AI_RANK_BONUS_SHOE || 0.5))
+  const bFavTrack = toNum(cfg.bonusFavoriteTrack, Number(process.env.AI_RANK_BONUS_FAVORITE_TRACK || 0.75))
+  const bFavSpar = toNum(cfg.bonusFavoriteSpar, Number(process.env.AI_RANK_BONUS_FAVORITE_SPAR || 0.5))
+  const bBarfota = toNum(cfg.bonusBarfotaRuntom, Number(process.env.AI_RANK_BONUS_BARFOTA_RUNTOM || 0.6))
+  const bTrackFavSpar = toNum(cfg.bonusTrackFavoriteSpar, Number(process.env.AI_RANK_BONUS_TRACK_FAVORITE_SPAR || 0.6))
+  const handicapDiv = toNum(cfg.handicapDivisor, Number(process.env.AI_RANK_HANDICAP_DIVISOR || 40))
   const DEBUG = ['1','true','yes','on'].includes(String(process.env.AI_RANK_DEBUG || '').toLowerCase())
 
   if (DEBUG) {
@@ -165,11 +179,11 @@ export async function buildRaceInsights(raceId, overrides = {}) {
 
   // --- Tiering: A/B/C groups --- (overrides-aware)
   // Important: default to 'composite' so tiers align with probability/composite logic
-  const tierBy = toStr(overrides.tierBy, String(process.env.AI_RANK_TIER_BY || 'composite').toLowerCase())
-  const aWithinForm = toNum(overrides.aWithinForm, Number(process.env.AI_RANK_TIER_A_WITHIN || 5))
-  const bWithinForm = toNum(overrides.bWithinForm, Number(process.env.AI_RANK_TIER_B_WITHIN || 15))
-  const aWithinComp = toNum(overrides.aWithinComp, Number(process.env.AI_RANK_TIER_A_WITHIN_COMPOSITE || 0.25))
-  const bWithinComp = toNum(overrides.bWithinComp, Number(process.env.AI_RANK_TIER_B_WITHIN_COMPOSITE || 0.75))
+  const tierBy = toStr(cfg.tierBy, String(process.env.AI_RANK_TIER_BY || 'composite').toLowerCase())
+  const aWithinForm = toNum(cfg.aWithinForm, Number(process.env.AI_RANK_TIER_A_WITHIN || 5))
+  const bWithinForm = toNum(cfg.bWithinForm, Number(process.env.AI_RANK_TIER_B_WITHIN || 15))
+  const aWithinComp = toNum(cfg.aWithinComp, Number(process.env.AI_RANK_TIER_A_WITHIN_COMPOSITE || 0.25))
+  const bWithinComp = toNum(cfg.bWithinComp, Number(process.env.AI_RANK_TIER_B_WITHIN_COMPOSITE || 0.75))
 
   const metricOf = (h) => (tierBy === 'composite' ? (h.compositeScore ?? 0) : (h.rating ?? 0))
   const leaderMetric = rankedList.length ? metricOf(rankedList[0]) : 0
@@ -181,9 +195,9 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const classRankById = new Map(classSorted.map((h, i) => [h.id, i + 1]))
 
   // Upgrade/downgrade knobs
-  const CLASS_TOP_K = toNum(overrides.classTopK, Number(process.env.AI_TIER_CLASS_TOP_K || 3))
-  const FORM_ELO_EPS = toNum(overrides.formEloEps, Number(process.env.AI_TIER_FORM_ELO_EPS || 3))
-  const PLUS_UPGRADE_MIN = toNum(overrides.plusUpgradeMin, Number(process.env.AI_TIER_PLUSPOINTS_UPGRADE_MIN || 1.0)) // by bonus sum
+  const CLASS_TOP_K = toNum(cfg.classTopK, Number(process.env.AI_TIER_CLASS_TOP_K || 3))
+  const FORM_ELO_EPS = toNum(cfg.formEloEps, Number(process.env.AI_TIER_FORM_ELO_EPS || 3))
+  const PLUS_UPGRADE_MIN = toNum(cfg.plusUpgradeMin, Number(process.env.AI_TIER_PLUSPOINTS_UPGRADE_MIN || 1.0)) // by bonus sum
 
   const topFormElo = rankedList[0]?.rating || 0
 
@@ -219,7 +233,7 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   }
 
   // --- Probabilities via softmax on composite --- (overrides-aware)
-  const SOFTMAX_BETA = toNum(overrides.softmaxBeta, Number(process.env.AI_TIER_SOFTMAX_BETA || 3.0))
+  const SOFTMAX_BETA = toNum(cfg.softmaxBeta, Number(process.env.AI_TIER_SOFTMAX_BETA || 3.0))
   const scores = rankedWithTier.map(h => h.compositeScore || 0)
   const maxScore = scores.length ? Math.max(...scores) : 0
   const expScores = scores.map(s => Math.exp(SOFTMAX_BETA * (s - maxScore))) // stabilize
@@ -232,8 +246,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   let withProb = rankedWithTier.map((h, i) => ({ ...h, prob: probs[i], zScore: (h.compositeScore - mean) / std }))
 
   // Sanity: prevent A-tier horses with effectively zero chance (prob too low or z very negative)
-  const MIN_PROB_FOR_A = toNum(overrides.minProbForA, Number(process.env.AI_TIER_MIN_PROB_FOR_A || 0.03))
-  const MIN_Z_FOR_A = toNum(overrides.minZForA, Number(process.env.AI_TIER_MIN_Z_FOR_A || -1e9))
+  const MIN_PROB_FOR_A = toNum(cfg.minProbForA, Number(process.env.AI_TIER_MIN_PROB_FOR_A || 0.03))
+  const MIN_Z_FOR_A = toNum(cfg.minZForA, Number(process.env.AI_TIER_MIN_Z_FOR_A || -1e9))
   withProb = withProb.map(h => {
     if (h.tier === 'A' && (h.prob < MIN_PROB_FOR_A || h.zScore < MIN_Z_FOR_A)) {
       const demotedTier = h.prob > 0 ? 'B' : 'C'
@@ -252,20 +266,20 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   let aCoverage = withProb.filter(h => h.tier === 'A').reduce((acc, h) => acc + (h.prob || 0), 0)
 
   // --- Race guidance flags --- (overrides-aware)
-  const WIDE_OPEN_MAX_TOP_PROB = toNum(overrides.wideOpenMaxTopProb, Number(process.env.AI_GUIDE_WIDE_OPEN_MAX_TOP_PROB || 0.22))
-  const SPIK_MIN_TOP_PROB = toNum(overrides.spikMinTopProb, Number(process.env.AI_GUIDE_SPIK_MIN_TOP_PROB || 0.45))
+  const WIDE_OPEN_MAX_TOP_PROB = toNum(cfg.wideOpenMaxTopProb, Number(process.env.AI_GUIDE_WIDE_OPEN_MAX_TOP_PROB || 0.22))
+  const SPIK_MIN_TOP_PROB = toNum(cfg.spikMinTopProb, Number(process.env.AI_GUIDE_SPIK_MIN_TOP_PROB || 0.45))
   // Additional calibration knobs (defaults keep current behavior)
-  const SPIK_MIN_GAP = toNum(overrides.spikMinGap, Number(process.env.AI_GUIDE_SPIK_MIN_GAP || 0)) // require topProb - p2 ≥ gap
-  const SPIK_MAX_A_COVERAGE = toNum(overrides.spikMaxACoverage, Number(process.env.AI_GUIDE_SPIK_MAX_A_COVERAGE || 1.0)) // disallow spik if A-coverage too high (field too top-heavy)
+  const SPIK_MIN_GAP = toNum(cfg.spikMinGap, Number(process.env.AI_GUIDE_SPIK_MIN_GAP || 0)) // require topProb - p2 ≥ gap
+  const SPIK_MAX_A_COVERAGE = toNum(cfg.spikMaxACoverage, Number(process.env.AI_GUIDE_SPIK_MAX_A_COVERAGE || 1.0)) // disallow spik if A-coverage too high (field too top-heavy)
   const wideOpen = topProb <= WIDE_OPEN_MAX_TOP_PROB
   const spikAllowed = (topProb >= SPIK_MIN_TOP_PROB) && ((topProb - p2) >= SPIK_MIN_GAP) && (aCoverage <= SPIK_MAX_A_COVERAGE)
 
   // --- Adaptive Highlights group --- (overrides-aware)
-  const TOP_N_BASE = toNum(overrides.topNbase, Number(process.env.AI_TOP_N_BASE || 3))
-  const TOP_N_MAX = toNum(overrides.topNmax, Number(process.env.AI_TOP_N_MAX || 6))
-  const ZGAP_MAX = toNum(overrides.zGapMax, Number(process.env.AI_TOP_ZGAP_MAX || 0.35))
-  const FORM_ELO_EPS_TOP = toNum(overrides.formEloEpsTop, Number(process.env.AI_TOP_FORM_ELO_EPS || 3))
-  const PROB_COVERAGE_MIN = toNum(overrides.probCoverageMin, Number(process.env.AI_TOP_PROB_COVERAGE_MIN || 0.65))
+  const TOP_N_BASE = toNum(cfg.topNbase, Number(process.env.AI_TOP_N_BASE || 3))
+  const TOP_N_MAX = toNum(cfg.topNmax, Number(process.env.AI_TOP_N_MAX || 6))
+  const ZGAP_MAX = toNum(cfg.zGapMax, Number(process.env.AI_TOP_ZGAP_MAX || 0.35))
+  const FORM_ELO_EPS_TOP = toNum(cfg.formEloEpsTop, Number(process.env.AI_TOP_FORM_ELO_EPS || 3))
+  const PROB_COVERAGE_MIN = toNum(cfg.probCoverageMin, Number(process.env.AI_TOP_PROB_COVERAGE_MIN || 0.65))
 
   const leaderFormElo = withProb[0]?.rating || 0
   let highlightsN = Math.min(TOP_N_BASE, withProb.length)
@@ -331,13 +345,13 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       aCoverage,
       wideOpen,
       spikAllowed,
-        spikMinGap: SPIK_MIN_GAP,
-        spikMaxACoverage: SPIK_MAX_A_COVERAGE,
+      spikMinGap: SPIK_MIN_GAP,
+      spikMaxACoverage: SPIK_MAX_A_COVERAGE,
       topN: { base: TOP_N_BASE, max: TOP_N_MAX, chosen: highlightsN },
       zGapMax: ZGAP_MAX,
       formEloEpsTop: FORM_ELO_EPS_TOP,
       probCoverageMin: PROB_COVERAGE_MIN,
-      preset: overrides?.preset || null
+      preset: cfg?.preset || null
     }
   }
 }

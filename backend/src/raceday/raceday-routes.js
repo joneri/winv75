@@ -1,6 +1,7 @@
 import express from 'express'
 import raceDayService from './raceday-service.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
+import { getActiveProfile } from '../ai-profile/ai-profile-service.js'
 
 const router = express.Router()
 
@@ -82,13 +83,43 @@ router.get('/summary', async (req, res) => {
 // New: AI-style list for an entire raceday (each race) with caching
 router.get('/:id/ai-list', validateObjectIdParam('id'), async (req, res) => {
   try {
-    const force = String(req.query.force || '').toLowerCase() === 'true'
-    const data = await raceDayService.getRacedayAiList(req.params.id, { force })
+    const racedayId = req.params.id
+    // Ask service to use active profile by default. We pass overrides explicitly to keep service stateless.
+    let overrides
+    const useProfiles = !['0','false','no','off'].includes(String(req.query.useProfiles ?? '1').toLowerCase())
+    if (useProfiles) {
+      const prof = await getActiveProfile()
+      if (prof && prof.settings) overrides = { ...prof.settings, preset: prof.key }
+    }
+    const data = await raceDayService.getRacedayAiList(racedayId, { overrides })
     if (!data) return res.status(404).send('Raceday not found')
     res.json(data)
-  } catch (err) {
-    console.error('Failed to build raceday AI list', err)
-    res.status(500).send('Failed to build raceday AI list')
+  } catch (e) {
+    console.error('Failed fetching raceday AI list', e)
+    res.status(500).json({ error: 'Failed fetching raceday AI list' })
+  }
+})
+
+// Preview raceday AI with an ad-hoc profile or overrides; supports date windows in future work
+router.post('/:id/ai-preview', async (req, res) => {
+  try {
+    const racedayId = req.params.id
+    const { profileKey, overrides } = req.body || {}
+    let applied = overrides || {}
+    if (profileKey) {
+      const { getProfile } = await import('../ai-profile/ai-profile-service.js')
+      const p = await getProfile(profileKey)
+      if (!p) return res.status(404).json({ error: 'Profile not found' })
+      applied = { ...p.settings, ...(overrides || {}), preset: p.key }
+    } else if (!overrides) {
+      const p = await getActiveProfile()
+      if (p) applied = { ...p.settings, preset: p.key }
+    }
+    const data = await raceDayService.getRacedayAiList(racedayId, { force: true, overrides: applied })
+    res.json({ ...data, applied })
+  } catch (e) {
+    console.error('Failed previewing raceday AI list', e)
+    res.status(500).json({ error: 'Failed previewing raceday AI list' })
   }
 })
 

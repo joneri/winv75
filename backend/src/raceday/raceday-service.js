@@ -286,7 +286,7 @@ const getRacedayAiList = async (racedayId, { force = false, overrides = null } =
   const genAt = raceday.aiListCache?.generatedAt ? new Date(raceday.aiListCache.generatedAt).getTime() : 0
   const fresh = !!genAt && (now - genAt) <= ttlMinutes * 60 * 1000
 
-  if (!force && fresh && Array.isArray(raceday.aiListCache?.races) && raceday.aiListCache.races.length) {
+  if (!force && fresh && Array.isArray(raceday.aiListCache?.races) && raceday.aiListCache.races.length && !overrides) {
     try { aiMetrics.raceday.cacheHits += 1 } catch {}
     return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races: raceday.aiListCache.races }
   }
@@ -312,8 +312,10 @@ const getRacedayAiList = async (racedayId, { force = false, overrides = null } =
   }
   races.sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
 
-  raceday.aiListCache = { generatedAt: new Date(), races }
-  await raceday.save()
+  if (!overrides) {
+    raceday.aiListCache = { generatedAt: new Date(), races }
+    await raceday.save()
+  }
 
   return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races }
 }
