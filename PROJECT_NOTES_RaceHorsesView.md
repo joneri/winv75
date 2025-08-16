@@ -109,3 +109,10 @@ Operational tips
 - Tune softmax and banner thresholds for field calibration:
   - AI_TIER_SOFTMAX_BETA, AI_GUIDE_WIDE_OPEN_MAX_TOP_PROB, AI_GUIDE_SPIK_MIN_TOP_PROB,
   - AI_GUIDE_SPIK_MIN_GAP, AI_GUIDE_SPIK_MAX_A_COVERAGE.
+
+## Struktur efter frontend-refaktorering (2025-08-15)
+- `frontend/src/views/race/components/RaceHeader.vue` – presenterar loppinfo, spelformer och aktiv AI‑profil.
+- `frontend/src/views/race/components/AiBanner.vue` – visar AI‑guidance‑banner.
+- `frontend/src/views/race/RaceHorsesView.vue` använder ovan komponenter för ett tunnare container‑lager.
+- `frontend/src/views/race/composables/useRaceGames.js` – beräknar spelformer per lopp.
+- Legacy‑mappen `frontend/src/views/RaceHorses/` borttagen.

@@ -12,6 +12,7 @@
           :ai-rank-config="aiRankConfig"
           @navigate-to-raceday="navigateToRaceDay"
         />
+        <AiBanner v-if="aiRankConfig" :config="aiRankConfig" />
         <RaceNavigation
           v-if="raceList.length"
           :previous-race-id="previousRaceId"
@@ -214,10 +215,11 @@ import HorseService from '@/views/race/services/HorseService.js'
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
 import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
 import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
+import AiBanner from './components/AiBanner.vue'
 
 export default {
     name: 'RaceHorsesView',
-    components: { RaceHeader, RaceNavigation },
+    components: { RaceHeader, RaceNavigation, AiBanner },
 
     setup() {
         // --- AI summary state and handler ---
