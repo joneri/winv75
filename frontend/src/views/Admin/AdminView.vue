@@ -166,25 +166,196 @@
             <div class="knobs">
               <v-text-field v-model="editProfile.label" label="Namn" density="compact" />
               <v-textarea v-model="editProfile.description" label="Beskrivning" density="compact" rows="2" />
+
+              <!-- Probabilities / softmax -->
               <div class="grid-2">
-                <v-text-field v-model.number="editSettings.softmaxBeta" label="softmaxBeta" type="number" density="compact" />
-                <v-text-field v-model.number="editSettings.tierBy" label="tierBy (composite|form)" density="compact" />
+                <v-text-field
+                  v-model.number="editSettings.softmaxBeta"
+                  label="softmaxBeta"
+                  type="number"
+                  density="compact"
+                  :min="0.1" :max="10" :step="0.1"
+                  :hint="'Rekommenderat 2–4 (standard 3.0). Högre skärper topphäst.'"
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model="editSettings.tierBy"
+                  label="tierBy (composite|form)"
+                  density="compact"
+                  :hint="'Bas för A/B/C: composite (rekommenderas) eller form'"
+                  persistent-hint
+                />
+              </div>
+
+              <!-- Tier-gränser -->
+              <div class="grid-2">
+                <v-text-field
+                  v-model.number="editSettings.aWithinComp"
+                  label="A inom (composite)"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="5" :step="0.05"
+                  :hint="'Rekommenderat 0.15–0.35 (standard 0.25). Mindre = färre A.'"
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.bWithinComp"
+                  label="B inom (composite)"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="5" :step="0.05"
+                  :hint="'Rekommenderat 0.5–1.0 (standard 0.75).'"
+                  persistent-hint
+                />
               </div>
               <div class="grid-2">
-                <v-text-field v-model.number="editSettings.aWithinComp" label="A inom (composite)" type="number" density="compact" />
-                <v-text-field v-model.number="editSettings.bWithinComp" label="B inom (composite)" type="number" density="compact" />
+                <v-text-field
+                  v-model.number="editSettings.aWithinForm"
+                  label="A inom (formElo)"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="50" :step="1"
+                  :hint="'Om tierBy=form: avstånd i Elo till ledare för A (typ 3–8).'
+                  "
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.bWithinForm"
+                  label="B inom (formElo)"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="100" :step="1"
+                  :hint="'Om tierBy=form: avstånd i Elo till ledare för B (typ 10–20).'
+                  "
+                  persistent-hint
+                />
+              </div>
+
+              <!-- A‑säkerhet -->
+              <div class="grid-2">
+                <v-text-field
+                  v-model.number="editSettings.minProbForA"
+                  label="Min p för A"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="0.5" :step="0.005"
+                  :hint="'Demotera från A om sannolikhet under denna (typ 0.02–0.06). Standard 0.03.'"
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.minZForA"
+                  label="Min z för A"
+                  type="number"
+                  density="compact"
+                  :min="-5" :max="5" :step="0.05"
+                  :hint="'Demotera från A om z-score under denna (t ex −0.3). Lämna lågt för att stänga av.'"
+                  persistent-hint
+                />
+              </div>
+
+              <!-- Banner / guidance -->
+              <div class="grid-2">
+                <v-text-field
+                  v-model.number="editSettings.spikMinTopProb"
+                  label="Spik min topprob"
+                  type="number"
+                  density="compact"
+                  :min="0.2" :max="0.8" :step="0.01"
+                  :hint="'Minsta topprob för “spik möjlig” (typ 0.40–0.55). Standard 0.45.'"
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.spikMinGap"
+                  label="Spik min gap"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="0.5" :step="0.01"
+                  :hint="'Kräv skillnad topp − tvåa ≥ gap (typ 0.05–0.15).'
+                  "
+                  persistent-hint
+                />
               </div>
               <div class="grid-2">
-                <v-text-field v-model.number="editSettings.spikMinTopProb" label="Spik min topprob" type="number" density="compact" />
-                <v-text-field v-model.number="editSettings.spikMinGap" label="Spik min gap" type="number" density="compact" />
+                <v-text-field
+                  v-model.number="editSettings.spikMaxACoverage"
+                  label="Spik max A‑täckt"
+                  type="number"
+                  density="compact"
+                  :min="0.3" :max="1.0" :step="0.01"
+                  :hint="'Tillåt ej spik om A‑täckt över denna nivå (fält för favorit‑tungt).'
+                  "
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.wideOpenMaxTopProb"
+                  label="Öppet lopp max topprob"
+                  type="number"
+                  density="compact"
+                  :min="0.1" :max="0.4" :step="0.01"
+                  :hint="'Vidöppet om topProb ≤ detta (typ 0.18–0.25). Standard 0.22.'"
+                  persistent-hint
+                />
+              </div>
+
+              <!-- Vikter/bonusar i composite -->
+              <div class="grid-2">
+                <v-text-field
+                  v-model.number="editSettings.formEloDivisor"
+                  label="formEloDivisor"
+                  type="number"
+                  density="compact"
+                  :min="10" :max="200" :step="1"
+                  :hint="'Skalning av Elo i composite (typ 40–70). Lägsta värde ökar Elo‑vikt.'"
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.wForm"
+                  label="wForm (kurvform/recency)"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="2" :step="0.05"
+                  :hint="'Recency‑vikt (0=av). Rek 0–0.5.'"
+                  persistent-hint
+                />
               </div>
               <div class="grid-2">
-                <v-text-field v-model.number="editSettings.spikMaxACoverage" label="Spik max A‑täckt" type="number" density="compact" />
-                <v-text-field v-model.number="editSettings.wideOpenMaxTopProb" label="Öppet lopp max topprob" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.bonusShoe" label="bonusShoe" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Skobyte bonus (rek 0.2–0.8)'
+                  " persistent-hint />
+                <v-text-field v-model.number="editSettings.bonusBarfotaRuntom" label="bonusBarfotaRuntom" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Barfota runt om (rek 0.4–0.9)'" persistent-hint />
               </div>
               <div class="grid-2">
-                <v-text-field v-model.number="editSettings.minProbForA" label="Min p för A" type="number" density="compact" />
-                <v-text-field v-model.number="editSettings.minZForA" label="Min z för A" type="number" density="compact" />
+                <v-text-field v-model.number="editSettings.bonusFavoriteTrack" label="bonusFavoriteTrack" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Favoritbana (rek 0.5–1.0)'" persistent-hint />
+                <v-text-field v-model.number="editSettings.bonusFavoriteSpar" label="bonusFavoriteSpar" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Favoritspår (rek 0.3–0.8)'" persistent-hint />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.bonusTrackFavoriteSpar" label="bonusTrackFavoriteSpar" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Banans favoritspår (rek 0.4–0.8)'" persistent-hint />
+                <v-text-field v-model.number="editSettings.handicapDivisor" label="handicapDivisor" type="number" density="compact" :min="10" :max="200" :step="1" :hint="'Meter → poäng (neg för tillägg). Låg siffra = större effekt.'" persistent-hint />
+              </div>
+
+              <!-- Upgrades / regler -->
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.classTopK" label="classTopK (upgrade)" type="number" density="compact" :min="1" :max="10" :step="1" :hint="'ClassElo‑rank i topp K ger A‑upgrade (rek 2–4)'
+                  " persistent-hint />
+                <v-text-field v-model.number="editSettings.formEloEps" label="formEloEps (upgrade)" type="number" density="compact" :min="0" :max="20" :step="0.5" :hint="'Krav: inom eps av topp‑FormElo för class‑upgrade (rek 2–6)'" persistent-hint />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.plusUpgradeMin" label="plusUpgradeMin" type="number" density="compact" :min="0" :max="5" :step="0.1" :hint="'Upgrade till A om pluspoäng ≥ detta (rek 0.8–1.2)'" persistent-hint />
+                <div></div>
+              </div>
+
+              <!-- Highlights -->
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.topNbase" label="topN.base" type="number" density="compact" :min="1" :max="8" :step="1" :hint="'Min antal highlights (rek 2–4)'
+                  " persistent-hint />
+                <v-text-field v-model.number="editSettings.topNmax" label="topN.max" type="number" density="compact" :min="2" :max="12" :step="1" :hint="'Max antal highlights (rek 5–8)'" persistent-hint />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.zGapMax" label="zGapMax" type="number" density="compact" :min="0.05" :max="1.0" :step="0.01" :hint="'Tolererad lucka i z mellan platser innan stopp (rek 0.25–0.45)'" persistent-hint />
+                <v-text-field v-model.number="editSettings.formEloEpsTop" label="formEloEpsTop" type="number" density="compact" :min="0" :max="20" :step="0.5" :hint="'Tillåt fler highlights om inom eps av topp‑FormElo (rek 2–6)'" persistent-hint />
+              </div>
+              <div class="grid-2">
+                <v-text-field v-model.number="editSettings.probCoverageMin" label="probCoverageMin" type="number" density="compact" :min="0.3" :max="0.95" :step="0.01" :hint="'Fortsätt highlights tills täckning ≥ denna (rek 0.6–0.75)'" persistent-hint />
+                <div></div>
               </div>
             </div>
             <div class="actions">

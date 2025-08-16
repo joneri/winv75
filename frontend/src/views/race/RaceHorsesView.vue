@@ -63,7 +63,7 @@
                 </v-tabs>
                 <v-window v-model="activeTab">
                     <v-window-item value="0">
-                    <v-data-table :headers="headers" :items="currentRace.horses" :items-per-page="16"
+                    <v-data-table :headers="headers" :items="tableItems" :items-per-page="16"
                             :custom-key-sort="customKeySort"
                             class="elevation-1">
                             <template #item.ai="{ item }">
@@ -275,12 +275,15 @@ export default {
         const aiRankConfig = computed(() => aiInsights.value?.rankConfig || null)
         const aiPresetKey = computed(() => aiRankConfig.value?.preset || null)
 
-        // Active profile (for label/key mapping)
+        // Active profile + all profiles (for label/key mapping)
         const activeProfile = ref(null)
+        const profiles = ref([])
         const aiPresetLabel = computed(() => {
           const key = aiPresetKey.value
-          const act = activeProfile.value
-          if (key && act && act.key === key) return `${act.label} (${key})`
+          if (!key) return null
+          const p = profiles.value.find(p => p.key === key)
+          if (p) return `${p.label} (${key})`
+          if (activeProfile.value && activeProfile.value.key === key) return `${activeProfile.value.label} (${key})`
           return null
         })
 
@@ -325,6 +328,11 @@ export default {
           { title: 'Skor', key: 'shoeOption', sortable: false, width: 110 },
         ]
 
+        const tableItems = computed(() => {
+          const arr = currentRace.value?.horses || []
+          return arr.map(h => ({ ...h, ai: h.id }))
+        })
+
         const fetchAi = async () => {
           try {
             const raceId = route.params.raceId
@@ -341,6 +349,11 @@ export default {
           } catch (e) {
             // ignore
           }
+        }
+        const fetchProfiles = async () => {
+          try {
+            profiles.value = await AiProfiles.list()
+          } catch {}
         }
 
         // helper: preload saved past comments when ATG extended missing
@@ -798,7 +811,7 @@ export default {
         }
 
         // Core builder for unified past performances from persisted results
-        // Returns array of entries: { date: 'YYYY-MM-DD', track: 'Name', placing: '1|2|3|np', raceKey?: string }
+        // Returns array of entries: { date: 'YYYY-MM-DD', trackCode?: string, trackName?: string, placing: '1|2|3|np', raceKey?: string }
         const buildRecentResultsCore = (horseData) => {
             const raw = horseData?.results
             const list = Array.isArray(raw?.records) ? raw.records.slice() : (Array.isArray(raw) ? raw.slice() : [])
@@ -846,6 +859,57 @@ export default {
             for (const r of filtered) {
                 const key = getRaceKey(r)
                 if (seen.has(key)) continue
+                seen.add(key)
+                const date = normalizeDate(r)
+                const trackCode = getTrackCode(r)
+                const trackName = getTrackNameFromR(r) || getTrackName(trackCode)
+                const placing = getPlacing(r)
+                out.push({ date, trackCode, trackName, placing, raceKey: key })
+                if (out.length >= 5) break
+            }
+            return out
+        }
+
+        // Build unified past performance display lines by merging core entries with UI/ATG comments
+        // Returns array of strings for rendering
+        const buildUnifiedPastDisplay = (horseId, recentResultsCore = []) => {
+            try {
+                const comments = Array.isArray(getUiPastComments(horseId)) ? getUiPastComments(horseId) : []
+                const byKey = new Map()
+                const byDate = new Map()
+                for (const c of comments) {
+                    const k = c?.raceKey
+                    if (k) byKey.set(String(k), c)
+                    const d = c?.date
+                    if (d) byDate.set(String(d).slice(0, 10), c)
+                }
+                const lines = []
+                for (const rc of (recentResultsCore || [])) {
+                    const k = rc?.raceKey ? String(rc.raceKey) : null
+                    const d = rc?.date ? String(rc.date).slice(0, 10) : null
+                    const cm = (k && byKey.get(k)) || (d && byDate.get(d)) || null
+                    const date = d || (cm?.date ? String(cm.date).slice(0, 10) : '—')
+                    const track = rc?.trackName || (rc?.trackCode ? getTrackName(rc.trackCode) : '') || '—'
+                    const placingRaw = rc?.placing || cm?.place || '—'
+                    const placing = placingRaw === 'np' ? 'np' : (placingRaw && placingRaw !== '—' ? `#${placingRaw}` : '—')
+                    const comment = cm?.comment ? String(cm.comment).trim() : ''
+                    const parts = [date, track, placing]
+                    const base = parts.filter(Boolean).join(' – ')
+                    lines.push(comment ? `${base} – ${comment}` : base)
+                }
+                // If no core rows, fall back to comments only
+                if (!lines.length && comments.length) {
+                    for (const c of comments.slice(0, 5)) {
+                        const d = c?.date ? String(c.date).slice(0, 10) : '—'
+                        const plc = c?.place === 'np' ? 'np' : (c?.place ? `#${c.place}` : '—')
+                        lines.push([d, plc, c?.comment || ''].filter(Boolean).join(' – '))
+                    }
+                }
+                return lines
+            } catch {
+                return []
+            }
+        }
 
         const fetchDataAndUpdate = async (raceId) => {
             try {
@@ -882,7 +946,6 @@ export default {
                 // objects may expose a `.records` property, so handle both
                 // shapes when gathering result data.
                 const statsFor = (horse) => {
-
                     const results = Array.isArray(horse.results?.records)
                         ? [...horse.results.records]
                         : Array.isArray(horse.results)
@@ -1193,6 +1256,7 @@ export default {
             // Preload saved past comments if ATG data missing/offline
             await preloadSavedPastCommentsForRace()
             await fetchActiveProfile()
+            await fetchProfiles()
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -1500,8 +1564,10 @@ export default {
             aiPresetKey,
             aiPresetLabel,
             activeProfile,
+            profiles,
+            tableItems
         }
-    },
+    }
 }
 </script>
 
