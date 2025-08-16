@@ -1,6 +1,7 @@
 // filepath: /Users/jonas.eriksson/dev-stuff/winv75/backend/src/ai-profile/ai-profile-service.js
 import AIProfile from './ai-profile-model.js'
 import AIProfileHistory from './ai-profile-history-model.js'
+import Raceday from '../raceday/raceday-model.js'
 
 // Simple in-memory cache with TTL
 const cache = {
@@ -158,6 +159,16 @@ export async function activateProfile(key, userId = 'system') {
   await AIProfileHistory.create({ profileKey: key, action: 'activate', summary: `Activated ${prof.label}`, settings: prof.settings, userId })
   cache.active = prof.toObject()
   cache.expiresAt = now() + TTL_MS
+
+  // Optional: clear cached raceday AI lists so next fetch rebuilds with new preset
+  if (envBool(process.env.AI_CLEAR_RACEDAY_CACHE_ON_ACTIVATE, false)) {
+    try {
+      await Raceday.updateMany({}, { $set: { aiListCache: { generatedAt: null, races: [], presetKey: null } } })
+    } catch (e) {
+      console.warn('Failed to clear raceday AI cache after activation', e)
+    }
+  }
+
   return cache.active
 }
 

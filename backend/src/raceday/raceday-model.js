@@ -124,7 +124,8 @@ const racedaySchema = new mongoose.Schema({
   gameTypes: { type: mongoose.Schema.Types.Mixed, default: {} },
   aiListCache: {
     generatedAt: { type: Date, default: null },
-    races: { type: Array, default: [] }
+    races: { type: Array, default: [] },
+    presetKey: { type: String, default: null }
   }
 })
 

@@ -18,7 +18,6 @@ const AIProfileSchema = new Schema(
   { timestamps: true }
 )
 
-AIProfileSchema.index({ key: 1 }, { unique: true })
 AIProfileSchema.index({ isActive: 1 })
 
 const AIProfile = mongoose.model('AIProfile', AIProfileSchema)

@@ -17,6 +17,22 @@
               <div class="games" v-if="raceGames.length">
                 <SpelformBadge v-for="g in raceGames" :key="`${g.game}-${g.leg}`" :game="g.game" :leg="g.leg" />
               </div>
+              <!-- Active AI preset badge -->
+              <div class="ai-preset" v-if="aiPresetKey">
+                <v-tooltip location="top">
+                  <template #activator="{ props }">
+                    <v-chip v-bind="props" size="x-small" variant="outlined" color="info">
+                      AI‑profil: {{ aiPresetLabel || aiPresetKey }}
+                    </v-chip>
+                  </template>
+                  <div>
+                    Denna profil styr AI‑tiering, sannolikheter och banner i denna vy.
+                    <div v-if="activeProfile && activeProfile.key !== aiPresetKey" class="mt-1 text-warning">
+                      Obs: Förhandsvisning/annat preset (inte samma som aktiv: {{ activeProfile.label }} ({{ activeProfile.key }}))
+                    </div>
+                  </div>
+                </v-tooltip>
+              </div>
             </div>
             <!-- AI guidance banner -->
             <div v-if="aiRankConfig" class="ai-banner" :class="{ wide: aiRankConfig.wideOpen, spik: aiRankConfig.spikAllowed }">
@@ -232,6 +248,7 @@ import SpelformBadge from '@/components/SpelformBadge.vue'
 // Removed HorseCommentBlock – unified view replaces separate blocks
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
 import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
+import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
 
 export default {
     name: 'RaceHorsesView',
@@ -256,6 +273,16 @@ export default {
           return map
         })
         const aiRankConfig = computed(() => aiInsights.value?.rankConfig || null)
+        const aiPresetKey = computed(() => aiRankConfig.value?.preset || null)
+
+        // Active profile (for label/key mapping)
+        const activeProfile = ref(null)
+        const aiPresetLabel = computed(() => {
+          const key = aiPresetKey.value
+          const act = activeProfile.value
+          if (key && act && act.key === key) return `${act.label} (${key})`
+          return null
+        })
 
         const formatPct = (p) => {
           const n = Number(p)
@@ -305,6 +332,14 @@ export default {
             aiInsights.value = await fetchRaceAiList(raceId)
           } catch (e) {
             console.warn('Failed to fetch AI insights', e)
+          }
+        }
+
+        const fetchActiveProfile = async () => {
+          try {
+            activeProfile.value = await AiProfiles.active()
+          } catch (e) {
+            // ignore
           }
         }
 
@@ -755,7 +790,7 @@ export default {
                 const results = await Promise.all(
                   horses.map(async (h) => ({ id: h.id, updated: await checkIfUpdatedRecently(h.id) }))
                 )
-                updatedHorses.value = results.filter(r => r.updated).map(r => r.id)
+                updatedHorses.value = results.filter(r => r.updated).map(r.id)
             } catch (e) {
                 console.error('Failed to check updated horses', e)
                 updatedHorses.value = []
@@ -811,41 +846,6 @@ export default {
             for (const r of filtered) {
                 const key = getRaceKey(r)
                 if (seen.has(key)) continue
-                seen.add(key)
-                const dateStr = normalizeDate(r) ? new Date(normalizeDate(r)).toISOString().slice(0, 10) : '—'
-                const code = getTrackCode(r)
-                const nameFromCode = code ? getTrackName(code) : ''
-                const nameFromPayload = getTrackNameFromR(r)
-                const trackStr = nameFromCode || nameFromPayload || '—'
-                const placing = getPlacing(r)
-                out.push({ date: dateStr, track: trackStr, placing, raceKey: key })
-                if (out.length >= 5) break
-            }
-            return out
-        }
-
-        // Merge our core results with ATG comments by date (prefer race id when available) and format uniformly
-        const buildUnifiedPastDisplay = (horseId, coreEntries = []) => {
-            if (!Array.isArray(coreEntries) || coreEntries.length === 0) return []
-            const commentsArr = (getUiPastComments(horseId) || [])
-                .map(c => ({
-                  date: (c.date || '').split('T')[0],
-                  comment: (c.comment || '').trim(),
-                  raceKey: c.raceKey || null
-                }))
-                .filter(c => c.date)
-            const commentByRaceKey = new Map()
-            const commentByDate = new Map()
-            for (const c of commentsArr) {
-                if (c.raceKey && !commentByRaceKey.has(c.raceKey) && c.comment) commentByRaceKey.set(String(c.raceKey), c.comment)
-                if (!commentByDate.has(c.date) && c.comment) commentByDate.set(c.date, c.comment)
-            }
-            return coreEntries.map(e => {
-                const byId = e.raceKey ? commentByRaceKey.get(String(e.raceKey)) : ''
-                const comment = byId || commentByDate.get(e.date) || ''
-                return comment ? `${e.date}, ${e.track}, ${e.placing}, ${comment}` : `${e.date}, ${e.track}, ${e.placing}`
-            })
-        }
 
         const fetchDataAndUpdate = async (raceId) => {
             try {
@@ -1192,6 +1192,7 @@ export default {
             } catch {}
             // Preload saved past comments if ATG data missing/offline
             await preloadSavedPastCommentsForRace()
+            await fetchActiveProfile()
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -1496,6 +1497,9 @@ export default {
             formatNum,
             tierColor,
             customKeySort,
+            aiPresetKey,
+            aiPresetLabel,
+            activeProfile,
         }
     },
 }
@@ -1601,4 +1605,5 @@ export default {
   .start-badge.longer { background: #3b2518; color: #fdba74; border-color: #7c2d12; }
   .start-badge.shorter { background: #082f35; color: #67e8f9; border-color: #164e63; }
 }
+.ai-preset { margin-top: 4px; }
 </style>
