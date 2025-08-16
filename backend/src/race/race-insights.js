@@ -164,7 +164,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
     .map((h, idx) => ({ ...h, rank: idx + 1 }))
 
   // --- Tiering: A/B/C groups --- (overrides-aware)
-  const tierBy = toStr(overrides.tierBy, String(process.env.AI_RANK_TIER_BY || 'formElo').toLowerCase())
+  // Important: default to 'composite' so tiers align with probability/composite logic
+  const tierBy = toStr(overrides.tierBy, String(process.env.AI_RANK_TIER_BY || 'composite').toLowerCase())
   const aWithinForm = toNum(overrides.aWithinForm, Number(process.env.AI_RANK_TIER_A_WITHIN || 5))
   const bWithinForm = toNum(overrides.bWithinForm, Number(process.env.AI_RANK_TIER_B_WITHIN || 15))
   const aWithinComp = toNum(overrides.aWithinComp, Number(process.env.AI_RANK_TIER_A_WITHIN_COMPOSITE || 0.25))
@@ -228,12 +229,27 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   // Attach prob and z-score
   const mean = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
   const std = Math.sqrt(scores.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / (scores.length || 1)) || 1
-  const withProb = rankedWithTier.map((h, i) => ({ ...h, prob: probs[i], zScore: (h.compositeScore - mean) / std }))
+  let withProb = rankedWithTier.map((h, i) => ({ ...h, prob: probs[i], zScore: (h.compositeScore - mean) / std }))
+
+  // Sanity: prevent A-tier horses with effectively zero chance (prob too low or z very negative)
+  const MIN_PROB_FOR_A = toNum(overrides.minProbForA, Number(process.env.AI_TIER_MIN_PROB_FOR_A || 0.03))
+  const MIN_Z_FOR_A = toNum(overrides.minZForA, Number(process.env.AI_TIER_MIN_Z_FOR_A || -1e9))
+  withProb = withProb.map(h => {
+    if (h.tier === 'A' && (h.prob < MIN_PROB_FOR_A || h.zScore < MIN_Z_FOR_A)) {
+      const demotedTier = h.prob > 0 ? 'B' : 'C'
+      return {
+        ...h,
+        tier: demotedTier,
+        tierReason: `${h.tierReason}; demoted: prob/z sanity (minProb=${MIN_PROB_FOR_A}, minZ=${MIN_Z_FOR_A})`
+      }
+    }
+    return h
+  })
 
   const sortedByProb = [...withProb].sort((a, b) => b.prob - a.prob)
   const topProb = sortedByProb[0]?.prob || 0
   const p2 = sortedByProb[1]?.prob || 0
-  const aCoverage = withProb.filter(h => h.tier === 'A').reduce((acc, h) => acc + (h.prob || 0), 0)
+  let aCoverage = withProb.filter(h => h.tier === 'A').reduce((acc, h) => acc + (h.prob || 0), 0)
 
   // --- Race guidance flags --- (overrides-aware)
   const WIDE_OPEN_MAX_TOP_PROB = toNum(overrides.wideOpenMaxTopProb, Number(process.env.AI_GUIDE_WIDE_OPEN_MAX_TOP_PROB || 0.22))
