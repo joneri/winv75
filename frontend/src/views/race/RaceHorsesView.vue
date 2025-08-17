@@ -12,7 +12,6 @@
           :ai-rank-config="aiRankConfig"
           @navigate-to-raceday="navigateToRaceDay"
         />
-        <AiBanner v-if="aiRankConfig" :config="aiRankConfig" />
         <RaceNavigation
           v-if="raceList.length"
           :previous-race-id="previousRaceId"
@@ -215,11 +214,10 @@ import HorseService from '@/views/race/services/HorseService.js'
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
 import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
 import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
-import AiBanner from './components/AiBanner.vue'
 
 export default {
     name: 'RaceHorsesView',
-    components: { RaceHeader, RaceNavigation, AiBanner },
+    components: { RaceHeader, RaceNavigation },
 
     setup() {
         // --- AI summary state and handler ---
@@ -1238,6 +1236,7 @@ export default {
                 }
             }
             const auto = stats.autoStats
+            const auto = stats.autoStats
             if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
                 const winPct = Math.round(auto.winPct)
                 const top3Pct = Math.round(auto.top3Pct)
@@ -1437,11 +1436,6 @@ export default {
 .race-header .subtitle { color: #6b7280; }
 .race-header .meta, .race-header .meta2 { color: #6b7280; font-size: 0.95rem; }
 .race-header .games { display: flex; gap: 6px; }
-
-/* AI guidance banner */
-.ai-banner { margin: 8px 0 4px; padding: 8px 12px; border-radius: 8px; display:flex; align-items:center; justify-content: space-between; border:1px solid #e5e7eb; background: #f9fafb; color: #111827; }
-.ai-banner.wide { background: #fff7ed; border-color: #fdba74; color:#9a3412; }
-.ai-banner.spik { background: #ecfeff; border-color:#67e8f9; color:#155e75; }
 .ai-coverage { font-size: 0.85rem; }
 .coverage-bar { position: relative; height: 6px; width: 120px; background: #e5e7eb; border-radius: 999px; margin-top: 4px; }
 .coverage-fill { height: 100%; background: #10b981; border-radius: 999px; }
@@ -1478,9 +1472,6 @@ export default {
     color: #e5e7eb;         /* light gray text */
     border-color: #222;     /* subtle dark border */
   }
-  .ai-banner { border-color: #374151; background: #0b0b0b; color: #d1d5db; }
-  .ai-banner.wide { background: #3b2518; color: #fdba74; border-color: #7c2d12; }
-  .ai-banner.spik { background: #082f35; color: #67e8f9; border-color: #164e63; }
   .prob-bar { background: #374151; }
   .prob-bar.a { background: #064e3b; }
   .prob-bar.hl { box-shadow: inset 0 0 0 1px #f59e0b, inset 0 0 10px rgba(245, 158, 11, 0.45); }
