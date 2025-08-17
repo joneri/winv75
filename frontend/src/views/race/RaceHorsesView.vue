@@ -1236,7 +1236,6 @@ export default {
                 }
             }
             const auto = stats.autoStats
-            const auto = stats.autoStats
             if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
                 const winPct = Math.round(auto.winPct)
                 const top3Pct = Math.round(auto.top3Pct)
