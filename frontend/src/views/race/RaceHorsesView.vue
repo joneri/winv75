@@ -27,6 +27,8 @@
                     <v-window-item value="0">
                     <v-data-table :headers="headers" :items="tableItems" :items-per-page="16"
                             :custom-key-sort="customKeySort"
+                            :must-sort="false"
+                            :multi-sort="false"
                             class="elevation-1">
                             <template #item.ai="{ item }">
                               <AiTierCell :ai="aiById[item.raw.id]" />
@@ -67,13 +69,13 @@
                                 </div>
                               </div>
                             </template>
-                            <template v-slot:item.numberOfStarts="{ item }">
-                                {{ item.raw.numberOfStarts }}
-                            </template>
                             <template v-slot:item.eloRating="{ item }">
-                                <div :class="{ withdrawn: item.columns.horseWithdrawn }">
-                                    <div v-if="(item.raw.numberOfStarts ?? 0) >= 5">
-                                        {{ item.raw.name }} – {{ formatElo(item.columns.eloRating) }}
+                                <div :class="{ withdrawn: item.columns?.horseWithdrawn }">
+                                    <div v-if="getEloFor(item.raw) > 0">
+                                        {{ item.raw.name }} – {{ formatElo(getEloFor(item.raw)) }}
+                                    </div>
+                                    <div v-else-if="hasEnoughStarts(item.raw)">
+                                        {{ item.raw.name }} – {{ formatElo(getEloFor(item.raw)) }}
                                     </div>
                                     <div v-else>
                                         {{ item.raw.name }} – För få starter.
@@ -81,13 +83,13 @@
                                     <!-- Unified past performances: Date, Track, Placement, Comment -->
                                     <div class="mt-1">
                                       <div
-                                        v-for="(line, idx) in buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore)"
+                                        v-for="(line, idx) in buildUnifiedPastDisplay(item.raw.id, recentCoreFor(item.raw))"
                                         :key="idx"
                                         class="text-caption past-line"
                                       >
                                         {{ line }}
                                       </div>
-                                      <div v-if="!buildUnifiedPastDisplay(item.raw.id, item.raw.recentResultsCore).length" class="text-caption past-line">
+                                      <div v-if="!buildUnifiedPastDisplay(item.raw.id, recentCoreFor(item.raw)).length" class="text-caption past-line">
                                         Inga tidigare starter tillgängliga
                                       </div>
                                     </div>
@@ -119,10 +121,10 @@
                                 </div>
                             </template>
                             <template v-slot:item.formRating="{ item }">
-                                {{ formatElo(item.raw.formRating ?? item.columns.formRating) }}
+                                {{ formatElo(getFormEloFor(item.raw)) }}
                             </template>
                             <template v-slot:item.driverElo="{ item }">
-                                {{ item.raw.driver?.name || '—' }} – {{ formatElo(item.columns.driverElo) }}
+                                {{ item.raw.driver?.name || '—' }} – {{ formatElo(item.columns?.driverElo) }}
                             </template>
                             <template v-slot:item.stats="{ item }">
                                 {{ item.raw.statsFormatted || '—' }}
@@ -250,7 +252,7 @@ export default {
         })
 
         // Advantages builder via composable (same behavior)
-        const { maxAdvChips, getAdvantages, overflowTooltip, getConditionLines } = useStartAdvantages({
+        const { maxAdvChips, getAdvantages, overflowTooltip } = useStartAdvantages({
           rankedMap,
           racedayTrackCode,
           getTrackName,
@@ -280,7 +282,7 @@ export default {
           { title: 'AI', key: 'ai', sortable: true, width: 84 },
           { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
           { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
-          { title: 'Form Elo', key: 'formRating', align: 'end', width: 110 },
+          { title: 'Form Elo', key: 'formRating', sortable: true, align: 'end', width: 110 },
           { title: 'Kusk', key: 'driverElo', align: 'end', width: 110 },
           { title: 'Stats', key: 'stats', sortable: false, width: 180 },
           { title: 'Fördelar', key: 'advantages', sortable: false, width: 220 },
@@ -289,8 +291,122 @@ export default {
 
         const tableItems = computed(() => {
           const arr = currentRace.value?.horses || []
-          return arr.map(h => ({ ...h, ai: h.id }))
+          return arr.map(h => ({
+            ...h,
+            ai: h.id,                      // used by AI column + custom sort
+            eloRating: getEloFor(h),       // numeric value to enable proper sort cycles
+            formRating: getFormEloFor(h),  // numeric value to enable proper sort cycles
+          }))
         })
+
+        // Helpers: past results source resolution and starts threshold
+        const recentFromExtended = (horseOrId) => {
+          try {
+            const raw = currentRace.value?.atgExtendedRaw || {}
+            let starts = []
+            if (Array.isArray(raw.starts)) starts = raw.starts
+            else if (Array.isArray(raw.races)) {
+              // flatten all starts from races[]
+              starts = raw.races.flatMap(r => Array.isArray(r?.starts) ? r.starts : [])
+            }
+            if (!Array.isArray(starts) || !starts.length) return []
+
+            const id = typeof horseOrId === 'object' ? horseOrId.id : horseOrId
+            const name = typeof horseOrId === 'object' ? (horseOrId.name || '') : ''
+            const prog = typeof horseOrId === 'object' ? (horseOrId.programNumber || horseOrId.startNumber || null) : null
+
+            let st = starts.find(s => String(s?.horse?.id) === String(id))
+            if (!st && prog != null) st = starts.find(s => String(s?.number) === String(prog))
+            if (!st && name) st = starts.find(s => String(s?.horse?.name || '').toLowerCase() === String(name).toLowerCase())
+            if (!st) return []
+            const res = st.horse?.results || st.results || raw?.horseResults
+            // Case A: Array of past results
+            if (Array.isArray(res) && res.length) {
+              return res
+                .filter(r => {
+                  const type = (r?.race?.type || r?.type || '').toLowerCase()
+                  return !type.includes('qual')
+                })
+                .map(r => {
+                  // Try to surface a meaningful comment from records if present
+                  let comment = ''
+                  const recs = Array.isArray(r?.records) ? r.records : []
+                  const withComment = recs.find(x => x?.trMediaInfo?.comment?.trim())
+                  if (withComment) comment = String(withComment.trMediaInfo.comment).trim()
+                  return {
+                    date: r?.race?.date || r?.date || r?.startTime,
+                    trackName: r?.race?.track?.name || r?.race?.track || r?.track,
+                    placement: r?.place || r?.placement || r?.position,
+                    time: r?.time || r?.kmTime || r?.resultTime,
+                    distance: r?.race?.distance || r?.distance,
+                    comment,
+                  }
+                })
+                .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+                .slice(0, 5)
+            }
+            // Case B: Object with records[] only (no past results array)
+            if (res && typeof res === 'object' && Array.isArray(res.records) && res.records.length) {
+              return res.records
+                .map(rec => ({
+                  date: rec?.date,
+                  trackName: null,
+                  placement: rec?.place ?? null,
+                  time: null,
+                  distance: null,
+                  comment: rec?.trMediaInfo?.comment?.trim() || '',
+                }))
+                .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+                .slice(0, 5)
+            }
+            return []
+          } catch {
+            return []
+          }
+        }
+        const recentCoreFor = (horse) => {
+          if (!horse) return []
+          const a = horse.recentResultsCore
+          if (Array.isArray(a) && a.length) return a
+          const b = horse.recentResults
+          if (Array.isArray(b) && b.length) return b
+          const c = horse.recentStarts || horse.pastResults || horse.results
+          if (Array.isArray(c) && c.length) return c
+          // Final fallback: derive from extended race data stored at race level
+          return recentFromExtended(horse)
+        }
+        const getNumberOfStarts = (horse) => {
+          if (!horse) return 0
+          const ranked = rankedMap.value.get(horse.id)
+          const raw = ranked?.numberOfStarts ?? horse.numberOfStarts ?? horse.stats?.numberOfStarts ?? 0
+          let num = Number(raw)
+          if (!Number.isFinite(num)) {
+            const digits = parseInt(String(raw).replace(/[^0-9]/g, ''), 10)
+            num = Number.isFinite(digits) ? digits : 0
+          }
+          return num
+        }
+        const hasEnoughStarts = (horse) => getNumberOfStarts(horse) >= 5
+
+        // ELO fallback helpers: prefer horse fields, then rankedMap
+        const getEloFor = (horse) => {
+          if (!horse) return 0
+          let v = horse.columns?.eloRating ?? horse.eloRating ?? horse.stats?.eloRating
+          if (!(Number.isFinite(Number(v)) && Number(v) > 0)) {
+            const ranked = rankedMap.value.get(horse.id)
+            v = ranked?.columns?.eloRating ?? ranked?.eloRating
+          }
+          return Number(v) || 0
+        }
+        const getFormEloFor = (horse) => {
+          if (!horse) return 0
+          let v = horse.formRating ?? horse.columns?.formRating
+          if (!(Number.isFinite(Number(v)) && Number(v) > 0)) {
+            const ranked = rankedMap.value.get(horse.id)
+            v = ranked?.formRating ?? ranked?.columns?.formRating
+          }
+          return Number(v) || 0
+        }
 
         // Fetch race, ratings and set into store
         const fetchDataAndUpdate = async (raceId) => {
@@ -502,9 +618,6 @@ export default {
 
         return {
             // core
-            route,
-            router,
-            store,
             aiSummary,
             aiSummaryLoading,
             aiSummaryError,
@@ -525,7 +638,6 @@ export default {
             formatStartListShoe,
             startListShoeTooltip,
             // advantages
-            getConditionLines,
             maxAdvChips,
             getAdvantages,
             overflowTooltip,
@@ -542,6 +654,11 @@ export default {
             tableItems,
             // past display
             buildUnifiedPastDisplay,
+            recentCoreFor,
+            getNumberOfStarts,
+            hasEnoughStarts,
+            getEloFor,
+            getFormEloFor,
             raceMetaString,
             trackMetaString,
             raceGames,
