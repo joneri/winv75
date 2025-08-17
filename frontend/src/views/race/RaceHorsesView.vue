@@ -29,32 +29,7 @@
                             :custom-key-sort="customKeySort"
                             class="elevation-1">
                             <template #item.ai="{ item }">
-                              <div class="ai-cell">
-                                <template v-if="aiById[item.raw.id]">
-                                  <v-tooltip location="top">
-                                    <template #activator="{ props }">
-                                      <v-chip
-                                        v-bind="props"
-                                        size="x-small"
-                                        :color="tierColor(aiById[item.raw.id].tier)"
-                                        :class="['mr-1', 'tier-chip', { highlight: aiById[item.raw.id].highlight }]"
-                                        label
-                                      >
-                                        {{ aiById[item.raw.id].tier || '-' }}
-                                      </v-chip>
-                                    </template>
-                                    <div class="tier-tip">
-                                      <div><strong>Varför i {{ aiById[item.raw.id].tier || '-' }}</strong></div>
-                                      <div>p: {{ formatPct(aiById[item.raw.id].prob) }}, z: {{ formatNum(aiById[item.raw.id].zScore) }}, comp: {{ formatNum(aiById[item.raw.id].compositeScore) }}</div>
-                                      <div v-if="aiById[item.raw.id].tierReason">{{ aiById[item.raw.id].tierReason }}</div>
-                                    </div>
-                                  </v-tooltip>
-                                  <div class="prob-bar" :class="{ a: aiById[item.raw.id].tier === 'A', hl: aiById[item.raw.id].highlight }">
-                                    <div class="prob-fill" :style="{ width: Math.round((aiById[item.raw.id].prob||0)*100) + '%' }"></div>
-                                  </div>
-                                </template>
-                                <template v-else>—</template>
-                              </div>
+                              <AiTierCell :ai="aiById[item.raw.id]" />
                             </template>
                             <template #item.programNumber="{ item }">
                               <div class="start-cell">
@@ -196,38 +171,48 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { useRaceMeta } from '@/composables/useRaceMeta.js'
-import { getTrackName, trackNames } from '@/utils/track'
+import { getTrackName, getTrackCodeFromName } from '@/utils/track'
 import RaceHeader from './components/RaceHeader.vue'
 import RaceNavigation from './components/RaceNavigation.vue'
+import AiTierCell from './components/AiTierCell.vue'
 import {
-    checkIfUpdatedRecently,
     fetchRaceFromRaceId,
     fetchHorseScores,
     fetchDriverRatings,
-    triggerRatingsUpdate,
     fetchRaceAiList
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
-import HorseService from '@/views/race/services/HorseService.js'
-// Removed HorseCommentBlock – unified view replaces separate blocks
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
-import { fetchSavedPastComments } from '@/ai/horseSummaryClient.js'
 import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
+import { formatElo, formatStartPosition, formatPct, formatNum } from '@/utils/formatters.js'
+import { getShoeById, getShoeTooltipById, formatShoe, shoeTooltip, formatStartListShoe, startListShoeTooltip } from '@/composables/useShoes.js'
+import { useStartAdvantages } from '@/composables/useStartAdvantages.js'
+import { buildUnifiedPastDisplay } from '@/composables/usePastDisplay.js'
 
 export default {
     name: 'RaceHorsesView',
-    components: { RaceHeader, RaceNavigation },
+    components: { RaceHeader, RaceNavigation, AiTierCell },
 
     setup() {
+        const route = useRoute()
+        const router = useRouter()
+        const store = useStore()
+
+        // raceday / track context
+        const racedayDetails = ref(null)
+        const racedayTrackName = ref('')
+        const racedayTrackCode = ref('')
+        const trackMeta = ref({})
+        const spelformer = ref({})
+        const activeTab = ref('0')
+
         // --- AI summary state and handler ---
         const aiSummary = ref({})
         const aiSummaryLoading = ref({})
         const aiSummaryError = ref({})
         const aiSummaryMeta = ref({})
         const userId = ref('anon')
-        // Saved ATG past comments fallback (from backend persistence)
-        const savedPastComments = ref({})
 
         // Per-race AI insights state
         const aiInsights = ref(null)
@@ -252,16 +237,26 @@ export default {
           return null
         })
 
-        const formatPct = (p) => {
-          const n = Number(p)
-          if (!isFinite(n)) return '—'
-          return `${Math.round(n * 100)}%`
-        }
-        const formatNum = (v) => {
-          const n = Number(v)
-          if (!isFinite(n)) return '—'
-          return (Math.abs(n) >= 10 ? n.toFixed(1) : n.toFixed(2))
-        }
+        const currentRace = computed(() => store.state.raceHorses.currentRace)
+        const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
+        const rankedMap = computed(() => new Map((rankedHorses.value || []).map(r => [r.id, r])))
+
+        // Race meta helpers
+        const raceStartMethod = computed(() => currentRace.value?.startMethod || currentRace.value?.raceType?.text || '')
+        const hasHandicap = computed(() => {
+          const base = Number(currentRace.value?.distance || 0)
+          const horses = currentRace.value?.horses || []
+          return horses.some(h => Number(h.actualDistance || 0) !== base)
+        })
+
+        // Advantages builder via composable (same behavior)
+        const { maxAdvChips, buildConditionAdvantages, buildPlusAdvantages, getAdvantages, overflowTooltip, getConditionLines } = useStartAdvantages({
+          rankedMap,
+          racedayTrackCode,
+          getTrackName,
+          currentRace,
+        })
+
         const tierColor = (tier) => tier === 'A' ? 'green' : tier === 'B' ? 'orange' : 'grey'
 
         // Custom sort: AI column by A/B/C tier, then probability
@@ -298,6 +293,72 @@ export default {
           return arr.map(h => ({ ...h, ai: h.id }))
         })
 
+        // Fetch race, ratings and set into store
+        const fetchDataAndUpdate = async (raceId) => {
+          if (!raceId) return
+          try {
+            const race = await fetchRaceFromRaceId(raceId)
+            store.commit('raceHorses/setCurrentRace', race)
+            const horseIds = (race.horses || []).map(h => h.id)
+            // Preload ratings and scores (kept for parity; backend may use cached values)
+            try { await fetchHorseScores(horseIds) } catch {}
+            try { await fetchDriverRatings((race.horses || []).map(h => h.driverId).filter(Boolean)) } catch {}
+            // Rank horses for this race
+            await store.dispatch('raceHorses/rankHorses', raceId)
+          } catch (e) {
+            console.error('Failed to fetch race', e)
+          }
+        }
+
+        // AI summary generator
+        const onGenerateSummary = async (horse) => {
+          if (!horse || !currentRace.value?.raceId) return
+          const hid = horse.id
+          try {
+            aiSummaryLoading.value[hid] = true
+            aiSummaryError.value[hid] = ''
+            const summary = await fetchHorseSummary({
+              eloRating: horse.columns?.eloRating ?? horse.eloRating,
+              numberOfStarts: horse.numberOfStarts,
+              startMethod: raceStartMethod.value,
+              startPosition: horse.actualStartPosition || horse.startPosition || null,
+              actualDistance: horse.actualDistance || null,
+              baseDistance: currentRace.value?.distance || null,
+              hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
+              openStretchLanes: trackMeta.value?.openStretchLanes || 1,
+            }, currentRace.value.raceId, hid, userId.value)
+            aiSummary.value[hid] = summary
+            aiSummaryMeta.value[hid] = {
+              generatedAt: new Date().toISOString(),
+              context: {
+                eloRating: horse.columns?.eloRating ?? horse.eloRating,
+                fieldElo: { median: (rankedHorses.value || []).reduce((acc, h, _, arr) => acc + (((h.columns?.eloRating ?? h.eloRating) || 0) / (arr.length || 1)), 0) },
+                startMethod: raceStartMethod.value,
+                startPosition: horse.actualStartPosition || horse.startPosition || null,
+                actualDistance: horse.actualDistance || null,
+                baseDistance: currentRace.value?.distance || null,
+                hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
+                openStretchLanes: trackMeta.value?.openStretchLanes || 1,
+              }
+            }
+          } catch (e) {
+            console.error('AI summary failed', e)
+            aiSummaryError.value[hid] = 'AI-summary misslyckades. Försök igen.'
+          } finally {
+            aiSummaryLoading.value[hid] = false
+          }
+        }
+
+        // Race meta strings and games badges
+        const { raceMetaString, trackMetaString, raceGames } = useRaceMeta({
+          currentRace,
+          trackMeta,
+          spelformer,
+          racedayTrackCode,
+          raceStartMethod,
+          hasHandicap,
+        })
+
         const fetchAi = async () => {
           try {
             const raceId = route.params.raceId
@@ -321,250 +382,6 @@ export default {
           } catch {}
         }
 
-        // helper: preload saved past comments when ATG extended missing
-        const preloadSavedPastCommentsForRace = async () => {
-          try {
-            const horses = currentRace.value?.horses || []
-            const map = {}
-            for (const h of horses) {
-              // If ATG extended data has comments, skip fetch
-              const atg = getAtgPastRaceCommentsForHorse(h.id)
-              if (atg && atg.length) continue
-              const arr = await fetchSavedPastComments(h.id)
-              if (Array.isArray(arr) && arr.length) map[h.id] = arr
-            }
-            savedPastComments.value = map
-          } catch (e) {
-            console.warn('Could not preload saved past comments', e)
-          }
-        }
-
-        // --- Router/Store ---
-        const store = useStore()
-        const route = useRoute()
-        const router = useRouter()
-
-        const onGenerateSummary = async (horse) => {
-          aiSummaryLoading.value[horse.id] = true
-          aiSummaryError.value[horse.id] = ''
-          try {
-            const pastRaceCommentsArr = getUiPastComments(horse.id)
-            const pastRaceComments = pastRaceCommentsArr
-              .filter(c => c.comment && c.date)
-              .map(c => `${c.date}: ${c.comment}`)
-              .join('\n')
-
-            const fieldElos = (currentRace.value?.horses || []).map(h => Number(h.eloRating || h.rating || 0)).filter(n => n>0)
-            const avgElo = fieldElos.length ? Math.round(fieldElos.reduce((a,b)=>a+b,0)/fieldElos.length) : null
-            const sorted = [...fieldElos].sort((a,b)=>a-b)
-            const medianElo = sorted.length ? Math.round((sorted[Math.floor((sorted.length-1)/2)] + sorted[Math.ceil((sorted.length-1)/2)]) / 2) : null
-            const myElo = Math.round(Number(horse.eloRating || horse.rating || 0)) || null
-            const percentile = fieldElos.length && myElo!=null ? Math.round((fieldElos.filter(v=>v<=myElo).length/fieldElos.length)*100) : null
-
-            const ctx = {
-              eloRating: horse.eloRating,
-              horseName: horse.name,
-              numberOfStarts: horse.numberOfStarts,
-              driverName: horse.driver?.name,
-              driverElo: horse.driver?.elo,
-              formStats: horse.statsFormatted,
-              conditions: getConditionLines(horse),
-              pastRaceComments,
-              programNumber: horse.programNumber,
-              startMethod: raceStartMethod.value,
-              startPosition: horse.actualStartPosition ?? horse.startPosition ?? null,
-              baseDistance: currentRace.value?.distance ?? null,
-              actualDistance: horse.actualDistance ?? null,
-              fieldElo: { avg: avgElo, median: medianElo, percentile },
-              hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
-              openStretchLanes: trackMeta.value?.openStretchLanes || (trackMeta.value?.hasOpenStretch ? 1 : 0),
-              trackLengthMeters: trackMeta.value?.trackLengthMeters ?? trackMeta.value?.trackLength ?? null,
-              trackFavouriteStartingPosition: trackMeta.value?.favouriteStartingPosition ?? null,
-              recentResultsCore: horse.recentResultsCore ?? []
-            }
-
-            const summary = await fetchHorseSummary(ctx, currentRace.value.raceId, horse.id, userId.value)
-            aiSummary.value[horse.id] = summary
-            // Fetch saved meta after persistence
-            try {
-              const saved = await fetchSavedHorseSummary(currentRace.value.raceId, horse.id)
-              aiSummaryMeta.value[horse.id] = saved.meta || null
-            } catch {}
-          } catch (e) {
-            aiSummaryError.value[horse.id] = 'Kunde inte generera AI-sammanfattning.'
-          } finally {
-            aiSummaryLoading.value[horse.id] = false
-          }
-        }
-        // --- ATG comment/pastRaceComments extraction ---
-        // All comment and past race comment logic is now single-source: atgExtendedRaw only.
-        // This is robust to missing/undefined fields and never throws.
-        const getAtgStartForHorse = (horseId) => {
-          const starts = currentRace.value?.atgExtendedRaw?.starts;
-          if (!Array.isArray(starts)) return null;
-          return starts.find(s => s?.horse?.id === horseId) || null;
-        };
-
-        const getAtgCommentForHorse = (horseId) => {
-          const start = getAtgStartForHorse(horseId);
-          if (!start || !Array.isArray(start.comments) || !start.comments[0]) return '';
-          // Prefer commentText, fallback to comment, fallback to empty string
-          return (
-            (typeof start.comments[0].commentText === 'string' && start.comments[0].commentText.trim()) ||
-            (typeof start.comments[0].comment === 'string' && start.comments[0].comment.trim()) ||
-            ''
-          );
-        };
-
-        // Extract past race comments, always robust to missing fields
-        const extractPastRaceComments = (results) => {
-          if (Array.isArray(results)) {
-            return results
-              .filter(r => {
-                const raceType = r?.race?.type || r?.type || '';
-                return !raceType.toLowerCase().includes('qual');
-              })
-              .flatMap(r => Array.isArray(r?.records)
-                ? r.records.filter(rec => rec?.trMediaInfo?.comment && rec.trMediaInfo.comment.trim())
-                  .map(rec => ({
-                    date: rec?.date,
-                    comment: rec.trMediaInfo.comment.trim(),
-                    place: rec?.place ?? r?.place ?? '—',
-                    raceKey: rec?.raceId || rec?.id || r?.raceId || r?.id || null
-                  }))
-                : []
-              )
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
-              .slice(0, 5);
-          }
-          if (results && typeof results === 'object' && Array.isArray(results.records)) {
-            return results.records
-              .filter(rec => rec?.trMediaInfo?.comment && rec.trMediaInfo.comment.trim())
-              .map(rec => ({
-                date: rec?.date,
-                comment: rec.trMediaInfo.comment.trim(),
-                place: rec?.place ?? '—',
-                raceKey: rec?.raceId || rec?.id || null
-              }))
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
-              .slice(0, 5);
-          }
-          return [];
-        };
-
-        const getAtgPastRaceCommentsForHorse = (horseId) => {
-          const start = getAtgStartForHorse(horseId);
-          if (!start || !start.horse || !start.horse.results) return [];
-          return extractPastRaceComments(start.horse.results);
-        };
-
-        const getUiPastComments = (horseId) => {
-          const atg = getAtgPastRaceCommentsForHorse(horseId)
-          if (atg && atg.length) return atg
-          return savedPastComments.value[horseId] || []
-        }
-
-        // --- Helpers: formatters (ELO, start position) ---
-        const formatElo = (val) => {
-          const n = Number(val)
-          if (!isFinite(n) || n <= 0) return '—'
-          return Math.round(n).toString()
-        }
-
-        const formatStartPosition = (pos) => {
-          if (pos === null || pos === undefined) return '—'
-          const n = Number(pos)
-          if (!isFinite(n) || n <= 0) return '—'
-          return String(n)
-        }
-
-        // --- Helpers: shoe mapping/formatting ---
-        const shoeMap = {
-          0: { id: 0, text: 'Okänd', short: '—', tip: 'Okänd sko-info' },
-          4: { id: 4, text: 'Skor runt om', short: 'Skor', tip: 'Skor på alla hovar' },
-          3: { id: 3, text: 'Barfota fram', short: 'Bf fram', tip: 'Barfota fram' },
-          2: { id: 2, text: 'Barfota bak', short: 'Bf bak', tip: 'Barfota bak' },
-          1: { id: 1, text: 'Barfota runt om', short: 'Bf r.o.', tip: 'Barfota runt om' },
-        }
-
-        const getShoeById = (id) => {
-          const key = Number(id)
-          return shoeMap[key] || { id: key, text: `Kod ${id}`, short: `Kod ${id}`, tip: `Okänd kod ${id}` }
-        }
-        const getShoeTooltipById = (id) => getShoeById(id).tip
-
-        const formatShoe = (codeOrObj) => {
-          if (codeOrObj == null) return '—'
-          const code = typeof codeOrObj === 'object' ? codeOrObj.code : codeOrObj
-          return getShoeById(code).short
-        }
-        const shoeTooltip = (codeOrObj) => {
-          if (codeOrObj == null) return ''
-          const code = typeof codeOrObj === 'object' ? codeOrObj.code : codeOrObj
-          return getShoeById(code).text
-        }
-
-        const formatStartListShoe = (horse) => {
-          const prev = horse?.previousShoeOption?.code
-          const curr = horse?.shoeOption?.code
-          if (prev != null && curr != null && prev !== curr) {
-            return `${getShoeById(prev).short} → ${getShoeById(curr).short}`
-          }
-          if (curr != null) return getShoeById(curr).short
-          if (prev != null) return getShoeById(prev).short
-          return '—'
-        }
-        const startListShoeTooltip = (horse) => {
-          const prev = horse?.previousShoeOption?.code
-          const curr = horse?.shoeOption?.code
-          if (prev != null && curr != null && prev !== curr) {
-            return `Skobyte: ${getShoeById(prev).text} → ${getShoeById(curr).text}`
-          }
-          if (curr != null) return getShoeById(curr).text
-          if (prev != null) return `Föregående: ${getShoeById(prev).text}`
-          return ''
-        }
-
-        // Helper to parse start method and handicaps from propTexts
-        const parseStartMethodFromPropTexts = (propTexts = []) => {
-          const text = propTexts
-            .filter(pt => pt.typ === 'T' && pt.text)
-            .map(pt => pt.text)
-            .join(' ');
-
-          let method = 'Voltstart';
-          let code = 'V';
-          if (/Autostart/i.test(text)) {
-            method = 'Autostart';
-            code = 'A';
-          } else if (/Voltstart/i.test(text)) {
-            method = 'Voltstart';
-            code = 'V';
-          }
-
-          const handicap = /\btillägg\b|\b\d{2,3}\s*m\b/i.test(text);
-
-          return { method, code, handicap };
-        };
-
-        const startInfo = computed(() =>
-          parseStartMethodFromPropTexts(currentRace.value?.propTexts || [])
-        );
-
-        const raceStartMethod = computed(() => startInfo.value.method);
-        const raceStartMethodCode = computed(() => startInfo.value.code);
-        const hasHandicap = computed(() => startInfo.value.handicap);
-
-        const showStartPositionColumn = computed(() => {
-          const horses = currentRace.value?.horses || [];
-          const anyDiff = horses.some(h => {
-            const pos = h.actualStartPosition ?? h.startPosition;
-            return pos && pos !== h.programNumber;
-          });
-          return raceStartMethod.value === 'Voltstart' || anyDiff;
-        });
-
-        
         const navigateToRaceDay = (raceDayId) => {
             const currentPath = router.currentRoute.value.fullPath
             const segments = currentPath.split('/')
@@ -573,51 +390,6 @@ export default {
             if (id) router.push(`/raceday/${id}`)
         }
 
-        const currentRace = computed(() => store.state.raceHorses.currentRace)
-        const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
-        const rankedMap = computed(() => new Map((rankedHorses.value || []).map(r => [r.id, r])))
-        const rankedHorsesEnriched = computed(() => {
-            const horsesById = new Map((currentRace.value?.horses || []).map(h => [h.id, h]))
-            return (rankedHorses.value || []).map((r, idx) => {
-                const h = horsesById.get(r.id)
-                const notes = []
-                const prev = h?.previousShoeOption?.code
-                const curr = h?.shoeOption?.code
-                if (prev != null && curr != null && prev !== curr) notes.push('Skobyte')
-                if (r.favoriteTrack && r.favoriteTrack === racedayTrackCode.value) notes.push('Favoritbana')
-                const favPos = r.favoriteStartPosition != null ? String(r.favoriteStartPosition).trim() : ''
-                const startPos = (h?.actualStartPosition ?? h?.startPosition)
-                if (favPos && startPos != null && favPos === String(startPos).trim()) notes.push('Favoritspår')
-                return { ...r, rank: idx + 1, plusPoints: notes.join(', ') }
-            })
-        })
-        const rankHorses = async () => {
-            const raceId = route.params.raceId
-            await store.dispatch('raceHorses/rankHorses', raceId)
-        }
-        const updatedHorses = ref([]) // A list to store IDs of updated horses
-        const allHorsesUpdated = computed(() => {
-            const horses = currentRace.value.horses || []
-            const allUpdated = horses.every(horse => updatedHorses.value.includes(horse.id))
-            console.log("All horses updated?", allUpdated)
-            return allUpdated
-        })
-        const activeTab = ref(0) // Default tab
-        const items = ['Start List', 'Ranked Horses'] // Tabs
-        const racedayTrackName = ref('')
-        const racedayTrackCode = ref('')
-        const trackMeta = ref({})
-        const spelformer = ref({})
-        const racedayDetails = ref(null)
-
-        const { raceMetaString, trackMetaString, raceGames } = useRaceMeta({
-          currentRace,
-          trackMeta,
-          spelformer,
-          racedayTrackCode,
-          raceStartMethod,
-          hasHandicap
-        })
         const raceList = computed(() => {
             return racedayDetails.value?.raceList?.sort((a, b) => a.raceNumber - b.raceNumber) || []
         })
@@ -639,13 +411,6 @@ export default {
             const racedayId = route.params.racedayId
             if (racedayId) router.push(`/raceday/${racedayId}/race/${raceId}`)
             else router.push(`/race/${raceId}`)
-        }
-
-        const getTrackCodeFromName = (name) => {
-            for (const [code, n] of Object.entries(trackNames)) {
-                if (n === name) return code
-            }
-            return ''
         }
 
         const fetchTrackInfo = async () => {
@@ -688,458 +453,6 @@ export default {
             }
         }
 
-        const formatStats = (stats) => {
-            if (!stats || stats.totalStarts === 0) return ''
-            const wins = stats.wins ?? 0
-            const top3 = stats.top3Placements ?? stats.top3 ?? 0
-            const form = typeof stats.formIndex === 'number'
-                ? stats.formIndex
-                : (typeof stats.formScore === 'number' ? stats.formScore : null)
-            const formDisplay = form !== null ? form : '—'
-            return `${wins} segrar • ${top3} plats • Form: ${formDisplay}`
-        }
-
-        const fetchUpdatedHorses = async () => {
-            try {
-                const horses = currentRace.value?.horses || []
-                const results = await Promise.all(
-                  horses.map(async (h) => ({ id: h.id, updated: await checkIfUpdatedRecently(h.id) }))
-                )
-                updatedHorses.value = results.filter(r => r.updated).map(r.id)
-            } catch (e) {
-                console.error('Failed to check updated horses', e)
-                updatedHorses.value = []
-            }
-        }
-
-        // Core builder for unified past performances from persisted results
-        // Returns array of entries: { date: 'YYYY-MM-DD', trackCode?: string, trackName?: string, placing: '1|2|3|np', raceKey?: string }
-        const buildRecentResultsCore = (horseData) => {
-            const raw = horseData?.results
-            const list = Array.isArray(raw?.records) ? raw.records.slice() : (Array.isArray(raw) ? raw.slice() : [])
-            if (!list.length) return []
-
-            const normalizeDate = (r) => r?.raceInformation?.date || r?.startTime || r?.date || null
-            const isWithdrawn = (r) => !!(r?.withdrawn || r?.wasWithdrawn)
-            const getRaceTypeText = (r) => String(
-                r?.race?.type || r?.type || r?.raceInformation?.raceType?.code || r?.raceInformation?.raceType?.name || ''
-            ).toLowerCase()
-            const isQualifierOrTrial = (r) => {
-                const t = getRaceTypeText(r)
-                return (
-                    t.includes('qual') ||
-                    t.includes('kval') ||
-                    t.includes('trial') ||
-                    t.includes('premie') ||
-                    t.includes('prov')
-                )
-            }
-            const getTrackCode = (r) => r?.track?.code || r?.trackCode || r?.raceInformation?.track?.code || ''
-            const getTrackNameFromR = (r) => r?.track?.name || r?.raceInformation?.track?.name || ''
-            const getPlacing = (r) => {
-                const p = parseInt(r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0, 10)
-                // Treat 989 (pending) and 99 (no placing) as np
-                if (p === 989 || p === 99) return 'np'
-                return (!Number.isNaN(p) && p > 0) ? String(p) : 'np'
-            }
-            const getRaceKey = (r) => String(
-                r?.raceInformation?.id || r?.race?.id || r?.raceId || r?.id || `${normalizeDate(r)}|${getTrackCode(r)}|${r?.distance?.sortValue ?? r?.distance ?? ''}`
-            )
-
-            const filtered = list
-              .filter(r => {
-                if (isWithdrawn(r) || isQualifierOrTrial(r)) return false
-                const p = parseInt(r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0, 10)
-                // drop placement 989 from core selection
-                if (p === 989) return false
-                return true
-              })
-              .sort((a, b) => new Date(normalizeDate(b) || 0) - new Date(normalizeDate(a) || 0))
-
-            const seen = new Set()
-            const out = []
-            for (const r of filtered) {
-                const key = getRaceKey(r)
-                if (seen.has(key)) continue
-                seen.add(key)
-                const date = normalizeDate(r)
-                const trackCode = getTrackCode(r)
-                const trackName = getTrackNameFromR(r) || getTrackName(trackCode)
-                const placing = getPlacing(r)
-                out.push({ date, trackCode, trackName, placing, raceKey: key })
-                if (out.length >= 5) break
-            }
-            return out
-        }
-
-        // Build unified past performance display lines by merging core entries with UI/ATG comments
-        // Returns array of strings for rendering
-        const buildUnifiedPastDisplay = (horseId, recentResultsCore = []) => {
-            try {
-                const comments = Array.isArray(getUiPastComments(horseId)) ? getUiPastComments(horseId) : []
-                const byKey = new Map()
-                const byDate = new Map()
-                for (const c of comments) {
-                    const k = c?.raceKey
-                    if (k) byKey.set(String(k), c)
-                    const d = c?.date
-                    if (d) byDate.set(String(d).slice(0, 10), c)
-                }
-                const lines = []
-                for (const rc of (recentResultsCore || [])) {
-                    const k = rc?.raceKey ? String(rc.raceKey) : null
-                    const d = rc?.date ? String(rc.date).slice(0, 10) : null
-                    const cm = (k && byKey.get(k)) || (d && byDate.get(d)) || null
-                    const date = d || (cm?.date ? String(cm.date).slice(0, 10) : '—')
-                    const track = rc?.trackName || (rc?.trackCode ? getTrackName(rc.trackCode) : '') || '—'
-                    const placingRaw = rc?.placing || cm?.place || '—'
-                    const placing = placingRaw === 'np' ? 'np' : (placingRaw && placingRaw !== '—' ? `#${placingRaw}` : '—')
-                    const comment = cm?.comment ? String(cm.comment).trim() : ''
-                    const parts = [date, track, placing]
-                    const base = parts.filter(Boolean).join(' – ')
-                    lines.push(comment ? `${base} – ${comment}` : base)
-                }
-                // If no core rows, fall back to comments only
-                if (!lines.length && comments.length) {
-                    for (const c of comments.slice(0, 5)) {
-                        const d = c?.date ? String(c.date).slice(0, 10) : '—'
-                        const plc = c?.place === 'np' ? 'np' : (c?.place ? `#${c.place}` : '—')
-                        lines.push([d, plc, c?.comment || ''].filter(Boolean).join(' – '))
-                    }
-                }
-                return lines
-            } catch {
-                return []
-            }
-        }
-
-        const fetchDataAndUpdate = async (raceId) => {
-            try {
-                const responseData = await fetchRaceFromRaceId(raceId)
-                const horseIds = (responseData.horses || []).map(h => h.id)
-                // Collect driver IDs even if the API returns them as strings
-                const driverIds = (responseData.horses || [])
-                    .map(h => h.driver?.licenseId ?? h.driver?.id)
-                    .filter(id => id != null)
-                let scores = []
-                let driverRatings = []
-                if (horseIds.length) {
-                    scores = await fetchHorseScores(horseIds)
-                }
-                if (driverIds.length) {
-                    driverRatings = await fetchDriverRatings(driverIds)
-                }
-                const scoreMap = {}
-                const ratingMap = {}
-                const numberOfStartsMap = {}
-                const driverRatingMap = {}
-                const formRatingMap = {}
-                scores.forEach(r => {
-                    scoreMap[r.id] = r.score
-                    ratingMap[r.id] = r.rating
-                    formRatingMap[r.id] = r.formRating
-                    numberOfStartsMap[r.id] = parseInt(r.statistics?.[0]?.numberOfStarts) || 0
-                })
-                driverRatings.forEach(d => {
-                    // Use string keys to avoid number/string mismatches
-                    driverRatingMap[String(d.id)] = d.elo
-                })
-                // Stats based on Travsport data (horse.results[]). ATG past-race
-                // objects may expose a `.records` property, so handle both
-                // shapes when gathering result data.
-                const statsFor = (horse) => {
-                    const results = Array.isArray(horse.results?.records)
-                        ? [...horse.results.records]
-                        : Array.isArray(horse.results)
-                            ? [...horse.results]
-                            : []
-                    // Sort most recent first so that form is calculated on the
-                    // latest starts. Travsport results expose the race date
-                    // under `raceInformation.date` whereas some ATG payloads
-                    // may use `startTime`.
-                    results.sort((a, b) =>
-                        new Date(b.raceInformation?.date || b.startTime || 0) -
-                        new Date(a.raceInformation?.date || a.startTime || 0)
-                    )
-                    let totalStarts = 0
-                    let wins = 0
-                    let seconds = 0
-                    let thirds = 0
-                    let sumPlacings = 0
-                    let racesWithPlace = 0
-                    let formScore = 0
-
-                    const driverCounts = {}
-                    let favDriver = ''
-                    let favCount = 0
-
-                    const trackStats = {}
-                    const distanceStats = {
-                        '1600-1800': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
-                        '1801-2200': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
-                        '2201-2600': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
-                        '2601+': { starts: 0, wins: 0, sumPlacings: 0, placements: 0 },
-                    }
-                    const methodStats = {
-                        A: { starts: 0, wins: 0, top3: 0, sumPlacings: 0, placements: 0 },
-                        V: { starts: 0, wins: 0, top3: 0, sumPlacings: 0, placements: 0 },
-                    }
-
-                    const getDistanceBucket = (dist) => {
-                        if (dist >= 1600 && dist <= 1800) return '1600-1800'
-                        if (dist >= 1801 && dist <= 2200) return '1801-2200'
-                        if (dist >= 2201 && dist <= 2600) return '2201-2600'
-                        if (dist >= 2601) return '2601+'
-                        return null
-                    }
-
-                    let formCount = 0
-                    results.forEach((r) => {
-                        if (r.withdrawn) return
-
-                        // Travsport stores placing under `placement.sortValue`
-                        // while other data sources might expose `place`.
-                        const placementRaw = parseInt(
-                            r?.placement?.sortValue ?? r?.place ?? r?.placement ?? 0,
-                            10
-                        )
-                        // Normalize invalids: 989 (no official result), 99 (no placing), 999 (scratched)
-                        const isScratch = placementRaw >= 999
-                        if (isScratch) return
-
-                        const isInvalidPlacing = placementRaw === 989 || placementRaw >= 99
-                        const isValidPlacing = Number.isFinite(placementRaw) && placementRaw > 0 && placementRaw < 99
-
-                        // Count starts except scratches
-                        totalStarts++
-
-                        if (isValidPlacing) {
-                            if (placementRaw === 1) wins++
-                            else if (placementRaw === 2) seconds++
-                            else if (placementRaw === 3) thirds++
-
-                            sumPlacings += placementRaw
-                            racesWithPlace++
-                        }
-
-                        // Count form on first 5 valid recent starts (exclude 99/989/999)
-                        if (isValidPlacing && formCount < 5) {
-                            if (placementRaw === 1) formScore += 3
-                            else if (placementRaw === 2) formScore += 2
-                            else if (placementRaw === 3) formScore += 1
-                            formCount++
-                        }
-
-                        const driverObj = r?.driver || {}
-                        const dName =
-                            driverObj.name ||
-                            [driverObj.firstName, driverObj.lastName]
-                                .filter(Boolean)
-                                .join(' ')
-                                .trim()
-                        if (dName) {
-                            driverCounts[dName] = (driverCounts[dName] || 0) + 1
-                            if (driverCounts[dName] > favCount) {
-                                favCount = driverCounts[dName]
-                                favDriver = dName
-                            }
-                        }
-
-                        const track = r.track?.code || r.trackCode
-                        if (track) {
-                            if (!trackStats[track]) {
-                                trackStats[track] = { starts: 0, wins: 0, sumPlacings: 0, placements: 0 }
-                            }
-                            const t = trackStats[track]
-                            t.starts++
-                            if (placementRaw === 1) t.wins++
-                            if (isValidPlacing) {
-                                t.sumPlacings += placementRaw
-                                t.placements++
-                            }
-                        }
-
-                        // Distance is provided as an object with `sortValue`
-                        // in Travsport data.
-                        const dist = Number(r.distance?.sortValue ?? r.distance ?? 0)
-                        const bucket = getDistanceBucket(dist)
-                        if (bucket) {
-                            const b = distanceStats[bucket]
-                            b.starts++
-                            if (placementRaw === 1) b.wins++
-                            if (isValidPlacing) {
-                                b.sumPlacings += placementRaw
-                                b.placements++
-                            }
-                        }
-
-                        const method = r.startMethod
-                        if (method && methodStats[method]) {
-                            const m = methodStats[method]
-                            m.starts++
-                            if (placementRaw === 1) m.wins++
-                            if (placementRaw >= 1 && placementRaw <= 3) m.top3++
-                            if (isValidPlacing) {
-                                m.sumPlacings += placementRaw
-                                m.placements++
-                            }
-                        }
-                    })
-
-                    const top3 = wins + seconds + thirds
-
-                    let bestTrackCode = null
-                    let bestTrackWins = -1
-                    let bestTrackAvg = Infinity
-                    Object.entries(trackStats).forEach(([code, s]) => {
-                        const avg = s.placements ? s.sumPlacings / s.placements : Infinity
-                        if (s.wins > bestTrackWins || (s.wins === bestTrackWins && avg < bestTrackAvg)) {
-                            bestTrackCode = code
-                            bestTrackWins = s.wins
-                            bestTrackAvg = avg
-                        }
-                    })
-
-                    let bestDistanceLabel = null
-                    let bestDistanceWins = -1
-                    let bestDistanceAvg = Infinity
-                    Object.entries(distanceStats).forEach(([label, s]) => {
-                        if (!s.starts) return
-                        const avg = s.placements ? s.sumPlacings / s.placements : Infinity
-                        if (s.wins > bestDistanceWins || (s.wins === bestDistanceWins && avg < bestDistanceAvg)) {
-                            bestDistanceLabel = label
-                            bestDistanceWins = s.wins
-                            bestDistanceAvg = avg
-                        }
-                    })
-                    const bestDistanceStats = bestDistanceLabel ? distanceStats[bestDistanceLabel] : null
-
-                    const formatMethodStats = (s) => {
-                        const winPct = s.starts ? (s.wins / s.starts) * 100 : 0
-                        const top3Pct = s.starts ? (s.top3 / s.starts) * 100 : 0
-                        const avg = s.placements ? (s.sumPlacings / s.placements) : null
-                        return { winPct, top3Pct, avg, starts: s.starts }
-                    }
-                    const autoStats = formatMethodStats(methodStats.A)
-                    const voltStats = formatMethodStats(methodStats.V)
-
-                    let preferredStartMethod = null
-                    if (autoStats.starts || voltStats.starts) {
-                        if (autoStats.winPct > voltStats.winPct) preferredStartMethod = 'A'
-                        else if (voltStats.winPct > autoStats.winPct) preferredStartMethod = 'V'
-                        else if (autoStats.avg !== null && voltStats.avg !== null) {
-                            preferredStartMethod = autoStats.avg <= voltStats.avg ? 'A' : 'V'
-                        }
-                    }
-
-                    const averagePlacing = racesWithPlace ? (sumPlacings / racesWithPlace) : null
-
-                    return {
-                        totalStarts,
-                        wins,
-                        seconds,
-                        thirds,
-                        top3,
-                        winPercentage: totalStarts ? (wins / totalStarts) * 100 : 0,
-                        top3Percentage: totalStarts ? (top3 / totalStarts) * 100 : 0,
-                        averagePlacing,
-                        formScore,
-                        favDriver,
-                        favCount,
-                        bestTrackCode,
-                        bestTrackWins,
-                        bestTrackStarts: bestTrackCode ? trackStats[bestTrackCode]?.starts : 0,
-                        bestDistanceLabel,
-                        bestDistanceStats: bestDistanceStats
-                            ? {
-                                winPct: bestDistanceStats.starts ? (bestDistanceStats.wins / bestDistanceStats.starts) * 100 : 0,
-                                avg: bestDistanceStats.placements ? (bestDistanceStats.sumPlacings / bestDistanceStats.placements) : null,
-                                starts: bestDistanceStats.starts,
-                                wins: bestDistanceStats.wins,
-                            }
-                            : null,
-                        autoStats,
-                        voltStats,
-                        preferredStartMethod,
-                    }
-                }
-
-                const formatMethodDisplay = (stat) => {
-                    if (!stat.starts) return '—'
-                    const parts = []
-                    parts.push(`${Math.round(stat.winPct)}% win`)
-                    parts.push(`${Math.round(stat.top3Pct)}% top3`)
-                    if (typeof stat.avg === 'number') parts.push(`avg ${stat.avg.toFixed(1)}`)
-                    return parts.join(', ')
-                }
-
-                const formatDistanceDisplay = (label, stat) => {
-                    if (!stat) return label
-                    if (stat.winPct) return `${label} (${Math.round(stat.winPct)}% win)`
-                    if (typeof stat.avg === 'number') return `${label} (avg ${stat.avg.toFixed(1)})`
-                    return label
-                }
-
-                responseData.horses = await Promise.all((responseData.horses || []).map(async h => {
-                    const driverId = h.driver?.licenseId ?? h.driver?.id
-                    const driverElo = driverRatingMap[String(driverId)]
-                    const fullHorse = await HorseService.getHorseById(h.id)
-                    const stats = statsFor(fullHorse)
-                    const recentCore = buildRecentResultsCore(fullHorse)
-                    const enriched = {
-                        ...h,
-                        // Provide a stable per-row key for AI sorting (looked up in customKeySort)
-                        ai: h.id,
-                        stats,
-                        statsFormatted: formatStats(stats),
-                        score: scoreMap[h.id],
-                        rating: ratingMap[h.id],
-                        eloRating: ratingMap[h.id],
-                        numberOfStarts: numberOfStartsMap[h.id] ?? 0,
-                        statsWinPercentage: stats.winPercentage,
-                        statsTop3Percentage: stats.top3Percentage,
-                        averagePlacing: stats.averagePlacing,
-                        formScoreDisplay: stats.formScore !== null ? `${stats.formScore} / 15` : '—',
-                        favoriteDriverDisplay: stats.favDriver ? `${stats.favDriver} (${stats.favCount}x)` : '—',
-                        statsTotalStarts: stats.totalStarts,
-                        bestTrack: stats.totalStarts >= 5 && stats.bestTrackCode
-                            ? `${getTrackName(stats.bestTrackCode)}${stats.bestTrackWins ? ` (${stats.bestTrackWins}x win)` : ''}`
-                            : 'För få lopp',
-                        preferredDistance: stats.totalStarts >= 5 && stats.bestDistanceLabel
-                            ? formatDistanceDisplay(stats.bestDistanceLabel, stats.bestDistanceStats)
-                            : 'För få lopp',
-                        autostartStats: stats.totalStarts >= 5
-                            ? formatMethodDisplay(stats.autoStats)
-                            : 'För få lopp',
-                        voltstartStats: stats.totalStarts >= 5
-                            ? formatMethodDisplay(stats.voltStats)
-                            : 'För få lopp',
-                        preferredStartMethod: stats.totalStarts >= 5 ? stats.preferredStartMethod : null,
-                        driverElo,
-                        driver: {
-                            ...h.driver,
-                            id: driverId,
-                            elo: driverElo,
-                        },
-                        // core persisted last 5 results for unified display
-                        recentResultsCore: recentCore,
-                        // short-horizon Form Elo (90d decay)
-                        formRating: formRatingMap[h.id]
-                    }
-                    return enriched
-                }))
-                store.commit('raceHorses/setCurrentRace', responseData)
-                await fetchUpdatedHorses()
-
-                if (allHorsesUpdated.value) {
-                    await store.dispatch('raceHorses/rankHorses', raceId)
-                }
-
-            } catch (error) {
-                console.error('Failed to fetch data:', error)
-            }
-        };
-
         onMounted(async () => {
             const raceId = route.params.raceId
             await fetchDataAndUpdate(raceId)
@@ -1155,8 +468,6 @@ export default {
                 if (saved.meta) aiSummaryMeta.value[h.id] = saved.meta
               }
             } catch {}
-            // Preload saved past comments if ATG data missing/offline
-            await preloadSavedPastCommentsForRace()
             await fetchActiveProfile()
             await fetchProfiles()
             await nextTick()
@@ -1168,7 +479,6 @@ export default {
             store.commit('raceHorses/clearCurrentRace')
             aiSummary.value = {}
             aiSummaryMeta.value = {}
-            savedPastComments.value = {}
             aiInsights.value = null
             await fetchDataAndUpdate(newRaceId)
             await fetchTrackInfo()
@@ -1182,7 +492,6 @@ export default {
                 if (saved.meta) aiSummaryMeta.value[h.id] = saved.meta
               }
             } catch {}
-            await preloadSavedPastCommentsForRace()
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -1191,234 +500,60 @@ export default {
             await fetchTrackInfo()
             await fetchSpelformer()
         })
-        // Build combined advantages for a horse
-        const maxAdvChips = 4
-        const buildConditionAdvantages = (horse) => {
-            const stats = horse.stats || {}
-            const adv = []
-            if (
-                stats.bestTrackCode &&
-                (stats.bestTrackWins ?? 0) > 0 &&
-                stats.bestTrackCode === racedayTrackCode.value
-            ) {
-                const wins = stats.bestTrackWins
-                adv.push({
-                    key: `like-track-${horse.id}`,
-                    icon: '🏟️',
-                    label: 'Bana',
-                    tip: `Gillar banan: ${getTrackName(stats.bestTrackCode)} (${wins} seger${wins > 1 ? 'ar' : ''})`
-                })
-            }
-            const distStats = stats.bestDistanceStats
-            if (stats.bestDistanceLabel && distStats && (distStats.winPct ?? 0) > 0) {
-                let showDistance = false
-                const currentLabel = horse.currentDistanceLabel || horse.distanceLabel || horse.distance?.label
-                if (currentLabel) {
-                    showDistance = currentLabel === stats.bestDistanceLabel
-                } else {
-                    const parseLabel = (label) => {
-                        if (!label) return null
-                        if (label.includes('+')) return parseInt(label, 10)
-                        const [from, to] = label.split('-').map(n => parseInt(n, 10))
-                        if (!isNaN(from) && !isNaN(to)) return Math.round((from + to) / 2)
-                        return from
-                    }
-                    const liked = parseLabel(stats.bestDistanceLabel)
-                    const raceDist = Number(currentRace.value?.distance)
-                    if (liked && raceDist) {
-                        showDistance = Math.abs(liked - raceDist) <= 100
-                    }
-                }
-                if (showDistance) {
-                    const winPct = Math.round(distStats.winPct)
-                    const label = stats.bestDistanceLabel.replace('-', '–')
-                    adv.push({ key: `like-dist-${horse.id}` , icon: '📏', label: 'Distans', tip: `Gillar distans: ${label} (${winPct}% segrar)` })
-                }
-            }
-            const auto = stats.autoStats
-            if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
-                const winPct = Math.round(auto.winPct)
-                const top3Pct = Math.round(auto.top3Pct)
-                const preferred = stats.preferredStartMethod === 'A'
-                const tip = `Autostart: ${winPct}% vinster, ${top3Pct}% plats${preferred ? ' ⭐' : ''}`
-                adv.push({ key: `like-auto-${horse.id}`, icon: '🏁', label: 'Autostart', tip })
-            }
-            const volt = stats.voltStats
-            if (volt && ((volt.wins ?? 0) > 0 || (volt.top3 ?? 0) > 0)) {
-                const winPct = Math.round(volt.winPct)
-                const top3Pct = Math.round(volt.top3Pct)
-                const preferred = stats.preferredStartMethod === 'V'
-                const tip = `Voltstart: ${winPct}% vinster, ${top3Pct}% plats${preferred ? ' ⭐' : ''}`
-                adv.push({ key: `like-volt-${horse.id}`, icon: '🔄', label: 'Voltstart', tip })
-            }
-            return adv
-        }
-        const buildPlusAdvantages = (horse) => {
-            const adv = []
-            const prev = horse?.previousShoeOption?.code
-            const curr = horse?.shoeOption?.code
-            if (prev != null && curr != null && prev !== curr) {
-                const prevTxt = horse?.previousShoeOption?.text || prev
-                const currTxt = horse?.shoeOption?.text || curr
-                adv.push({ key: `shoe-${horse.id}`, icon: '🥿', label: 'Skobyte', tip: `Skobyte: ${prevTxt} → ${currTxt}` })
-            }
-            const agg = rankedMap.value.get(horse.id)
-            if (agg?.favoriteTrack && agg.favoriteTrack === racedayTrackCode.value) {
-                adv.push({ key: `fav-track-${horse.id}`, icon: '⭐', label: 'Favoritbana', tip: `Favoritbana: ${getTrackName(agg.favoriteTrack)}` })
-            }
-            const favPos = agg?.favoriteStartPosition != null ? String(agg.favoriteStartPosition).trim() : ''
-            const startPos = (horse?.actualStartPosition ?? horse?.startPosition)
-            if (favPos && startPos != null && favPos === String(startPos).trim()) {
-                adv.push({ key: `fav-spar-${horse.id}`, icon: '🎯', label: 'Favoritspår', tip: `Favoritspår: ${favPos}` })
-            }
-            return adv
-        }
-        const orderKeys = ['shoe-', 'fav-spar-', 'fav-track-', 'like-auto-', 'like-volt-', 'like-dist-', 'like-track-']
-        const getAdvantages = (horse) => {
-            const combined = [...buildPlusAdvantages(horse), ...buildConditionAdvantages(horse)]
-            // Deduplicate by key prefix category to avoid exact duplicates, while keeping distinct concepts
-            const seen = new Set()
-            const deduped = []
-            for (const c of combined) {
-                const cat = orderKeys.find(k => c.key.startsWith(k)) || c.key
-                const tag = `${cat}`
-                if (!seen.has(tag)) { seen.add(tag); deduped.push(c) }
-            }
-            // Sort by predefined order
-            deduped.sort((a, b) => {
-                const ai = orderKeys.findIndex(k => a.key.startsWith(k))
-                const bi = orderKeys.findIndex(k => b.key.startsWith(k))
-                return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
-            })
-            return deduped
-        }
-        const overflowTooltip = (horse) => {
-            const items = getAdvantages(horse).slice(maxAdvChips)
-            return items.map(i => `${i.icon} ${i.label}: ${i.tip.replace(/^[^:]+:\s*/, '')}`).join(' • ')
-        }
-        const getConditionLines = (horse) => {
-            const stats = horse.stats || {}
-            const lines = []
 
-            if (
-                stats.bestTrackCode &&
-                (stats.bestTrackWins ?? 0) > 0 &&
-                stats.bestTrackCode === racedayTrackCode.value
-            ) {
-                const wins = stats.bestTrackWins
-                lines.push(`🏟️ Gillar banan: ${getTrackName(stats.bestTrackCode)} (${wins} seger${wins > 1 ? 'ar' : ''})`)
-            }
-
-            const distStats = stats.bestDistanceStats
-            if (stats.bestDistanceLabel && distStats && (distStats.winPct ?? 0) > 0) {
-                let showDistance = false
-                const currentLabel = horse.currentDistanceLabel || horse.distanceLabel || horse.distance?.label
-                if (currentLabel) {
-                    showDistance = currentLabel === stats.bestDistanceLabel
-                } else {
-                    const parseLabel = (label) => {
-                        if (!label) return null
-                        if (label.includes('+')) return parseInt(label, 10)
-                        const [from, to] = label.split('-').map(n => parseInt(n, 10))
-                        if (!isNaN(from) && !isNaN(to)) return Math.round((from + to) / 2)
-                        return from
-                    }
-                    const liked = parseLabel(stats.bestDistanceLabel)
-                    const raceDist = Number(currentRace.value?.distance)
-                    if (liked && raceDist) {
-                        showDistance = Math.abs(liked - raceDist) <= 100
-                    }
-                }
-                if (showDistance) {
-                    const winPct = Math.round(distStats.winPct)
-                    const label = stats.bestDistanceLabel.replace('-', '–')
-                    lines.push(`📏 Gillar distansen: ${label} (${winPct}% segrar)`)
-                }
-            }
-
-            const auto = stats.autoStats
-            if (auto && ((auto.wins ?? 0) > 0 || (auto.top3 ?? 0) > 0)) {
-                const winPct = Math.round(auto.winPct)
-                const top3Pct = Math.round(auto.top3Pct)
-                let line = `🏃‍♂️ Gillar autostart: ${winPct}% vinster, ${top3Pct}% plats`
-                if (stats.preferredStartMethod === 'A') line += ' ⭐'
-                lines.push(line)
-            }
-
-            const volt = stats.voltStats
-            if (volt && ((volt.wins ?? 0) > 0 || (volt.top3 ?? 0) > 0)) {
-                const winPct = Math.round(volt.winPct)
-                const top3Pct = Math.round(volt.top3Pct)
-                let line = `🔄 Gillar voltstart: ${winPct}% vinster, ${top3Pct}% plats`
-                if (stats.preferredStartMethod === 'V') line += ' ⭐'
-                lines.push(line)
-            }
-
-            return lines
-        }
-
-        // Expose to template
         return {
+            // core
+            route,
+            router,
+            store,
             aiSummary,
             aiSummaryLoading,
             aiSummaryError,
-            onGenerateSummary,
+            aiSummaryMeta,
             headers,
-            rankHorses,
             racedayTrackName,
             racedayTrackCode,
             navigateToRaceDay,
             currentRace,
-            allHorsesUpdated,
-            items,
             activeTab,
-            getAtgCommentForHorse,
-            getAtgPastRaceCommentsForHorse,
-            // rankedHeaders, // removed unused export
-            rankedHorses: rankedHorses, // keep original exposure
-            rankedHorsesEnriched,
-            raceStartMethodCode,
+            raceList,
+            previousRaceId,
+            nextRaceId,
+            goToRace,
             raceStartMethod,
             hasHandicap,
-            showStartPositionColumn,
-            raceMetaString,
-            trackMetaString,
-            raceGames,
-            formatStartPosition,
-            formatElo,
+            // shoe helpers
             formatStartListShoe,
             startListShoeTooltip,
             formatShoe,
             shoeTooltip,
             getShoeById,
             getShoeTooltipById,
+            // advantages
             getConditionLines,
-            raceList,
-            previousRaceId,
-            nextRaceId,
-            goToRace,
             maxAdvChips,
             getAdvantages,
             overflowTooltip,
-            aiSummaryMeta,
-            userId,
-            savedPastComments,
-            getUiPastComments,
-            preloadSavedPastCommentsForRace,
-            buildUnifiedPastDisplay,
-            // AI insights
-            aiInsights,
-            aiById,
-            aiRankConfig,
+            // number/pct formatters for AI block
+            formatElo,
             formatPct,
             formatNum,
+            formatStartPosition,
             tierColor,
             customKeySort,
+            aiById,
+            aiRankConfig,
             aiPresetKey,
             aiPresetLabel,
             activeProfile,
             profiles,
-            tableItems
+            tableItems,
+            // past display
+            buildUnifiedPastDisplay,
+            raceMetaString,
+            trackMetaString,
+            raceGames,
+            onGenerateSummary,
         }
     }
 }

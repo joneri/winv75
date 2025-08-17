@@ -43,3 +43,13 @@ export const trackNames = {
 export function getTrackName(code) {
     return trackNames[code] || code;
 }
+
+// New: reverse lookup of track code by human-readable name (case-insensitive)
+export function getTrackCodeFromName(name) {
+    if (!name || typeof name !== 'string') return ''
+    const target = name.trim().toLowerCase()
+    for (const [code, n] of Object.entries(trackNames)) {
+        if (String(n).toLowerCase() === target) return code
+    }
+    return ''
+}
