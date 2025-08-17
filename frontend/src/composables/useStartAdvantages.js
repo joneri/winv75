@@ -2,7 +2,7 @@
 // Domain: race/horse advantages
 
 export const useStartAdvantages = (opts) => {
-  const { rankedMap, racedayTrackCode, getTrackName, currentRace } = opts
+  const { rankedMap, racedayTrackCode, getTrackName, currentRace, trackMeta } = opts
 
   const maxAdvChips = 4
 
@@ -82,13 +82,25 @@ export const useStartAdvantages = (opts) => {
     }
     const favPos = agg?.favoriteStartPosition != null ? String(agg.favoriteStartPosition).trim() : ''
     const startPos = (horse?.actualStartPosition ?? horse?.startPosition)
+
+    // Track favourite start position — only the horse starting from the track's fav slot should get this
+    const trackFavPos = trackMeta?.value?.favouriteStartingPosition
+    if (trackFavPos != null && startPos != null && Number(startPos) === Number(trackFavPos)) {
+      adv.push({
+        key: `track-fav-spar-${horse.id}`,
+        icon: '📌',
+        label: 'Banans favoritspår',
+        tip: `Banans favoritspår: spår ${trackFavPos}`
+      })
+    }
+
     if (favPos && startPos != null && favPos === String(startPos).trim()) {
-      adv.push({ key: `fav-spar-${horse.id}`, icon: '🎯', label: 'Favoritspår', tip: `Favoritspår: ${favPos}` })
+      adv.push({ key: `fav-spar-${horse.id}`, icon: '🎯', label: 'Hästens favoritspår', tip: `Hästens favoritspår: spår ${favPos}` })
     }
     return adv
   }
 
-  const orderKeys = ['shoe-', 'fav-spar-', 'fav-track-', 'like-auto-', 'like-volt-', 'like-dist-', 'like-track-']
+  const orderKeys = ['shoe-', 'track-fav-spar-', 'fav-spar-', 'fav-track-', 'like-auto-', 'like-volt-', 'like-dist-', 'like-track-']
 
   const getAdvantages = (horse) => {
     const combined = [...buildPlusAdvantages(horse), ...buildConditionAdvantages(horse)]

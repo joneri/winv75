@@ -185,8 +185,8 @@ import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
 import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
 import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
-import { formatElo, formatStartPosition, formatPct, formatNum } from '@/utils/formatters.js'
-import { getShoeById, getShoeTooltipById, formatShoe, shoeTooltip, formatStartListShoe, startListShoeTooltip } from '@/composables/useShoes.js'
+import { formatElo, formatStartPosition } from '@/utils/formatters.js'
+import { formatStartListShoe, startListShoeTooltip } from '@/composables/useShoes.js'
 import { useStartAdvantages } from '@/composables/useStartAdvantages.js'
 import { buildUnifiedPastDisplay } from '@/composables/usePastDisplay.js'
 
@@ -250,14 +250,13 @@ export default {
         })
 
         // Advantages builder via composable (same behavior)
-        const { maxAdvChips, buildConditionAdvantages, buildPlusAdvantages, getAdvantages, overflowTooltip, getConditionLines } = useStartAdvantages({
+        const { maxAdvChips, getAdvantages, overflowTooltip, getConditionLines } = useStartAdvantages({
           rankedMap,
           racedayTrackCode,
           getTrackName,
           currentRace,
+          trackMeta,
         })
-
-        const tierColor = (tier) => tier === 'A' ? 'green' : tier === 'B' ? 'orange' : 'grey'
 
         // Custom sort: AI column by A/B/C tier, then probability
         const tierOrderMap = { A: 3, B: 2, C: 1 }
@@ -525,10 +524,6 @@ export default {
             // shoe helpers
             formatStartListShoe,
             startListShoeTooltip,
-            formatShoe,
-            shoeTooltip,
-            getShoeById,
-            getShoeTooltipById,
             // advantages
             getConditionLines,
             maxAdvChips,
@@ -536,10 +531,7 @@ export default {
             overflowTooltip,
             // number/pct formatters for AI block
             formatElo,
-            formatPct,
-            formatNum,
             formatStartPosition,
-            tierColor,
             customKeySort,
             aiById,
             aiRankConfig,
