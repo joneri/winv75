@@ -7,7 +7,6 @@ import { generateHorseSummary } from '../ai-horse-summary.js'
 import Raceday from '../raceday/raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import HorseRating from '../horse/horse-rating-model.js'
-import { getActiveProfile } from '../ai-profile/ai-profile-service.js'
 
 const router = express.Router()
 
@@ -118,43 +117,12 @@ router.post('/horse-summary', async (req, res) => {
 router.get('/:id/ai-list', validateNumericParam('id'), async (req, res) => {
   try {
     const raceId = Number(req.params.id)
-    // Load active profile as default overrides unless explicitly disabled
-    const useProfiles = !['0','false','no','off'].includes(String(req.query.useProfiles ?? '1').toLowerCase())
-    let overrides = undefined
-    if (useProfiles) {
-      const prof = await getActiveProfile()
-      if (prof && prof.settings) overrides = { ...prof.settings, preset: prof.key }
-    }
-    const insights = await buildRaceInsights(raceId, overrides)
+    const insights = await buildRaceInsights(raceId)
     if (!insights) return res.status(404).send('Race not found')
     res.json(insights)
   } catch (error) {
     console.error('Error building AI list:', error)
     res.status(500).send('Failed to build AI list')
-  }
-})
-
-// Preview: compute insights for a race with ad-hoc overrides or a named profile
-router.post('/:id/ai-preview', validateNumericParam('id'), async (req, res) => {
-  try {
-    const raceId = Number(req.params.id)
-    const { profileKey, overrides } = req.body || {}
-    let applied = overrides || {}
-    if (profileKey) {
-      const { getProfile } = await import('../ai-profile/ai-profile-service.js')
-      const p = await getProfile(profileKey)
-      if (!p) return res.status(404).json({ error: 'Profile not found' })
-      applied = { ...p.settings, ...(overrides || {}), preset: p.key }
-    } else if (!overrides) {
-      const p = await getActiveProfile()
-      if (p) applied = { ...p.settings, preset: p.key }
-    }
-    const insights = await buildRaceInsights(raceId, applied)
-    if (!insights) return res.status(404).send('Race not found')
-    res.json({ insights, applied })
-  } catch (error) {
-    console.error('Error building AI preview:', error)
-    res.status(500).send('Failed to build AI preview')
   }
 })
 

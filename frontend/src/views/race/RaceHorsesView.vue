@@ -123,11 +123,23 @@
                             <template v-slot:item.formRating="{ item }">
                                 {{ formatElo(getFormEloFor(item.raw)) }}
                             </template>
-                            <template v-slot:item.driverElo="{ item }">
-                                {{ item.raw.driver?.name || '—' }} – {{ formatElo(item.columns?.driverElo) }}
+                            <template v-slot:item.driverName="{ item }">
+                                {{ item.raw.driver?.name || '—' }}
                             </template>
-                            <template v-slot:item.stats="{ item }">
-                                {{ item.raw.statsFormatted || '—' }}
+                            <template v-slot:item.statsScore="{ item }">
+                                <div class="stats-cell">
+                                  <div class="form-row">
+                                    <span class="form-label">Form {{ (getStatsDetails(item.raw).formScore ?? '—') }}/10</span>
+                                    <div class="form-bar" :class="formColorClass(getStatsDetails(item.raw).formScore)">
+                                      <div class="form-fill" :style="{ width: ((getStatsDetails(item.raw).formScore || 0) * 10) + '%' }"></div>
+                                    </div>
+                                  </div>
+                                  <div class="stats-row">
+                                    <span class="stats-pair"><strong>{{ getStatsDetails(item.raw).wins ?? '—' }}</strong>/{{ getStatsDetails(item.raw).starts ?? '—' }}</span>
+                                    <span class="sep">•</span>
+                                    <span class="pct">{{ getStatsDetails(item.raw).placePct != null ? (Math.round(getStatsDetails(item.raw).placePct) + '% plats') : (getStatsDetails(item.raw).winPct != null ? (Math.round(getStatsDetails(item.raw).winPct) + '% vinst') : '—') }}</span>
+                                  </div>
+                                </div>
                             </template>
                             <template #item.advantages="{ item }">
                                 <div class="advantages-wrap">
@@ -180,7 +192,6 @@ import AiTierCell from './components/AiTierCell.vue'
 import {
     fetchRaceFromRaceId,
     fetchHorseScores,
-    fetchDriverRatings,
     fetchRaceAiList
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
@@ -215,7 +226,7 @@ export default {
         const aiSummaryError = ref({})
         const aiSummaryMeta = ref({})
         const userId = ref('anon')
-
+        
         // Per-race AI insights state
         const aiInsights = ref(null)
         const aiById = computed(() => {
@@ -274,7 +285,9 @@ export default {
             const pB = Number(B.prob || 0)
             if (pA !== pB) return pA - pB // ascending by prob
             return 0
-          }
+          },
+          // Sort Stats by numeric form score (0–10)
+          statsScore: (a, b) => Number(a || 0) - Number(b || 0)
         }))
 
         // Data-table headers used by the Start List
@@ -283,19 +296,58 @@ export default {
           { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
           { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
           { title: 'Form Elo', key: 'formRating', sortable: true, align: 'end', width: 110 },
-          { title: 'Kusk', key: 'driverElo', align: 'end', width: 110 },
-          { title: 'Stats', key: 'stats', sortable: false, width: 180 },
+          { title: 'Kusk', key: 'driverName', sortable: false, width: 160 },
+          { title: 'Stats', key: 'statsScore', sortable: true, width: 220 },
           { title: 'Fördelar', key: 'advantages', sortable: false, width: 220 },
           { title: 'Skor', key: 'shoeOption', sortable: false, width: 110 },
         ]
+
+        // NOTE: Use function declarations so they are hoisted and available to computed/template
+        function getEloFor(horse) {
+          if (!horse) return 0
+          // Prefer values on the row/horse first
+          let val = horse?.columns?.eloRating
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) val = horse?.columns?.rating
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) val = horse?.eloRating
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) val = horse?.rating
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) val = horse?.stats?.eloRating
+
+          // Fallback to ranked map for this horse
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) {
+            const ranked = rankedMap.value.get(horse.id)
+            val = ranked?.columns?.eloRating
+              ?? ranked?.columns?.rating
+              ?? ranked?.eloRating
+              ?? ranked?.rating
+          }
+
+          return Number(val) || 0
+        }
+
+        function getFormEloFor(horse) {
+          if (!horse) return 0
+          // Prefer formRating on row/columns
+          let val = horse?.formRating ?? horse?.columns?.formRating
+
+          // Fallback to ranked map
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) {
+            const ranked = rankedMap.value.get(horse.id)
+            val = ranked?.formRating ?? ranked?.columns?.formRating
+          }
+
+          return Number(val) || 0
+        }
 
         const tableItems = computed(() => {
           const arr = currentRace.value?.horses || []
           return arr.map(h => ({
             ...h,
-            ai: h.id,                      // used by AI column + custom sort
-            eloRating: getEloFor(h),       // numeric value to enable proper sort cycles
-            formRating: getFormEloFor(h),  // numeric value to enable proper sort cycles
+            ai: h.id,
+            eloRating: getEloFor(h),
+            formRating: getFormEloFor(h),
+            driverName: h?.driver?.name || '—',
+            statsScore: computeFormLast5(h) ?? 0,
+            // No precomputed stats string stored; use getter in slot
           }))
         })
 
@@ -388,24 +440,186 @@ export default {
         }
         const hasEnoughStarts = (horse) => getNumberOfStarts(horse) >= 5
 
-        // ELO fallback helpers: prefer horse fields, then rankedMap
-        const getEloFor = (horse) => {
-          if (!horse) return 0
-          let v = horse.columns?.eloRating ?? horse.eloRating ?? horse.stats?.eloRating
-          if (!(Number.isFinite(Number(v)) && Number(v) > 0)) {
-            const ranked = rankedMap.value.get(horse.id)
-            v = ranked?.columns?.eloRating ?? ranked?.eloRating
-          }
-          return Number(v) || 0
+        // Compute 0–10 form based on last 5 valid placements (1st=3p, 2nd=2p, 3rd=1p)
+        function computeFormLast5(horse) {
+           const recent = recentCoreFor(horse)
+           if (!Array.isArray(recent) || !recent.length) return null
+
+           // Robust parser for placement-like values
+           const toPlace = (val) => {
+             if (val == null) return null
+             if (typeof val === 'number') {
+               const n = Number(val)
+               return Number.isFinite(n) && n > 0 && n < 99 ? n : null
+             }
+             if (typeof val === 'string') {
+               // Extract first group of digits (e.g., "1", "1/2140", "np/99")
+               const m = val.match(/\d+/)
+               if (!m) return null
+               const n = parseInt(m[0], 10)
+               return Number.isFinite(n) && n > 0 && n < 99 ? n : null
+             }
+             if (typeof val === 'object') {
+               // Common nested patterns
+               const cand = [val.sortValue, val.place, val.value]
+               for (const c of cand) {
+                 const n = toPlace(c)
+                 if (n != null) return n
+               }
+               return null
+             }
+             return null
+           }
+
+           const extractPlace = (e) => {
+             // Direct primitive entry
+             if (typeof e === 'number' || typeof e === 'string') return toPlace(e)
+             if (!e || typeof e !== 'object') return null
+             const cand = [
+               e.placement?.sortValue,
+               e.placement?.place,
+               e.placement,            // may be a primitive ("1")
+               e.place?.sortValue,
+               e.place,
+               e.position?.sortValue,
+               e.position,
+               e.pos?.sortValue,
+               e.pos
+             ]
+             for (const c of cand) {
+               const n = toPlace(c)
+               if (n != null) return n
+             }
+             return null
+           }
+
+           const places = []
+           for (const entry of recent) {
+             const p = extractPlace(entry)
+             if (p != null) places.push(p)
+             if (places.length >= 5) break
+           }
+           if (!places.length) return null
+
+           let points = 0
+           for (const p of places) {
+             if (p === 1) points += 3
+             else if (p === 2) points += 2
+             else if (p === 3) points += 1
+           }
+           const maxPoints = 5 * 3
+           const score = Math.round((points / maxPoints) * 10)
+           return score
         }
-        const getFormEloFor = (horse) => {
-          if (!horse) return 0
-          let v = horse.formRating ?? horse.columns?.formRating
-          if (!(Number.isFinite(Number(v)) && Number(v) > 0)) {
-            const ranked = rankedMap.value.get(horse.id)
-            v = ranked?.formRating ?? ranked?.columns?.formRating
+
+        // Structured stats for pretty rendering in the Stats column
+        function getStatsDetails(horse) {
+          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null }
+          const ranked = rankedMap.value.get(horse.id) || {}
+          const stats = horse.stats || {}
+
+          const toNum = (v) => {
+            if (v == null) return NaN
+            if (typeof v === 'string') {
+              const cleaned = v.replace(/%/g, '').trim()
+              const n = Number(cleaned)
+              return Number.isFinite(n) ? n : NaN
+            }
+            const n = Number(v)
+            return Number.isFinite(n) ? n : NaN
           }
-          return Number(v) || 0
+
+          const starts = toNum(ranked.numberOfStarts ?? horse.numberOfStarts ?? stats.numberOfStarts)
+          const placementsStr = ranked.placements ?? stats.placements
+          let wins = null
+          if (typeof placementsStr === 'string' && placementsStr.includes('-')) {
+            const [a] = placementsStr.split('-')
+            const an = parseInt(a, 10)
+            if (Number.isFinite(an)) wins = an
+          }
+          if (wins == null) {
+            const maybeWins = toNum(stats.wins ?? ranked.wins)
+            if (Number.isFinite(maybeWins)) wins = maybeWins
+          }
+
+          const placePct = toNum(ranked.placementRatesNumeric ?? ranked.placementRates ?? stats.placePct ?? stats.placementRate)
+          const winPct = toNum(ranked.winningRateNumeric ?? stats.winPct)
+
+          const formScore = computeFormLast5(horse)
+
+          return {
+            starts: Number.isFinite(starts) ? starts : null,
+            wins: Number.isFinite(wins) ? wins : null,
+            placePct: Number.isFinite(placePct) ? placePct : null,
+            winPct: Number.isFinite(winPct) ? winPct : null,
+            formScore: Number.isFinite(formScore) ? formScore : null,
+          }
+        }
+
+        function formColorClass(score) {
+          const s = Number(score)
+          if (!Number.isFinite(s)) return 'bar-none'
+          if (s >= 7) return 'bar-good'
+          if (s >= 4) return 'bar-ok'
+          return 'bar-bad'
+        }
+
+        // Stats formatter: wins/starts and place % or win % when available + last-5 form
+        const getStatsFormatted = (horse) => {
+          if (!horse) return '—'
+          const ranked = rankedMap.value.get(horse.id) || {}
+          const stats = horse.stats || {}
+
+          const toNum = (v) => {
+            if (v == null) return NaN
+            if (typeof v === 'string') {
+              const cleaned = v.replace(/%/g, '').trim()
+              const n = Number(cleaned)
+              return Number.isFinite(n) ? n : NaN
+            }
+            const n = Number(v)
+            return Number.isFinite(n) ? n : NaN
+          }
+
+          // Starts
+          const starts = toNum(ranked.numberOfStarts ?? horse.numberOfStarts ?? stats.numberOfStarts)
+
+          // Placements string like "A-B-C"
+          const placementsStr = ranked.placements ?? stats.placements
+          let wins = null
+          if (typeof placementsStr === 'string' && placementsStr.includes('-')) {
+            const [a] = placementsStr.split('-')
+            const an = parseInt(a, 10)
+            if (Number.isFinite(an)) wins = an
+          }
+
+          // Fallback wins if present as numeric somewhere
+          if (wins == null) {
+            const maybeWins = toNum(stats.wins ?? ranked.wins)
+            if (Number.isFinite(maybeWins)) wins = maybeWins
+          }
+
+          // Place/top3 percent may exist precomputed
+          const placePct = toNum(ranked.placementRatesNumeric ?? ranked.placementRates ?? stats.placePct ?? stats.placementRate)
+          const winPct0to100 = toNum(ranked.winningRateNumeric ?? stats.winPct)
+
+          const parts = []
+          if (Number.isFinite(wins) && Number.isFinite(starts) && starts > 0) {
+            parts.push(`${wins}/${starts}`)
+          } else if (Number.isFinite(starts) && starts > 0) {
+            parts.push(`${starts} start${starts === 1 ? '' : 'er'}`)
+          }
+
+          if (Number.isFinite(placePct)) {
+            parts.push(`${Math.round(placePct)}% plats`)
+          } else if (Number.isFinite(winPct0to100)) {
+            parts.push(`${Math.round(winPct0to100)}% vinst`)
+          }
+
+          const form5 = computeFormLast5(horse)
+          if (Number.isFinite(form5)) parts.push(`Form ${form5}/10`)
+
+          return parts.length ? parts.join(' • ') : '—'
         }
 
         // Fetch race, ratings and set into store
@@ -417,7 +631,6 @@ export default {
             const horseIds = (race.horses || []).map(h => h.id)
             // Preload ratings and scores (kept for parity; backend may use cached values)
             try { await fetchHorseScores(horseIds) } catch {}
-            try { await fetchDriverRatings((race.horses || []).map(h => h.driverId).filter(Boolean)) } catch {}
             // Rank horses for this race
             await store.dispatch('raceHorses/rankHorses', raceId)
           } catch (e) {
@@ -624,7 +837,6 @@ export default {
             aiSummaryMeta,
             headers,
             racedayTrackName,
-            racedayTrackCode,
             navigateToRaceDay,
             currentRace,
             activeTab,
@@ -650,12 +862,10 @@ export default {
             aiPresetKey,
             aiPresetLabel,
             activeProfile,
-            profiles,
             tableItems,
             // past display
             buildUnifiedPastDisplay,
             recentCoreFor,
-            getNumberOfStarts,
             hasEnoughStarts,
             getEloFor,
             getFormEloFor,
@@ -663,6 +873,10 @@ export default {
             trackMetaString,
             raceGames,
             onGenerateSummary,
+            // stats
+            getStatsFormatted,
+            getStatsDetails,
+            formColorClass,
         }
     }
 }
@@ -761,4 +975,28 @@ export default {
   .start-badge.shorter { background: #082f35; color: #67e8f9; border-color: #164e63; }
 }
 .ai-preset { margin-top: 4px; }
+
+/* Stats column UI */
+.stats-cell { display: grid; gap: 4px; }
+.form-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
+.form-label { font-weight: 600; font-size: 0.9rem; }
+.form-bar { position: relative; height: 6px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
+.form-bar.bar-good { background: #d1fae5; }
+.form-bar.bar-ok { background: #fef3c7; }
+.form-bar.bar-bad { background: #fee2e2; }
+.form-bar.bar-none { background: #e5e7eb; }
+.form-fill { height: 100%; background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+.stats-row { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 0.9rem; }
+.stats-pair { color: #111827; }
+.sep { color: #9ca3af; }
+
+@media (prefers-color-scheme: dark) {
+  .form-bar { background: #374151; }
+  .form-bar.bar-good { background: #065f46; }
+  .form-bar.bar-ok { background: #78350f; }
+  .form-bar.bar-bad { background: #7f1d1d; }
+  .form-fill { background: linear-gradient(90deg, #93c5fd, #60a5fa); }
+  .stats-row { color: #9ca3af; }
+  .stats-pair { color: #e5e7eb; }
+}
 </style>
