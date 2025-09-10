@@ -178,6 +178,8 @@ const HorseSchema = new mongoose.Schema({
 
 // Indexes for performance in aggregations and lookups
 HorseSchema.index({ id: 1 })
+// Name index for search
+HorseSchema.index({ name: 1 })
 HorseSchema.index({ 'results.raceInformation.raceId': 1 })
 HorseSchema.index({ 'results.raceInformation.date': 1 })
 

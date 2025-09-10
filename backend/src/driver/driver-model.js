@@ -29,5 +29,7 @@ const DriverSchema = new mongoose.Schema({
 
 DriverSchema.index({ 'results.raceId': 1 })
 DriverSchema.index({ 'results.date': 1 })
+// Name index for search
+DriverSchema.index({ name: 1 })
 
 export default mongoose.models.Driver || mongoose.model('Driver', DriverSchema)

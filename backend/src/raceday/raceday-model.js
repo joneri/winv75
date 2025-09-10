@@ -133,5 +133,9 @@ const racedaySchema = new mongoose.Schema({
 racedaySchema.index({ firstStart: -1 })
 racedaySchema.index({ raceDayDate: 1 })
 racedaySchema.index({ 'raceList.raceId': 1 })
+// Additional indexes to support search
+racedaySchema.index({ trackName: 1 })
+racedaySchema.index({ 'raceList.horses.name': 1 })
+racedaySchema.index({ 'raceList.horses.driver.name': 1 })
 
 export default mongoose.model('Raceday', racedaySchema)

@@ -13,4 +13,8 @@ const TrackSchema = new mongoose.Schema({
   atgTrackId: { type: Number }
 })
 
+// Indexes for search
+TrackSchema.index({ trackName: 1 })
+TrackSchema.index({ trackCode: 1 })
+
 export default mongoose.model('Track', TrackSchema, 'tracks')
