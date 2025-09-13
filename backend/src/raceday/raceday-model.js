@@ -137,5 +137,9 @@ racedaySchema.index({ 'raceList.raceId': 1 })
 racedaySchema.index({ trackName: 1 })
 racedaySchema.index({ 'raceList.horses.name': 1 })
 racedaySchema.index({ 'raceList.horses.driver.name': 1 })
+// Upcoming race filtering by date and references
+racedaySchema.index({ 'raceList.startDateTime': 1 })
+racedaySchema.index({ 'raceList.horses.id': 1 })
+racedaySchema.index({ 'raceList.horses.driver.licenseId': 1 })
 
 export default mongoose.model('Raceday', racedaySchema)

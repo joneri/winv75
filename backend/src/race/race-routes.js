@@ -138,17 +138,27 @@ router.get('/:id', validateNumericParam('id'), async (req, res) => {
                 if (horseIds.length) {
                     const ratingDocs = await HorseRating.find({ horseId: { $in: horseIds } }).lean()
                     const map = new Map(ratingDocs.map(r => [r.horseId, r]))
-                    race.horses = (race.horses || []).map(h => ({
-                        ...h,
-                        rating: map.get(h.id)?.rating ?? h.rating,
-                        eloRating: map.get(h.id)?.rating ?? h.eloRating,
-                        formRating: map.get(h.id)?.formRating ?? map.get(h.id)?.rating ?? h.formRating
-                    }))
+                    // IMPORTANT: Mongoose subdocuments are not plain objects.
+                    // Spreading them (`{...h}`) can drop fields. Convert first.
+                    race.horses = (race.horses || []).map(h => {
+                        const base = typeof h?.toObject === 'function' ? h.toObject() : h
+                        const rated = map.get(base.id)
+                        return {
+                            ...base,
+                            rating: rated?.rating ?? base.rating,
+                            eloRating: rated?.rating ?? base.eloRating,
+                            formRating: rated?.formRating ?? rated?.rating ?? base.formRating
+                        }
+                    })
                 }
             } catch (e) {
                 console.warn('Failed enriching race horses with ratings', e)
             }
-            res.send(race)
+            // Ensure we return a plain JSON object (avoid Mongoose subdoc quirks)
+            const payload = typeof race?.toObject === 'function' ? race.toObject() : JSON.parse(JSON.stringify(race))
+            // Preserve enriched horses array from above
+            if (race?.horses) payload.horses = race.horses
+            res.json(payload)
         } else {
             res.status(404).send('Race not found.')
         }

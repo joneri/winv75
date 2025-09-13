@@ -24,72 +24,68 @@
                     <v-tab>Start List</v-tab>
                 </v-tabs>
                 <v-window v-model="activeTab">
-                    <v-window-item value="0">
+                    <v-window-item :value="0">
                     <v-data-table :headers="headers" :items="tableItems" :items-per-page="16"
                             :custom-key-sort="customKeySort"
                             :must-sort="false"
                             :multi-sort="false"
                             class="elevation-1">
-                            <template #item.ai="{ item }">
-                              <AiTierCell :ai="aiById[item.raw.id]" />
+                            <template v-slot:[`item.ai`]="slotProps">
+                              <AiTierCell :ai="aiById[(slotProps?.value ?? slotRow(slotProps)?.id)]" />
                             </template>
-                            <template #item.programNumber="{ item }">
+                            <template v-slot:[`item.programNumber`]="slotProps">
                               <div class="start-cell">
-                                <div class="start-line1">#{{ item.raw.programNumber }} <span v-if="aiById[item.raw.id]?.highlight" class="hl-star" title="Highlight">★</span></div>
+                                <div class="start-line1">#{{ (slotProps?.value ?? slotRow(slotProps)?.programNumber) }} <span v-if="aiById[slotRow(slotProps)?.id]?.highlight" class="hl-star" title="Highlight">★</span></div>
                                 <div class="start-line2">
                                   <template v-if="raceStartMethod === 'Autostart'">
                                     <span>
-                                      {{ (item.raw.actualStartPosition ?? item.raw.startPosition) ? `Spår ${formatStartPosition(item.raw.actualStartPosition ?? item.raw.startPosition)}` : 'oklart' }}
+                                      {{ (slotRow(slotProps)?.actualStartPosition ?? slotRow(slotProps)?.startPosition) ? `Spår ${formatStartPosition(slotRow(slotProps)?.actualStartPosition ?? slotRow(slotProps)?.startPosition)}` : 'oklart' }}
                                     </span>
                                   </template>
                                   <template v-else>
-                                    <span v-if="item.raw.actualStartPosition">
-                                      {{ `Volte ${formatStartPosition(item.raw.actualStartPosition)}` }}
+                                    <span v-if="slotRow(slotProps)?.actualStartPosition">
+                                      {{ `Volte ${formatStartPosition(slotRow(slotProps)?.actualStartPosition)}` }}
                                     </span>
-                                    <span v-else-if="item.raw.startPosition">
-                                      {{ `Startpos ${formatStartPosition(item.raw.startPosition)}` }}
+                                    <span v-else-if="slotRow(slotProps)?.startPosition">
+                                      {{ `Startpos ${formatStartPosition(slotRow(slotProps)?.startPosition)}` }}
                                     </span>
                                     <span v-else>oklart</span>
                                   </template>
                                 </div>
-                                <div class="start-line3" v-if="(item.raw.actualDistance || currentRace.distance)">
+                                <div class="start-line3" v-if="(slotRow(slotProps)?.actualDistance || currentRace.distance)">
                                   <span>
-                                    {{ (item.raw.actualDistance || currentRace.distance) ? `${(item.raw.actualDistance || currentRace.distance)} m` : '' }}
+                                    {{ (slotRow(slotProps)?.actualDistance || currentRace.distance) ? `${(slotRow(slotProps)?.actualDistance || currentRace.distance)} m` : '' }}
                                   </span>
-                                  <template v-if="item.raw.actualDistance && currentRace.distance && item.raw.actualDistance !== currentRace.distance">
-                                    <span class="start-badge" :class="{ longer: item.raw.actualDistance > currentRace.distance, shorter: item.raw.actualDistance < currentRace.distance }">
-                                      <template v-if="item.raw.actualDistance > currentRace.distance">
-                                        Handicap +{{ item.raw.actualDistance - currentRace.distance }}
+                                  <template v-if="slotRow(slotProps)?.actualDistance && currentRace.distance && slotRow(slotProps)?.actualDistance !== currentRace.distance">
+                                    <span class="start-badge" :class="{ longer: slotRow(slotProps)?.actualDistance > currentRace.distance, shorter: slotRow(slotProps)?.actualDistance < currentRace.distance }">
+                                      <template v-if="slotRow(slotProps)?.actualDistance > currentRace.distance">
+                                        Handicap +{{ slotRow(slotProps)?.actualDistance - currentRace.distance }}
                                       </template>
                                       <template v-else>
-                                        Försprång −{{ currentRace.distance - item.raw.actualDistance }}
+                                        Försprång −{{ currentRace.distance - slotRow(slotProps)?.actualDistance }}
                                       </template>
                                     </span>
                                   </template>
                                 </div>
                               </div>
                             </template>
-                            <template v-slot:item.eloRating="{ item }">
-                                <div :class="{ withdrawn: item.columns?.horseWithdrawn }">
-                                    <div v-if="getEloFor(item.raw) > 0">
-                                        {{ item.raw.name }} – {{ formatElo(getEloFor(item.raw)) }}
-                                    </div>
-                                    <div v-else-if="hasEnoughStarts(item.raw)">
-                                        {{ item.raw.name }} – {{ formatElo(getEloFor(item.raw)) }}
-                                    </div>
-                                    <div v-else>
-                                        {{ item.raw.name }} – För få starter.
-                                    </div>
+                            <template v-slot:[`item.eloRating`]="slotProps">
+                                <div :class="{ withdrawn: slotRow(slotProps)?.columns?.horseWithdrawn }">
+                                    <template v-if="true">
+                                      <div>
+                                        {{ slotRow(slotProps)?.name || '—' }} – {{ formatElo(Number(slotProps?.value ?? getEloFor(slotRow(slotProps) || {}))) }}
+                                      </div>
+                                    </template>
                                     <!-- Unified past performances: Date, Track, Placement, Comment -->
                                     <div class="mt-1">
                                       <div
-                                        v-for="(line, idx) in buildUnifiedPastDisplay(item.raw.id, recentCoreFor(item.raw))"
+                                        v-for="(line, idx) in buildUnifiedPastDisplay(slotRow(slotProps)?.id, recentCoreFor(slotRow(slotProps) || {}))"
                                         :key="idx"
                                         class="text-caption past-line"
                                       >
                                         {{ line }}
                                       </div>
-                                      <div v-if="!buildUnifiedPastDisplay(item.raw.id, recentCoreFor(item.raw)).length" class="text-caption past-line">
+                                      <div v-if="buildUnifiedPastDisplay(slotRow(slotProps)?.id, recentCoreFor(slotRow(slotProps) || {})).length === 0" class="text-caption past-line">
                                         Inga tidigare starter tillgängliga
                                       </div>
                                     </div>
@@ -98,60 +94,60 @@
                                       <v-btn
                                         size="x-small"
                                         variant="outlined"
-                                        :loading="aiSummaryLoading[item.raw.id]"
-                                        @click="onGenerateSummary(item.raw)"
+                                        :loading="aiSummaryLoading[slotRow(slotProps)?.id]"
+                                        @click="onGenerateSummary(slotRow(slotProps) || null)"
                                       >
                                         AI-sammanfattning
                                       </v-btn>
-                                      <div v-if="aiSummary[item.raw.id] || item.raw.aiSummary" class="ai-summary-block mt-1">
+                                      <div v-if="aiSummary[slotRow(slotProps)?.id] || slotRow(slotProps)?.aiSummary" class="ai-summary-block mt-1">
                                         <strong>AI:</strong>
                                         <span style="white-space: pre-line">
-                                          {{ (aiSummary[item.raw.id] || item.raw.aiSummary)?.split(/(?<=\.|!|\?)\s+/).join('\n') }}
+                                          {{ (aiSummary[slotRow(slotProps)?.id] || slotRow(slotProps)?.aiSummary)?.split(/(?<=\.|!|\?)\s+/).join('\n') }}
                                         </span>
-                                        <span v-if="(aiSummaryMeta[item.raw.id]?.generatedAt)" class="text-caption text-success ml-2">(sparad)</span>
+                                        <span v-if="(aiSummaryMeta[slotRow(slotProps)?.id]?.generatedAt)" class="text-caption text-success ml-2">(sparad)</span>
                                         <span v-else class="text-caption text-warning ml-2">(ny)</span>
-                                        <div v-if="aiSummaryMeta[item.raw.id]?.context" class="text-caption mt-1">
-                                          Kontext: ELO {{ aiSummaryMeta[item.raw.id].context.eloRating || '—' }}, fält {{ aiSummaryMeta[item.raw.id].context.fieldElo?.median || '—' }}, start {{ aiSummaryMeta[item.raw.id].context.startMethod || '—' }} {{ aiSummaryMeta[item.raw.id].context.startPosition || '—' }}, distans {{ aiSummaryMeta[item.raw.id].context.actualDistance || aiSummaryMeta[item.raw.id].context.baseDistance || '—' }}<template v-if="aiSummaryMeta[item.raw.id].context.hasOpenStretch"> • open stretch (x{{ aiSummaryMeta[item.raw.id].context.openStretchLanes || 1 }})</template>
+                                        <div v-if="aiSummaryMeta[slotRow(slotProps)?.id]?.context" class="text-caption mt-1">
+                                          Kontext: ELO {{ aiSummaryMeta[slotRow(slotProps)?.id].context.eloRating || '—' }}, fält {{ aiSummaryMeta[slotRow(slotProps)?.id].context.fieldElo?.median || '—' }}, start {{ aiSummaryMeta[slotRow(slotProps)?.id].context.startMethod || '—' }} {{ aiSummaryMeta[slotRow(slotProps)?.id].context.startPosition || '—' }}, distans {{ aiSummaryMeta[slotRow(slotProps)?.id].context.actualDistance || aiSummaryMeta[slotRow(slotProps)?.id].context.baseDistance || '—' }}<template v-if="aiSummaryMeta[slotRow(slotProps)?.id].context.hasOpenStretch"> • open stretch (x{{ aiSummaryMeta[slotRow(slotProps)?.id].context.openStretchLanes || 1 }})</template>
                                          </div>
                                       </div>
-                                      <div v-if="aiSummaryError[item.raw.id]" class="text-error mt-1">
-                                        {{ aiSummaryError[item.raw.id] }}
+                                      <div v-if="aiSummaryError[slotRow(slotProps)?.id]" class="text-error mt-1">
+                                        {{ aiSummaryError[slotRow(slotProps)?.id] }}
                                       </div>
                                     </div>
                                 </div>
                             </template>
-                            <template v-slot:item.formRating="{ item }">
-                                {{ formatElo(getFormEloFor(item.raw)) }}
+                            <template v-slot:[`item.formRating`]="slotProps">
+                              {{ formatElo(Number(slotProps?.value ?? getFormEloFor(slotRow(slotProps)))) }}
                             </template>
-                            <template v-slot:item.driverName="{ item }">
-                                {{ item.raw.driver?.name || '—' }}
+                            <template v-slot:[`item.driverName`]="slotProps">
+                              {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
                             </template>
-                            <template v-slot:item.statsScore="{ item }">
+                            <template v-slot:[`item.statsScore`]="slotProps">
                                 <div class="stats-cell">
                                   <div class="form-row">
-                                    <span class="form-label">Form {{ (getStatsDetails(item.raw).formScore ?? '—') }}/10</span>
-                                    <div class="form-bar" :class="formColorClass(getStatsDetails(item.raw).formScore)">
-                                      <div class="form-fill" :style="{ width: ((getStatsDetails(item.raw).formScore || 0) * 10) + '%' }"></div>
+                                    <span class="form-label">Form {{ (Number(slotProps?.value ?? getStatsDetails(slotRow(slotProps)).formScore) ?? '—') }}/10</span>
+                                    <div class="form-bar" :class="formColorClass(Number(slotProps?.value ?? getStatsDetails(slotRow(slotProps)).formScore))">
+                                      <div class="form-fill" :style="{ width: ((Number(slotProps?.value ?? getStatsDetails(slotRow(slotProps)).formScore) || 0) * 10) + '%' }"></div>
                                     </div>
                                   </div>
                                   <div class="stats-row">
-                                    <span class="stats-pair"><strong>{{ getStatsDetails(item.raw).wins ?? '—' }}</strong>/{{ getStatsDetails(item.raw).starts ?? '—' }}</span>
+                                    <span class="stats-pair"><strong>{{ getStatsDetails(slotRow(slotProps)).wins ?? '—' }}</strong>/{{ getStatsDetails(slotRow(slotProps)).starts ?? '—' }}</span>
                                     <span class="sep">•</span>
-                                    <span class="pct">{{ getStatsDetails(item.raw).placePct != null ? (Math.round(getStatsDetails(item.raw).placePct) + '% plats') : (getStatsDetails(item.raw).winPct != null ? (Math.round(getStatsDetails(item.raw).winPct) + '% vinst') : '—') }}</span>
+                                    <span class="pct">{{ getStatsDetails(slotRow(slotProps)).placePct != null ? (Math.round(getStatsDetails(slotRow(slotProps)).placePct) + '% plats') : (getStatsDetails(slotRow(slotProps)).winPct != null ? (Math.round(getStatsDetails(slotRow(slotProps)).winPct) + '% vinst') : '—') }}</span>
                                   </div>
                                 </div>
                             </template>
-                            <template #item.advantages="{ item }">
+                            <template v-slot:[`item.advantages`]="slotProps">
                                 <div class="advantages-wrap">
-                                    <template v-if="getAdvantages(item.raw).length">
-                                        <template v-for="(chip, idx) in getAdvantages(item.raw).slice(0, maxAdvChips)" :key="chip.key">
+                                    <template v-if="getAdvantages(slotRow(slotProps)).length">
+                                        <template v-for="(chip, idx) in getAdvantages(slotRow(slotProps)).slice(0, maxAdvChips)" :key="chip.key">
                                             <v-chip size="x-small" variant="tonal" class="mr-1 mb-1" :title="chip.tip">
                                                 <span class="mr-1">{{ chip.icon }}</span>{{ chip.label }}
                                             </v-chip>
                                         </template>
-                                        <template v-if="getAdvantages(item.raw).length > maxAdvChips">
-                                            <v-chip size="x-small" variant="outlined" class="mr-1 mb-1" :title="overflowTooltip(item.raw)">
-                                                +{{ getAdvantages(item.raw).length - maxAdvChips }}
+                                        <template v-if="getAdvantages(slotRow(slotProps)).length > maxAdvChips">
+                                            <v-chip size="x-small" variant="outlined" class="mr-1 mb-1" :title="overflowTooltip(slotRow(slotProps))">
+                                                +{{ getAdvantages(slotRow(slotProps)).length - maxAdvChips }}
                                             </v-chip>
                                         </template>
                                     </template>
@@ -160,9 +156,9 @@
                                     </template>
                                 </div>
                             </template>
-                            <template v-slot:item.shoeOption="{ item }">
-                                <span :title="startListShoeTooltip(item.raw) || null">
-                                    {{ formatStartListShoe(item.raw) }}
+                            <template v-slot:[`item.shoeOption`]="slotProps">
+                                <span :title="startListShoeTooltip(slotRow(slotProps)) || null">
+                                    {{ formatStartListShoe(slotRow(slotProps)) || (slotProps?.value ?? '—') }}
                                 </span>
                             </template>
                         </v-data-table>
@@ -218,7 +214,7 @@ export default {
         const racedayTrackCode = ref('')
         const trackMeta = ref({})
         const spelformer = ref({})
-        const activeTab = ref('0')
+        const activeTab = ref(0)
 
         // --- AI summary state and handler ---
         const aiSummary = ref({})
@@ -302,6 +298,27 @@ export default {
           { title: 'Skor', key: 'shoeOption', sortable: false, width: 110 },
         ]
 
+        // Helper to normalize Vuetify 3 data-table slot item to raw row
+        const slotRow = (slotItem) => {
+          // Prefer the full row over a cell value to avoid blank cells when key has a primitive value
+          // Common shapes across Vuetify versions/builds:
+          // - slotProps.item or slotProps.item.raw is the full row
+          // - slotProps.raw
+          // - slotProps.internalItem.raw
+          // Fallbacks last: internalItem.value, value, item.value
+          return slotItem?.item?.raw
+            ?? slotItem?.raw
+            ?? slotItem?.internalItem?.raw
+            ?? slotItem?.item
+            ?? slotItem?.internalItem?.value
+            ?? slotItem?.value
+            ?? slotItem?.item?.value
+            ?? slotItem
+        }
+
+        // Helper to get the primitive cell value from a slot (when available)
+        const slotVal = (slotItem) => slotItem?.value ?? slotItem?.item?.value ?? slotItem?.internalItem?.value ?? null
+
         // NOTE: Use function declarations so they are hoisted and available to computed/template
         function getEloFor(horse) {
           if (!horse) return 0
@@ -340,15 +357,26 @@ export default {
 
         const tableItems = computed(() => {
           const arr = currentRace.value?.horses || []
-          return arr.map(h => ({
-            ...h,
-            ai: h.id,
-            eloRating: getEloFor(h),
-            formRating: getFormEloFor(h),
-            driverName: h?.driver?.name || '—',
-            statsScore: computeFormLast5(h) ?? 0,
-            // No precomputed stats string stored; use getter in slot
-          }))
+          const rmap = rankedMap.value
+          return arr.map(h0 => {
+            const rm = rmap.get(h0.id) || {}
+            const merged = {
+              ...h0,
+              // Fill from ranked data when missing in race.horses
+              name: h0.name || rm.name || h0.name,
+              programNumber: h0.programNumber ?? rm.programNumber ?? h0.programNumber,
+              driver: h0.driver || rm.driver || h0.driver,
+            }
+            return {
+              ...merged,
+              ai: merged.id,
+              eloRating: getEloFor(merged),
+              formRating: getFormEloFor(merged),
+              driverName: merged?.driver?.name || '—',
+              statsScore: computeFormLast5(merged) ?? 0,
+              // No precomputed stats string stored; use getter in slot
+            }
+          })
         })
 
         // Helpers: past results source resolution and starts threshold
@@ -877,6 +905,8 @@ export default {
             getStatsFormatted,
             getStatsDetails,
             formColorClass,
+            slotRow,
+            slotVal,
         }
     }
 }

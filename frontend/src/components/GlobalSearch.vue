@@ -35,6 +35,22 @@
                     <v-list-item-title>{{ driver.name }}</v-list-item-title>
                   </v-list-item>
                 </template>
+                <template v-if="upcomingRaces.length">
+                  <v-subheader>Kommande lopp</v-subheader>
+                  <v-list-item
+                    v-for="up in upcomingRaces"
+                    :key="`u-${up.racedayId}-${up.id}-${up.horseId ?? 'x'}`"
+                    :to="`/raceday/${up.racedayId}/race/${up.id}`"
+                    @click="close"
+                  >
+                    <v-list-item-title>
+                      {{ formatStart(up.startTime) }} • {{ up.trackName }} • Lopp {{ up.raceNumber }} •
+                      <span :style="isMatch(up.horseName) ? 'font-weight:600' : ''">Häst: {{ up.horseName }}</span> •
+                      <span :style="isMatch(up.driverName) ? 'font-weight:600' : ''">Driver: {{ up.driverName }}</span> •
+                      Spår: {{ up.startPosition ?? '-' }}
+                    </v-list-item-title>
+                  </v-list-item>
+                </template>
                 <template v-if="racedays.length">
                   <v-subheader>Kommande tävlingsdagar</v-subheader>
                   <v-list-item v-for="day in racedays" :key="`d-${day.raceDayId}`" :to="`/raceday/${day.raceDayId}`" @click="close">
@@ -90,12 +106,20 @@ function close() {
 
 const horses = computed(() => Array.isArray(results.value.horses) ? results.value.horses : [])
 const drivers = computed(() => Array.isArray(results.value.drivers) ? results.value.drivers : [])
+const upcomingRaces = computed(() => Array.isArray((results.value as any).upcomingRaces) ? (results.value as any).upcomingRaces : [])
 const racedays = computed(() => Array.isArray((results.value as any).racedays) ? (results.value as any).racedays : (Array.isArray((results.value as any).raceDays) ? (results.value as any).raceDays : []))
 const pastResults = computed(() => Array.isArray(results.value.results) ? results.value.results : [])
 const tracks = computed(() => Array.isArray(results.value.tracks) ? results.value.tracks : [])
 
 const hasAnyResults = computed(() => {
-  return horses.value.length + drivers.value.length + racedays.value.length + pastResults.value.length + tracks.value.length > 0
+  return (
+    horses.value.length +
+    drivers.value.length +
+    upcomingRaces.value.length +
+    racedays.value.length +
+    pastResults.value.length +
+    tracks.value.length
+  ) > 0
 })
 
 function sortByRelevance(items, key) {
@@ -110,6 +134,32 @@ function sortByRelevance(items, key) {
     // fallback lexical
     return av.localeCompare(bv)
   })
+}
+
+function norm(s: any): string {
+  return String(s ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+}
+
+const qNorm = computed(() => norm(query.value))
+function isMatch(s: any): boolean {
+  const q = qNorm.value.trim()
+  if (q.length < 2) return false
+  return norm(s).includes(q)
+}
+
+function pad2(n: number) { return n < 10 ? `0${n}` : String(n) }
+function formatStart(iso: string) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const yyyy = d.getFullYear()
+  const mm = pad2(d.getMonth() + 1)
+  const dd = pad2(d.getDate())
+  const hh = pad2(d.getHours())
+  const mi = pad2(d.getMinutes())
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`
 }
 
 watch(
@@ -154,6 +204,7 @@ watch(
       const safe = {
         horses: Array.isArray(data.horses) ? data.horses : [],
         drivers: Array.isArray(data.drivers) ? data.drivers : [],
+        upcomingRaces: Array.isArray(data.upcomingRaces) ? data.upcomingRaces : [],
         racedays: Array.isArray(data.racedays) ? data.racedays : (Array.isArray(data.raceDays) ? data.raceDays : []),
         results: Array.isArray(data.results) ? data.results : [],
         tracks: Array.isArray(data.tracks) ? data.tracks : []
@@ -163,6 +214,7 @@ watch(
       const sorted = {
         horses: sortByRelevance(safe.horses, 'name'),
         drivers: sortByRelevance(safe.drivers, 'name'),
+        upcomingRaces: safe.upcomingRaces,
         racedays: safe.racedays,
         results: safe.results,
         tracks: sortByRelevance(safe.tracks, 'trackName')

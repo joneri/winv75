@@ -38,6 +38,22 @@ export type SearchResponse = {
   raceDays?: Array<{ raceDayId: string | number; trackName: string; raceDayDate: string }>
   results?: Array<{ raceDayId: string | number; trackName: string; raceDayDate: string }>
   tracks?: Array<{ trackCode: string; trackName: string }>
+  upcomingRaces?: Array<{
+    id: number | string
+    racedayId: number | string
+    trackId?: string | null
+    trackName: string
+    startTime: string
+    raceNumber: number
+    horseId?: number | null
+    horseName?: string
+    driverId?: number | null
+    driverName?: string
+    programNumber?: number | string | null
+    startPosition?: number | null
+    distance?: number | null
+    startMethod?: string | null
+  }>
 }
 
 export async function searchGlobal(

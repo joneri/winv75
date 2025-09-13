@@ -10,8 +10,9 @@ router.get('/', async (req, res) => {
     const results = await searchService.globalSearch(query)
     res.json(results)
   } catch (error) {
-    console.error('Error during search:', error)
-    res.status(500).send('Search failed')
+    console.error('Error during search (router):', error)
+    // Always respond 200 with stable empty structure
+    res.json({ horses: [], drivers: [], upcomingRaces: [], racedays: [], results: [], tracks: [] })
   }
 })
 

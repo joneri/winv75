@@ -47,7 +47,7 @@ async function globalSearch(query) {
   try {
     const rawQ = (query ?? '').trim()
     if (!rawQ || rawQ.length < 2) {
-      return { horses: [], drivers: [], racedays: [], results: [], tracks: [] }
+      return { horses: [], drivers: [], upcomingRaces: [], racedays: [], results: [], tracks: [] }
     }
 
     const pat = buildFlexiblePattern(rawQ)
@@ -112,11 +112,76 @@ async function globalSearch(query) {
     const racedays = upcomingDocs.slice(0, 8)
     const results = resultDocs.slice(0, 8)
 
-    return { horses, drivers, racedays, results, tracks }
+    // Upcoming races (starters) matching horses or drivers
+    const horseIds = horses.map(h => h.id).filter(Boolean)
+    const driverIds = drivers.map(d => d._id).filter(Boolean)
+
+    const orClauses = [
+      horseIds.length ? { 'raceList.horses.id': { $in: horseIds } } : null,
+      driverIds.length ? { 'raceList.horses.driver.licenseId': { $in: driverIds } } : null,
+      { 'raceList.horses.name': rxAny },
+      { 'raceList.horses.driver.name': rxAny }
+    ].filter(Boolean)
+
+    let upcomingRaces = []
+    if (orClauses.length) {
+      const agg = await Raceday.aggregate([
+        {
+          $match: {
+            'raceList.startDateTime': { $gte: now },
+            $or: orClauses
+          }
+        },
+        { $unwind: '$raceList' },
+        { $match: { 'raceList.startDateTime': { $gte: now } } },
+        { $unwind: '$raceList.horses' },
+        {
+          $match: {
+            $or: [
+              horseIds.length ? { 'raceList.horses.id': { $in: horseIds } } : null,
+              driverIds.length ? { 'raceList.horses.driver.licenseId': { $in: driverIds } } : null,
+              { 'raceList.horses.name': rxAny },
+              { 'raceList.horses.driver.name': rxAny }
+            ].filter(Boolean)
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            id: '$raceList.raceId',
+            racedayId: '$raceDayId',
+            trackName: '$trackName',
+            startTime: '$raceList.startDateTime',
+            raceNumber: '$raceList.raceNumber',
+            horseId: '$raceList.horses.id',
+            horseName: '$raceList.horses.name',
+            driverId: '$raceList.horses.driver.licenseId',
+            driverName: '$raceList.horses.driver.name',
+            programNumber: '$raceList.horses.programNumber',
+            startPosition: '$raceList.horses.startPosition',
+            distance: '$raceList.distance',
+            startMethod: '$raceList.startMethod.text'
+          }
+        },
+        { $sort: { startTime: 1 } },
+        { $limit: 32 }
+      ])
+
+      // Attach trackId (trackCode) when available, and normalize
+      const trackByName = new Map(trackDocs.map(t => [t.trackName, t.trackCode]))
+      upcomingRaces = agg.map(it => ({
+        ...it,
+        trackId: trackByName.get(it.trackName) || null
+      }))
+      // Limit to 8
+      upcomingRaces = upcomingRaces.slice(0, 8)
+    }
+
+    return { horses, drivers, upcomingRaces, racedays, results, tracks }
   } catch (err) {
     console.error('Error during search (service):', err)
     // Never throw – always return stable empty payload
-    return { horses: [], drivers: [], racedays: [], results: [], tracks: [] }
+    return { horses: [], drivers: [], upcomingRaces: [], racedays: [], results: [], tracks: [] }
   }
 }
 
