@@ -23,7 +23,12 @@ const ResultSchema = new mongoose.Schema({
 const DriverSchema = new mongoose.Schema({
   _id: { type: Number, required: true },
   name: { type: String, default: '' },
+  // `elo` reflects the short-horizon form rating we surface in the UI
   elo: { type: Number, default: 0 },
+  careerElo: { type: Number, default: 0 },
+  eloRaceCount: { type: Number, default: 0 },
+  careerRaceCount: { type: Number, default: 0 },
+  eloUpdatedAt: { type: Date, default: null },
   results: [ResultSchema]
 }, { timestamps: true })
 

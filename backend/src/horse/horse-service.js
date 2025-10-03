@@ -6,6 +6,51 @@ import { getWeights } from '../config/scoring.js'
 import HorseRating from './horse-rating-model.js'
 import trackService from '../track/track-service.js'
 
+const HORSE_FORM_RECENCY_SCALE_DAYS = Number(process.env.HORSE_FORM_RECENCY_SCALE_DAYS || 35)
+const HORSE_FORM_SAMPLE_TARGET = Number(process.env.HORSE_FORM_SAMPLE_TARGET || 3)
+
+const daysBetween = (from, to) => {
+    const start = from instanceof Date ? from : new Date(from)
+    const end = to instanceof Date ? to : new Date(to)
+    if (Number.isNaN(start?.getTime?.()) || Number.isNaN(end?.getTime?.())) return null
+    const diff = end.getTime() - start.getTime()
+    return diff / (1000 * 60 * 60 * 24)
+}
+
+const getLastRaceDate = (results = []) => {
+    if (!Array.isArray(results) || !results.length) return null
+    let latest = null
+    for (const res of results) {
+        const raw = res?.raceInformation?.date || res?.date
+        if (!raw) continue
+        const dt = new Date(raw)
+        if (Number.isNaN(dt.getTime())) continue
+        if (!latest || dt > latest) latest = dt
+    }
+    return latest
+}
+
+const adjustFormRating = ({ formRating, baseRating, formRaceCount = 0, results = [] }) => {
+    const safeBase = Number.isFinite(baseRating) ? baseRating : formRating
+    const safeForm = Number.isFinite(formRating) ? formRating : safeBase
+    if (!Number.isFinite(safeBase) && !Number.isFinite(safeForm)) return 0
+
+    const lastRace = getLastRaceDate(results)
+    const recencyWeight = (() => {
+        if (!lastRace) return 0
+        const diffDays = daysBetween(lastRace, new Date())
+        if (diffDays == null || diffDays < 0) return 1
+        return Math.exp(-diffDays / HORSE_FORM_RECENCY_SCALE_DAYS)
+    })()
+
+    const sampleWeight = Math.min(1, Math.max(0, formRaceCount / HORSE_FORM_SAMPLE_TARGET))
+    const blendedWeight = Math.min(1, Math.max(0, recencyWeight * sampleWeight))
+
+    if (!Number.isFinite(safeBase)) return Math.round(safeForm * blendedWeight)
+    if (!Number.isFinite(safeForm)) return Math.round(safeBase)
+    return Math.round(safeForm * blendedWeight + safeBase * (1 - blendedWeight))
+}
+
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
     try {
@@ -89,9 +134,17 @@ const getHorseData = async (horseId) => {
         const obj = horse.toObject()
         obj.score = calculateHorseScore(obj)
         const ratingDoc = await HorseRating.findOne({ horseId })
-        obj.rating = ratingDoc ? ratingDoc.rating : obj.rating
-        // expose formRating for fast reads as well
-        obj.formRating = ratingDoc ? (ratingDoc.formRating ?? obj.formRating) : obj.formRating
+        const baseRating = ratingDoc?.rating ?? obj.rating
+        if (Number.isFinite(baseRating)) obj.rating = baseRating
+        const rawFormRating = ratingDoc?.formRating ?? ratingDoc?.rating ?? obj.formRating
+        const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? 0
+        obj.rawFormRating = rawFormRating
+        obj.formRating = adjustFormRating({
+            formRating: rawFormRating,
+            baseRating: obj.rating,
+            formRaceCount,
+            results: obj.results
+        })
         return obj
     } catch (error) {
         console.error(`Error retrieving horse ${horseId}:`, error.message)
@@ -103,9 +156,24 @@ const getHorseRankings = async (raceId) => {
     try {
         const ranked = await horseRanking.aggregateHorses(raceId)
         const ratingDocs = await HorseRating.find({ horseId: { $in: ranked.map(r => r.id) } })
-        const ratingMap = new Map(ratingDocs.map(r => [r.horseId, r.rating]))
-        const formRatingMap = new Map(ratingDocs.map(r => [r.horseId, r.formRating ?? r.rating]))
-        return ranked.map(r => ({ ...r, rating: ratingMap.get(r.id) || 0, formRating: formRatingMap.get(r.id) || 0 }))
+        const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
+        return ranked.map(r => {
+            const ratingDoc = docMap.get(r.id)
+            const baseRating = ratingDoc?.rating ?? r.rating ?? 0
+            const rawForm = ratingDoc?.formRating ?? ratingDoc?.rating ?? r.formRating
+            const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? 0
+            return {
+                ...r,
+                rating: Number.isFinite(baseRating) ? baseRating : 0,
+                rawFormRating: rawForm,
+                formRating: adjustFormRating({
+                    formRating: rawForm,
+                    baseRating,
+                    formRaceCount,
+                    results: r.results
+                })
+            }
+        })
     } catch (error) {
         console.error(`Error retrieving horse rankings for raceId ${raceId}:`, error.message)
         throw new Error('Failed to retrieve horse rankings')
@@ -126,11 +194,19 @@ const getHorsesByScore = async ({ ids, minScore } = {}) => {
         return obj
     })
     const ratingDocs = await HorseRating.find({ horseId: { $in: results.map(r => r.id) } })
-    const ratingMap = new Map(ratingDocs.map(r => [r.horseId, r.rating]))
-    const formRatingMap = new Map(ratingDocs.map(r => [r.horseId, r.formRating ?? r.rating]))
+    const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
     results.forEach(r => {
-        r.rating = ratingMap.get(r.id) || r.rating
-        r.formRating = formRatingMap.get(r.id) || r.formRating
+        const ratingDoc = docMap.get(r.id)
+        if (ratingDoc?.rating != null) r.rating = ratingDoc.rating
+        const rawForm = ratingDoc?.formRating ?? ratingDoc?.rating ?? r.formRating
+        const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? 0
+        r.rawFormRating = rawForm
+        r.formRating = adjustFormRating({
+            formRating: rawForm,
+            baseRating: r.rating,
+            formRaceCount,
+            results: r.results
+        })
     })
     if (typeof minScore === 'number') {
         results = results.filter(h => h.score >= minScore)

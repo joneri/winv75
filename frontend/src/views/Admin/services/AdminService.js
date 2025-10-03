@@ -30,8 +30,30 @@ const evalElo = async (params) => {
   }
 }
 
+const fetchDriverRating = async (id) => {
+  try {
+    const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/driver/ratings`, { params: { ids: id } })
+    return Array.isArray(res.data) ? res.data[0] : null
+  } catch (error) {
+    console.error('Failed to fetch driver rating', error)
+    throw error
+  }
+}
+
+const updateDriverElo = async (id, payload) => {
+  try {
+    const res = await axios.put(`${import.meta.env.VITE_BE_URL}/api/driver/${id}/elo`, payload)
+    return res.data
+  } catch (error) {
+    console.error('Failed to update driver elo', error)
+    throw error
+  }
+}
+
 export default {
   triggerRatingsUpdate,
   precomputeRacedayAI,
-  evalElo
+  evalElo,
+  fetchDriverRating,
+  updateDriverElo
 }

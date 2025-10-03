@@ -81,6 +81,49 @@
       </v-col>
     </v-row>
 
+    <v-row class="mt-8">
+      <v-col md="6" lg="4">
+        <h2>Manuell kusk-ELO</h2>
+        <v-text-field
+          v-model.number="driverUpdate.id"
+          label="Kusk-ID"
+          type="number"
+          density="compact"
+          placeholder="t.ex. licensnummer"
+        />
+        <v-text-field
+          v-model.number="driverUpdate.elo"
+          label="Form-ELO"
+          type="number"
+          density="compact"
+        />
+        <v-text-field
+          v-model.number="driverUpdate.careerElo"
+          label="Karriär-ELO (valfritt)"
+          type="number"
+          density="compact"
+          hint="Sätts endast om du anger ett värde"
+          persistent-hint
+        />
+        <div class="eval-actions">
+          <v-btn
+            color="info"
+            class="mr-2"
+            :loading="driverFetchLoading"
+            :disabled="driverFetchLoading"
+            @click="loadDriverElo"
+          >Hämta</v-btn>
+          <v-btn
+            color="primary"
+            :loading="driverUpdateLoading"
+            :disabled="driverUpdateLoading || !canUpdateDriver"
+            @click="submitDriverElo"
+          >Spara</v-btn>
+        </div>
+        <div v-if="driverUpdateStatus" class="mt-2 driver-status">{{ driverUpdateStatus }}</div>
+      </v-col>
+    </v-row>
+
     <v-row class="mt-10">
       <v-col>
         <h2>Auto-tune</h2>
@@ -319,6 +362,38 @@
                 />
               </div>
               <div class="grid-2">
+                <v-text-field
+                  v-model.number="editSettings.driverEloDivisor"
+                  label="driverEloDivisor"
+                  type="number"
+                  density="compact"
+                  :min="20" :max="400" :step="5"
+                  :hint="'Skalning för kusk-ELO (rek 80–150)'"
+                  persistent-hint
+                />
+                <v-text-field
+                  v-model.number="editSettings.driverEloBaseline"
+                  label="driverEloBaseline"
+                  type="number"
+                  density="compact"
+                  :min="700" :max="1100" :step="10"
+                  :hint="'Nollnivå för kusk-ELO (rek ca 900)'"
+                  persistent-hint
+                />
+              </div>
+              <div class="grid-2">
+                <v-text-field
+                  v-model.number="editSettings.wDriver"
+                  label="wDriver"
+                  type="number"
+                  density="compact"
+                  :min="0" :max="3" :step="0.05"
+                  :hint="'Vikt för kusk-ELO i composite (rek 0.5–1.5)'"
+                  persistent-hint
+                />
+                <div></div>
+              </div>
+              <div class="grid-2">
                 <v-text-field v-model.number="editSettings.bonusShoe" label="bonusShoe" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Skobyte bonus (rek 0.2–0.8)'
                   " persistent-hint />
                 <v-text-field v-model.number="editSettings.bonusBarfotaRuntom" label="bonusBarfotaRuntom" type="number" density="compact" :min="0" :max="2" :step="0.05" :hint="'Barfota runt om (rek 0.4–0.9)'" persistent-hint />
@@ -443,6 +518,71 @@ export default {
         snackbar.value = { show: true, text: 'Failed to load metrics', color: 'error' }
       } finally {
         loadingMetrics.value = false
+      }
+    }
+
+    // Manual driver Elo adjustments
+    const driverUpdate = ref({ id: null, elo: null, careerElo: null })
+    const driverUpdateLoading = ref(false)
+    const driverFetchLoading = ref(false)
+    const driverUpdateStatus = ref('')
+
+    const resetDriverStatus = () => { driverUpdateStatus.value = '' }
+    watch(() => driverUpdate.value.id, resetDriverStatus)
+    watch(() => driverUpdate.value.elo, resetDriverStatus)
+    watch(() => driverUpdate.value.careerElo, resetDriverStatus)
+
+    const canUpdateDriver = computed(() => {
+      const id = Number(driverUpdate.value.id)
+      const elo = Number(driverUpdate.value.elo)
+      return Number.isFinite(id) && Number.isFinite(elo)
+    })
+
+    const loadDriverElo = async () => {
+      if (!Number.isFinite(Number(driverUpdate.value.id))) {
+        driverUpdateStatus.value = 'Ange ett giltigt kusk-id'
+        return
+      }
+      try {
+        driverFetchLoading.value = true
+        const data = await AdminService.fetchDriverRating(driverUpdate.value.id)
+        if (data) {
+          driverUpdate.value.elo = data.elo ?? null
+          driverUpdate.value.careerElo = data.careerElo ?? null
+          driverUpdateStatus.value = data.eloUpdatedAt ? `Senast uppdaterad ${new Date(data.eloUpdatedAt).toLocaleString()}` : 'Värden hämtade'
+        } else {
+          driverUpdate.value.elo = null
+          driverUpdate.value.careerElo = null
+          driverUpdateStatus.value = 'Hittade ingen kusk med det id:t'
+        }
+      } catch (error) {
+        console.error('Failed to fetch driver elo', error)
+        driverUpdateStatus.value = 'Misslyckades med att hämta ELO'
+      } finally {
+        driverFetchLoading.value = false
+      }
+    }
+
+    const submitDriverElo = async () => {
+      if (!canUpdateDriver.value) {
+        driverUpdateStatus.value = 'Ange både id och elo'
+        return
+      }
+      try {
+        driverUpdateLoading.value = true
+        const payload = { elo: Number(driverUpdate.value.elo) }
+        if (Number.isFinite(Number(driverUpdate.value.careerElo))) {
+          payload.careerElo = Number(driverUpdate.value.careerElo)
+        }
+        const res = await AdminService.updateDriverElo(driverUpdate.value.id, payload)
+        driverUpdate.value.elo = res.elo ?? driverUpdate.value.elo
+        driverUpdate.value.careerElo = res.careerElo ?? driverUpdate.value.careerElo
+        driverUpdateStatus.value = 'Kuskens ELO uppdaterad'
+      } catch (error) {
+        console.error('Failed to update driver elo', error)
+        driverUpdateStatus.value = 'Misslyckades med att uppdatera ELO'
+      } finally {
+        driverUpdateLoading.value = false
       }
     }
 
@@ -796,6 +936,13 @@ export default {
       updatingRatings,
       precomputing,
       snackbar,
+      driverUpdate,
+      driverUpdateLoading,
+      driverFetchLoading,
+      driverUpdateStatus,
+      canUpdateDriver,
+      loadDriverElo,
+      submitDriverElo,
       // Auto-tune
       autoFrom, autoTo, grid,
       autoRunning, autoStatus, autoResults, autoResultsSorted, autoBest,
@@ -819,6 +966,7 @@ export default {
 .quick-picks { margin-top: -6px; margin-bottom: 2px; }
 .query-url { margin-top: 8px; font-size: 0.85rem; }
 .grid-form { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.driver-status { font-size: 0.85rem; color: rgba(90, 90, 90, 0.9); }
 .results-table { display: grid; grid-template-columns: 100%; gap: 4px; }
 .results-table .row { display: grid; grid-template-columns: 90px 70px 70px 70px 80px 60px 70px 1fr 70px; gap: 8px; align-items: center; padding: 6px 8px; border-bottom: 1px dashed rgba(125,125,125,0.2); }
 .results-table .row.header { font-weight: 600; }

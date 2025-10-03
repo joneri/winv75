@@ -4,6 +4,7 @@ import eloService from '../rating/elo-service.js'
 import { validateNumericParam } from '../middleware/validators.js'
 import { buildRaceInsights } from './race-insights.js'
 import { generateHorseSummary } from '../ai-horse-summary.js'
+import { updateDriverRatingsForRace } from '../driver/driver-elo-service.js'
 import Raceday from '../raceday/raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import HorseRating from '../horse/horse-rating-model.js'
@@ -176,6 +177,11 @@ router.post('/:id/results', validateNumericParam('id'), async (req, res) => {
             return res.status(400).send('Invalid race data')
         }
         const updated = await eloService.updateRatingsForRace(req.params.id, raceData)
+        try {
+            await updateDriverRatingsForRace(req.params.id, raceData)
+        } catch (driverErr) {
+            console.error(`Error updating driver ratings for race ${req.params.id}:`, driverErr)
+        }
         res.json(updated)
     } catch (error) {
         console.error(`Error updating ratings for race ${req.params.id}:`, error)

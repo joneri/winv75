@@ -114,6 +114,9 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   // Ranking weights (form-first) — allow overrides
   const eloDiv = toNum(cfg.formEloDivisor, Number(process.env.AI_RANK_FORM_ELO_DIVISOR || process.env.AI_RANK_ELO_DIVISOR || 50))
   const wForm = toNum(cfg.wForm, Number(process.env.AI_RANK_W_FORM || 0)) // legacy recent-form curve now off by default
+  const driverEloDiv = toNum(cfg.driverEloDivisor, Number(process.env.AI_RANK_DRIVER_ELO_DIVISOR || 100))
+  const driverEloBaseline = toNum(cfg.driverEloBaseline, Number(process.env.AI_RANK_DRIVER_ELO_BASELINE || 900))
+  const wDriver = toNum(cfg.wDriver, Number(process.env.AI_RANK_W_DRIVER || 1))
   const bShoe = toNum(cfg.bonusShoe, Number(process.env.AI_RANK_BONUS_SHOE || 0.5))
   const bFavTrack = toNum(cfg.bonusFavoriteTrack, Number(process.env.AI_RANK_BONUS_FAVORITE_TRACK || 0.75))
   const bFavSpar = toNum(cfg.bonusFavoriteSpar, Number(process.env.AI_RANK_BONUS_FAVORITE_SPAR || 0.5))
@@ -151,10 +154,16 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       }
       const eloTerm = formElo / eloDiv
       const formTerm = wForm * formScore
-      const compositeScore = eloTerm + formTerm + bonus + handicapAdj
+      const driverMeta = meta?.driver || horsesById.get(r.id)?.driver || {}
+      const driverElo = Number(driverMeta?.elo ?? driverMeta?.formElo ?? driverMeta?.rating ?? 0)
+      let driverTerm = 0
+      if (Number.isFinite(driverElo) && driverEloDiv > 0) {
+        driverTerm = wDriver * ((driverElo - driverEloBaseline) / driverEloDiv)
+      }
+      const compositeScore = eloTerm + formTerm + bonus + handicapAdj + driverTerm
 
       if (DEBUG) {
-        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, formScore=${formScore}, formTerm=${formTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
+        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, formScore=${formScore}, formTerm=${formTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
       }
 
       return {
@@ -167,6 +176,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         compositeScore,
         eloTerm,
         formTerm,
+        driverElo,
+        driverTerm,
         bonus,
         handicapAdj,
         baseDistance: baseDist || null,
