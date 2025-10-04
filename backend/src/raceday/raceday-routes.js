@@ -2,7 +2,12 @@ import express from 'express'
 import raceDayService from './raceday-service.js'
 import Raceday from './raceday-model.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
-import { listV75Templates, buildV75Suggestion, updateV75DistributionForRaceday } from './v75-service.js'
+import {
+  listV75Templates,
+  buildV75Suggestion,
+  buildV75Suggestions,
+  updateV75DistributionForRaceday
+} from './v75-service.js'
 
 const router = express.Router()
 
@@ -112,9 +117,39 @@ router.post('/:id/v75/update', validateObjectIdParam('id'), async (req, res) => 
 
 router.post('/:id/v75', validateObjectIdParam('id'), async (req, res) => {
   try {
-    const templateKey = req.body?.templateKey
-    const stake = req.body?.stake
-    const suggestion = await buildV75Suggestion(req.params.id, { templateKey, stake })
+    const {
+      templateKey,
+      stake,
+      maxCost,
+      maxBudget,
+      mode,
+      modes,
+      multi
+    } = req.body || {}
+
+    const wantsMulti = multi === true || (Array.isArray(modes) && modes.length > 0)
+
+    if (wantsMulti) {
+      const result = await buildV75Suggestions(req.params.id, {
+        templateKey,
+        stake,
+        maxCost,
+        maxBudget,
+        modes
+      })
+      if (result?.error) {
+        return res.status(400).json(result)
+      }
+      return res.json(result)
+    }
+
+    const suggestion = await buildV75Suggestion(req.params.id, {
+      templateKey,
+      stake,
+      maxCost,
+      maxBudget,
+      mode
+    })
     if (suggestion?.error) {
       return res.status(400).json(suggestion)
     }

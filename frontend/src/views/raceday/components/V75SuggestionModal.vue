@@ -28,7 +28,7 @@
             variant="underlined"
             placeholder="t.ex. 240"
           />
-          <v-btn color="primary" :loading="loading" :disabled="loading || !selectedTemplate" @click="generate">
+          <v-btn color="primary" :loading="loading" :disabled="loading || !selectedTemplate" @click="generate()">
             Generera spelförslag
           </v-btn>
         </div>
@@ -36,15 +36,54 @@
           {{ error }}
         </v-alert>
         <v-progress-linear v-if="loading" indeterminate class="mt-4" color="primary" />
-        <div v-if="suggestion && !loading" class="ticket mt-6">
+        <v-alert
+          v-if="suggestionErrors.length"
+          type="warning"
+          variant="tonal"
+          class="mt-4"
+        >
+          Kunde inte generera förslag för: {{ formatErrorModes(suggestionErrors) }}
+        </v-alert>
+        <div v-if="suggestions.length && !loading" class="mode-switch mt-4">
+          <v-btn-toggle
+            v-if="suggestions.length > 1"
+            v-model="activeSuggestionIndex"
+            density="comfortable"
+            mandatory
+          >
+            <v-btn
+              v-for="(item, index) in suggestions"
+              :key="item.mode || index"
+              :value="index"
+            >
+              {{ item.modeLabel || `Förslag ${index + 1}` }}
+            </v-btn>
+          </v-btn-toggle>
+          <v-btn
+            variant="text"
+            size="small"
+            class="ml-auto"
+            :disabled="!suggestions.length"
+            @click="focusPublicSuggestion"
+          >
+            Välj publikspikar
+          </v-btn>
+        </div>
+        <div v-if="currentSuggestion && !loading" class="ticket mt-6">
           <div class="ticket-header">
             <div>
-              <div class="ticket-title">{{ currentTemplateLabel }}</div>
-              <div class="ticket-sub">Insats 0,5 kr per rad</div>
+              <div class="ticket-title">{{ currentTemplateLabel }}<span v-if="currentModeLabel"> · {{ currentModeLabel }}</span></div>
+              <div class="ticket-sub">Insats {{ formatCurrency(currentSuggestion.stakePerRow) }} kr per rad</div>
             </div>
             <div class="ticket-summary">
-              <div><strong>{{ suggestion.rows }}</strong> rader</div>
-              <div><strong>{{ formatCurrency(suggestion.totalCost) }}</strong> kr totalt</div>
+              <div><strong>{{ currentSuggestion.rows }}</strong> rader</div>
+              <div><strong>{{ formatCurrency(currentSuggestion.totalCost) }}</strong> kr totalt</div>
+              <div v-if="currentSuggestion?.budget?.maxCost != null">
+                Max {{ formatCurrency(currentSuggestion.budget.maxCost) }} kr
+              </div>
+              <div v-if="currentSuggestion?.budget?.maxCost != null">
+                Kvar {{ formatCurrency(currentSuggestion.budget.remaining) }} kr
+              </div>
             </div>
           </div>
           <div class="ticket-status">
@@ -52,7 +91,7 @@
           </div>
           <div class="legs">
             <div
-              v-for="leg in suggestion.legs"
+              v-for="leg in currentSuggestion.legs"
               :key="leg.leg"
               class="leg"
             >
@@ -68,9 +107,16 @@
                       v-for="selection in leg.selections"
                       :key="selection.id"
                       class="selection"
+                      :class="{ 'public-favorite': selection.isPublicFavorite }"
                     >
                       <span class="nr">{{ selection.programNumber }}</span>
                       <span class="name">{{ selection.name }}</span>
+                      <span
+                        v-if="selection.isPublicFavorite"
+                        class="public-fav"
+                        aria-hidden="true"
+                        title="Publikens favorit"
+                      >★</span>
                       <span v-if="selection.tier" class="tier">{{ selection.tier }}</span>
                       <span v-if="selection.v75Percent != null" class="percent">{{ formatPercent(selection.v75Percent) }}</span>
                     </div>
@@ -92,6 +138,8 @@
 import { ref, watch, computed } from 'vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 
+const DEFAULT_MODES = ['balanced', 'public', 'value']
+
 export default {
   name: 'V75SuggestionModal',
   props: {
@@ -110,13 +158,16 @@ export default {
     const selectedTemplate = ref(null)
     const loading = ref(false)
     const error = ref('')
-    const suggestion = ref(null)
+    const suggestions = ref([])
+    const activeSuggestionIndex = ref(0)
+    const suggestionErrors = ref([])
     const maxCost = ref(null)
 
     const emitClose = (value) => {
       emit('update:modelValue', value)
       if (!value) {
         error.value = ''
+        suggestionErrors.value = []
       }
     }
 
@@ -124,6 +175,12 @@ export default {
     const currentTemplateLabel = computed(() => {
       const match = templates.value.find(t => t.key === selectedTemplate.value)
       return match ? match.label : '—'
+    })
+
+    const currentSuggestion = computed(() => suggestions.value[activeSuggestionIndex.value] || null)
+    const currentModeLabel = computed(() => {
+      if (!currentSuggestion.value) return ''
+      return currentSuggestion.value.modeLabel || normalizeModeLabel(currentSuggestion.value.mode)
     })
 
     const formatCurrency = (value) => {
@@ -163,9 +220,9 @@ export default {
     }
 
     const v75StatusText = computed(() => {
-      if (!suggestion.value) return ''
-      if (suggestion.value?.v75?.used && suggestion.value?.v75?.updatedAt) {
-        return `V75% senast hämtad ${formatDateTime(suggestion.value.v75.updatedAt)}`
+      if (!currentSuggestion.value) return ''
+      if (currentSuggestion.value?.v75?.used && currentSuggestion.value?.v75?.updatedAt) {
+        return `V75% senast hämtad ${formatDateTime(currentSuggestion.value.v75.updatedAt)}`
       }
       return 'V75%-data används inte i detta förslag'
     })
@@ -189,28 +246,87 @@ export default {
         }
       } else {
         loading.value = false
+        activeSuggestionIndex.value = 0
       }
     })
 
-    const generate = async () => {
+    const normalizeModeLabel = (modeKey) => {
+      if (!modeKey) return ''
+      const lower = String(modeKey).toLowerCase()
+      if (lower === 'balanced') return 'Balanserad'
+      if (lower === 'public') return 'Publikfavorit'
+      if (lower === 'value') return 'Värdejakt'
+      return modeKey
+    }
+
+    const generate = async (modeOverride = null) => {
       if (!selectedTemplate.value) return
       try {
         loading.value = true
         error.value = ''
-        suggestion.value = null
+        suggestionErrors.value = []
+        suggestions.value = []
+        activeSuggestionIndex.value = 0
+
         const maxBudget = Number(maxCost.value)
         const payload = { templateKey: selectedTemplate.value }
         if (Number.isFinite(maxBudget) && maxBudget > 0) {
           payload.maxCost = maxBudget
         }
+
+        if (modeOverride) {
+          payload.mode = modeOverride
+        } else {
+          payload.multi = true
+          payload.modes = DEFAULT_MODES
+        }
+
         const result = await RacedayService.fetchV75Suggestion(props.racedayId, payload)
-        suggestion.value = result
+        const serverSuggestions = Array.isArray(result?.suggestions) ? result.suggestions : []
+        const fallback = result?.suggestion || (!serverSuggestions.length ? result : null)
+        const combined = serverSuggestions.length ? serverSuggestions : (fallback ? [fallback] : [])
+
+        if (!combined.length) {
+          throw new Error('Inga spelförslag kunde genereras.')
+        }
+
+        combined.forEach(item => {
+          if (item && !item.modeLabel && item.mode) {
+            item.modeLabel = normalizeModeLabel(item.mode)
+          }
+        })
+
+        suggestions.value = combined
+        suggestionErrors.value = Array.isArray(result?.errors) ? result.errors : []
+
+        if (modeOverride) {
+          const idx = suggestions.value.findIndex(s => s?.mode === modeOverride)
+          activeSuggestionIndex.value = idx >= 0 ? idx : 0
+        } else {
+          activeSuggestionIndex.value = 0
+        }
       } catch (err) {
         console.error('Failed to generate V75 suggestion', err)
-        error.value = err?.error || 'Kunde inte skapa spelförslaget.'
+        error.value = err?.error || err?.message || 'Kunde inte skapa spelförslaget.'
       } finally {
         loading.value = false
       }
+    }
+
+    const focusPublicSuggestion = () => {
+      const idx = suggestions.value.findIndex(s => s?.mode === 'public')
+      if (idx !== -1) {
+        activeSuggestionIndex.value = idx
+        return
+      }
+      error.value = 'Publikförslag saknas för aktuell mall eller budget.'
+    }
+
+    const formatErrorModes = (errorList) => {
+      if (!Array.isArray(errorList) || !errorList.length) return ''
+      const unique = [...new Set(errorList.map(item => item?.mode).filter(Boolean))]
+      if (!unique.length) return ''
+      return unique.map(normalizeModeLabel).join(', ')
     }
 
     return {
@@ -219,15 +335,21 @@ export default {
       selectedTemplate,
       loading,
       error,
-      suggestion,
-      maxCost,
+      suggestions,
+      activeSuggestionIndex,
+      suggestionErrors,
+      currentSuggestion,
       currentTemplateLabel,
+      currentModeLabel,
+      maxCost,
       formatCurrency,
       formatTypeClass,
       formatPercent,
       formatDateTime,
       v75StatusText,
+      formatErrorModes,
       generate,
+      focusPublicSuggestion,
       emitClose
     }
   }
@@ -283,6 +405,21 @@ export default {
 
 .ticket-summary div {
   line-height: 1.2;
+}
+
+.mode-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.mode-switch .v-btn-toggle {
+  flex-wrap: wrap;
+}
+
+.mode-switch .v-btn {
+  text-transform: none;
 }
 
 .legs {
@@ -380,6 +517,11 @@ export default {
   color: #2c2c2c;
 }
 
+.selection.public-favorite {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);
+}
+
 .selection .nr {
   font-weight: 700;
 }
@@ -394,6 +536,11 @@ export default {
   font-size: 0.75rem;
   color: #166534;
   margin-left: 4px;
+}
+
+.selection .public-fav {
+  color: #d97706;
+  font-size: 0.85rem;
 }
 
 @media (prefers-color-scheme: dark) {
