@@ -127,16 +127,28 @@
                             </template>
                             <template v-slot:[`item.statsScore`]="slotProps">
                                 <div class="stats-cell">
+                                  <div
+                                    v-if="(slotRow(slotProps)?.statsText || getStatsFormatted(slotRow(slotProps))) && (slotRow(slotProps)?.statsText || getStatsFormatted(slotRow(slotProps))) !== '—'"
+                                    class="stats-text"
+                                  >
+                                    {{ slotRow(slotProps)?.statsText || getStatsFormatted(slotRow(slotProps)) }}
+                                  </div>
                                   <div class="form-row">
-                                    <span class="form-label">Form {{ (Number(slotProps?.value ?? getStatsDetails(slotRow(slotProps)).formScore) ?? '—') }}/10</span>
-                                    <div class="form-bar" :class="formColorClass(Number(slotProps?.value ?? getStatsDetails(slotRow(slotProps)).formScore))">
-                                      <div class="form-fill" :style="{ width: ((Number(slotProps?.value ?? getStatsDetails(slotRow(slotProps)).formScore) || 0) * 10) + '%' }"></div>
+                                    <span class="form-label">Form {{ formatFormValue(slotRow(slotProps)?.statsDetails?.formScore) }}/10</span>
+                                    <div class="form-bar" :class="formColorClass(Number(slotRow(slotProps)?.statsDetails?.formScore))">
+                                      <div class="form-fill" :style="{ width: ((Number(slotRow(slotProps)?.statsDetails?.formScore) || 0) * 10) + '%' }"></div>
                                     </div>
                                   </div>
                                   <div class="stats-row">
-                                    <span class="stats-pair"><strong>{{ getStatsDetails(slotRow(slotProps)).wins ?? '—' }}</strong>/{{ getStatsDetails(slotRow(slotProps)).starts ?? '—' }}</span>
-                                    <span class="sep">•</span>
-                                    <span class="pct">{{ getStatsDetails(slotRow(slotProps)).placePct != null ? (Math.round(getStatsDetails(slotRow(slotProps)).placePct) + '% plats') : (getStatsDetails(slotRow(slotProps)).winPct != null ? (Math.round(getStatsDetails(slotRow(slotProps)).winPct) + '% vinst') : '—') }}</span>
+                                    <span class="stats-pair">{{ formatWinsStarts(slotRow(slotProps)?.statsDetails) }}</span>
+                                    <span
+                                      class="sep"
+                                      v-if="formatWinsStarts(slotRow(slotProps)?.statsDetails) !== '—' && formatPlaceWinPct(slotRow(slotProps)?.statsDetails) !== '—'"
+                                    >•</span>
+                                    <span class="pct">{{ formatPlaceWinPct(slotRow(slotProps)?.statsDetails) }}</span>
+                                  </div>
+                                  <div v-if="formatV75Percent(slotRow(slotProps)?.statsDetails?.v75Percent)" class="v75-row">
+                                    V75 {{ formatV75Percent(slotRow(slotProps)?.statsDetails?.v75Percent) }}
                                   </div>
                                 </div>
                             </template>
@@ -396,6 +408,7 @@ export default {
               programNumber: h0.programNumber ?? rm.programNumber ?? h0.programNumber,
               driver: mergedDriver || h0.driver || rm.driver,
             }
+            const statsDetails = getStatsDetails(merged)
             return {
               ...merged,
               ai: merged.id,
@@ -403,7 +416,10 @@ export default {
               formRating: getFormEloFor(merged),
               driverElo: getDriverEloFor(merged),
               driverName: merged?.driver?.name || '—',
-              statsScore: computeFormLast5(merged) ?? 0,
+              v75Percent: Number.isFinite(Number(merged?.v75Percent)) ? Number(merged.v75Percent) : null,
+              statsScore: statsDetails.formScore ?? computeFormLast5(merged) ?? 0,
+              statsDetails,
+              statsText: getStatsFormatted(merged),
               // No precomputed stats string stored; use getter in slot
             }
           })
@@ -567,12 +583,45 @@ export default {
            }
            const maxPoints = 5 * 3
            const score = Math.round((points / maxPoints) * 10)
-           return score
+          return score
+       }
+
+        const formatFormValue = (value) => {
+          const num = Number(value)
+          return Number.isFinite(num) ? num : '—'
+        }
+
+        const formatWinsStarts = (stats) => {
+          if (!stats) return '—'
+          const wins = Number(stats.wins)
+          const starts = Number(stats.starts)
+          if (Number.isFinite(wins) && Number.isFinite(starts) && starts > 0) {
+            return `${wins}/${starts}`
+          }
+          if (Number.isFinite(starts) && starts > 0) {
+            return `${starts} starter`
+          }
+          return '—'
+        }
+
+        const formatPlaceWinPct = (stats) => {
+          if (!stats) return '—'
+          const place = Number(stats.placePct)
+          const win = Number(stats.winPct)
+          if (Number.isFinite(place)) return `${Math.round(place)}% plats`
+          if (Number.isFinite(win)) return `${Math.round(win)}% vinst`
+          return '—'
+        }
+
+        const formatV75Percent = (value) => {
+          const num = Number(value)
+          if (!Number.isFinite(num)) return null
+          return `${(Math.round(num * 10) / 10).toFixed(1)}%`
         }
 
         // Structured stats for pretty rendering in the Stats column
         function getStatsDetails(horse) {
-          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null }
+          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null, v75Percent: null }
           const ranked = rankedMap.value.get(horse.id) || {}
           const stats = horse.stats || {}
 
@@ -611,6 +660,7 @@ export default {
             placePct: Number.isFinite(placePct) ? placePct : null,
             winPct: Number.isFinite(winPct) ? winPct : null,
             formScore: Number.isFinite(formScore) ? formScore : null,
+            v75Percent: Number.isFinite(Number(horse.v75Percent)) ? Number(horse.v75Percent) : null
           }
         }
 
@@ -676,6 +726,11 @@ export default {
 
           const form5 = computeFormLast5(horse)
           if (Number.isFinite(form5)) parts.push(`Form ${form5}/10`)
+
+          const v75PercentRaw = Number.isFinite(Number(horse.v75Percent)) ? Number(horse.v75Percent) : null
+          if (Number.isFinite(v75PercentRaw)) {
+            parts.push(`V75 ${(Math.round(v75PercentRaw * 10) / 10).toFixed(1)}%`)
+          }
 
           return parts.length ? parts.join(' • ') : '—'
         }
@@ -935,6 +990,10 @@ export default {
             getStatsFormatted,
             getStatsDetails,
             formColorClass,
+            formatFormValue,
+            formatWinsStarts,
+            formatPlaceWinPct,
+            formatV75Percent,
             slotRow,
             slotVal,
         }
@@ -1038,6 +1097,7 @@ export default {
 
 /* Stats column UI */
 .stats-cell { display: grid; gap: 4px; }
+.stats-text { font-size: 0.85rem; color: #111827; }
 .form-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
 .form-label { font-weight: 600; font-size: 0.9rem; }
 .form-bar { position: relative; height: 6px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
@@ -1049,8 +1109,10 @@ export default {
 .stats-row { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 0.9rem; }
 .stats-pair { color: #111827; }
 .sep { color: #9ca3af; }
+.v75-row { font-size: 0.82rem; color: #166534; }
 
 @media (prefers-color-scheme: dark) {
+  .stats-text { color: #e5e7eb; }
   .form-bar { background: #374151; }
   .form-bar.bar-good { background: #065f46; }
   .form-bar.bar-ok { background: #78350f; }
@@ -1058,5 +1120,6 @@ export default {
   .form-fill { background: linear-gradient(90deg, #93c5fd, #60a5fa); }
   .stats-row { color: #9ca3af; }
   .stats-pair { color: #e5e7eb; }
+  .v75-row { color: #86efac; }
 }
 </style>

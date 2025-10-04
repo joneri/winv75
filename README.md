@@ -33,6 +33,10 @@ AI_RANK_BONUS_BARFOTA_RUNTOM=0.7  # Barfota runt om bonus höjd från 0.6
 AI_RANK_BONUS_TRACK_FAVORITE_SPAR=0.5 # Banans favoritspår sänkt från 0.6
 AI_RANK_HANDICAP_DIVISOR=40      # Oförändrad
 AI_RANK_DEBUG=true             # Inaktivera debug-loggning för optimerad drift
+AI_RANK_W_PUBLIC=1.0           # Vikt för V75-spelprocent i composite
+AI_RANK_PUBLIC_BASELINE=0.2    # Procentandel där publicTerm går mot 0 (20 %)
+AI_RANK_PUBLIC_DIVISOR=0.2     # Hur mycket en procentandel över baseline påverkar (lägre = större effekt)
+AI_RANK_PUBLIC_FAV_THRESHOLD=0.45 # Publikfavorit-gräns för pluspoäng och highlight
 
 # Tiering (A/B/C) for spelförslag
 AI_RANK_TIER_BY=formElo           # formElo | composite

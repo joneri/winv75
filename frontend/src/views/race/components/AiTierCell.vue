@@ -16,6 +16,9 @@
       {{ ai?.prob ? formatPct(ai.prob) : '–' }}
       <span v-if="ai?.rank" class="ml-1">(#{{ formatNum(ai.rank) }})</span>
     </div>
+    <div v-if="ai?.publicPercent != null" class="text-caption text-high-emphasis">
+      V75 {{ formatPct(ai.publicPercent) }}
+    </div>
   </div>
 </template>
 

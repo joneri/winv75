@@ -7,8 +7,8 @@ import HorseRating from './horse-rating-model.js'
 import trackService from '../track/track-service.js'
 import Driver from '../driver/driver-model.js'
 
-const HORSE_FORM_RECENCY_SCALE_DAYS = Number(process.env.HORSE_FORM_RECENCY_SCALE_DAYS || 35)
-const HORSE_FORM_SAMPLE_TARGET = Number(process.env.HORSE_FORM_SAMPLE_TARGET || 3)
+const HORSE_FORM_RECENCY_SCALE_DAYS = Number(process.env.HORSE_FORM_RECENCY_SCALE_DAYS || 60)
+const HORSE_FORM_SAMPLE_TARGET = Number(process.env.HORSE_FORM_SAMPLE_TARGET || 2)
 
 const daysBetween = (from, to) => {
     const start = from instanceof Date ? from : new Date(from)

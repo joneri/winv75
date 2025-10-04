@@ -117,6 +117,10 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const driverEloDiv = toNum(cfg.driverEloDivisor, Number(process.env.AI_RANK_DRIVER_ELO_DIVISOR || 100))
   const driverEloBaseline = toNum(cfg.driverEloBaseline, Number(process.env.AI_RANK_DRIVER_ELO_BASELINE || 900))
   const wDriver = toNum(cfg.wDriver, Number(process.env.AI_RANK_W_DRIVER || 1))
+  const wPublic = toNum(cfg.wPublic, Number(process.env.AI_RANK_W_PUBLIC || 1))
+  const publicBaseline = toNum(cfg.publicPercentBaseline, Number(process.env.AI_RANK_PUBLIC_BASELINE || 0.2))
+  const publicDiv = toNum(cfg.publicPercentDivisor, Number(process.env.AI_RANK_PUBLIC_DIVISOR || 0.2))
+  const publicFavThreshold = toNum(cfg.publicPercentFavThreshold, Number(process.env.AI_RANK_PUBLIC_FAV_THRESHOLD || 0.45))
   const bShoe = toNum(cfg.bonusShoe, Number(process.env.AI_RANK_BONUS_SHOE || 0.5))
   const bFavTrack = toNum(cfg.bonusFavoriteTrack, Number(process.env.AI_RANK_BONUS_FAVORITE_TRACK || 0.75))
   const bFavSpar = toNum(cfg.bonusFavoriteSpar, Number(process.env.AI_RANK_BONUS_FAVORITE_SPAR || 0.5))
@@ -160,10 +164,22 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       if (Number.isFinite(driverElo) && driverEloDiv > 0) {
         driverTerm = wDriver * ((driverElo - driverEloBaseline) / driverEloDiv)
       }
-      const compositeScore = eloTerm + formTerm + bonus + handicapAdj + driverTerm
+      const publicPercentRaw = Number(meta?.v75Percent)
+      const publicPercent = Number.isFinite(publicPercentRaw) ? Math.min(Math.max(publicPercentRaw, 0), 1) : null
+      let publicTerm = 0
+      if (publicPercent != null && publicDiv > 0) {
+        publicTerm = wPublic * ((publicPercent - publicBaseline) / publicDiv)
+      }
+      if (publicPercent != null && publicPercent >= publicFavThreshold) {
+        const pctLabel = `${Math.round(publicPercent * 1000) / 10}%`
+        if (!pts.includes(`Publikfavorit ${pctLabel}`)) {
+          pts.push(`Publikfavorit ${pctLabel}`)
+        }
+      }
+      const compositeScore = eloTerm + formTerm + bonus + handicapAdj + driverTerm + publicTerm
 
       if (DEBUG) {
-        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, formScore=${formScore}, formTerm=${formTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
+        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, formScore=${formScore}, formTerm=${formTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTerm.toFixed(3)}, publicPercent=${publicPercent ?? '-'}, publicTerm=${publicTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
       }
 
       return {
@@ -178,6 +194,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         formTerm,
         driverElo,
         driverTerm,
+        publicPercent,
+        publicTerm,
         bonus,
         handicapAdj,
         baseDistance: baseDist || null,
