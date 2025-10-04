@@ -23,15 +23,27 @@
             </template>
             <template v-else>
               <template v-if="hasAnyResults">
-                <template v-if="horses.length">
+                <template v-if="horseItems.length">
                   <v-subheader>Hästar</v-subheader>
-                  <v-list-item v-for="horse in horses" :key="`h-${horse.id ?? horse._id ?? horse.name}`">
+                  <v-list-item
+                    v-for="horse in horseItems"
+                    :key="`h-${horse.id ?? horse._id ?? horse.name}`"
+                    :to="horse._link || undefined"
+                    :disabled="!horse._link"
+                    @click="handleSelect(horse._link)"
+                  >
                     <v-list-item-title>{{ horse.name }}</v-list-item-title>
                   </v-list-item>
                 </template>
-                <template v-if="drivers.length">
-                  <v-subheader>Drivers</v-subheader>
-                  <v-list-item v-for="driver in drivers" :key="`dvr-${driver._id ?? driver.name}`">
+                <template v-if="driverItems.length">
+                  <v-subheader>Kuskar</v-subheader>
+                  <v-list-item
+                    v-for="driver in driverItems"
+                    :key="`dvr-${driver._id ?? driver.name}`"
+                    :to="driver._link || undefined"
+                    :disabled="!driver._link"
+                    @click="handleSelect(driver._link)"
+                  >
                     <v-list-item-title>{{ driver.name }}</v-list-item-title>
                   </v-list-item>
                 </template>
@@ -87,6 +99,8 @@
 import { ref, watch, computed, onBeforeUnmount } from 'vue'
 import { searchGlobal } from '@/api'
 
+type RouterLinkTarget = { name: string; params: Record<string, any> }
+
 const query = ref('')
 const results = ref({ horses: [], drivers: [], racedays: [], raceDays: [], results: [], tracks: [] })
 const menu = ref(false)
@@ -104,12 +118,38 @@ function close() {
   menu.value = false
 }
 
+function handleSelect(link?: RouterLinkTarget) {
+  if (link) close()
+}
+
 const horses = computed(() => Array.isArray(results.value.horses) ? results.value.horses : [])
 const drivers = computed(() => Array.isArray(results.value.drivers) ? results.value.drivers : [])
 const upcomingRaces = computed(() => Array.isArray((results.value as any).upcomingRaces) ? (results.value as any).upcomingRaces : [])
 const racedays = computed(() => Array.isArray((results.value as any).racedays) ? (results.value as any).racedays : (Array.isArray((results.value as any).raceDays) ? (results.value as any).raceDays : []))
 const pastResults = computed(() => Array.isArray(results.value.results) ? results.value.results : [])
 const tracks = computed(() => Array.isArray(results.value.tracks) ? results.value.tracks : [])
+
+function buildHorseLink(horse: any): RouterLinkTarget | undefined {
+  const id = horse?.id ?? horse?._id ?? horse?.horseId
+  if (id == null) return undefined
+  return { name: 'HorseDetail', params: { horseId: id } }
+}
+
+function buildDriverLink(driver: any): RouterLinkTarget | undefined {
+  const id = driver?._id ?? driver?.id
+  if (id == null) return undefined
+  return { name: 'DriverDetail', params: { driverId: id } }
+}
+
+const horseItems = computed(() => horses.value.map(h => ({
+  ...h,
+  _link: buildHorseLink(h)
+})))
+
+const driverItems = computed(() => drivers.value.map(d => ({
+  ...d,
+  _link: buildDriverLink(d)
+})))
 
 const hasAnyResults = computed(() => {
   return (

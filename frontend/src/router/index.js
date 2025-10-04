@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import RacedayInputView from '@/views/raceday-input/RacedayInputView.vue'
 import RacedayView from '@/views/raceday/RacedayView.vue'
 import RaceHorsesView from '@/views/race/RaceHorsesView.vue'
+import HorseView from '@/views/horse/HorseView.vue'
+import DriverView from '@/views/driver/DriverView.vue'
 import DevRatingsView from '@/views/DevRatingsView.vue'
 import AdminView from '@/views/Admin/AdminView.vue'
 
@@ -27,6 +29,18 @@ const routes = [
     path: '/race/:raceId',
     name: 'race',
     component: RaceHorsesView,
+    props: true
+  },
+  {
+    path: '/horse/:horseId',
+    name: 'HorseDetail',
+    component: HorseView,
+    props: true
+  },
+  {
+    path: '/driver/:driverId',
+    name: 'DriverDetail',
+    component: DriverView,
     props: true
   },
   {

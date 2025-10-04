@@ -62,3 +62,83 @@ export async function searchGlobal(
 ): Promise<ApiResult<SearchResponse>> {
   return safeGet<SearchResponse>('/search', { params: { q }, signal })
 }
+
+export type HorseResult = {
+  raceId?: number | string | null
+  raceInformation?: any
+  placement?: { sortValue?: number; displayValue?: string } | Record<string, any>
+  driver?: { name?: string }
+  prizeMoney?: { displayValue?: string; sortValue?: number }
+  odds?: { displayValue?: string; sortValue?: number }
+  trackCode?: string | null
+  [key: string]: any
+}
+
+export type HorseDetail = {
+  id?: number
+  name?: string
+  rating?: number
+  formRating?: number
+  rawFormRating?: number
+  score?: number
+  winningRate?: number
+  placementRate?: number
+  results?: HorseResult[]
+  [key: string]: any
+}
+
+export type DriverResult = {
+  raceId?: number | string | null
+  date?: string | null
+  horseId?: number | string | null
+  horseName?: string
+  placement?: number | null
+  placementDisplay?: string | null
+  odds?: number | null
+  oddsDisplay?: string | null
+  prizeMoney?: number | null
+  prizeDisplay?: string | null
+  withdrawn?: boolean
+  trackName?: string | null
+  raceNumber?: number | null
+  distance?: number | null
+  startTime?: string | null
+  racedayId?: number | string | null
+  raceDayDate?: string | null
+}
+
+export type DriverDetail = {
+  id: number
+  name: string
+  elo: number | null
+  careerElo: number | null
+  eloRaceCount: number | null
+  careerRaceCount: number | null
+  eloUpdatedAt: string | null
+  stats: {
+    starts: number
+    wins: number
+    winRate: number | null
+    top3: number
+    top3Rate: number | null
+    top5: number
+    top5Rate: number | null
+    averagePlacement: number | null
+    lastStart: string | null
+  }
+  recentResults: DriverResult[]
+}
+
+export async function fetchHorseDetail(
+  horseId: string | number,
+  signal?: AbortSignal
+): Promise<ApiResult<HorseDetail>> {
+  return safeGet<HorseDetail>(`/horses/${horseId}`, { signal })
+}
+
+export async function fetchDriverDetail(
+  driverId: string | number,
+  signal?: AbortSignal
+): Promise<ApiResult<DriverDetail>> {
+  return safeGet<DriverDetail>(`/driver/${driverId}`, { signal })
+}
