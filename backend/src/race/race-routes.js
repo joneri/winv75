@@ -8,6 +8,7 @@ import { updateDriverRatingsForRace } from '../driver/driver-elo-service.js'
 import Raceday from '../raceday/raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import HorseRating from '../horse/horse-rating-model.js'
+import Driver from '../driver/driver-model.js'
 
 const router = express.Router()
 
@@ -139,16 +140,30 @@ router.get('/:id', validateNumericParam('id'), async (req, res) => {
                 if (horseIds.length) {
                     const ratingDocs = await HorseRating.find({ horseId: { $in: horseIds } }).lean()
                     const map = new Map(ratingDocs.map(r => [r.horseId, r]))
+                    const driverIds = (race.horses || [])
+                        .map(h => {
+                            const driverId = h?.driver?.licenseId ?? h?.driver?.id
+                            const num = Number(driverId)
+                            return Number.isFinite(num) ? num : null
+                        })
+                        .filter(id => id != null)
+                    const driverDocs = driverIds.length
+                        ? await Driver.find({ _id: { $in: driverIds } }, { _id: 1, elo: 1, careerElo: 1 }).lean()
+                        : []
+                    const driverMap = new Map(driverDocs.map(d => [Number(d._id), d]))
                     // IMPORTANT: Mongoose subdocuments are not plain objects.
                     // Spreading them (`{...h}`) can drop fields. Convert first.
                     race.horses = (race.horses || []).map(h => {
                         const base = typeof h?.toObject === 'function' ? h.toObject() : h
                         const rated = map.get(base.id)
+                        const driverId = Number(base?.driver?.licenseId ?? base?.driver?.id)
+                        const driverDoc = Number.isFinite(driverId) ? driverMap.get(driverId) : null
                         return {
                             ...base,
                             rating: rated?.rating ?? base.rating,
                             eloRating: rated?.rating ?? base.eloRating,
-                            formRating: rated?.formRating ?? rated?.rating ?? base.formRating
+                            formRating: rated?.formRating ?? rated?.rating ?? base.formRating,
+                            ...(driverDoc ? { driver: { ...base.driver, elo: driverDoc?.elo ?? null, careerElo: driverDoc?.careerElo ?? null } } : {})
                         }
                     })
                 }

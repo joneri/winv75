@@ -5,6 +5,7 @@ import { calculateHorseScore } from './horse-score.js'
 import { getWeights } from '../config/scoring.js'
 import HorseRating from './horse-rating-model.js'
 import trackService from '../track/track-service.js'
+import Driver from '../driver/driver-model.js'
 
 const HORSE_FORM_RECENCY_SCALE_DAYS = Number(process.env.HORSE_FORM_RECENCY_SCALE_DAYS || 35)
 const HORSE_FORM_SAMPLE_TARGET = Number(process.env.HORSE_FORM_SAMPLE_TARGET || 3)
@@ -157,11 +158,24 @@ const getHorseRankings = async (raceId) => {
         const ranked = await horseRanking.aggregateHorses(raceId)
         const ratingDocs = await HorseRating.find({ horseId: { $in: ranked.map(r => r.id) } })
         const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
+        const driverIds = ranked
+            .map(r => {
+                const driverId = r?.driver?.licenseId ?? r?.driver?.id
+                const num = Number(driverId)
+                return Number.isFinite(num) ? num : null
+            })
+            .filter(id => id != null)
+        const driverDocs = driverIds.length
+            ? await Driver.find({ _id: { $in: driverIds } }, { _id: 1, elo: 1, careerElo: 1 }).lean()
+            : []
+        const driverMap = new Map(driverDocs.map(d => [Number(d._id), d]))
         return ranked.map(r => {
             const ratingDoc = docMap.get(r.id)
             const baseRating = ratingDoc?.rating ?? r.rating ?? 0
             const rawForm = ratingDoc?.formRating ?? ratingDoc?.rating ?? r.formRating
             const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? 0
+            const driverId = Number(r?.driver?.licenseId ?? r?.driver?.id)
+            const driverDoc = Number.isFinite(driverId) ? driverMap.get(driverId) : null
             return {
                 ...r,
                 rating: Number.isFinite(baseRating) ? baseRating : 0,
@@ -171,7 +185,8 @@ const getHorseRankings = async (raceId) => {
                     baseRating,
                     formRaceCount,
                     results: r.results
-                })
+                }),
+                driver: driverDoc ? { ...r.driver, elo: driverDoc.elo ?? null, careerElo: driverDoc.careerElo ?? null } : r.driver
             }
         })
     } catch (error) {

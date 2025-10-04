@@ -122,6 +122,9 @@
                             <template v-slot:[`item.driverName`]="slotProps">
                               {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
                             </template>
+                            <template v-slot:[`item.driverElo`]="slotProps">
+                              {{ formatElo(Number(slotProps?.value ?? getDriverEloFor(slotRow(slotProps)))) }}
+                            </template>
                             <template v-slot:[`item.statsScore`]="slotProps">
                                 <div class="stats-cell">
                                   <div class="form-row">
@@ -293,6 +296,7 @@ export default {
           { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
           { title: 'Form Elo', key: 'formRating', sortable: true, align: 'end', width: 110 },
           { title: 'Kusk', key: 'driverName', sortable: false, width: 160 },
+          { title: 'Kusk Form Elo', key: 'driverElo', sortable: true, align: 'end', width: 130 },
           { title: 'Stats', key: 'statsScore', sortable: true, width: 220 },
           { title: 'Fördelar', key: 'advantages', sortable: false, width: 220 },
           { title: 'Skor', key: 'shoeOption', sortable: false, width: 110 },
@@ -355,23 +359,49 @@ export default {
           return Number(val) || 0
         }
 
+        function getDriverEloFor(horse) {
+          if (!horse) return 0
+          let val = horse?.driver?.elo ?? horse?.driverElo
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) val = horse?.columns?.driverElo
+
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) {
+            const ranked = rankedMap.value.get(horse.id)
+            val = ranked?.driverElo ?? ranked?.driver?.elo ?? ranked?.columns?.driverElo
+          }
+
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) {
+            const fromRace = currentRace.value?.horses?.find(h => h.id === horse.id)
+            val = fromRace?.driver?.elo
+          }
+
+          return Number(val) || 0
+        }
+
         const tableItems = computed(() => {
           const arr = currentRace.value?.horses || []
           const rmap = rankedMap.value
           return arr.map(h0 => {
             const rm = rmap.get(h0.id) || {}
+            const driverFromRace = h0.driver || null
+            const driverFromRanking = rm.driver || null
+            let mergedDriver = driverFromRace ? { ...driverFromRace } : (driverFromRanking ? { ...driverFromRanking } : null)
+            if (driverFromRanking) {
+              if (driverFromRanking.elo != null) mergedDriver = { ...(mergedDriver || {}), elo: driverFromRanking.elo }
+              if (driverFromRanking.careerElo != null) mergedDriver = { ...(mergedDriver || {}), careerElo: driverFromRanking.careerElo }
+            }
             const merged = {
               ...h0,
               // Fill from ranked data when missing in race.horses
               name: h0.name || rm.name || h0.name,
               programNumber: h0.programNumber ?? rm.programNumber ?? h0.programNumber,
-              driver: h0.driver || rm.driver || h0.driver,
+              driver: mergedDriver || h0.driver || rm.driver,
             }
             return {
               ...merged,
               ai: merged.id,
               eloRating: getEloFor(merged),
               formRating: getFormEloFor(merged),
+              driverElo: getDriverEloFor(merged),
               driverName: merged?.driver?.name || '—',
               statsScore: computeFormLast5(merged) ?? 0,
               // No precomputed stats string stored; use getter in slot

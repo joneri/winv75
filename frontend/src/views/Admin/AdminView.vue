@@ -121,6 +121,15 @@
           >Spara</v-btn>
         </div>
         <div v-if="driverUpdateStatus" class="mt-2 driver-status">{{ driverUpdateStatus }}</div>
+        <div class="driver-recompute mt-4">
+          <v-btn
+            color="secondary"
+            :loading="driverRecomputeLoading"
+            :disabled="driverRecomputeLoading"
+            @click="recomputeDriverElo"
+          >Uppdatera alla kusk-ELO</v-btn>
+          <div v-if="driverRecomputeStatus" class="mt-2 driver-status">{{ driverRecomputeStatus }}</div>
+        </div>
       </v-col>
     </v-row>
 
@@ -526,6 +535,8 @@ export default {
     const driverUpdateLoading = ref(false)
     const driverFetchLoading = ref(false)
     const driverUpdateStatus = ref('')
+    const driverRecomputeLoading = ref(false)
+    const driverRecomputeStatus = ref('')
 
     const resetDriverStatus = () => { driverUpdateStatus.value = '' }
     watch(() => driverUpdate.value.id, resetDriverStatus)
@@ -583,6 +594,30 @@ export default {
         driverUpdateStatus.value = 'Misslyckades med att uppdatera ELO'
       } finally {
         driverUpdateLoading.value = false
+      }
+    }
+
+    const recomputeDriverElo = async () => {
+      try {
+        driverRecomputeLoading.value = true
+        driverRecomputeStatus.value = ''
+        const res = await AdminService.recomputeDriverElo()
+        const updated = res?.driversUpdated ?? 0
+        const races = res?.racesProcessed ?? 0
+        const median = res?.distribution?.median != null ? Math.round(res.distribution.median) : '—'
+        if (updated > 0) {
+          driverRecomputeStatus.value = `Bearbetade ${races} lopp, uppdaterade ${updated} kuskar (median Elo ${median}).`
+          snackbar.value = { show: true, text: 'Kusk-ELO uppdaterad', color: 'success' }
+        } else {
+          driverRecomputeStatus.value = 'Inga kuskar uppdaterades. Kontrollera att resultat finns i systemet.'
+          snackbar.value = { show: true, text: 'Inga kuskar uppdaterades', color: 'warning' }
+        }
+      } catch (error) {
+        console.error('Failed to recompute driver elo', error)
+        driverRecomputeStatus.value = 'Misslyckades med att uppdatera alla kuskar'
+        snackbar.value = { show: true, text: 'Kunde inte uppdatera kuskarnas ELO', color: 'error' }
+      } finally {
+        driverRecomputeLoading.value = false
       }
     }
 
@@ -943,6 +978,9 @@ export default {
       canUpdateDriver,
       loadDriverElo,
       submitDriverElo,
+      driverRecomputeLoading,
+      driverRecomputeStatus,
+      recomputeDriverElo,
       // Auto-tune
       autoFrom, autoTo, grid,
       autoRunning, autoStatus, autoResults, autoResultsSorted, autoBest,

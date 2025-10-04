@@ -1,5 +1,7 @@
 import express from 'express'
 import Driver from './driver-model.js'
+import { recomputeDriverRatings } from './driver-elo-service.js'
+import buildDrivers from './build-driver-collection.js'
 
 const router = express.Router()
 
@@ -56,6 +58,36 @@ router.put('/:id/elo', async (req, res) => {
   } catch (error) {
     console.error('Error updating driver elo:', error)
     res.status(500).json({ error: 'Failed to update driver elo.' })
+  }
+})
+
+router.post('/recompute', async (req, res) => {
+  try {
+    const k = req.body?.k != null ? Number(req.body.k) : undefined
+    const decayDays = req.body?.decayDays != null ? Number(req.body.decayDays) : undefined
+    const formDecayDays = req.body?.formDecayDays != null ? Number(req.body.formDecayDays) : undefined
+    const formK = req.body?.formK != null ? Number(req.body.formK) : undefined
+
+    const shouldRebuild = req.body?.rebuild !== false
+    if (shouldRebuild) {
+      await buildDrivers()
+    }
+
+    const result = await recomputeDriverRatings({
+      ...(Number.isFinite(k) ? { k } : {}),
+      ...(Number.isFinite(decayDays) ? { decayDays } : {}),
+      ...(Number.isFinite(formDecayDays) ? { formDecayDays } : {}),
+      ...(Number.isFinite(formK) ? { formK } : {})
+    })
+
+    res.json({
+      ok: true,
+      rebuilt: shouldRebuild,
+      ...result
+    })
+  } catch (error) {
+    console.error('Error recomputing driver elo ratings:', error)
+    res.status(500).json({ error: 'Failed to recompute driver ratings.' })
   }
 })
 

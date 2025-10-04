@@ -50,10 +50,22 @@ const updateDriverElo = async (id, payload) => {
   }
 }
 
+const recomputeDriverElo = async (payload = {}) => {
+  try {
+    const body = { rebuild: true, ...payload }
+    const res = await axios.post(`${import.meta.env.VITE_BE_URL}/api/driver/recompute`, body)
+    return res.data
+  } catch (error) {
+    console.error('Failed to recompute driver elo', error)
+    throw error
+  }
+}
+
 export default {
   triggerRatingsUpdate,
   precomputeRacedayAI,
   evalElo,
   fetchDriverRating,
-  updateDriverElo
+  updateDriverElo,
+  recomputeDriverElo
 }
