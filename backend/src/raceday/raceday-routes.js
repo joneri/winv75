@@ -1,6 +1,8 @@
 import express from 'express'
 import raceDayService from './raceday-service.js'
+import Raceday from './raceday-model.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
+import { listV75Templates, buildV75Suggestion, updateV75DistributionForRaceday } from './v75-service.js'
 
 const router = express.Router()
 
@@ -76,6 +78,50 @@ router.get('/summary', async (req, res) => {
   } catch (error) {
     console.error('Error fetching raceday summary:', error)
     res.status(500).send('Failed to fetch raceday summary. Please try again.')
+  }
+})
+
+router.get('/v75/templates', async (_req, res) => {
+  try {
+    res.json({ templates: listV75Templates() })
+  } catch (error) {
+    console.error('Error fetching V75 templates:', error)
+    res.status(500).json({ error: 'Failed to fetch V75 templates' })
+  }
+})
+
+router.get('/:id/v75/info', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const raceday = await Raceday.findById(req.params.id, { v75Info: 1 }).lean()
+    res.json({ info: raceday?.v75Info || null })
+  } catch (error) {
+    console.error('Failed to fetch V75 info:', error)
+    res.status(500).json({ error: 'Misslyckades hämta V75-information' })
+  }
+})
+
+router.post('/:id/v75/update', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const info = await updateV75DistributionForRaceday(req.params.id)
+    res.json({ ok: true, info })
+  } catch (error) {
+    console.error('Failed to update V75 distribution:', error)
+    res.status(500).json({ error: error.message || 'Misslyckades att uppdatera V75%' })
+  }
+})
+
+router.post('/:id/v75', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const templateKey = req.body?.templateKey
+    const stake = req.body?.stake
+    const suggestion = await buildV75Suggestion(req.params.id, { templateKey, stake })
+    if (suggestion?.error) {
+      return res.status(400).json(suggestion)
+    }
+    res.json(suggestion)
+  } catch (error) {
+    console.error('Failed to build V75 suggestion:', error)
+    res.status(500).json({ error: 'Det gick inte att skapa V75-spelförslag' })
   }
 })
 
