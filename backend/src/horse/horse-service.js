@@ -9,6 +9,13 @@ import Driver from '../driver/driver-model.js'
 
 const HORSE_FORM_RECENCY_SCALE_DAYS = Number(process.env.HORSE_FORM_RECENCY_SCALE_DAYS || 60)
 const HORSE_FORM_SAMPLE_TARGET = Number(process.env.HORSE_FORM_SAMPLE_TARGET || 2)
+const HORSE_FORM_ACTIVE_WINDOW_DAYS = Number(process.env.HORSE_FORM_ACTIVE_WINDOW_DAYS || 45)
+const HORSE_FORM_INACTIVITY_SPAN = Number(process.env.HORSE_FORM_INACTIVITY_SPAN || 120)
+const HORSE_FORM_INACTIVITY_CAP = Number(process.env.HORSE_FORM_INACTIVITY_CAP || 65)
+const HORSE_FORM_MOMENTUM_WINDOW_DAYS = Number(process.env.HORSE_FORM_MOMENTUM_WINDOW_DAYS || 75)
+const HORSE_FORM_MOMENTUM_DECAY_DAYS = Number(process.env.HORSE_FORM_MOMENTUM_DECAY_DAYS || 30)
+const HORSE_FORM_MOMENTUM_MULTIPLIER = Number(process.env.HORSE_FORM_MOMENTUM_MULTIPLIER || 22)
+const HORSE_FORM_MOMENTUM_CAP = Number(process.env.HORSE_FORM_MOMENTUM_CAP || 55)
 
 const daysBetween = (from, to) => {
     const start = from instanceof Date ? from : new Date(from)
@@ -31,25 +38,101 @@ const getLastRaceDate = (results = []) => {
     return latest
 }
 
+const placementMomentumValue = (placement) => {
+    const plc = Number(placement)
+    if (!Number.isFinite(plc)) return 0
+    if (plc === 1) return 3
+    if (plc === 2) return 2.4
+    if (plc === 3) return 1.6
+    if (plc === 4) return 0.8
+    if (plc === 5) return 0
+    if (plc === 6) return -0.8
+    if (plc === 7) return -1.4
+    if (plc === 8) return -1.8
+    return -2.2
+}
+
+const computeMomentumDelta = (results = []) => {
+    if (!Array.isArray(results) || !results.length) return 0
+    const now = Date.now()
+    let weighted = 0
+    let weightSum = 0
+    for (const res of results) {
+        const placement = res?.placement?.sortValue ?? res?.placement?.numericalValue ?? res?.placement
+        const dateRaw = res?.raceInformation?.date || res?.date
+        if (!dateRaw) continue
+        const raceDate = new Date(dateRaw)
+        const diffDays = Number.isNaN(raceDate.getTime())
+            ? null
+            : (now - raceDate.getTime()) / (1000 * 60 * 60 * 24)
+        if (diffDays == null || diffDays < 0 || diffDays > HORSE_FORM_MOMENTUM_WINDOW_DAYS) continue
+        const base = placementMomentumValue(placement)
+        if (base === 0) {
+            // zero still contributes to weight to prevent tiny samples blowing up
+            const weight = Math.exp(-diffDays / HORSE_FORM_MOMENTUM_DECAY_DAYS)
+            weightSum += weight
+            continue
+        }
+        const weight = Math.exp(-diffDays / HORSE_FORM_MOMENTUM_DECAY_DAYS)
+        weighted += base * weight
+        weightSum += weight
+    }
+    if (weightSum <= 0) return 0
+    const normalized = weighted / weightSum
+    const rawDelta = normalized * HORSE_FORM_MOMENTUM_MULTIPLIER
+    const capped = Math.max(-HORSE_FORM_MOMENTUM_CAP, Math.min(HORSE_FORM_MOMENTUM_CAP, rawDelta))
+    return capped
+}
+
 const adjustFormRating = ({ formRating, baseRating, formRaceCount = 0, results = [] }) => {
     const safeBase = Number.isFinite(baseRating) ? baseRating : formRating
     const safeForm = Number.isFinite(formRating) ? formRating : safeBase
     if (!Number.isFinite(safeBase) && !Number.isFinite(safeForm)) return 0
 
     const lastRace = getLastRaceDate(results)
-    const recencyWeight = (() => {
-        if (!lastRace) return 0
+    const recencyInfo = (() => {
+        if (!lastRace) return { weight: 0, days: null }
         const diffDays = daysBetween(lastRace, new Date())
-        if (diffDays == null || diffDays < 0) return 1
-        return Math.exp(-diffDays / HORSE_FORM_RECENCY_SCALE_DAYS)
+        if (diffDays == null || diffDays < 0) return { weight: 1, days: diffDays }
+        return {
+            weight: Math.exp(-diffDays / HORSE_FORM_RECENCY_SCALE_DAYS),
+            days: diffDays
+        }
     })()
 
     const sampleWeight = Math.min(1, Math.max(0, formRaceCount / HORSE_FORM_SAMPLE_TARGET))
-    const blendedWeight = Math.min(1, Math.max(0, recencyWeight * sampleWeight))
+    const blendedWeight = Math.min(1, Math.max(0, recencyInfo.weight * sampleWeight))
 
-    if (!Number.isFinite(safeBase)) return Math.round(safeForm * blendedWeight)
-    if (!Number.isFinite(safeForm)) return Math.round(safeBase)
-    return Math.round(safeForm * blendedWeight + safeBase * (1 - blendedWeight))
+    const baseComponent = (() => {
+        if (!Number.isFinite(safeBase)) return Number.isFinite(safeForm) ? safeForm * blendedWeight : 0
+        if (!Number.isFinite(safeForm)) return safeBase
+        const delta = safeForm - safeBase
+        return safeBase + (delta * blendedWeight)
+    })()
+
+    const momentumDelta = computeMomentumDelta(results)
+
+    let inactivityPenalty = 0
+    const daysSinceLast = recencyInfo.days
+    if (daysSinceLast == null) {
+        inactivityPenalty = HORSE_FORM_INACTIVITY_CAP * 0.5
+    } else if (daysSinceLast > HORSE_FORM_ACTIVE_WINDOW_DAYS) {
+        const staleDays = daysSinceLast - HORSE_FORM_ACTIVE_WINDOW_DAYS
+        const span = Math.max(1, HORSE_FORM_INACTIVITY_SPAN)
+        const ratio = Math.min(1, staleDays / span)
+        inactivityPenalty = ratio * HORSE_FORM_INACTIVITY_CAP
+    }
+
+    if (inactivityPenalty > 0) {
+        const sparseFactor = 0.5 + 0.5 * (1 - Math.min(1, formRaceCount / (HORSE_FORM_SAMPLE_TARGET * 2)))
+        inactivityPenalty *= sparseFactor
+    }
+
+    let adjusted = baseComponent + momentumDelta - inactivityPenalty
+    if (!Number.isFinite(adjusted)) {
+        adjusted = Number.isFinite(baseComponent) ? baseComponent : (safeBase || safeForm || 0)
+    }
+    return Math.round(Math.max(0, adjusted))
 }
 
 const fetchResults = async (horseId) => {
@@ -176,17 +259,33 @@ const getHorseRankings = async (raceId) => {
             const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? 0
             const driverId = Number(r?.driver?.licenseId ?? r?.driver?.id)
             const driverDoc = Number.isFinite(driverId) ? driverMap.get(driverId) : null
+            const formAdjusted = adjustFormRating({
+                formRating: rawForm,
+                baseRating,
+                formRaceCount,
+                results: r.results
+            })
+
+            const driverEnriched = (() => {
+                if (!driverDoc) return r.driver
+                const enriched = {
+                    ...r.driver,
+                    elo: driverDoc.elo ?? null,
+                    formElo: driverDoc.elo ?? null,
+                    careerElo: driverDoc.careerElo ?? null
+                }
+                if (!enriched.displayName && driverDoc.name) {
+                    enriched.displayName = driverDoc.name
+                }
+                return enriched
+            })()
+
             return {
                 ...r,
                 rating: Number.isFinite(baseRating) ? baseRating : 0,
                 rawFormRating: rawForm,
-                formRating: adjustFormRating({
-                    formRating: rawForm,
-                    baseRating,
-                    formRaceCount,
-                    results: r.results
-                }),
-                driver: driverDoc ? { ...r.driver, elo: driverDoc.elo ?? null, careerElo: driverDoc.careerElo ?? null } : r.driver
+                formRating: formAdjusted,
+                driver: driverEnriched
             }
         })
     } catch (error) {

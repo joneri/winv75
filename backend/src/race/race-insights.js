@@ -81,35 +81,6 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const trackCode = await getRaceTrackCode(raceId)
   const trackMeta = trackCode ? await trackService.getTrackByCode(trackCode) : null
   const trackFavStartPos = trackMeta?.favouriteStartingPosition
-  const plusPoints = horses.map(h => {
-    const notes = []
-    const prev = h.previousShoeOption?.code
-    const curr = h.shoeOption?.code
-    if (prev != null && curr != null && prev !== curr) {
-      notes.push('Skobyte')
-    }
-    // Barfota runt om adds explicit plus
-    if (curr === 1) {
-      notes.push('Barfota runt om')
-    }
-    const agg = ranking.find(r => r.id === h.id)
-    if (trackCode && agg?.favoriteTrack && agg.favoriteTrack === trackCode) {
-      notes.push('Favoritbana')
-    }
-    if (agg?.favoriteStartPosition && h.startPosition != null) {
-      const fav = String(agg.favoriteStartPosition).trim()
-      if (fav && fav === String(h.startPosition).trim()) {
-        notes.push('Favoritspår')
-      }
-    }
-    // Track's favorite starting position bonus if drawn there
-    if (trackFavStartPos != null && h.startPosition != null && String(trackFavStartPos).trim() === String(h.startPosition).trim()) {
-      notes.push('Banans favoritspår')
-    }
-    return { id: h.id, name: h.name, programNumber: h.programNumber, points: notes }
-  }).filter(x => x.points.length)
-
-  const plusPointsMap = new Map(plusPoints.map(p => [p.id, p.points]))
 
   // Ranking weights (form-first) — allow overrides
   const eloDiv = toNum(cfg.formEloDivisor, Number(process.env.AI_RANK_FORM_ELO_DIVISOR || process.env.AI_RANK_ELO_DIVISOR || 50))
@@ -128,6 +99,45 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const bTrackFavSpar = toNum(cfg.bonusTrackFavoriteSpar, Number(process.env.AI_RANK_BONUS_TRACK_FAVORITE_SPAR || 0.6))
   const handicapDiv = toNum(cfg.handicapDivisor, Number(process.env.AI_RANK_HANDICAP_DIVISOR || 40))
   const DEBUG = ['1','true','yes','on'].includes(String(process.env.AI_RANK_DEBUG || '').toLowerCase())
+
+  const plusPoints = horses.map(h => {
+      const notes = []
+      const prev = h.previousShoeOption?.code
+      const curr = h.shoeOption?.code
+      if (prev != null && curr != null && prev !== curr) {
+        notes.push('Skobyte')
+      }
+      // Barfota runt om adds explicit plus
+      if (curr === 1) {
+        notes.push('Barfota runt om')
+      }
+      const agg = ranking.find(r => r.id === h.id)
+      if (trackCode && agg?.favoriteTrack && agg.favoriteTrack === trackCode) {
+        notes.push('Favoritbana')
+      }
+      if (agg?.favoriteStartPosition && h.startPosition != null) {
+        const fav = String(agg.favoriteStartPosition).trim()
+        if (fav && fav === String(h.startPosition).trim()) {
+          notes.push('Favoritspår')
+        }
+      }
+      // Track's favorite starting position bonus if drawn there
+      if (trackFavStartPos != null && h.startPosition != null && String(trackFavStartPos).trim() === String(h.startPosition).trim()) {
+        notes.push('Banans favoritspår')
+      }
+      const driverFormElo = agg?.driver?.elo ?? agg?.driver?.formElo ?? null
+      if (Number.isFinite(driverFormElo)) {
+        const driverDelta = driverFormElo - driverEloBaseline
+        if (driverDelta >= driverEloDiv * 1.2) {
+          notes.push('Kuskformtopp')
+        } else if (driverDelta <= -driverEloDiv) {
+          notes.push('Kuskformsvacka')
+        }
+      }
+      return { id: h.id, name: h.name, programNumber: h.programNumber, points: notes }
+    }).filter(x => x.points.length)
+
+  const plusPointsMap = new Map(plusPoints.map(p => [p.id, p.points]))
 
   if (DEBUG) {
     console.log(`[AI_DEBUG] Race ${raceId} ${raceDay.trackName} Lopp ${race?.raceNumber} (${race?.distance}m) — Top Form Elo:`, topByElo.map(h => `${h.programNumber} ${h.name} (${h.elo})`).join(', '))
