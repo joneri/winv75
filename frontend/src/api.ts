@@ -10,6 +10,12 @@ export type ApiOk<T> = { ok: true; data: T; status: number }
 export type ApiErr = { ok: false; error: string; status?: number; aborted?: boolean }
 export type ApiResult<T> = ApiOk<T> | ApiErr
 
+type ListResult<T> = {
+  items: T[]
+  hasMore: boolean
+  nextCursor: string | null
+}
+
 export async function safeGet<T>(
   url: string,
   opts: { params?: any; signal?: AbortSignal } = {}
@@ -63,6 +69,73 @@ export async function searchGlobal(
   return safeGet<SearchResponse>('/search', { params: { q }, signal })
 }
 
+export type HorseListItem = {
+  id: number
+  name: string
+  formRating: number | null
+  formDelta?: number | null
+  winScore?: number | null
+  winProbability?: number | null
+  rating: number | null
+  winningRate: string | number | null
+  placementRate: string | number | null
+  trainerName: string | null
+  dateOfBirth: string | null
+  birthCountryCode: string | null
+}
+
+export type DriverListItem = {
+  id: number
+  name: string
+  elo: number | null
+  careerElo: number | null
+  eloRaceCount: number | null
+  careerRaceCount: number | null
+  eloUpdatedAt: string | null
+  stats: {
+    starts: number
+    wins: number
+    winRate: number | null
+    top3: number
+    top3Rate: number | null
+    lastStart: string | null
+  }
+}
+
+type ListParams = {
+  q?: string
+  cursor?: string | null
+  limit?: number
+}
+
+const listParams = (params: ListParams = {}) => {
+  const query: Record<string, any> = {}
+  if (params.q) query.q = params.q
+  if (params.cursor) query.cursor = params.cursor
+  if (params.limit) query.limit = params.limit
+  return query
+}
+
+export function fetchHorseList(
+  params: ListParams = {},
+  signal?: AbortSignal
+): Promise<ApiResult<ListResult<HorseListItem>>> {
+  return safeGet<ListResult<HorseListItem>>('/horses', {
+    params: listParams(params),
+    signal
+  })
+}
+
+export function fetchDriverList(
+  params: ListParams = {},
+  signal?: AbortSignal
+): Promise<ApiResult<ListResult<DriverListItem>>> {
+  return safeGet<ListResult<DriverListItem>>('/driver', {
+    params: listParams(params),
+    signal
+  })
+}
+
 export type HorseResult = {
   raceId?: number | string | null
   raceInformation?: any
@@ -80,6 +153,12 @@ export type HorseDetail = {
   rating?: number
   formRating?: number
   rawFormRating?: number
+  formDelta?: number
+  winScore?: number
+  winProbability?: number
+  formGapMetric?: number
+  formModelVersion?: string
+  formComponents?: Record<string, any>
   score?: number
   winningRate?: number
   placementRate?: number
@@ -138,7 +217,10 @@ export async function fetchHorseDetail(
 
 export async function fetchDriverDetail(
   driverId: string | number,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  options: { resultsLimit?: number } = {}
 ): Promise<ApiResult<DriverDetail>> {
-  return safeGet<DriverDetail>(`/driver/${driverId}`, { signal })
+  const params: Record<string, any> = {}
+  if (options.resultsLimit) params.resultsLimit = options.resultsLimit
+  return safeGet<DriverDetail>(`/driver/${driverId}`, { signal, params })
 }

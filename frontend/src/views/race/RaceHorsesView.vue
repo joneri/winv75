@@ -72,8 +72,19 @@
                             <template v-slot:[`item.eloRating`]="slotProps">
                                 <div :class="{ withdrawn: slotRow(slotProps)?.columns?.horseWithdrawn }">
                                     <template v-if="true">
-                                      <div>
-                                        {{ slotRow(slotProps)?.name || '—' }} – {{ formatElo(Number(slotProps?.value ?? getEloFor(slotRow(slotProps) || {}))) }}
+                                      <div class="horse-info-line">
+                                        <template v-if="horseLink(slotRow(slotProps))">
+                                          <router-link
+                                            class="horse-link"
+                                            :to="horseLink(slotRow(slotProps))"
+                                          >
+                                            {{ slotRow(slotProps)?.name || '—' }}
+                                          </router-link>
+                                        </template>
+                                        <template v-else>
+                                          <span>{{ slotRow(slotProps)?.name || '—' }}</span>
+                                        </template>
+                                        <span> – {{ formatElo(Number(slotProps?.value ?? getEloFor(slotRow(slotProps) || {}))) }}</span>
                                       </div>
                                     </template>
                                     <!-- Unified past performances: Date, Track, Placement, Comment -->
@@ -117,10 +128,30 @@
                                 </div>
                             </template>
                             <template v-slot:[`item.formRating`]="slotProps">
-                              {{ formatElo(Number(slotProps?.value ?? getFormEloFor(slotRow(slotProps)))) }}
+                              <div class="elo-cell">
+                                <span class="elo-main">
+                                  {{ formatElo(Number(slotProps?.value ?? getFormEloFor(slotRow(slotProps)))) }}
+                                </span>
+                                <span
+                                  v-if="hasFormDelta(slotRow(slotProps))"
+                                  class="elo-delta"
+                                >
+                                  Δ {{ formatFormDelta(getFormDeltaFor(slotRow(slotProps))) }}
+                                </span>
+                              </div>
                             </template>
                             <template v-slot:[`item.driverName`]="slotProps">
-                              {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
+                              <template v-if="driverLink(slotRow(slotProps))">
+                                <router-link
+                                  class="driver-link"
+                                  :to="driverLink(slotRow(slotProps))"
+                                >
+                                  {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
+                                </router-link>
+                              </template>
+                              <template v-else>
+                                {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
+                              </template>
                             </template>
                             <template v-slot:[`item.driverElo`]="slotProps">
                               {{ formatElo(Number(slotProps?.value ?? getDriverEloFor(slotRow(slotProps)))) }}
@@ -191,7 +222,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -213,6 +244,7 @@ import { formatElo, formatStartPosition } from '@/utils/formatters.js'
 import { formatStartListShoe, startListShoeTooltip } from '@/composables/useShoes.js'
 import { useStartAdvantages } from '@/composables/useStartAdvantages.js'
 import { buildUnifiedPastDisplay } from '@/composables/usePastDisplay.js'
+import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
     name: 'RaceHorsesView',
@@ -222,6 +254,35 @@ export default {
         const route = useRoute()
         const router = useRouter()
         const store = useStore()
+
+        const formatBreadcrumbDate = (value) => {
+            if (!value) return ''
+            try {
+                return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+            } catch {
+                return ''
+            }
+        }
+
+        const getCrumbKey = () => (route.name === 'race' ? 'race' : 'RacedayRace')
+        const activeCrumbKey = ref(getCrumbKey())
+        const hasRacedayCrumb = ref(route.name === 'RacedayRace')
+
+        const applyRacePlaceholder = () => {
+            const key = getCrumbKey()
+            const raceId = route.params.raceId
+            if (raceId != null) setBreadcrumbLabel(key, `Lopp ${raceId}`)
+        }
+
+        const applyRacedayPlaceholder = () => {
+            if (route.name === 'RacedayRace') {
+                const racedayId = route.params.racedayId
+                if (racedayId != null) setBreadcrumbLabel('Raceday', `Tävlingsdag ${racedayId}`)
+            }
+        }
+
+        applyRacePlaceholder()
+        applyRacedayPlaceholder()
 
         // raceday / track context
         const racedayDetails = ref(null)
@@ -265,6 +326,67 @@ export default {
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
         const rankedMap = computed(() => new Map((rankedHorses.value || []).map(r => [r.id, r])))
 
+        watch(
+          () => route.params.raceId,
+          () => {
+            applyRacePlaceholder()
+          }
+        )
+
+        watch(
+          () => route.params.racedayId,
+          () => {
+            applyRacedayPlaceholder()
+          }
+        )
+
+        watch(
+          () => route.name,
+          () => {
+            activeCrumbKey.value = getCrumbKey()
+            hasRacedayCrumb.value = route.name === 'RacedayRace'
+            applyRacePlaceholder()
+            applyRacedayPlaceholder()
+          }
+        )
+
+        watch(
+          () => racedayDetails.value,
+          (details) => {
+            if (route.name !== 'RacedayRace') return
+            if (!details?.trackName) return
+            const dateLabel = formatBreadcrumbDate(details.raceDayDate || details.firstStart)
+            const label = dateLabel ? `${details.trackName} (${dateLabel})` : details.trackName
+            setBreadcrumbLabel('Raceday', label)
+          }
+        )
+
+        watch(
+          () => currentRace.value,
+          (race) => {
+            if (!race) return
+            const key = getCrumbKey()
+            const raceNumber = race.raceNumber ?? race.number
+            const baseLabel = raceNumber ? `Lopp ${raceNumber}` : (race.name || `Lopp ${route.params?.raceId ?? ''}`)
+            const details = []
+            if (race.distance) details.push(`${race.distance} m`)
+            const timeLabel = formatBreadcrumbDate(race.startTime || race.startDateTime)
+            if (timeLabel) details.push(timeLabel)
+            const label = details.length ? `${baseLabel} (${details.join(' • ')})` : baseLabel
+            setBreadcrumbLabel(key, label)
+
+            if (route.name === 'RacedayRace') {
+              const track = racedayDetails.value?.trackName || race.trackName || racedayTrackName.value
+              if (track) {
+                const dateLabel = formatBreadcrumbDate(racedayDetails.value?.raceDayDate || racedayDetails.value?.firstStart || race.startTime)
+                const trackLabel = dateLabel ? `${track} (${dateLabel})` : track
+                setBreadcrumbLabel('Raceday', trackLabel)
+              }
+            }
+          },
+          { immediate: true }
+        )
+
         // Race meta helpers
         const raceStartMethod = computed(() => currentRace.value?.startMethod || currentRace.value?.raceType?.text || '')
         const hasHandicap = computed(() => {
@@ -295,6 +417,28 @@ export default {
             const pA = Number(A.prob || 0)
             const pB = Number(B.prob || 0)
             if (pA !== pB) return pA - pB // ascending by prob
+            return 0
+          },
+          formRating: (valA, valB, itemA, itemB) => {
+            const rowA = itemA?.raw ?? itemA
+            const rowB = itemB?.raw ?? itemB
+            const deltaA = Number(getFormDeltaFor(rowA))
+            const deltaB = Number(getFormDeltaFor(rowB))
+
+            const aFinite = Number.isFinite(deltaA)
+            const bFinite = Number.isFinite(deltaB)
+            if (aFinite || bFinite) {
+              if (aFinite && bFinite && deltaA !== deltaB) {
+                return deltaA - deltaB
+              }
+              if (aFinite && !bFinite) return 1
+              if (!aFinite && bFinite) return -1
+            }
+            const numA = Number(valA ?? 0)
+            const numB = Number(valB ?? 0)
+            if (Number.isFinite(numA) && Number.isFinite(numB)) {
+              return numA - numB
+            }
             return 0
           },
           // Sort Stats by numeric form score (0–10)
@@ -371,6 +515,28 @@ export default {
           return Number(val) || 0
         }
 
+        function getFormDeltaFor(horse) {
+          if (!horse) return null
+          let val = horse?.formDelta ?? horse?.columns?.formDelta
+
+          if (!(Number.isFinite(Number(val)))) {
+            const ranked = rankedMap.value.get(horse.id)
+            val = ranked?.formDelta ?? ranked?.columns?.formDelta
+          }
+
+          if (Number.isFinite(Number(val))) {
+            return Number(Number(val).toFixed(2))
+          }
+
+          const form = getFormEloFor(horse)
+          const base = getEloFor(horse)
+          if (Number.isFinite(form) && Number.isFinite(base)) {
+            return Number((form - base).toFixed(2))
+          }
+
+          return null
+        }
+
         function getDriverEloFor(horse) {
           if (!horse) return 0
           let val = horse?.driver?.elo ?? horse?.driverElo
@@ -387,6 +553,19 @@ export default {
           }
 
           return Number(val) || 0
+        }
+
+        function horseLink(row) {
+          const id = row?.id ?? row?.horseId ?? row?.columns?.horseId
+          if (id == null) return null
+          return { name: 'HorseDetail', params: { horseId: id } }
+        }
+
+        function driverLink(row) {
+          const driver = row?.driver || {}
+          const id = driver?.licenseId ?? driver?.id ?? row?.driverId
+          if (id == null) return null
+          return { name: 'DriverDetail', params: { driverId: id } }
         }
 
         const tableItems = computed(() => {
@@ -414,6 +593,7 @@ export default {
               ai: merged.id,
               eloRating: getEloFor(merged),
               formRating: getFormEloFor(merged),
+              formDelta: getFormDeltaFor(merged),
               driverElo: getDriverEloFor(merged),
               driverName: merged?.driver?.name || '—',
               v75Percent: Number.isFinite(Number(merged?.v75Percent)) ? Number(merged.v75Percent) : null,
@@ -591,6 +771,17 @@ export default {
           return Number.isFinite(num) ? num : '—'
         }
 
+        const formatFormDelta = (value) => {
+          const num = Number(value)
+          if (!Number.isFinite(num)) return '—'
+          const decimals = Math.abs(num) >= 10 ? 0 : 1
+          const formatted = new Intl.NumberFormat('sv-SE', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          }).format(num)
+          return num > 0 && !formatted.startsWith('+') ? `+${formatted}` : formatted
+        }
+
         const formatWinsStarts = (stats) => {
           if (!stats) return '—'
           const wins = Number(stats.wins)
@@ -662,6 +853,11 @@ export default {
             formScore: Number.isFinite(formScore) ? formScore : null,
             v75Percent: Number.isFinite(Number(horse.v75Percent)) ? Number(horse.v75Percent) : null
           }
+        }
+
+        const hasFormDelta = (horse) => {
+          const delta = getFormDeltaFor(horse)
+          return Number.isFinite(Number(delta))
         }
 
         function formColorClass(score) {
@@ -942,6 +1138,13 @@ export default {
             await fetchSpelformer()
         })
 
+        onBeforeUnmount(() => {
+            setBreadcrumbLabel(activeCrumbKey.value)
+            if (hasRacedayCrumb.value) {
+                setBreadcrumbLabel('Raceday')
+            }
+        })
+
         return {
             // core
             aiSummary,
@@ -982,6 +1185,9 @@ export default {
             hasEnoughStarts,
             getEloFor,
             getFormEloFor,
+            getFormDeltaFor,
+            hasFormDelta,
+            formatFormDelta,
             raceMetaString,
             trackMetaString,
             raceGames,
@@ -996,6 +1202,8 @@ export default {
             formatV75Percent,
             slotRow,
             slotVal,
+            horseLink,
+            driverLink,
         }
     }
 }
@@ -1011,6 +1219,9 @@ export default {
 .race-header .title { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
 .race-header .subtitle { color: #6b7280; }
 .race-header .meta, .race-header .meta2 { color: #6b7280; font-size: 0.95rem; }
+.elo-cell { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
+.elo-main { font-weight: 600; }
+.elo-delta { font-size: 0.75rem; color: #16a34a; }
 .race-header .games { display: flex; gap: 6px; }
 .ai-coverage { font-size: 0.85rem; }
 .coverage-bar { position: relative; height: 6px; width: 120px; background: #e5e7eb; border-radius: 999px; margin-top: 4px; }
@@ -1077,6 +1288,17 @@ export default {
 
 /* Unified Start cell styling */
 .start-cell { display: grid; grid-auto-rows: min-content; line-height: 1.1; }
+.horse-info-line { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.horse-link,
+.driver-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.horse-link:hover,
+.driver-link:hover {
+  text-decoration-style: solid;
+}
 .start-line1 { font-weight: 600; }
 .start-line2 { font-size: 0.85rem; color: #6b7280; }
 .start-line3 { font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 6px; }
@@ -1120,6 +1342,6 @@ export default {
   .form-fill { background: linear-gradient(90deg, #93c5fd, #60a5fa); }
   .stats-row { color: #9ca3af; }
   .stats-pair { color: #e5e7eb; }
-  .v75-row { color: #86efac; }
+.v75-row { color: #86efac; }
 }
 </style>

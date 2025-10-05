@@ -84,7 +84,31 @@ export async function buildRaceInsights(raceId, overrides = {}) {
 
   // Ranking weights (form-first) — allow overrides
   const eloDiv = toNum(cfg.formEloDivisor, Number(process.env.AI_RANK_FORM_ELO_DIVISOR || process.env.AI_RANK_ELO_DIVISOR || 50))
-  const wForm = toNum(cfg.wForm, Number(process.env.AI_RANK_W_FORM || 0)) // legacy recent-form curve now off by default
+  const deltaDiv = toNum(
+    cfg.formDeltaDivisor,
+    Number(process.env.AI_RANK_FORM_DELTA_DIVISOR || 12)
+  )
+  const wDelta = toNum(
+    cfg.wDelta ?? cfg.wFormDelta ?? cfg.wForm,
+    Number(process.env.AI_RANK_W_DELTA ?? process.env.AI_RANK_W_FORM_DELTA ?? process.env.AI_RANK_W_FORM ?? 0.65)
+  )
+  const wFormLegacy = toNum(cfg.wFormScore, Number(process.env.AI_RANK_W_FORM_SCORE || 0))
+  const winScoreBaseline = toNum(
+    cfg.winScoreBaseline,
+    Number(process.env.AI_RANK_WIN_SCORE_BASELINE || 1000)
+  )
+  const winScoreDiv = toNum(
+    cfg.winScoreDivisor,
+    Number(process.env.AI_RANK_WIN_SCORE_DIVISOR || 35)
+  )
+  const wWinScore = toNum(
+    cfg.wWinScore,
+    Number(process.env.AI_RANK_W_WIN_SCORE || 0.55)
+  )
+  const pWinBlend = Math.min(1, Math.max(0, toNum(
+    cfg.pWinBlend,
+    Number(process.env.AI_RANK_PWIN_BLEND || 0.7)
+  )))
   const driverEloDiv = toNum(cfg.driverEloDivisor, Number(process.env.AI_RANK_DRIVER_ELO_DIVISOR || 100))
   const driverEloBaseline = toNum(cfg.driverEloBaseline, Number(process.env.AI_RANK_DRIVER_ELO_BASELINE || 900))
   const wDriver = toNum(cfg.wDriver, Number(process.env.AI_RANK_W_DRIVER || 1))
@@ -134,6 +158,15 @@ export async function buildRaceInsights(raceId, overrides = {}) {
           notes.push('Kuskformsvacka')
         }
       }
+      const deltaVal = Number(agg?.formDelta)
+      if (Number.isFinite(deltaVal)) {
+        if (deltaVal >= 12) notes.push(`Formtopp Δ${Math.round(deltaVal)}`)
+        else if (deltaVal <= -8) notes.push(`Formsvacka Δ${Math.round(deltaVal)}`)
+      }
+      const winProb = Number(agg?.winProbability)
+      if (Number.isFinite(winProb) && winProb >= 0.45) {
+        notes.push(`AI-trust ${Math.round(winProb * 100)}%`)
+      }
       return { id: h.id, name: h.name, programNumber: h.programNumber, points: notes }
     }).filter(x => x.points.length)
 
@@ -148,6 +181,13 @@ export async function buildRaceInsights(raceId, overrides = {}) {
     .map(r => {
       const formElo = Math.round(r.formRating || r.rating || 0)
       const formScore = Number(((formScores.get(r.id) || 0)).toFixed(2)) // legacy informative only
+      const formDelta = Number.isFinite(r.formDelta)
+        ? Number(r.formDelta)
+        : Number.isFinite(r.formRating) && Number.isFinite(r.rating)
+          ? Number(r.formRating) - Number(r.rating)
+          : 0
+      const winScore = Number.isFinite(r.winScore) ? Number(r.winScore) : null
+      const winProbability = Number.isFinite(r.winProbability) ? Number(r.winProbability) : null
       const pts = plusPointsMap.get(r.id) || []
       let bonus = 0
       for (const p of pts) {
@@ -167,7 +207,15 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         if (diff !== 0 && handicapDiv > 0) handicapAdj = -diff / handicapDiv
       }
       const eloTerm = formElo / eloDiv
-      const formTerm = wForm * formScore
+      let deltaTerm = 0
+      if (Number.isFinite(formDelta) && deltaDiv > 0) {
+        deltaTerm = wDelta * (formDelta / deltaDiv)
+      }
+      const legacyFormTerm = wFormLegacy * formScore
+      let winScoreTerm = 0
+      if (winScore != null && Number.isFinite(winScore) && winScoreDiv > 0) {
+        winScoreTerm = wWinScore * ((winScore - winScoreBaseline) / winScoreDiv)
+      }
       const driverMeta = meta?.driver || horsesById.get(r.id)?.driver || {}
       const driverElo = Number(driverMeta?.elo ?? driverMeta?.formElo ?? driverMeta?.rating ?? 0)
       let driverTerm = 0
@@ -186,10 +234,18 @@ export async function buildRaceInsights(raceId, overrides = {}) {
           pts.push(`Publikfavorit ${pctLabel}`)
         }
       }
-      const compositeScore = eloTerm + formTerm + bonus + handicapAdj + driverTerm + publicTerm
+      const compositeScore =
+        eloTerm +
+        deltaTerm +
+        legacyFormTerm +
+        winScoreTerm +
+        bonus +
+        handicapAdj +
+        driverTerm +
+        publicTerm
 
       if (DEBUG) {
-        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, formScore=${formScore}, formTerm=${formTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTerm.toFixed(3)}, publicPercent=${publicPercent ?? '-'}, publicTerm=${publicTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
+        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, Δ=${formDelta?.toFixed?.(2) ?? formDelta}, deltaTerm=${deltaTerm.toFixed(3)}, legacyFormScore=${formScore}, legacyFormTerm=${legacyFormTerm.toFixed(3)}, winScore=${winScore ?? '-'}, winScoreTerm=${winScoreTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTerm.toFixed(3)}, publicPercent=${publicPercent ?? '-'}, publicTerm=${publicTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
       }
 
       return {
@@ -198,10 +254,15 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         programNumber: r.programNumber,
         rating: formElo,
         formScore,
+        formDelta,
+        winScore,
+        winProbability,
         plusPoints: pts,
         compositeScore,
         eloTerm,
-        formTerm,
+        deltaTerm,
+        legacyFormTerm,
+        winScoreTerm,
         driverElo,
         driverTerm,
         publicPercent,
@@ -299,6 +360,27 @@ export async function buildRaceInsights(raceId, overrides = {}) {
     return h
   })
 
+  // Blend calibrated win probabilities (delta-form model) with softmax if available
+  const baseWinProbsRaw = rankedWithTier.map(h => {
+    const p = Number(h.winProbability)
+    if (!Number.isFinite(p) || p <= 0) return null
+    return Math.min(0.9999, Math.max(1e-6, p))
+  })
+  const sumBaseWin = baseWinProbsRaw.reduce((acc, p) => acc + (p ?? 0), 0)
+  let blendedProbs = probs.slice()
+  if (sumBaseWin > 0) {
+    const baseNormalized = baseWinProbsRaw.map(p => (p ?? 0) / sumBaseWin)
+    blendedProbs = blendedProbs.map((soft, idx) => {
+      const base = baseNormalized[idx] ?? null
+      if (base == null) return soft
+      return (pWinBlend * base) + ((1 - pWinBlend) * soft)
+    })
+    const sumBlend = blendedProbs.reduce((acc, v) => acc + v, 0) || 1
+    blendedProbs = blendedProbs.map(v => v / sumBlend)
+  }
+
+  withProb = withProb.map((h, i) => ({ ...h, prob: blendedProbs[i] }))
+
   const sortedByProb = [...withProb].sort((a, b) => b.prob - a.prob)
   const topProb = sortedByProb[0]?.prob || 0
   const p2 = sortedByProb[1]?.prob || 0
@@ -368,7 +450,13 @@ export async function buildRaceInsights(raceId, overrides = {}) {
     highlights: byZ.slice(0, highlightsN).map(h => ({ id: h.id, programNumber: h.programNumber, name: h.name })),
     rankConfig: {
       eloDiv,
-      wForm,
+      deltaDiv,
+      wDelta,
+      wFormLegacy,
+      winScoreBaseline,
+      winScoreDiv,
+      wWinScore,
+      pWinBlend,
       bShoe,
       bFavTrack,
       bFavSpar,

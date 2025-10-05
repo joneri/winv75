@@ -182,5 +182,7 @@ HorseSchema.index({ id: 1 })
 HorseSchema.index({ name: 1 })
 HorseSchema.index({ 'results.raceInformation.raceId': 1 })
 HorseSchema.index({ 'results.raceInformation.date': 1 })
+// Sorting helper for list view
+HorseSchema.index({ formRating: -1, rating: -1, id: 1 })
 
 export default mongoose.model('Horse', HorseSchema)

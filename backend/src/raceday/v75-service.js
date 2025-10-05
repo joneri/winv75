@@ -15,6 +15,9 @@ const MAX_SELECTIONS_PER_LEG = Number.isFinite(ENV_MAX_SELECTIONS) && ENV_MAX_SE
   : 8
 const SCORE_EPSILON = 1e-6
 const DEFAULT_SUGGESTION_MODES = ['balanced', 'public', 'value']
+const V75_PWIN_WEIGHT = Number.isFinite(Number(process.env.V75_PWIN_WEIGHT))
+  ? Number(process.env.V75_PWIN_WEIGHT)
+  : 24
 
 export const V75_TEMPLATES = [
   {
@@ -60,7 +63,12 @@ const toNumber = (value, fallback = 0) => {
 
 const toScore = (horse) => {
   if (!horse) return 0
-  return toNumber(horse.compositeScore ?? horse.rating ?? 0, 0)
+  const composite = toNumber(horse.compositeScore ?? horse.rating ?? 0, 0)
+  const pWin = Number(horse.winProbability)
+  if (Number.isFinite(pWin) && pWin > 0) {
+    return composite + V75_PWIN_WEIGHT * pWin
+  }
+  return composite
 }
 
 const buildSuggestionContext = async (racedayId, context = null) => {

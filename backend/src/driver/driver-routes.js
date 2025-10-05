@@ -6,6 +6,149 @@ import buildDrivers from './build-driver-collection.js'
 
 const router = express.Router()
 
+const clampLimit = (value, fallback = 50, max = 100) => {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback
+  return Math.min(max, Math.max(1, Math.floor(parsed)))
+}
+
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const encodeCursor = (payload) => Buffer.from(JSON.stringify(payload)).toString('base64')
+
+const decodeCursor = (cursor) => {
+  try {
+    if (!cursor) return null
+    const json = Buffer.from(String(cursor), 'base64').toString('utf8')
+    const parsed = JSON.parse(json)
+    if (typeof parsed !== 'object' || parsed === null) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+const buildDriverStats = (driver) => {
+  const results = Array.isArray(driver.results) ? driver.results : []
+  let starts = 0
+  let wins = 0
+  let top3 = 0
+  let lastStart = null
+
+  for (const res of results) {
+    const placement = Number(res?.placement?.sortValue ?? res?.placement)
+    if (Number.isFinite(placement) && placement > 0 && placement < 99) {
+      starts += 1
+      if (placement === 1) wins += 1
+      if (placement <= 3) top3 += 1
+    }
+    const date = res?.date ? new Date(res.date) : null
+    if (date && !Number.isNaN(date.getTime())) {
+      if (!lastStart || date > lastStart) lastStart = date
+    }
+  }
+
+  const winRate = starts ? wins / starts : null
+  const top3Rate = starts ? top3 / starts : null
+
+  return {
+    starts,
+    wins,
+    winRate,
+    top3,
+    top3Rate,
+    lastStart: lastStart ? lastStart.toISOString() : null
+  }
+}
+
+router.get('/', async (req, res) => {
+  try {
+    const limit = clampLimit(req.query.limit)
+    const search = typeof req.query.q === 'string' ? req.query.q.trim() : ''
+    const cursor = decodeCursor(req.query.cursor)
+
+    if (req.query.cursor && !cursor) {
+      return res.status(400).json({ error: 'Invalid cursor' })
+    }
+
+    const match = {}
+    if (search) {
+      match.name = { $regex: escapeRegex(search), $options: 'i' }
+    }
+
+    if (cursor && Number.isFinite(Number(cursor.elo))) {
+      const elo = Number(cursor.elo)
+      const driverId = Number(cursor.id) || 0
+      match.$or = [
+        { elo: { $lt: elo } },
+        { elo, _id: { $gt: driverId } }
+      ]
+    }
+
+    const sort = { elo: -1, _id: 1 }
+
+    const pipeline = []
+    if (Object.keys(match).length) {
+      pipeline.push({ $match: match })
+    }
+    pipeline.push({ $sort: sort })
+    pipeline.push({ $limit: limit + 1 })
+    pipeline.push({
+      $project: {
+        _id: 1,
+        name: 1,
+        elo: 1,
+        careerElo: 1,
+        eloRaceCount: 1,
+        careerRaceCount: 1,
+        eloUpdatedAt: 1,
+        results: {
+          $map: {
+            input: '$results',
+            as: 'res',
+            in: {
+              placement: '$$res.placement',
+              date: '$$res.date'
+            }
+          }
+        }
+      }
+    })
+
+    const docs = await Driver.aggregate(pipeline).option({ allowDiskUse: true })
+
+    const hasMore = docs.length > limit
+    const items = hasMore ? docs.slice(0, limit) : docs
+    const last = hasMore ? items[items.length - 1] : null
+
+    res.json({
+      items: items.map((driver) => {
+        const stats = buildDriverStats(driver)
+        return {
+          id: driver._id,
+          name: driver.name,
+          elo: Number.isFinite(driver.elo) ? driver.elo : null,
+          careerElo: Number.isFinite(driver.careerElo) ? driver.careerElo : null,
+          eloRaceCount: driver.eloRaceCount ?? null,
+          careerRaceCount: driver.careerRaceCount ?? null,
+          eloUpdatedAt: driver.eloUpdatedAt ?? null,
+          stats
+        }
+      }),
+      hasMore,
+      nextCursor: last
+        ? encodeCursor({
+            elo: Number.isFinite(last.elo) ? last.elo : 0,
+            id: last._id ?? 0
+          })
+        : null
+    })
+  } catch (error) {
+    console.error('Error listing drivers:', error)
+    res.status(500).json({ error: 'Failed to list drivers.' })
+  }
+})
+
 router.get('/ratings', async (req, res) => {
   try {
     const ids = req.query.ids ? req.query.ids.split(',').map(id => parseInt(id)) : []
@@ -42,7 +185,11 @@ router.get('/:id', async (req, res) => {
       return db - da
     })
 
-    const RECENT_LIMIT = 25
+    const recentLimitRaw = Number(req.query.resultsLimit)
+    const RECENT_LIMIT = Number.isFinite(recentLimitRaw)
+      ? Math.min(Math.max(Math.floor(recentLimitRaw), 25), 500)
+      : 25
+
     const recent = sorted.slice(0, RECENT_LIMIT)
     const raceIds = [...new Set(recent.map(r => r?.raceId).filter(Boolean))]
 
@@ -78,17 +225,25 @@ router.get('/:id', async (req, res) => {
       return Number.isNaN(dt.getTime()) ? null : dt.toISOString()
     }
 
-    const getPlacement = (entry) => {
-      const raw = entry?.placement?.sortValue ?? entry?.placement
-      const num = Number(raw)
-      return Number.isFinite(num) ? num : null
-    }
+  const getPlacement = (entry) => {
+    const raw = entry?.placement?.sortValue ?? entry?.placement
+    const num = Number(raw)
+    if (!Number.isFinite(num)) return null
+    if (num >= 900) return null // pending/missing result codes
+    if (num <= 0 || num >= 99) return null
+    return num
+  }
 
-    const recentResults = recent.map(res => {
-      const meta = raceMetaMap.get(res?.raceId) || {}
-      const placementValue = getPlacement(res)
-      return {
-        raceId: res?.raceId ?? null,
+  const recentResults = recent.map(res => {
+    const meta = raceMetaMap.get(res?.raceId) || {}
+    const placementValue = getPlacement(res)
+    const rawPlacement = Number(res?.placement?.sortValue ?? res?.placement)
+    const pending = !Number.isFinite(placementValue) && Number.isFinite(rawPlacement) && rawPlacement >= 900
+    const startPos = res?.startPosition
+    const startMethod = res?.startMethod
+
+    return {
+      raceId: res?.raceId ?? null,
         date: normalizeDate(res?.date),
         horseId: res?.horseId ?? null,
         horseName: res?.horseName || '',
@@ -99,10 +254,24 @@ router.get('/:id', async (req, res) => {
         prizeMoney: res?.prizeMoney?.amount ?? null,
         prizeDisplay: res?.prizeMoney?.display ?? res?.prizeMoney?.displayValue ?? null,
         withdrawn: res?.withdrawn === true,
+        pending,
         trackName: meta.trackName ?? null,
         raceNumber: meta.raceNumber ?? null,
-        distance: meta.distance ?? null,
+        distance: (() => {
+          const dist = meta.distance
+          if (Number.isFinite(Number(dist))) return `${dist} m`
+          return dist ?? null
+        })(),
         startTime: normalizeDate(meta.startTime),
+        startPosition: startPos && typeof startPos === 'object'
+          ? {
+              sortValue: Number.isFinite(Number(startPos?.sortValue)) ? Number(startPos.sortValue) : startPos?.sortValue ?? null,
+              displayValue: startPos?.displayValue ?? startPos?.text ?? null
+            }
+          : startPos ?? null,
+        startMethod: startMethod && typeof startMethod === 'object'
+          ? startMethod?.displayValue ?? startMethod?.text ?? null
+          : startMethod ?? null,
         racedayId: meta.racedayId ?? null,
         raceDayDate: normalizeDate(meta.raceDayDate)
       }

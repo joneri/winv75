@@ -63,13 +63,14 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import RaceCardComponent from './components/RaceCardComponent.vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import V75SuggestionModal from './components/V75SuggestionModal.vue'
+import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
   components: {
@@ -81,6 +82,14 @@ export default {
     const route = useRoute()
     console.log('RacedayView Props:', props);
     console.log('RacedayView Route Params:', route.params);
+
+    const applyPlaceholderBreadcrumb = () => {
+      const id = route.params.racedayId
+      if (id != null) {
+        setBreadcrumbLabel('Raceday', `Tävlingsdag ${id}`)
+      }
+    }
+    applyPlaceholderBreadcrumb()
 
     const racedayDetails = ref(null)
     const errorMessage = ref(null)
@@ -109,6 +118,15 @@ export default {
       }
     }
 
+    const formatBreadcrumbDate = (value) => {
+      if (!value) return ''
+      try {
+        return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(new Date(value))
+      } catch {
+        return ''
+      }
+    }
+
     onMounted(async () => {
       try {
         loading.value = true
@@ -121,6 +139,29 @@ export default {
       } finally {
         loading.value = false
       }
+    })
+
+    watch(
+      () => racedayDetails.value,
+      (info) => {
+        if (info?.trackName) {
+          const dateLabel = formatBreadcrumbDate(info.raceDayDate || info.firstStart)
+          const label = dateLabel ? `${info.trackName} (${dateLabel})` : info.trackName
+          setBreadcrumbLabel('Raceday', label)
+        }
+      },
+      { immediate: true }
+    )
+
+    watch(
+      () => route.params.racedayId,
+      () => {
+        applyPlaceholderBreadcrumb()
+      }
+    )
+
+    onBeforeUnmount(() => {
+      setBreadcrumbLabel('Raceday')
     })
 
     const racedayGames = computed(() => {
@@ -218,7 +259,10 @@ export default {
               FormElo: h.rating,
               EloTerm: Number(h.eloTerm?.toFixed ? h.eloTerm.toFixed(3) : h.eloTerm),
               Form: h.formScore,
-              FormTerm: Number(h.formTerm?.toFixed ? h.formTerm.toFixed(3) : h.formTerm),
+              FormDelta: Number.isFinite(h.formDelta) ? Number(h.formDelta.toFixed ? h.formDelta.toFixed(2) : h.formDelta) : h.formDelta,
+              DeltaTerm: Number(h.deltaTerm?.toFixed ? h.deltaTerm.toFixed(3) : h.deltaTerm),
+              LegacyFormTerm: Number(h.legacyFormTerm?.toFixed ? h.legacyFormTerm.toFixed(3) : h.legacyFormTerm),
+              WinScoreTerm: Number(h.winScoreTerm?.toFixed ? h.winScoreTerm.toFixed(3) : h.winScoreTerm),
               Bonus: Number(h.bonus?.toFixed ? h.bonus.toFixed(3) : h.bonus),
               HandicapAdj: Number(h.handicapAdj?.toFixed ? h.handicapAdj.toFixed(3) : h.handicapAdj),
               Dist: h.baseDistance ? `${h.baseDistance}${h.distanceDiff ? ` (${h.distanceDiff > 0 ? '+' : ''}${h.distanceDiff})` : ''}` : '',

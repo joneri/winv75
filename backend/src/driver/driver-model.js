@@ -36,5 +36,8 @@ DriverSchema.index({ 'results.raceId': 1 })
 DriverSchema.index({ 'results.date': 1 })
 // Name index for search
 DriverSchema.index({ name: 1 })
+// Sorting helpers for list view
+DriverSchema.index({ elo: -1, _id: 1 })
+DriverSchema.index({ careerElo: -1, _id: 1 })
 
 export default mongoose.models.Driver || mongoose.model('Driver', DriverSchema)
