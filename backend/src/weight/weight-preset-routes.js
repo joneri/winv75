@@ -105,18 +105,24 @@ router.post('/sessions', async (req, res, next) => {
   }
 })
 
-router.get('/sessions', async (req, res, next) => {
+export const listSessionsHandler = async (req, res, next, deps = {}) => {
   try {
-    const user = getRequestUser(req)
-    if (!hasRole(user, 'analyst')) {
+    const getUser = deps.getRequestUser || getRequestUser
+    const roleChecker = deps.hasRole || hasRole
+    const listSessions = deps.listSessionsForRace || listSessionsForRace
+
+    const user = getUser(req)
+    if (!roleChecker(user, 'analyst')) {
       return res.status(403).json({ error: 'Endast Analyst eller högre får hämta sessioner' })
     }
-    const { raceId, limit } = req.query
-    const sessions = await listSessionsForRace({ raceId, limit })
+    const { raceId, limit } = req.query || {}
+    const sessions = await listSessions({ raceId, limit })
     res.json({ sessions })
   } catch (err) {
     next(err)
   }
-})
+}
+
+router.get('/sessions', (req, res, next) => listSessionsHandler(req, res, next))
 
 export default router

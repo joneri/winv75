@@ -9,7 +9,8 @@
     "dev": "nodemon src/index.js",
     "update-ratings": "node src/horse/update-elo-ratings.js",
     "build-drivers": "node src/driver/build-driver-collection.js",
-    "update-driver-elo": "node src/driver/update-driver-elo-ratings.js"
+    "update-driver-elo": "node src/driver/update-driver-elo-ratings.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

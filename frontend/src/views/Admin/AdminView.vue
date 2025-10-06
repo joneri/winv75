@@ -469,6 +469,87 @@
       </v-col>
     </v-row>
 
+    <v-row class="mt-10">
+      <v-col>
+        <h2>Weight Studio-sessioner</h2>
+        <p class="weight-session-help">Listar sparade vikt-sessioner för ett specifikt lopp. Kräver analyst-behörighet.</p>
+        <div class="weight-session-controls">
+          <v-text-field
+            v-model="sessionRaceId"
+            label="Race ID"
+            type="number"
+            density="compact"
+            hide-details="auto"
+            @keydown.enter="loadWeightSessions"
+          />
+          <v-text-field
+            v-model.number="sessionLimit"
+            label="Max (1–100)"
+            type="number"
+            min="1"
+            max="100"
+            density="compact"
+            hide-details="auto"
+          />
+          <v-btn
+            color="primary"
+            :loading="loadingSessions"
+            :disabled="!sessionRaceId || loadingSessions"
+            @click="loadWeightSessions"
+          >Hämta sessioner</v-btn>
+        </div>
+        <div v-if="sessionsError" class="weight-session-error">{{ sessionsError }}</div>
+        <v-progress-linear v-if="loadingSessions" class="mt-3" color="primary" indeterminate rounded height="4" />
+
+        <v-card class="mt-4" v-if="weightSessions.length">
+          <v-expansion-panels>
+            <v-expansion-panel
+              v-for="session in weightSessions"
+              :key="session.id"
+            >
+              <v-expansion-panel-title>
+                <div class="session-title">
+                  <span>{{ formatSessionTime(session.createdAt) }} • Race {{ session.raceId }}</span>
+                  <span class="session-meta">{{ session.userId }} ({{ session.userRole }})</span>
+                  <span class="session-meta" v-if="session.presetName">Preset: {{ session.presetName }}</span>
+                  <span class="session-meta" v-if="session.durationMs">Varaktighet: {{ formatSessionDuration(session.durationMs) }}</span>
+                </div>
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <div class="session-detail-grid">
+                  <div>
+                    <strong>Signalversion</strong>
+                    <span>{{ session.signalVersion }}</span>
+                  </div>
+                  <div>
+                    <strong>Preset-id</strong>
+                    <span>{{ session.presetId || '—' }}</span>
+                  </div>
+                  <div>
+                    <strong>Dominans</strong>
+                    <span>{{ session.dominanceSignals?.length ? session.dominanceSignals.join(', ') : '—' }}</span>
+                  </div>
+                  <div>
+                    <strong>Ändringar</strong>
+                    <span>{{ session.changes?.length || 0 }}</span>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <v-btn size="small" variant="tonal" @click="copySessionJson(session)">Kopiera JSON</v-btn>
+                  <v-btn size="small" variant="text" @click="downloadSessionJson(session)">Ladda ned</v-btn>
+                </div>
+                <pre class="session-json">{{ formatSessionJson(session) }}</pre>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-card>
+        <div
+          v-else-if="!loadingSessions && sessionsFetched"
+          class="weight-session-empty"
+        >Inga sessioner hittades för race {{ sessionRaceId }}.</div>
+      </v-col>
+    </v-row>
+
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.text }}
     </v-snackbar>
@@ -477,6 +558,7 @@
 
 <script>
 import { ref, onMounted, watch, computed } from 'vue'
+import { fetchWeightSessions } from '@/api'
 import AdminService from './services/AdminService.js'
 import AutoTune from './services/AutoTuneService.js'
 import AiProfiles from './services/AiProfilesService.js'
@@ -489,6 +571,99 @@ export default {
     const updatingRatings = ref(false)
     const precomputing = ref(false)
     const snackbar = ref({ show: false, text: '', color: 'success' })
+
+    const sessionRaceId = ref('')
+    const sessionLimit = ref(20)
+    const weightSessions = ref([])
+    const loadingSessions = ref(false)
+    const sessionsError = ref('')
+    const sessionsFetched = ref(false)
+
+    const normaliseLimit = () => {
+      const num = Number(sessionLimit.value)
+      if (!Number.isFinite(num)) return undefined
+      const clamped = Math.min(Math.max(Math.round(num), 1), 100)
+      if (clamped !== num) sessionLimit.value = clamped
+      return clamped
+    }
+
+    const formatSessionTime = (iso) => {
+      if (!iso) return '—'
+      const date = new Date(iso)
+      if (Number.isNaN(date.getTime())) return iso
+      return date.toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })
+    }
+
+    const formatSessionDuration = (ms) => {
+      const num = Number(ms)
+      if (!Number.isFinite(num) || num <= 0) return '—'
+      if (num < 1000) return `${Math.round(num)} ms`
+      const seconds = num / 1000
+      if (seconds < 120) return `${seconds.toFixed(1)} s`
+      const minutes = Math.floor(seconds / 60)
+      const remainder = Math.round(seconds % 60)
+      return `${minutes} min ${String(remainder).padStart(2, '0')} s`
+    }
+
+    const formatSessionJson = (session) => JSON.stringify(session, null, 2)
+
+    const copySessionJson = async (session) => {
+      try {
+        await navigator.clipboard.writeText(formatSessionJson(session))
+        snackbar.value = { show: true, text: 'Session kopierad till urklipp', color: 'success' }
+      } catch (error) {
+        console.error('Failed to copy session', error)
+        snackbar.value = { show: true, text: 'Kunde inte kopiera sessionen', color: 'error' }
+      }
+    }
+
+    const downloadSessionJson = (session) => {
+      try {
+        const blob = new Blob([formatSessionJson(session)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `weight-session-${session.id}.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error('Failed to download session', error)
+        snackbar.value = { show: true, text: 'Kunde inte ladda ned sessionen', color: 'error' }
+      }
+    }
+
+    const loadWeightSessions = async () => {
+      sessionsError.value = ''
+      sessionsFetched.value = false
+      if (!sessionRaceId.value) {
+        sessionsError.value = 'Ange ett raceId.'
+        weightSessions.value = []
+        return
+      }
+      const limit = normaliseLimit()
+      loadingSessions.value = true
+      try {
+        const res = await fetchWeightSessions({ raceId: sessionRaceId.value, limit })
+        if (!res.ok) {
+          if (res.aborted) return
+          const message = res.status === 403
+            ? 'Behörighet saknas (Analyst krävs).'
+            : res.error || 'Kunde inte hämta sessioner.'
+          sessionsError.value = message
+          weightSessions.value = []
+          return
+        }
+        weightSessions.value = res.data.sessions || []
+        sessionsFetched.value = true
+      } catch (error) {
+        console.error('Failed to load weight sessions', error)
+        sessionsError.value = 'Kunde inte hämta sessioner.'
+      } finally {
+        loadingSessions.value = false
+      }
+    }
 
     const updateRatings = async () => {
       try {
@@ -955,6 +1130,18 @@ export default {
       precomputeAI,
       loadMetrics,
       metrics,
+      sessionRaceId,
+      sessionLimit,
+      weightSessions,
+      loadingSessions,
+      sessionsError,
+      sessionsFetched,
+      loadWeightSessions,
+      formatSessionTime,
+      formatSessionDuration,
+      formatSessionJson,
+      copySessionJson,
+      downloadSessionJson,
       from,
       to,
       kClassMultiplier,
@@ -1015,7 +1202,25 @@ export default {
 .knobs .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pre-json { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
 .scroll { max-height: 240px; overflow: auto; }
+.weight-session-help { margin-top: 4px; color: rgba(71, 85, 105, 0.9); font-size: 0.9rem; }
+.weight-session-controls { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.weight-session-error { margin-top: 8px; color: #b91c1c; font-size: 0.9rem; }
+.weight-session-empty { margin-top: 16px; color: #64748b; font-size: 0.95rem; }
+.session-title { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-weight: 600; }
+.session-title .session-meta { font-weight: 400; font-size: 0.85rem; color: #475569; }
+.session-detail-grid { margin-top: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.session-detail-grid strong { display: block; font-size: 0.85rem; color: #1e293b; }
+.session-detail-grid span { font-size: 0.85rem; color: #475569; }
+.session-actions { margin: 12px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.session-json { background: #f1f5f9; padding: 12px; border-radius: 6px; max-height: 220px; overflow: auto; font-size: 12px; }
 @media (prefers-color-scheme: dark) {
   .pre-json { background: #0b1021; color: #e5e7eb; }
+  .weight-session-help { color: #cbd5f5; }
+  .weight-session-error { color: #f87171; }
+  .weight-session-empty { color: #94a3b8; }
+  .session-title .session-meta { color: #cbd5f5; }
+  .session-detail-grid strong { color: #e2e8f0; }
+  .session-detail-grid span { color: #cbd5f5; }
+  .session-json { background: rgba(15, 23, 42, 0.9); color: #e2e8f0; }
 }
 </style>

@@ -59,7 +59,11 @@ export async function safePost<T>(
       return { ok: false, error: 'aborted', aborted: true }
     }
     const status = ax.response?.status
-    const message = ax.response?.data?.error || ax.message || 'Network error'
+    const responseData = ax.response?.data
+    const extractedError = typeof responseData === 'object' && responseData && 'error' in responseData
+      ? (responseData as { error?: string }).error
+      : undefined
+    const message = extractedError || ax.message || 'Network error'
     return { ok: false, error: message, status }
   }
 }
@@ -283,6 +287,24 @@ export type WeightSessionPayload = {
   }
 }
 
+export type WeightSessionRecord = {
+  id: string
+  raceId: number
+  signalVersion: string
+  userId: string
+  userRole: string
+  teamId: string | null
+  presetId: string | null
+  presetScope: string | null
+  presetName: string | null
+  durationMs: number | null
+  changes: Array<{ signalId: string; before: number; after: number }>
+  dominanceSignals: string[]
+  summary: Record<string, any>
+  createdAt: string
+  updatedAt?: string
+}
+
 export function fetchWeightPresets(
   signal?: AbortSignal
 ): Promise<ApiResult<{ presets: WeightPresetGroups; user: { id: string; role: string; teamId?: string | null } }>> {
@@ -308,6 +330,15 @@ export function logWeightStudioSession(
   signal?: AbortSignal
 ): Promise<ApiResult<{ id: string; createdAt: string }>> {
   return safePost('/weight-presets/sessions', payload, { signal })
+}
+
+export function fetchWeightSessions(
+  params: { raceId: string | number; limit?: number },
+  signal?: AbortSignal
+): Promise<ApiResult<{ sessions: WeightSessionRecord[] }>> {
+  const query: Record<string, any> = { raceId: params.raceId }
+  if (params.limit != null) query.limit = params.limit
+  return safeGet('/weight-presets/sessions', { params: query, signal })
 }
 
 export async function fetchHorseDetail(
