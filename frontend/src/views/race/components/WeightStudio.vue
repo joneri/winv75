@@ -169,14 +169,14 @@
           <br>
           Kontrollera att AI-insikter har genererats för detta lopp.
         </p>
-        <div class="empty-state-debug" v-if="!props.config && !props.ranking?.length">
-          <v-chip size="small" variant="outlined" class="ma-1">
+        <div class="empty-state-debug">
+          <v-chip size="small" variant="outlined" :color="props.config ? 'success' : 'error'" class="ma-1">
             Config: {{ props.config ? 'OK' : 'Saknas' }}
           </v-chip>
-          <v-chip size="small" variant="outlined" class="ma-1">
+          <v-chip size="small" variant="outlined" :color="props.ranking?.length ? 'success' : 'error'" class="ma-1">
             Ranking: {{ props.ranking?.length || 0 }} hästar
           </v-chip>
-          <v-chip size="small" variant="outlined" class="ma-1">
+          <v-chip size="small" variant="outlined" :color="signals.length ? 'success' : 'error'" class="ma-1">
             Signals: {{ signals.length }} signaler
           </v-chip>
         </div>
@@ -1255,6 +1255,7 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-height: 500px;
 }
 
 .control-panel {
