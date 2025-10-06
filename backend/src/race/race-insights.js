@@ -4,6 +4,9 @@ import Raceday from '../raceday/raceday-model.js'
 import trackService from '../track/track-service.js'
 import { getActiveProfile } from '../ai-profile/ai-profile-service.js'
 
+const DEFAULT_SIGNAL_BOUNDS = { min: -2, max: 2, step: 0.05 }
+const SIGNALS_VERSION = 'ai-signals-v1'
+
 export async function computeFormScores(horseIds, maxStarts = 5) {
   const horses = await Horse.find({ id: { $in: horseIds } }, { id: 1, name: 1, results: 1 }).lean()
   const scores = new Map()
@@ -421,6 +424,25 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const highlightIds = new Set(byZ.slice(0, highlightsN).map(h => h.id))
   const rankedFinal = withProb.map(h => ({ ...h, highlight: highlightIds.has(h.id) }))
 
+  const signalDefinitions = buildSignalDefinitions({
+    config: {
+      eloDiv,
+      deltaDiv,
+      wDelta,
+      wFormLegacy,
+      winScoreBaseline,
+      winScoreDiv,
+      wWinScore,
+      driverEloBaseline,
+      driverEloDiv,
+      wDriver,
+      publicBaseline,
+      publicDiv,
+      wPublic
+    },
+    ranking: rankedFinal
+  })
+
   if (['1','true','yes','on'].includes(String(process.env.AI_RANK_DEBUG || '').toLowerCase())) {
     const group = (t) => rankedFinal.filter(h => h.tier === t).map(h => `${h.programNumber} ${h.name}`).join(', ')
     console.log(`[AI_DEBUG] Race ${raceId} — Prob: top=${(topProb*100).toFixed(1)}%, p2=${(p2*100).toFixed(1)}%, A-cov=${(aCoverage*100).toFixed(1)}% | Tiers: A=[${group('A')}], B=[${group('B')}], C=[${group('C')}] | Highlights=${highlightsN}`)
@@ -478,7 +500,144 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       zGapMax: ZGAP_MAX,
       formEloEpsTop: FORM_ELO_EPS_TOP,
       probCoverageMin: PROB_COVERAGE_MIN,
-      preset: cfg?.preset || null
+      preset: cfg?.preset || null,
+      signals: signalDefinitions,
+      signalsVersion: SIGNALS_VERSION
     }
   }
+}
+
+const buildSignalDefinitions = ({ config, ranking }) => {
+  const deltaVsClassCorr = computePearson(
+    ranking.map(h => safeNumber(h.formDelta)),
+    ranking.map(h => safeNumber(h.rating))
+  )
+
+  const definitions = [
+    {
+      id: 'classElo',
+      label: 'Class ELO',
+      description: 'Basrating (klass) för hästen. Skalas med Elo-divisor.',
+      formula: 'rating / eloDiv',
+      source: 'HorseRating',
+      window: 'Senaste ratingkörning',
+      defaultWeight: 1,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    },
+    {
+      id: 'deltaForm',
+      label: 'Form Δ',
+      description: 'Formöverskott mot klass. Ortogonal residual.',
+      formula: 'formDelta / formDeltaDiv',
+      source: 'Horse form metrics',
+      window: '−150 dagar halvering 90',
+      defaultWeight: config.wDelta ?? 0.65,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: deltaVsClassCorr
+    },
+    {
+      id: 'legacyForm',
+      label: 'Legacy formscore',
+      description: 'Placeringstrend (0–10) från de fem senaste starterna.',
+      formula: 'formScore',
+      source: 'computeFormScores',
+      window: 'Senaste 5 starter',
+      defaultWeight: config.wFormLegacy ?? 0,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    },
+    {
+      id: 'winScore',
+      label: 'WinScore bias',
+      description: 'Kalibrerat vinstindex relativt baseline.',
+      formula: '(winScore - baseline) / divisor',
+      source: 'Horse form metrics',
+      window: 'Ortogonal mix',
+      defaultWeight: config.wWinScore ?? 0.55,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    },
+    {
+      id: 'driver',
+      label: 'Kuskform',
+      description: 'Kuskens korttids-ELO relativt baseline.',
+      formula: '(driverElo - baseline) / divisor',
+      source: 'Driver ELO service',
+      window: 'Senaste 45 dagar',
+      defaultWeight: config.wDriver ?? 1,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    },
+    {
+      id: 'public',
+      label: 'Publiktryck',
+      description: 'ATG V75 %-andel relativt baseline.',
+      formula: '(p - baseline) / divisor',
+      source: 'ATG V75 API',
+      window: 'Senaste hämtning',
+      defaultWeight: config.wPublic ?? 1,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    },
+    {
+      id: 'bonus',
+      label: 'Pluspoäng',
+      description: 'Skobyte, favoritspår, banbonus m.m.',
+      formula: 'bonus',
+      source: 'AI PlusPoints',
+      window: 'Race context',
+      defaultWeight: 1,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    },
+    {
+      id: 'handicap',
+      label: 'Handicap/försprång',
+      description: 'Distansjustering relativt basdistans.',
+      formula: 'handicapAdj',
+      source: 'Race distance',
+      window: 'Race day',
+      defaultWeight: 1,
+      ...DEFAULT_SIGNAL_BOUNDS,
+      correlation: null
+    }
+  ]
+
+  return definitions
+}
+
+const computePearson = (arrA, arrB) => {
+  if (!Array.isArray(arrA) || !Array.isArray(arrB)) return null
+  if (arrA.length !== arrB.length || arrA.length < 3) return null
+  const pairs = []
+  for (let i = 0; i < arrA.length; i += 1) {
+    const a = Number(arrA[i])
+    const b = Number(arrB[i])
+    if (Number.isFinite(a) && Number.isFinite(b)) {
+      pairs.push([a, b])
+    }
+  }
+  if (pairs.length < 3) return null
+  const n = pairs.length
+  const meanA = pairs.reduce((acc, [a]) => acc + a, 0) / n
+  const meanB = pairs.reduce((acc, [, b]) => acc + b, 0) / n
+  let numerator = 0
+  let denomA = 0
+  let denomB = 0
+  for (const [a, b] of pairs) {
+    const da = a - meanA
+    const db = b - meanB
+    numerator += da * db
+    denomA += da * da
+    denomB += db * db
+  }
+  const denominator = Math.sqrt(denomA * denomB)
+  if (!Number.isFinite(denominator) || denominator === 0) return null
+  return numerator / denominator
+}
+
+const safeNumber = (value) => {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : null
 }

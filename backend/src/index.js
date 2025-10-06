@@ -13,6 +13,7 @@ import driverRoutes from './driver/driver-routes.js'
 import gameRoutes from './game/game-routes.js'
 import aiProfileRoutes from './ai-profile/ai-profile-routes.js'
 import searchRoutes from './search/search-routes.js'
+import weightPresetRoutes from './weight/weight-preset-routes.js'
 import { startRatingsCronJob } from './rating/ratings-scheduler.js'
 import { startDriverCronJob } from './driver/scheduler.js'
 import { startRacedayAICron } from './raceday/raceday-scheduler.js'
@@ -50,6 +51,7 @@ app.use('/api/driver', driverRoutes)
 app.use('/api/spelformer', gameRoutes)
 app.use('/api/ai-profiles', aiProfileRoutes)
 app.use('/api/search', searchRoutes)
+app.use('/api/weight-presets', weightPresetRoutes)
 
 // Lightweight metrics endpoint (avoid heavy data)
 app.get('/api/_metrics', (req, res) => {

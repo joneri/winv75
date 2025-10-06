@@ -21,7 +21,8 @@
         <v-row>
             <v-col>
                 <v-tabs v-model="activeTab">
-                    <v-tab>Start List</v-tab>
+                    <v-tab :value="0">Startlista</v-tab>
+                    <v-tab :value="1">Vikt-studio</v-tab>
                 </v-tabs>
                 <v-window v-model="activeTab">
                     <v-window-item :value="0">
@@ -209,6 +210,13 @@
                             </template>
                         </v-data-table>
                     </v-window-item>
+                    <v-window-item :value="1">
+                      <WeightStudio
+                        :ranking="rankingList"
+                        :config="aiRankConfig"
+                        :race-id="currentRace?.raceId || route.params.raceId"
+                      />
+                    </v-window-item>
                 </v-window>
             </v-col>
         </v-row>
@@ -231,6 +239,7 @@ import { getTrackName, getTrackCodeFromName } from '@/utils/track'
 import RaceHeader from './components/RaceHeader.vue'
 import RaceNavigation from './components/RaceNavigation.vue'
 import AiTierCell from './components/AiTierCell.vue'
+import WeightStudio from './components/WeightStudio.vue'
 import {
     fetchRaceFromRaceId,
     fetchHorseScores,
@@ -248,7 +257,7 @@ import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
     name: 'RaceHorsesView',
-    components: { RaceHeader, RaceNavigation, AiTierCell },
+    components: { RaceHeader, RaceNavigation, AiTierCell, WeightStudio },
 
     setup() {
         const route = useRoute()
@@ -307,6 +316,7 @@ export default {
           for (const h of list) map[h.id] = h
           return map
         })
+        const rankingList = computed(() => aiInsights.value?.ranking || [])
         const aiRankConfig = computed(() => aiInsights.value?.rankConfig || null)
         const aiPresetKey = computed(() => aiRankConfig.value?.preset || null)
 
@@ -1204,6 +1214,7 @@ export default {
             slotVal,
             horseLink,
             driverLink,
+            rankingList,
         }
     }
 }

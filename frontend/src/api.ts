@@ -6,6 +6,16 @@ export const api: AxiosInstance = axios.create({
   timeout: 10000
 })
 
+const DEFAULT_USER_ID = import.meta.env.VITE_APP_USER_ID || 'demo-analyst'
+const DEFAULT_USER_ROLE = (import.meta.env.VITE_APP_USER_ROLE || 'analyst').toLowerCase()
+const DEFAULT_TEAM_ID = import.meta.env.VITE_APP_TEAM_ID || ''
+
+api.defaults.headers.common['x-user-id'] = DEFAULT_USER_ID
+api.defaults.headers.common['x-user-role'] = DEFAULT_USER_ROLE
+if (DEFAULT_TEAM_ID) {
+  api.defaults.headers.common['x-team-id'] = DEFAULT_TEAM_ID
+}
+
 export type ApiOk<T> = { ok: true; data: T; status: number }
 export type ApiErr = { ok: false; error: string; status?: number; aborted?: boolean }
 export type ApiResult<T> = ApiOk<T> | ApiErr
@@ -31,6 +41,25 @@ export async function safeGet<T>(
     }
     const status = ax.response?.status
     const message = ax.message || 'Network error'
+    return { ok: false, error: message, status }
+  }
+}
+
+export async function safePost<T>(
+  url: string,
+  data: any,
+  opts: { signal?: AbortSignal } = {}
+): Promise<ApiResult<T>> {
+  try {
+    const res = await api.post<T>(url, data, { signal: opts.signal })
+    return { ok: true, data: res.data as T, status: res.status }
+  } catch (err) {
+    const ax = err as AxiosError
+    if (ax.code === 'ERR_CANCELED' || (ax as any).name === 'CanceledError') {
+      return { ok: false, error: 'aborted', aborted: true }
+    }
+    const status = ax.response?.status
+    const message = ax.response?.data?.error || ax.message || 'Network error'
     return { ok: false, error: message, status }
   }
 }
@@ -206,6 +235,79 @@ export type DriverDetail = {
     lastStart: string | null
   }
   recentResults: DriverResult[]
+}
+
+export type WeightPreset = {
+  id: string
+  name: string
+  scope: 'system' | 'team' | 'personal'
+  description?: string
+  weights: Record<string, number>
+  signalsVersion?: string
+  teamId?: string | null
+  ownerId?: string | null
+  locked?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type WeightPresetGroups = {
+  system: WeightPreset[]
+  team: WeightPreset[]
+  personal: WeightPreset[]
+}
+
+export type WeightPresetManifest = {
+  id: string
+  name: string
+  scope: string
+  description?: string
+  weights: Record<string, number>
+  signalsVersion?: string
+  metadata?: Record<string, any>
+}
+
+export type WeightSessionPayload = {
+  raceId: string | number
+  signalVersion?: string
+  preset?: { id: string | null; scope?: string | null; name?: string | null }
+  durationMs?: number
+  changes?: Array<{ signalId: string; before: number; after: number }>
+  dominanceSignals?: string[]
+  weights?: Record<string, number>
+  summary?: {
+    topUp?: Array<{ horseId?: string | number; horseName?: string; rankBefore?: number | null; rankAfter?: number | null; delta?: number | null; totalBefore?: number | null; totalAfter?: number | null }>
+    topDown?: Array<{ horseId?: string | number; horseName?: string; rankBefore?: number | null; rankAfter?: number | null; delta?: number | null; totalBefore?: number | null; totalAfter?: number | null }>
+    topProb?: Array<{ horseId?: string | number; horseName?: string; prob?: number | null }>
+    coverageDiff?: number | null
+  }
+}
+
+export function fetchWeightPresets(
+  signal?: AbortSignal
+): Promise<ApiResult<{ presets: WeightPresetGroups; user: { id: string; role: string; teamId?: string | null } }>> {
+  return safeGet('/weight-presets', { signal })
+}
+
+export function saveWeightPreset(
+  payload: { name: string; description?: string; scope: 'system' | 'team' | 'personal'; weights: Record<string, number>; signalsVersion?: string },
+  signal?: AbortSignal
+): Promise<ApiResult<WeightPreset>> {
+  return safePost('/weight-presets', payload, { signal })
+}
+
+export function exportWeightPresetManifest(
+  presetId: string,
+  signal?: AbortSignal
+): Promise<ApiResult<WeightPresetManifest>> {
+  return safeGet(`/weight-presets/${presetId}/manifest`, { signal })
+}
+
+export function logWeightStudioSession(
+  payload: WeightSessionPayload,
+  signal?: AbortSignal
+): Promise<ApiResult<{ id: string; createdAt: string }>> {
+  return safePost('/weight-presets/sessions', payload, { signal })
 }
 
 export async function fetchHorseDetail(
