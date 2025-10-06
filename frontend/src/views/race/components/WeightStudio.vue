@@ -165,9 +165,21 @@
         <v-icon size="48" color="grey-lighten-1">mdi-table-off</v-icon>
         <h3 class="empty-state-title">Ingen data tillgänglig</h3>
         <p class="empty-state-message">
-          Vikt-studion kräver AI-rankingdata för loppet.
-          <br>
-          Kontrollera att AI-insikter har genererats för detta lopp.
+          <template v-if="!props.ranking?.length && !props.config">
+            Vikt-studion kräver AI-rankingdata för loppet.
+            <br>
+            Kontrollera att AI-insikter har genererats för detta lopp.
+          </template>
+          <template v-else-if="props.ranking?.length && !signals.length">
+            Rankingdata finns, men signaldefinitioner saknas.
+            <br>
+            Detta kan vara ett konfigurationsfel. Kontakta support om problemet kvarstår.
+          </template>
+          <template v-else>
+            Data saknas eller kunde inte laddas.
+            <br>
+            Försök ladda om sidan eller välj ett annat lopp.
+          </template>
         </p>
         <div class="empty-state-debug">
           <v-chip size="small" variant="outlined" :color="props.config ? 'success' : 'error'" class="ma-1">
