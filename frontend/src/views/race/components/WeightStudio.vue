@@ -162,8 +162,36 @@
         </table>
       </div>
       <div v-else class="empty-state">
-        <v-icon size="36" color="grey">mdi-robot-confused</v-icon>
-        <p>Ingen rankingdata än. Välj ett lopp med AI-insikter.</p>
+        <v-icon size="48" color="grey-lighten-1">mdi-table-off</v-icon>
+        <h3 class="empty-state-title">Ingen data tillgänglig</h3>
+        <p class="empty-state-message">
+          <template v-if="!props.ranking?.length && !props.config">
+            Vikt-studion kräver AI-rankingdata för loppet.
+            <br>
+            Kontrollera att AI-insikter har genererats för detta lopp.
+          </template>
+          <template v-else-if="props.ranking?.length && !signals.length">
+            Rankingdata finns, men signaldefinitioner saknas.
+            <br>
+            Detta kan vara ett konfigurationsfel. Kontakta support om problemet kvarstår.
+          </template>
+          <template v-else>
+            Data saknas eller kunde inte laddas.
+            <br>
+            Försök ladda om sidan eller välj ett annat lopp.
+          </template>
+        </p>
+        <div class="empty-state-debug">
+          <v-chip size="small" variant="outlined" :color="props.config ? 'success' : 'error'" class="ma-1">
+            Config: {{ props.config ? 'OK' : 'Saknas' }}
+          </v-chip>
+          <v-chip size="small" variant="outlined" :color="props.ranking?.length ? 'success' : 'error'" class="ma-1">
+            Ranking: {{ props.ranking?.length || 0 }} hästar
+          </v-chip>
+          <v-chip size="small" variant="outlined" :color="signals.length ? 'success' : 'error'" class="ma-1">
+            Signals: {{ signals.length }} signaler
+          </v-chip>
+        </div>
       </div>
       <div v-if="whatIfSummary.afterTop.length" class="summary-panel">
         <div class="summary-section">
@@ -578,9 +606,15 @@ const signals = computed<SignalDefinition[]>(() => {
 
   for (const meta of metaList) {
     const id = meta.id
+    if (!id) continue
+    
     const base = LOCAL_SIGNAL_META[id]
     const compute = SIGNAL_COMPUTERS[id]
-    if (!base || !compute) continue
+    if (!base || !compute) {
+      console.warn(`[WeightStudio] Missing definition or compute function for signal: ${id}`)
+      continue
+    }
+    
     result.push({
       id,
       label: meta.label || base.label,
@@ -1233,6 +1267,7 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-height: 500px;
 }
 
 .control-panel {
@@ -1458,12 +1493,40 @@ thead th {
 }
 
 .empty-state {
-  padding: 48px 0;
+  padding: 64px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   color: #64748b;
+  min-height: 400px;
+  justify-content: center;
+}
+
+.empty-state-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+}
+
+.empty-state-message {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0;
+}
+
+.empty-state-debug {
+  margin-top: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }
 
 .tooltip-content {
