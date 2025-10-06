@@ -257,9 +257,19 @@ import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
     name: 'RaceHorsesView',
+  props: {
+    racedayId: {
+      type: [String, Number],
+      default: null
+    },
+    raceId: {
+      type: [String, Number],
+      default: null
+    }
+  },
     components: { RaceHeader, RaceNavigation, AiTierCell, WeightStudio },
 
-    setup() {
+  setup() {
         const route = useRoute()
         const router = useRouter()
         const store = useStore()

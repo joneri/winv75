@@ -1,6 +1,6 @@
 <template>
   <div class="weight-studio">
-    <v-card class="control-panel" elevation="1" v-if="signals.length">
+    <v-card class="control-panel" elevation="1" v-if="activeSignals.length">
       <div class="panel-row">
         <div class="panel-group">
           <v-select
@@ -59,7 +59,7 @@
     </v-card>
 
     <v-card class="studio-table" elevation="1">
-      <div class="table-wrapper" v-if="signals.length">
+  <div class="table-wrapper" v-if="activeSignals.length">
         <table>
           <thead>
             <tr>
@@ -70,22 +70,18 @@
                 </div>
               </th>
               <th
-                v-for="signal in signals"
+                v-for="signal in activeSignals"
                 :key="signal.id"
                 :class="['signal-header', dominanceMap[signal.id] ? 'dominant' : '', lockedSignals.has(signal.id) ? 'locked' : '']"
               >
                 <div class="header-top">
-                  <div class="header-title">
+                  <div class="header-title" :title="signalTooltip(signal)">
                     <span>{{ signal.label }}</span>
-                    <v-tooltip activator="parent" location="bottom" max-width="320">
-                      <div class="tooltip-content">
-                        <p class="tooltip-title">{{ signal.label }}</p>
-                        <p>{{ signal.description }}</p>
-                        <p v-if="signal.formula" class="formula">{{ signal.formula }}</p>
-                        <p v-if="signal.source" class="meta">Källa: {{ signal.source }}</p>
-                        <p v-if="signal.window" class="meta">Fönster: {{ signal.window }}</p>
-                      </div>
-                    </v-tooltip>
+                    <v-icon
+                      v-if="hasSignalDetails(signal)"
+                      size="18"
+                      color="grey-darken-1"
+                    >mdi-information-outline</v-icon>
                   </div>
                   <div class="weight-editor">
                     <v-text-field
@@ -141,7 +137,11 @@
                   </div>
                 </div>
               </td>
-              <td v-for="signal in signals" :key="signal.id" class="signal-cell">
+              <td
+                v-for="signal in activeSignals"
+                :key="signal.id"
+                class="signal-cell"
+              >
                 <div class="cell-line value">{{ formatSignalValue(row.signals[signal.id]?.raw, signal) }}</div>
                 <div class="cell-line weight">w {{ formatNumber(row.signals[signal.id]?.weight) }}</div>
                 <div class="cell-line contrib" :class="row.signals[signal.id]?.contribution >= 0 ? 'pos' : 'neg'">
@@ -170,7 +170,7 @@
             <br>
             Kontrollera att AI-insikter har genererats för detta lopp.
           </template>
-          <template v-else-if="props.ranking?.length && !signals.length">
+          <template v-else-if="props.ranking?.length && !activeSignals.length">
             Rankingdata finns, men signaldefinitioner saknas.
             <br>
             Detta kan vara ett konfigurationsfel. Kontakta support om problemet kvarstår.
@@ -188,8 +188,8 @@
           <v-chip size="small" variant="outlined" :color="props.ranking?.length ? 'success' : 'error'" class="ma-1">
             Ranking: {{ props.ranking?.length || 0 }} hästar
           </v-chip>
-          <v-chip size="small" variant="outlined" :color="signals.length ? 'success' : 'error'" class="ma-1">
-            Signals: {{ signals.length }} signaler
+          <v-chip size="small" variant="outlined" :color="activeSignals.length ? 'success' : 'error'" class="ma-1">
+            Signals: {{ activeSignals.length }} signaler
           </v-chip>
         </div>
       </div>
@@ -306,7 +306,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref, shallowRef, watch, watchEffect } from 'vue'
 import { fetchWeightPresets, saveWeightPreset as saveWeightPresetApi, exportWeightPresetManifest, logWeightStudioSession } from '@/api'
 import type { WeightPreset, WeightPresetGroups } from '@/api'
 
@@ -383,6 +383,20 @@ type BackendSignalMeta = {
   correlation?: number | null
 }
 
+type BackendSignalConfig = {
+  id?: string
+  label?: string
+  description?: string
+  formula?: string
+  source?: string
+  window?: string
+  defaultWeight?: number
+  min?: number
+  max?: number
+  step?: number
+  correlation?: number | null
+}
+
 type SignalValue = {
   raw: number | null
   scale: number | null
@@ -390,6 +404,19 @@ type SignalValue = {
 
 type Helpers = {
   config: RankConfig
+}
+
+type WeightedRow = {
+  id: string | number
+  name: string
+  programNumber?: string | number
+  baseRank: number | null
+  baseTotal: number
+  total: number
+  signals: Record<string, any>
+  rawHorse: RankingHorse
+  rank: number | null
+  rankChange: number
 }
 
 const props = defineProps<{
@@ -598,41 +625,85 @@ const userInfo = ref<{ id: string; role: string; teamId: string | null } | null>
 
 const helpers = computed<Helpers>(() => ({ config: props.config || {} }))
 
-const configSignals = computed(() => props.config?.signals || [])
+const configSignals = computed<(string | BackendSignalConfig)[]>(() => {
+  const raw = props.config?.signals
+  if (Array.isArray(raw)) return raw as Array<string | BackendSignalConfig>
+  if (raw && typeof raw === 'object') {
+    return Object.values(raw as Record<string, BackendSignalConfig>)
+  }
+  return []
+})
 
-const signals = computed<SignalDefinition[]>(() => {
-  const metaList = configSignals.value.length ? configSignals.value : Object.values(LOCAL_SIGNAL_META)
-  const result: SignalDefinition[] = []
+const normalizedSignals = shallowRef<SignalDefinition[]>([])
 
-  for (const meta of metaList) {
-    const id = meta.id
-    if (!id) continue
-    
-    const base = LOCAL_SIGNAL_META[id]
-    const compute = SIGNAL_COMPUTERS[id]
-    if (!base || !compute) {
-      console.warn(`[WeightStudio] Missing definition or compute function for signal: ${id}`)
-      continue
+const buildSignalDefinition = (id: string, overrides: BackendSignalConfig | null | undefined): SignalDefinition | null => {
+  const base = LOCAL_SIGNAL_META[id]
+  const compute = SIGNAL_COMPUTERS[id]
+  if (!base || !compute) {
+    if (import.meta.env.DEV) {
+      console.warn(`[WeightStudio] Unknown signal id: ${id}`, overrides)
     }
-    
-    result.push({
-      id,
-      label: meta.label || base.label,
-      description: meta.description || base.description,
-      formula: meta.formula || base.formula,
-      source: meta.source || base.source,
-      window: meta.window || base.window,
-      min: meta.min ?? base.min ?? DEFAULT_WEIGHT_BOUNDS.min,
-      max: meta.max ?? base.max ?? DEFAULT_WEIGHT_BOUNDS.max,
-      step: meta.step ?? base.step ?? DEFAULT_WEIGHT_BOUNDS.step,
-      defaultWeight: meta.defaultWeight ?? base.defaultWeight ?? 0,
-      correlation: meta.correlation ?? base.correlation ?? null,
-      compute
-    })
+    return null
   }
 
-  return result
+  const meta = overrides && typeof overrides === 'object' ? overrides : {}
+
+  const min = typeof meta.min === 'number' ? meta.min : (base.min ?? DEFAULT_WEIGHT_BOUNDS.min)
+  const max = typeof meta.max === 'number' ? meta.max : (base.max ?? DEFAULT_WEIGHT_BOUNDS.max)
+  const step = typeof meta.step === 'number' ? meta.step : (base.step ?? DEFAULT_WEIGHT_BOUNDS.step)
+  const defaultWeight = typeof meta.defaultWeight === 'number' ? meta.defaultWeight : (base.defaultWeight ?? 0)
+
+  return {
+    id,
+    label: typeof meta.label === 'string' ? meta.label : base.label,
+    description: typeof meta.description === 'string' ? meta.description : base.description,
+    formula: typeof meta.formula === 'string' ? meta.formula : base.formula,
+    source: typeof meta.source === 'string' ? meta.source : base.source,
+    window: typeof meta.window === 'string' ? meta.window : base.window,
+    min,
+    max,
+    step,
+    defaultWeight,
+    correlation: typeof meta.correlation === 'number' ? meta.correlation : (base.correlation ?? null),
+    compute
+  }
+}
+
+const DEFAULT_SIGNAL_ORDER = Object.keys(LOCAL_SIGNAL_META)
+
+watchEffect(() => {
+  const rawList = configSignals.value
+  const metaList: Array<string | BackendSignalConfig> = rawList.length
+    ? rawList
+    : DEFAULT_SIGNAL_ORDER.map(id => ({ id }))
+
+  const seen = new Set<string>()
+  const resolved: SignalDefinition[] = []
+
+  for (const entry of metaList) {
+    const id = typeof entry === 'string'
+      ? entry
+      : (entry && typeof entry === 'object' && typeof entry.id === 'string' ? entry.id : undefined)
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+
+    const definition = buildSignalDefinition(id, typeof entry === 'object' ? entry as BackendSignalConfig : null)
+    if (definition) {
+      resolved.push(definition)
+    }
+  }
+
+  if (!resolved.length) {
+    for (const id of DEFAULT_SIGNAL_ORDER) {
+      const definition = buildSignalDefinition(id, null)
+      if (definition) resolved.push(definition)
+    }
+  }
+
+  normalizedSignals.value = resolved
 })
+
+const activeSignals = computed<SignalDefinition[]>(() => normalizedSignals.value)
 
 const baseRankLabel = computed(() => {
   if (!props.ranking?.length) return '–'
@@ -640,7 +711,7 @@ const baseRankLabel = computed(() => {
 })
 
 const correlationInfo = computed(() => {
-  const deltaSignal = signals.value.find(sig => sig.id === 'deltaForm')
+  const deltaSignal = activeSignals.value.find(sig => sig && sig.id === 'deltaForm')
   if (!deltaSignal || deltaSignal.correlation == null) return null
   const value = Number(deltaSignal.correlation)
   if (!Number.isFinite(value)) return null
@@ -654,7 +725,8 @@ const validationBanner = computed(() => {
   if (horses.length < 6) {
     return 'Varning: färre än 6 hästar i fältet. Resultatet kan bli instabilt.'
   }
-  const signalsMissing = signals.value.filter(sig => {
+  const signalsMissing = activeSignals.value.filter(sig => {
+    if (!sig || !sig.id) return false
     const missing = horses.filter(h => sig.compute(h, helpers.value).scale == null)
     return missing.length / horses.length > 0.3
   })
@@ -664,16 +736,17 @@ const validationBanner = computed(() => {
   return null
 })
 
-const weightedRows = computed(() => {
+const weightedRows = computed<WeightedRow[]>(() => {
   const horses = props.ranking || []
-  const signalList = signals.value
-  const result = horses.map(horse => {
+  const signalList = activeSignals.value
+  const result: WeightedRow[] = horses.map(horse => {
     const signalEntries: Record<string, any> = {}
     const baseTotal = numberOrNull(horse.compositeScore) ?? 0
     let total = 0
     const contributions: number[] = []
 
     for (const signal of signalList) {
+      if (!signal || !signal.id) continue
       const { raw, scale } = signal.compute(horse, helpers.value)
       const weight = weights[signal.id] ?? 0
       const contribution = (scale != null && weight != null) ? scale * weight : 0
@@ -689,6 +762,7 @@ const weightedRows = computed(() => {
 
     const sumAbs = contributions.reduce((acc, val) => acc + val, 0) || 1
     for (const signal of signalList) {
+      if (!signal || !signal.id) continue
       const entry = signalEntries[signal.id]
       entry.share = sumAbs > 0 ? Math.abs(entry.contribution) / sumAbs : 0
     }
@@ -701,7 +775,9 @@ const weightedRows = computed(() => {
       baseTotal,
       total,
       signals: signalEntries,
-      rawHorse: horse
+      rawHorse: horse,
+      rank: null,
+      rankChange: 0
     }
   })
 
@@ -743,14 +819,15 @@ const probabilityMap = computed(() => {
 const dominanceList = computed(() => {
   const keys = dominanceKeys.value
   return keys.map(id => {
-    const signal = signals.value.find(sig => sig.id === id)
+  const signal = activeSignals.value.find(sig => sig && sig.id === id)
     return { id, label: signal?.label || id }
   })
 })
 
 const weightChanges = computed(() => {
   const items = [] as Array<{ id: string; label: string; before: number; after: number; diff: number }>
-  for (const signal of signals.value) {
+  for (const signal of activeSignals.value) {
+    if (!signal || !signal.id) continue
     const before = Number(baselineWeights[signal.id] ?? 0)
     const after = Number(weights[signal.id] ?? before)
     const diff = after - before
@@ -863,7 +940,8 @@ const telemetrySummary = computed(() => {
 })
 
 const captureBaseline = () => {
-  for (const signal of signals.value) {
+  for (const signal of activeSignals.value) {
+    if (!signal || !signal.id) continue
     baselineWeights[signal.id] = Number(weights[signal.id] ?? 0)
   }
   sessionStart.value = Date.now()
@@ -894,20 +972,28 @@ const logSession = async () => {
       durationMs: Date.now() - sessionStart.value,
       changes,
       dominanceSignals: dominanceKeys.value,
-      weights: Object.fromEntries(signals.value.map(sig => [sig.id, Number(weights[sig.id] ?? 0)])),
+      weights: Object.fromEntries(
+        activeSignals.value
+          .filter(sig => sig && sig.id)
+          .map(sig => [sig.id, Number(weights[sig.id] ?? 0)])
+      ),
       summary: telemetrySummary.value
     }
 
     const res = await logWeightStudioSession(payload)
-    if (!res.ok) {
-      snackbar.visible = true
-      snackbar.message = res.error || 'Misslyckades att logga session.'
-      snackbar.color = 'error'
-    } else {
+    if (res.ok) {
       snackbar.visible = true
       snackbar.message = 'Sessionen loggades.'
       snackbar.color = 'success'
       captureBaseline()
+    } else {
+      let message = 'Misslyckades att logga session.'
+      if ('error' in res && res.error) {
+        message = res.error
+      }
+      snackbar.visible = true
+      snackbar.message = message
+      snackbar.color = 'error'
     }
   } catch (err) {
     console.error('Failed to log weight session', err)
@@ -923,10 +1009,11 @@ const dominanceMap = computed(() => {
   if (!highlightDominance.value) return {}
   const map: Record<string, boolean> = {}
   const rows = weightedRows.value
-  const signalList = signals.value
+  const signalList = activeSignals.value
   if (!rows.length) return map
 
   for (const signal of signalList) {
+    if (!signal || !signal.id) continue
     let dominantCount = 0
     for (const row of rows) {
       if ((row.signals[signal.id]?.share ?? 0) > 0.6) {
@@ -941,9 +1028,10 @@ const dominanceMap = computed(() => {
 })
 
 watchEffect(() => {
-  const signalList = signals.value
+  const signalList = activeSignals.value
   if (!signalList.length) return
   for (const signal of signalList) {
+    if (!signal || !signal.id) continue
     if (!(signal.id in weights)) {
       weights[signal.id] = signal.defaultWeight ?? 0
     }
@@ -988,7 +1076,9 @@ const savePreset = async () => {
       await loadPresets()
       selectedPresetId.value = res.data.id
       saveDialog.value = false
-    } else if (!res.aborted) {
+    } else if ('aborted' in res && res.aborted) {
+      // request was aborted, ignore
+    } else if ('error' in res) {
       console.error('Failed to save preset', res.error)
     }
   } catch (err) {
@@ -1006,7 +1096,8 @@ const onPresetSelected = (id: string) => {
   }
   const preset = presetsMap[id]
   if (!preset) return
-  for (const signal of signals.value) {
+  for (const signal of activeSignals.value) {
+    if (!signal || !signal.id) continue
     if (preset.weights[signal.id] != null) {
       weights[signal.id] = preset.weights[signal.id]
       weightInputs[signal.id] = preset.weights[signal.id]
@@ -1016,7 +1107,8 @@ const onPresetSelected = (id: string) => {
 }
 
 const resetWeights = () => {
-  for (const signal of signals.value) {
+  for (const signal of activeSignals.value) {
+    if (!signal || !signal.id) continue
     const w = signal.defaultWeight ?? 0
     weights[signal.id] = w
     baseWeights[signal.id] = w
@@ -1077,6 +1169,19 @@ const formatSignalValue = (value: number | null | undefined, signal: SignalDefin
   return num.toFixed(2)
 }
 
+const hasSignalDetails = (signal: SignalDefinition) => {
+  return Boolean(signal.description || signal.formula || signal.source || signal.window)
+}
+
+const signalTooltip = (signal: SignalDefinition) => {
+  const parts: string[] = []
+  if (signal.description) parts.push(signal.description)
+  if (signal.formula) parts.push(`Formel: ${signal.formula}`)
+  if (signal.source) parts.push(`Källa: ${signal.source}`)
+  if (signal.window) parts.push(`Fönster: ${signal.window}`)
+  return parts.join('\n')
+}
+
 const scopeMap: Record<string, string> = {
   personal: 'Personlig',
   team: 'Team',
@@ -1103,13 +1208,15 @@ const activePresetMeta = computed(() => {
   }
 })
 
-const scopeSelectItems = computed(() => {
-  const items = [{ value: 'personal' as const, title: 'Personlig' }]
+const scopeSelectItems = computed<{ value: 'personal' | 'team' | 'system'; title: string }[]>(() => {
+  const items: { value: 'personal' | 'team' | 'system'; title: string }[] = [
+    { value: 'personal', title: 'Personlig' }
+  ]
   if (hasRole('analyst')) {
     if (userInfo.value?.teamId) {
-      items.push({ value: 'team' as const, title: 'Team' })
+      items.push({ value: 'team', title: 'Team' })
     }
-    items.push({ value: 'system' as const, title: 'System' })
+    items.push({ value: 'system', title: 'System' })
   }
   return items
 })
@@ -1132,7 +1239,8 @@ const loadPresets = async () => {
   try {
     const res = await fetchWeightPresets()
     if (!res.ok) {
-      if (!res.aborted) console.error('Failed to fetch presets', res.error)
+      if ('aborted' in res && res.aborted) return
+      if ('error' in res) console.error('Failed to fetch presets', res.error)
       return
     }
     userInfo.value = {
@@ -1191,7 +1299,8 @@ const downloadManifest = async () => {
   try {
     const res = await exportWeightPresetManifest(selectedPresetId.value)
     if (!res.ok) {
-      if (!res.aborted) console.error('Failed to export manifest', res.error)
+      if ('aborted' in res && res.aborted) return
+      if ('error' in res) console.error('Failed to export manifest', res.error)
       return
     }
     const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' })

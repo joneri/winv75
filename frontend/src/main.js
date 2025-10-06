@@ -18,4 +18,20 @@ const vuetify = createVuetify({
   directives,
 })
 
-createApp(App).use(vuetify).use(router).use(store).mount('#app')
+const app = createApp(App)
+
+if (import.meta.env.DEV) {
+  const noisySlotWarning = /Slot "(default|top|bottom)" invoked outside of the render function/
+  app.config.warnHandler = (msg, instance, trace) => {
+    if (noisySlotWarning.test(msg)) {
+      return
+    }
+    console.warn(msg, trace)
+  }
+
+  app.config.errorHandler = (err, instance, info) => {
+    console.error('[Vue error]', info, err)
+  }
+}
+
+app.use(vuetify).use(router).use(store).mount('#app')
