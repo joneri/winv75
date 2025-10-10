@@ -220,13 +220,29 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         winScoreTerm = wWinScore * ((winScore - winScoreBaseline) / winScoreDiv)
       }
       const driverMeta = meta?.driver || horsesById.get(r.id)?.driver || {}
-      const driverElo = Number(driverMeta?.elo ?? driverMeta?.formElo ?? driverMeta?.rating ?? 0)
+      const driverEloCandidate = driverMeta?.elo ?? driverMeta?.formElo ?? driverMeta?.rating
+      let driverElo = null
+      if (driverEloCandidate != null) {
+        const candidateNum = Number(driverEloCandidate)
+        if (Number.isFinite(candidateNum)) {
+          driverElo = candidateNum
+        }
+      }
       let driverTerm = 0
       if (Number.isFinite(driverElo) && driverEloDiv > 0) {
         driverTerm = wDriver * ((driverElo - driverEloBaseline) / driverEloDiv)
       }
       const publicPercentRaw = Number(meta?.v75Percent)
-      const publicPercent = Number.isFinite(publicPercentRaw) ? Math.min(Math.max(publicPercentRaw, 0), 1) : null
+      let publicPercent = null
+      if (Number.isFinite(publicPercentRaw)) {
+        let normalized = publicPercentRaw
+        if (normalized > 1) {
+          normalized = normalized / 100
+        } else if (normalized > 0) {
+          normalized = normalized / 100
+        }
+        publicPercent = Math.min(Math.max(normalized, 0), 1)
+      }
       let publicTerm = 0
       if (publicPercent != null && publicDiv > 0) {
         publicTerm = wPublic * ((publicPercent - publicBaseline) / publicDiv)
@@ -266,7 +282,7 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         deltaTerm,
         legacyFormTerm,
         winScoreTerm,
-        driverElo,
+  driverElo,
         driverTerm,
         publicPercent,
         publicTerm,
@@ -478,6 +494,12 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       winScoreBaseline,
       winScoreDiv,
       wWinScore,
+      driverEloBaseline,
+      driverEloDiv,
+      wDriver,
+      publicBaseline,
+      publicDiv,
+      wPublic,
       pWinBlend,
       bShoe,
       bFavTrack,

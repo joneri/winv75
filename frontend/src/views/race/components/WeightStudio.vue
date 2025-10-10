@@ -306,7 +306,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, shallowRef, watch, watchEffect } from 'vue'
+import { computed, onMounted, onErrorCaptured, reactive, ref, shallowRef, watch, watchEffect } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 import { fetchWeightPresets, saveWeightPreset as saveWeightPresetApi, exportWeightPresetManifest, logWeightStudioSession } from '@/api'
 import type { WeightPreset, WeightPresetGroups } from '@/api'
 
@@ -559,17 +560,43 @@ const SIGNAL_COMPUTERS: Record<string, (horse: RankingHorse, helpers: Helpers) =
   },
   driver: (horse, { config }) => {
     const driverElo = resolveDriverElo(horse)
-    if (driverElo == null) return { raw: null, scale: null }
     const divisor = config.driverEloDiv || 100
     const baseline = config.driverEloBaseline ?? 900
-    return { raw: driverElo, scale: (driverElo - baseline) / divisor }
+    if (driverElo != null) {
+      return { raw: driverElo, scale: (driverElo - baseline) / divisor }
+    }
+
+    const term = numberOrNull(horse.driverTerm)
+  if (term == null) return { raw: null, scale: null }
+
+    const weight = config.wDriver
+    const baseScale = weight ? term / weight : term
+    if (!Number.isFinite(baseScale)) return { raw: null, scale: null }
+    if (divisor === 0) return { raw: null, scale: baseScale }
+
+    const raw = baseline + baseScale * divisor
+    if (!Number.isFinite(raw)) return { raw: null, scale: null }
+    return { raw, scale: baseScale }
   },
   public: (horse, { config }) => {
     const p = numberOrNull(horse.publicPercent)
-    if (p == null) return { raw: null, scale: null }
     const divisor = config.publicDiv || 0.2
     const baseline = config.publicBaseline ?? 0.2
-    return { raw: p * 100, scale: (p - baseline) / divisor }
+    if (p != null) {
+      return { raw: p * 100, scale: (p - baseline) / divisor }
+    }
+
+    const term = numberOrNull(horse.publicTerm)
+  if (term == null) return { raw: null, scale: null }
+
+    const weight = config.wPublic
+    const scale = weight ? term / weight : term
+    if (!Number.isFinite(scale)) return { raw: null, scale: null }
+    if (divisor === 0) return { raw: null, scale }
+
+    const rawPercent = baseline + scale * divisor
+    if (!Number.isFinite(rawPercent)) return { raw: null, scale: null }
+    return { raw: rawPercent * 100, scale }
   },
   bonus: (horse) => {
     const raw = numberOrNull(horse.bonus)
@@ -621,6 +648,7 @@ const presetOptions = ref<PresetOption[]>([
 ])
 const presetsMap = reactive<Record<string, PresetRecord>>({})
 const selectedPresetId = ref('default')
+const LOCAL_STORAGE_PRESET_KEY = 'weightStudio:lastPresetId'
 const userInfo = ref<{ id: string; role: string; teamId: string | null } | null>(null)
 
 const helpers = computed<Helpers>(() => ({ config: props.config || {} }))
@@ -704,6 +732,43 @@ watchEffect(() => {
 })
 
 const activeSignals = computed<SignalDefinition[]>(() => normalizedSignals.value)
+
+const resolveComponentName = (instance: ComponentPublicInstance | null | undefined): string => {
+  if (!instance) return 'unknown'
+  const raw: any = (instance as any)?.$
+  const type = raw?.type || (instance as any)?.type
+  return type?.name || type?.__file || 'unknown'
+}
+
+watch(configSignals, (list) => {
+  try {
+    console.info('[WeightStudio] configSignals update', list)
+  } catch (err) {
+    console.error('[WeightStudio] failed to log configSignals', err)
+  }
+}, { immediate: true })
+
+watch(activeSignals, (list) => {
+  try {
+    const ids = list.map(sig => sig?.id || '??')
+    console.info('[WeightStudio] activeSignals update', ids)
+    const invalid = list.filter(sig => !sig || !sig.id)
+    if (invalid.length) {
+      console.error('[WeightStudio] Invalid signal entries detected', invalid)
+    }
+  } catch (err) {
+    console.error('[WeightStudio] failed to log activeSignals', err)
+  }
+}, { immediate: true })
+
+onErrorCaptured((err, instance, info) => {
+  console.error('[WeightStudio] runtime error captured', {
+    err,
+    info,
+    component: resolveComponentName(instance)
+  })
+  return false
+})
 
 const baseRankLabel = computed(() => {
   if (!props.ranking?.length) return '–'
@@ -1088,14 +1153,29 @@ const savePreset = async () => {
   }
 }
 
+const storePresetSelection = (id: string | null) => {
+  if (typeof window === 'undefined') return
+  try {
+    if (!id || id === 'default') {
+      window.localStorage.removeItem(LOCAL_STORAGE_PRESET_KEY)
+    } else {
+      window.localStorage.setItem(LOCAL_STORAGE_PRESET_KEY, id)
+    }
+  } catch (err) {
+    console.warn('Failed to persist preset selection', err)
+  }
+}
+
 const onPresetSelected = (id: string) => {
   if (!id) return
   if (id === 'default') {
     resetWeights()
+    storePresetSelection(null)
     return
   }
   const preset = presetsMap[id]
   if (!preset) return
+  selectedPresetId.value = id
   for (const signal of activeSignals.value) {
     if (!signal || !signal.id) continue
     if (preset.weights[signal.id] != null) {
@@ -1103,6 +1183,7 @@ const onPresetSelected = (id: string) => {
       weightInputs[signal.id] = preset.weights[signal.id]
     }
   }
+  storePresetSelection(id)
   captureBaseline()
 }
 
@@ -1116,6 +1197,7 @@ const resetWeights = () => {
   }
   lockedSignals.clear()
   selectedPresetId.value = 'default'
+  storePresetSelection(null)
   captureBaseline()
 }
 
@@ -1281,6 +1363,22 @@ const loadPresets = async () => {
     for (const preset of groups.team || []) pushPreset(preset)
     for (const preset of groups.personal || []) pushPreset(preset)
 
+    const storedPresetId = (() => {
+      if (typeof window === 'undefined') return null
+      try {
+        return window.localStorage.getItem(LOCAL_STORAGE_PRESET_KEY)
+      } catch (err) {
+        console.warn('Failed to read stored preset', err)
+        return null
+      }
+    })()
+
+    if (storedPresetId && presetsMap[storedPresetId]) {
+      onPresetSelected(storedPresetId)
+    } else if (storedPresetId && !presetsMap[storedPresetId]) {
+      storePresetSelection(null)
+    }
+
     if (!presetOptions.value.some(option => option.id === selectedPresetId.value)) {
       selectedPresetId.value = 'default'
       resetWeights()
@@ -1417,17 +1515,17 @@ watch(
 }
 
 .correlation-banner {
-  background: rgba(59, 130, 246, 0.12);
+  background: #e8f0ff;
   color: #1d4ed8;
 }
 
 .correlation-banner.warn {
-  background: rgba(239, 68, 68, 0.1);
+  background: #fee2e2;
   color: #b91c1c;
 }
 
 .validation-banner.warn {
-  background: rgba(251, 191, 36, 0.15);
+  background: #fef3c7;
   color: #b45309;
 }
 
@@ -1450,7 +1548,7 @@ table {
 th,
 td {
   padding: 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  border-bottom: 1px solid #d2d9e4;
   background-color: #ffffff;
   vertical-align: top;
 }
@@ -1459,16 +1557,23 @@ thead th {
   position: sticky;
   top: 0;
   background: #f8fafc;
-  z-index: 4;
-  box-shadow: inset 0 -1px 0 rgba(148, 163, 184, 0.3);
+  z-index: 8;
+  box-shadow: inset 0 -1px 0 #cbd5e1;
 }
 
 .sticky-name {
   position: sticky;
   left: 0;
-  z-index: 5;
-  background: inherit;
+  z-index: 9;
   min-width: 220px;
+}
+
+th.sticky-name {
+  background-color: #f8fafc;
+}
+
+td.sticky-name {
+  background-color: #ffffff;
 }
 
 .signal-header {
@@ -1476,11 +1581,11 @@ thead th {
 }
 
 .signal-header.dominant {
-  background: rgba(239, 68, 68, 0.12);
+  background: #fee2e2;
 }
 
 .signal-header.locked {
-  background: rgba(16, 185, 129, 0.12);
+  background: #d1fae5;
 }
 
 .header-top {
@@ -1580,7 +1685,7 @@ thead th {
   position: sticky;
   right: 0;
   background: #f8fafc;
-  z-index: 4;
+  z-index: 9;
   text-align: right;
 }
 
@@ -1588,7 +1693,7 @@ thead th {
   position: sticky;
   right: 0;
   background: #e2e8f0;
-  z-index: 5;
+  z-index: 10;
 }
 
 .total-score {
@@ -1650,7 +1755,7 @@ thead th {
 
 .formula {
   font-family: 'Roboto Mono', monospace;
-  background: rgba(30, 64, 175, 0.08);
+  background: #e8edff;
   padding: 6px;
   border-radius: 6px;
 }
@@ -1665,7 +1770,7 @@ thead th {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 18px;
   padding: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  border-top: 1px solid #d2d9e4;
   background: #f8fafc;
 }
 
@@ -1691,7 +1796,7 @@ thead th {
   padding: 6px 8px;
   border-radius: 6px;
   background: #ffffff;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid #cbd5e1;
 }
 
 .summary-section .horse-name {
@@ -1747,16 +1852,22 @@ thead th {
 @media (prefers-color-scheme: dark) {
   th,
   td {
-    background-color: rgba(15, 23, 42, 0.9);
-    border-color: rgba(148, 163, 184, 0.2);
+    background-color: #0f172a;
+    border-color: #1f2937;
     color: #e2e8f0;
   }
   thead th {
-    background: rgba(30, 41, 59, 0.95);
+    background: #1e293b;
+  }
+  th.sticky-name {
+    background-color: #1e293b;
+  }
+  td.sticky-name {
+    background-color: #0f172a;
   }
   .total-header,
   .total-cell {
-    background: rgba(15, 23, 42, 0.95);
+    background: #111827;
   }
   .signal-cell .contrib.pos {
     color: #34d399;
