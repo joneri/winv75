@@ -498,9 +498,9 @@ const LOCAL_SIGNAL_META: Record<string, Omit<SignalDefinition, 'compute'>> = {
   public: {
     id: 'public',
     label: 'Publiktryck',
-    description: 'ATG V75 %-andel relativt baseline.',
+    description: 'ATG V85 %-andel relativt baseline.',
     formula: '(p − baseline) / divisor',
-    source: 'ATG V75 API',
+    source: 'ATG V85 API',
     window: 'Senaste hämtning',
     min: DEFAULT_WEIGHT_BOUNDS.min,
     max: DEFAULT_WEIGHT_BOUNDS.max,

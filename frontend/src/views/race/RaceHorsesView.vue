@@ -179,8 +179,8 @@
                                     >•</span>
                                     <span class="pct">{{ formatPlaceWinPct(slotRow(slotProps)?.statsDetails) }}</span>
                                   </div>
-                                  <div v-if="formatV75Percent(slotRow(slotProps)?.statsDetails?.v75Percent)" class="v75-row">
-                                    V75 {{ formatV75Percent(slotRow(slotProps)?.statsDetails?.v75Percent) }}
+                                  <div v-if="formatV85Percent(slotRow(slotProps)?.statsDetails?.v85Percent)" class="v85-row">
+                                    V85 {{ formatV85Percent(slotRow(slotProps)?.statsDetails?.v85Percent) }}
                                   </div>
                                 </div>
                             </template>
@@ -616,7 +616,7 @@ export default {
               formDelta: getFormDeltaFor(merged),
               driverElo: getDriverEloFor(merged),
               driverName: merged?.driver?.name || '—',
-              v75Percent: Number.isFinite(Number(merged?.v75Percent)) ? Number(merged.v75Percent) : null,
+              v85Percent: Number.isFinite(Number(merged?.v85Percent)) ? Number(merged.v85Percent) : null,
               statsScore: statsDetails.formScore ?? computeFormLast5(merged) ?? 0,
               statsDetails,
               statsText: getStatsFormatted(merged),
@@ -824,7 +824,7 @@ export default {
           return '—'
         }
 
-        const formatV75Percent = (value) => {
+        const formatV85Percent = (value) => {
           const num = Number(value)
           if (!Number.isFinite(num)) return null
           return `${(Math.round(num * 10) / 10).toFixed(1)}%`
@@ -832,7 +832,7 @@ export default {
 
         // Structured stats for pretty rendering in the Stats column
         function getStatsDetails(horse) {
-          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null, v75Percent: null }
+          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null, v85Percent: null }
           const ranked = rankedMap.value.get(horse.id) || {}
           const stats = horse.stats || {}
 
@@ -871,7 +871,7 @@ export default {
             placePct: Number.isFinite(placePct) ? placePct : null,
             winPct: Number.isFinite(winPct) ? winPct : null,
             formScore: Number.isFinite(formScore) ? formScore : null,
-            v75Percent: Number.isFinite(Number(horse.v75Percent)) ? Number(horse.v75Percent) : null
+            v85Percent: Number.isFinite(Number(horse.v85Percent)) ? Number(horse.v85Percent) : null
           }
         }
 
@@ -943,9 +943,9 @@ export default {
           const form5 = computeFormLast5(horse)
           if (Number.isFinite(form5)) parts.push(`Form ${form5}/10`)
 
-          const v75PercentRaw = Number.isFinite(Number(horse.v75Percent)) ? Number(horse.v75Percent) : null
-          if (Number.isFinite(v75PercentRaw)) {
-            parts.push(`V75 ${(Math.round(v75PercentRaw * 10) / 10).toFixed(1)}%`)
+          const v85PercentRaw = Number.isFinite(Number(horse.v85Percent)) ? Number(horse.v85Percent) : null
+          if (Number.isFinite(v85PercentRaw)) {
+            parts.push(`V85 ${(Math.round(v85PercentRaw * 10) / 10).toFixed(1)}%`)
           }
 
           return parts.length ? parts.join(' • ') : '—'
@@ -1219,7 +1219,7 @@ export default {
             formatFormValue,
             formatWinsStarts,
             formatPlaceWinPct,
-            formatV75Percent,
+            formatV85Percent,
             slotRow,
             slotVal,
             horseLink,
@@ -1352,7 +1352,7 @@ export default {
 .stats-row { display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 0.9rem; }
 .stats-pair { color: #111827; }
 .sep { color: #9ca3af; }
-.v75-row { font-size: 0.82rem; color: #166534; }
+.v85-row { font-size: 0.82rem; color: #166534; }
 
 @media (prefers-color-scheme: dark) {
   .stats-text { color: #e5e7eb; }
@@ -1363,6 +1363,6 @@ export default {
   .form-fill { background: linear-gradient(90deg, #93c5fd, #60a5fa); }
   .stats-row { color: #9ca3af; }
   .stats-pair { color: #e5e7eb; }
-.v75-row { color: #86efac; }
+.v85-row { color: #86efac; }
 }
 </style>

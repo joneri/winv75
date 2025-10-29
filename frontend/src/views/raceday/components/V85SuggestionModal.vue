@@ -2,7 +2,7 @@
   <v-dialog :model-value="modelValue" max-width="720" @update:model-value="emitClose">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
-        <span>V75-spelförslag</span>
+        <span>V85-spelförslag</span>
         <v-btn icon="mdi-close" variant="text" @click="emitClose(false)" />
       </v-card-title>
       <v-card-text>
@@ -64,7 +64,7 @@
             size="small"
             class="ml-auto"
             :disabled="!suggestions.length"
-            @click="focusPublicSuggestion"
+            @click="applyPublicSpikes"
           >
             Välj publikspikar
           </v-btn>
@@ -87,7 +87,7 @@
             </div>
           </div>
           <div class="ticket-status">
-            {{ v75StatusText }}
+            {{ v85StatusText }}
           </div>
           <div class="legs">
             <div
@@ -118,7 +118,7 @@
                         title="Publikens favorit"
                       >★</span>
                       <span v-if="selection.tier" class="tier">{{ selection.tier }}</span>
-                      <span v-if="selection.v75Percent != null" class="percent">{{ formatPercent(selection.v75Percent) }}</span>
+                      <span v-if="selection.v85Percent != null" class="percent">{{ formatPercent(selection.v85Percent) }}</span>
                     </div>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ import RacedayService from '@/views/raceday/services/RacedayService.js'
 const DEFAULT_MODES = ['balanced', 'public', 'value']
 
 export default {
-  name: 'V75SuggestionModal',
+  name: 'V85SuggestionModal',
   props: {
     modelValue: {
       type: Boolean,
@@ -219,23 +219,23 @@ export default {
       }
     }
 
-    const v75StatusText = computed(() => {
+    const v85StatusText = computed(() => {
       if (!currentSuggestion.value) return ''
-      if (currentSuggestion.value?.v75?.used && currentSuggestion.value?.v75?.updatedAt) {
-        return `V75% senast hämtad ${formatDateTime(currentSuggestion.value.v75.updatedAt)}`
+      if (currentSuggestion.value?.v85?.used && currentSuggestion.value?.v85?.updatedAt) {
+        return `V85% senast hämtad ${formatDateTime(currentSuggestion.value.v85.updatedAt)}`
       }
-      return 'V75%-data används inte i detta förslag'
+      return 'V85%-data används inte i detta förslag'
     })
 
     const loadTemplates = async () => {
       try {
-        templates.value = await RacedayService.fetchV75Templates()
+        templates.value = await RacedayService.fetchV85Templates()
         if (templates.value.length && !selectedTemplate.value) {
           selectedTemplate.value = templates.value[0].key
         }
       } catch (err) {
-        console.error('Failed to load V75 templates', err)
-        error.value = 'Kunde inte ladda mallar för V75-spel.'
+        console.error('Failed to load V85 templates', err)
+        error.value = 'Kunde inte ladda mallar för V85-spel.'
       }
     }
 
@@ -281,7 +281,7 @@ export default {
           payload.modes = DEFAULT_MODES
         }
 
-        const result = await RacedayService.fetchV75Suggestion(props.racedayId, payload)
+        const result = await RacedayService.fetchV85Suggestion(props.racedayId, payload)
         const serverSuggestions = Array.isArray(result?.suggestions) ? result.suggestions : []
         const fallback = result?.suggestion || (!serverSuggestions.length ? result : null)
         const combined = serverSuggestions.length ? serverSuggestions : (fallback ? [fallback] : [])
@@ -306,20 +306,119 @@ export default {
           activeSuggestionIndex.value = 0
         }
       } catch (err) {
-        console.error('Failed to generate V75 suggestion', err)
+        console.error('Failed to generate V85 suggestion', err)
         error.value = err?.error || err?.message || 'Kunde inte skapa spelförslaget.'
       } finally {
         loading.value = false
       }
     }
 
-    const focusPublicSuggestion = () => {
-      const idx = suggestions.value.findIndex(s => s?.mode === 'public')
-      if (idx !== -1) {
-        activeSuggestionIndex.value = idx
+    const applyPublicSpikes = () => {
+      const idx = activeSuggestionIndex.value
+      const suggestion = suggestions.value[idx]
+      if (!suggestion) return
+
+      const clone = JSON.parse(JSON.stringify(suggestion))
+      if (!Array.isArray(clone.legs) || !clone.legs.length) {
+        error.value = 'Inga spikar kunde justeras med publikfavoriter.'
         return
       }
-      error.value = 'Publikförslag saknas för aktuell mall eller budget.'
+
+      const percentOf = (entry) => {
+        if (!entry) return null
+        if (entry.percent != null) {
+          const val = Number(entry.percent)
+          return Number.isFinite(val) ? val : null
+        }
+        if (entry.betDistribution != null) {
+          const val = Number(entry.betDistribution) / 100
+          return Number.isFinite(val) ? val : null
+        }
+        return null
+      }
+
+      const parseId = (value) => {
+        const num = Number(value)
+        return Number.isFinite(num) ? num : null
+      }
+
+      let anyUpdated = false
+
+      clone.legs = clone.legs.map((leg) => {
+        if (leg.count !== 1) return leg
+
+        const distribution = Array.isArray(leg.v85Distribution) ? leg.v85Distribution : []
+        if (!distribution.length) return leg
+
+        const current = Array.isArray(leg.selections) && leg.selections.length ? leg.selections[0] : null
+        const ranked = distribution
+          .map(entry => ({ entry, percent: percentOf(entry) }))
+          .filter(item => item.percent != null)
+          .sort((a, b) => b.percent - a.percent)
+
+        if (!ranked.length) return leg
+
+        const top = ranked[0].entry
+        const topPercent = ranked[0].percent
+        const currentId = parseId(current?.id)
+        const topId = parseId(top?.horseId)
+
+        const buildSelection = (base = {}) => ({
+          id: topId ?? parseId(base.id) ?? null,
+          programNumber: top?.programNumber ?? base.programNumber ?? null,
+          name: top?.horseName ?? base.name ?? '',
+          tier: base.tier ?? null,
+          rating: base.rating ?? null,
+          compositeScore: base.compositeScore ?? null,
+          plusPoints: Array.isArray(base.plusPoints) ? [...base.plusPoints] : [],
+          formScore: base.formScore ?? null,
+          v85Percent: topPercent,
+          v85Trend: top?.trend ?? null,
+          publicRank: 1,
+          isPublicFavorite: true
+        })
+
+        const updatedSelection = currentId === topId
+          ? {
+              ...current,
+              v85Percent: topPercent,
+              v85Trend: top?.trend ?? null,
+              publicRank: 1,
+              isPublicFavorite: true
+            }
+          : buildSelection(current || {})
+
+        anyUpdated = true
+        return {
+          ...leg,
+          selections: [updatedSelection]
+        }
+      })
+
+      if (!anyUpdated) {
+        error.value = 'Inga spikar kunde justeras med publikfavoriter.'
+        return
+      }
+
+      clone.spikes = clone.legs
+        .filter(leg => leg.count === 1)
+        .map(leg => {
+          const distribution = Array.isArray(leg.v85Distribution) ? leg.v85Distribution : []
+          const publicTop = distribution
+            .map(entry => percentOf(entry))
+            .filter(value => value != null)
+            .sort((a, b) => b - a)[0] ?? null
+
+          return {
+            leg: leg.leg,
+            raceNumber: leg.raceNumber,
+            selections: leg.selections,
+            publicTop
+          }
+        })
+
+      suggestions.value.splice(idx, 1, clone)
+      error.value = ''
     }
 
     const formatErrorModes = (errorList) => {
@@ -346,10 +445,10 @@ export default {
       formatTypeClass,
       formatPercent,
       formatDateTime,
-      v75StatusText,
+      v85StatusText,
       formatErrorModes,
       generate,
-      focusPublicSuggestion,
+      applyPublicSpikes,
       emitClose
     }
   }

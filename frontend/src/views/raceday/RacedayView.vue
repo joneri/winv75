@@ -26,16 +26,16 @@
               <div class="buttons">
                 <v-btn density="compact" color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
                 <v-btn density="compact" class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
-                <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV75Modal = true">V75-spelförslag</v-btn>
-                <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV75" :loading="updatingV75" :disabled="updatingV75 || downloading || regenerating">Uppdatera V75%</v-btn>
+                <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV85Modal = true">V85-spelförslag</v-btn>
+                <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV85" :loading="updatingV85" :disabled="updatingV85 || downloading || regenerating">Uppdatera V85%</v-btn>
               </div>
-              <div class="v75-status" v-if="v75UpdatedLabel">
-                {{ v75UpdatedLabel }}
+              <div class="v85-status" v-if="v85UpdatedLabel">
+                {{ v85UpdatedLabel }}
               </div>
-              <div class="v75-status muted" v-else>
-                V75% ej hämtad ännu
+              <div class="v85-status muted" v-else>
+                V85% ej hämtad ännu
               </div>
-              <div v-if="v75UpdateMessage" class="v75-message">{{ v75UpdateMessage }}</div>
+              <div v-if="v85UpdateMessage" class="v85-message">{{ v85UpdateMessage }}</div>
             </div>
           </div>
 
@@ -55,9 +55,9 @@
       </v-col>
     </v-row>
   </v-container>
-  <V75SuggestionModal
-    :model-value="showV75Modal"
-    @update:modelValue="showV75Modal = $event"
+  <V85SuggestionModal
+    :model-value="showV85Modal"
+    @update:modelValue="showV85Modal = $event"
     :raceday-id="route.params.racedayId"
   />
 </template>
@@ -69,14 +69,14 @@ import RacedayService from '@/views/raceday/services/RacedayService.js'
 import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
 import SpelformBadge from '@/components/SpelformBadge.vue'
-import V75SuggestionModal from './components/V75SuggestionModal.vue'
+import V85SuggestionModal from './components/V85SuggestionModal.vue'
 import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
   components: {
     RaceCardComponent,
     SpelformBadge,
-    V75SuggestionModal
+    V85SuggestionModal
   },
   setup(props, { root }) {
     const route = useRoute()
@@ -95,13 +95,13 @@ export default {
     const errorMessage = ref(null)
     const downloading = ref(false)
     const regenerating = ref(false)
-    const updatingV75 = ref(false)
-    const showV75Modal = ref(false)
+    const updatingV85 = ref(false)
+    const showV85Modal = ref(false)
     const loading = ref(true)
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
-    const v75UpdateMessage = ref('')
+    const v85UpdateMessage = ref('')
     const isRecentlyUpdated = (timestamp) => {
       const sixDaysAgo = new Date()
       sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
@@ -165,7 +165,7 @@ export default {
     })
 
     const racedayGames = computed(() => {
-      const order = ['V75','V86','V64','V65','GS75','V5','V4','DD']
+      const order = ['V85','V86','V64','V65','GS75','V5','V4','DD']
       const keys = Object.keys(spelformer.value || {})
       return keys.sort((a,b) => (order.indexOf(a) === -1 ? 999 : order.indexOf(a)) - (order.indexOf(b) === -1 ? 999 : order.indexOf(b)))
     })
@@ -187,10 +187,10 @@ export default {
       }
     }
 
-    const v75UpdatedLabel = computed(() => {
-      const ts = racedayDetails.value?.v75Info?.updatedAt
+    const v85UpdatedLabel = computed(() => {
+      const ts = racedayDetails.value?.v85Info?.updatedAt
       if (!ts) return ''
-      return `V75% uppdaterad ${formatDateTime(ts)}`
+      return `V85% uppdaterad ${formatDateTime(ts)}`
     })
 
     const sortedRaceList = computed(() => {
@@ -322,18 +322,18 @@ export default {
       }
     }
 
-    const updateV75 = async () => {
+    const updateV85 = async () => {
       try {
-        updatingV75.value = true
-        v75UpdateMessage.value = ''
-        await RacedayService.updateV75Distribution(route.params.racedayId)
+        updatingV85.value = true
+        v85UpdateMessage.value = ''
+        await RacedayService.updateV85Distribution(route.params.racedayId)
         await refreshRaceday()
-        v75UpdateMessage.value = v75UpdatedLabel.value || 'V75% uppdaterad.'
+        v85UpdateMessage.value = v85UpdatedLabel.value || 'V85% uppdaterad.'
       } catch (error) {
-        console.error('Failed to update V75%', error)
-        v75UpdateMessage.value = error?.error || 'Misslyckades att uppdatera V75%'
+        console.error('Failed to update V85%', error)
+        v85UpdateMessage.value = error?.error || 'Misslyckades att uppdatera V85%'
       } finally {
-        updatingV75.value = false
+        updatingV85.value = false
       }
     }
 
@@ -351,16 +351,16 @@ export default {
       downloadAiList,
       regenerating,
       regenerateAiList,
-      updateV75,
+      updateV85,
       racedayGames,
       loading,
       totalRaces,
       formattedFirstStart,
-      showV75Modal,
+      showV85Modal,
       route,
-      updatingV75,
-      v75UpdatedLabel,
-      v75UpdateMessage
+      updatingV85,
+      v85UpdatedLabel,
+      v85UpdateMessage
     }
   }
 }
@@ -385,9 +385,9 @@ export default {
   .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .games { display: flex; gap: 6px; }
   .buttons { display: flex; gap: 8px; }
-  .v75-status { font-size: 0.85rem; color: #1f2933; }
-  .v75-status.muted { color: #6b7280; }
-  .v75-message { font-size: 0.82rem; color: #2563eb; }
+  .v85-status { font-size: 0.85rem; color: #1f2933; }
+  .v85-status.muted { color: #6b7280; }
+  .v85-message { font-size: 0.82rem; color: #2563eb; }
   .race-row { margin-bottom: 10px; }
   .error-message { color: #ef4444; font-size: 0.95rem; margin-top: 1rem; }
   .loading-wrap { padding-top: 24px; }
@@ -397,8 +397,8 @@ export default {
     .muted { color: #9ca3af; }
     .dot { color: #6b7280; }
     .error-message { color: #f87171; }
-    .v75-status { color: #d1d5db; }
-    .v75-status.muted { color: #9ca3af; }
-    .v75-message { color: #93c5fd; }
+    .v85-status { color: #d1d5db; }
+    .v85-status.muted { color: #9ca3af; }
+    .v85-message { color: #93c5fd; }
   }
 </style>

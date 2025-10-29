@@ -32,43 +32,43 @@ async function fetchRacedayAiList(racedayId, { force = false } = {}) {
   }
 }
 
-async function fetchV75Info(racedayId) {
+async function fetchV85Info(racedayId) {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v75/info`)
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85/info`)
     return response.data?.info || null
   } catch (error) {
-    console.error('Error fetching V75 info:', error)
+    console.error('Error fetching V85 info:', error)
     throw error
   }
 }
 
-async function updateV75Distribution(racedayId) {
+async function updateV85Distribution(racedayId) {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v75/update`)
+    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85/update`)
     return response.data
   } catch (error) {
-    console.error('Error updating V75 distribution:', error)
+    console.error('Error updating V85 distribution:', error)
     if (error.response?.data) throw error.response.data
     throw error
   }
 }
 
-async function fetchV75Templates() {
+async function fetchV85Templates() {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/v75/templates`)
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/v85/templates`)
     return response.data?.templates || []
   } catch (error) {
-    console.error('Error fetching V75 templates:', error)
+    console.error('Error fetching V85 templates:', error)
     throw error
   }
 }
 
-async function fetchV75Suggestion(racedayId, payload) {
+async function fetchV85Suggestion(racedayId, payload) {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v75`, payload)
+    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85`, payload)
     return response.data
   } catch (error) {
-    console.error('Error fetching V75 suggestion:', error)
+    console.error('Error fetching V85 suggestion:', error)
     if (error.response?.data) {
       throw error.response.data
     }
@@ -92,9 +92,9 @@ export default {
   fetchRacedayDetails,
   fetchSpelformer,
   fetchRacedayAiList,
-  fetchV75Info,
-  updateV75Distribution,
-  fetchV75Templates,
-  fetchV75Suggestion,
+  fetchV85Info,
+  updateV85Distribution,
+  fetchV85Templates,
+  fetchV85Suggestion,
   refreshRacedayAi
 }

@@ -127,6 +127,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
   const handicapDiv = toNum(cfg.handicapDivisor, Number(process.env.AI_RANK_HANDICAP_DIVISOR || 40))
   const DEBUG = ['1','true','yes','on'].includes(String(process.env.AI_RANK_DEBUG || '').toLowerCase())
 
+  const rankingById = new Map(ranking.map(r => [r.id, r]))
+
   const plusPoints = horses.map(h => {
       const notes = []
       const prev = h.previousShoeOption?.code
@@ -138,7 +140,7 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       if (curr === 1) {
         notes.push('Barfota runt om')
       }
-      const agg = ranking.find(r => r.id === h.id)
+  const agg = rankingById.get(h.id)
       if (trackCode && agg?.favoriteTrack && agg.favoriteTrack === trackCode) {
         notes.push('Favoritbana')
       }
@@ -219,7 +221,8 @@ export async function buildRaceInsights(raceId, overrides = {}) {
       if (winScore != null && Number.isFinite(winScore) && winScoreDiv > 0) {
         winScoreTerm = wWinScore * ((winScore - winScoreBaseline) / winScoreDiv)
       }
-      const driverMeta = meta?.driver || horsesById.get(r.id)?.driver || {}
+  const agg = rankingById.get(r.id)
+  const driverMeta = agg?.driver || meta?.driver || horsesById.get(r.id)?.driver || {}
       const driverEloCandidate = driverMeta?.elo ?? driverMeta?.formElo ?? driverMeta?.rating
       let driverElo = null
       if (driverEloCandidate != null) {
@@ -228,11 +231,11 @@ export async function buildRaceInsights(raceId, overrides = {}) {
           driverElo = candidateNum
         }
       }
-      let driverTerm = 0
+      let driverTerm = null
       if (Number.isFinite(driverElo) && driverEloDiv > 0) {
         driverTerm = wDriver * ((driverElo - driverEloBaseline) / driverEloDiv)
       }
-      const publicPercentRaw = Number(meta?.v75Percent)
+      const publicPercentRaw = Number(meta?.v85Percent)
       let publicPercent = null
       if (Number.isFinite(publicPercentRaw)) {
         let normalized = publicPercentRaw
@@ -243,7 +246,7 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         }
         publicPercent = Math.min(Math.max(normalized, 0), 1)
       }
-      let publicTerm = 0
+      let publicTerm = null
       if (publicPercent != null && publicDiv > 0) {
         publicTerm = wPublic * ((publicPercent - publicBaseline) / publicDiv)
       }
@@ -260,11 +263,13 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         winScoreTerm +
         bonus +
         handicapAdj +
-        driverTerm +
-        publicTerm
+        (driverTerm ?? 0) +
+        (publicTerm ?? 0)
 
       if (DEBUG) {
-        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, Δ=${formDelta?.toFixed?.(2) ?? formDelta}, deltaTerm=${deltaTerm.toFixed(3)}, legacyFormScore=${formScore}, legacyFormTerm=${legacyFormTerm.toFixed(3)}, winScore=${winScore ?? '-'}, winScoreTerm=${winScoreTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTerm.toFixed(3)}, publicPercent=${publicPercent ?? '-'}, publicTerm=${publicTerm.toFixed(3)}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
+        const driverTermLog = driverTerm == null ? 'null' : driverTerm.toFixed(3)
+        const publicTermLog = publicTerm == null ? 'null' : publicTerm.toFixed(3)
+        console.log(`[AI_DEBUG] Race ${raceId} — ${r.programNumber} ${r.name}: formElo=${formElo}, eloTerm=${eloTerm.toFixed(3)}, Δ=${formDelta?.toFixed?.(2) ?? formDelta}, deltaTerm=${deltaTerm.toFixed(3)}, legacyFormScore=${formScore}, legacyFormTerm=${legacyFormTerm.toFixed(3)}, winScore=${winScore ?? '-'}, winScoreTerm=${winScoreTerm.toFixed(3)}, driverElo=${driverElo}, driverTerm=${driverTermLog}, publicPercent=${publicPercent ?? '-'}, publicTerm=${publicTermLog}, bonus=${bonus.toFixed(3)} [${pts.join(', ')}], handicapAdj=${handicapAdj.toFixed(3)}, composite=${compositeScore.toFixed(3)}`)
       }
 
       return {
@@ -283,9 +288,9 @@ export async function buildRaceInsights(raceId, overrides = {}) {
         legacyFormTerm,
         winScoreTerm,
   driverElo,
-        driverTerm,
-        publicPercent,
-        publicTerm,
+  driverTerm,
+  publicPercent,
+  publicTerm,
         bonus,
         handicapAdj,
         baseDistance: baseDist || null,
@@ -594,9 +599,9 @@ const buildSignalDefinitions = ({ config, ranking }) => {
     {
       id: 'public',
       label: 'Publiktryck',
-      description: 'ATG V75 %-andel relativt baseline.',
+      description: 'ATG V85 %-andel relativt baseline.',
       formula: '(p - baseline) / divisor',
-      source: 'ATG V75 API',
+      source: 'ATG V85 API',
       window: 'Senaste hämtning',
       defaultWeight: config.wPublic ?? 1,
       ...DEFAULT_SIGNAL_BOUNDS,

@@ -3,11 +3,11 @@ import raceDayService from './raceday-service.js'
 import Raceday from './raceday-model.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
 import {
-  listV75Templates,
-  buildV75Suggestion,
-  buildV75Suggestions,
-  updateV75DistributionForRaceday
-} from './v75-service.js'
+  listV85Templates,
+  buildV85Suggestion,
+  buildV85Suggestions,
+  updateV85DistributionForRaceday
+} from './v85-service.js'
 
 const router = express.Router()
 
@@ -86,36 +86,36 @@ router.get('/summary', async (req, res) => {
   }
 })
 
-router.get('/v75/templates', async (_req, res) => {
+router.get('/v85/templates', async (_req, res) => {
   try {
-    res.json({ templates: listV75Templates() })
+    res.json({ templates: listV85Templates() })
   } catch (error) {
-    console.error('Error fetching V75 templates:', error)
-    res.status(500).json({ error: 'Failed to fetch V75 templates' })
+    console.error('Error fetching V85 templates:', error)
+    res.status(500).json({ error: 'Failed to fetch V85 templates' })
   }
 })
 
-router.get('/:id/v75/info', validateObjectIdParam('id'), async (req, res) => {
+router.get('/:id/v85/info', validateObjectIdParam('id'), async (req, res) => {
   try {
-    const raceday = await Raceday.findById(req.params.id, { v75Info: 1 }).lean()
-    res.json({ info: raceday?.v75Info || null })
+    const raceday = await Raceday.findById(req.params.id, { v85Info: 1 }).lean()
+    res.json({ info: raceday?.v85Info || null })
   } catch (error) {
-    console.error('Failed to fetch V75 info:', error)
-    res.status(500).json({ error: 'Misslyckades hämta V75-information' })
+    console.error('Failed to fetch V85 info:', error)
+    res.status(500).json({ error: 'Misslyckades hämta V85-information' })
   }
 })
 
-router.post('/:id/v75/update', validateObjectIdParam('id'), async (req, res) => {
+router.post('/:id/v85/update', validateObjectIdParam('id'), async (req, res) => {
   try {
-    const info = await updateV75DistributionForRaceday(req.params.id)
+    const info = await updateV85DistributionForRaceday(req.params.id)
     res.json({ ok: true, info })
   } catch (error) {
-    console.error('Failed to update V75 distribution:', error)
-    res.status(500).json({ error: error.message || 'Misslyckades att uppdatera V75%' })
+    console.error('Failed to update V85 distribution:', error)
+    res.status(500).json({ error: error.message || 'Misslyckades att uppdatera V85%' })
   }
 })
 
-router.post('/:id/v75', validateObjectIdParam('id'), async (req, res) => {
+router.post('/:id/v85', validateObjectIdParam('id'), async (req, res) => {
   try {
     const {
       templateKey,
@@ -130,7 +130,7 @@ router.post('/:id/v75', validateObjectIdParam('id'), async (req, res) => {
     const wantsMulti = multi === true || (Array.isArray(modes) && modes.length > 0)
 
     if (wantsMulti) {
-      const result = await buildV75Suggestions(req.params.id, {
+      const result = await buildV85Suggestions(req.params.id, {
         templateKey,
         stake,
         maxCost,
@@ -143,7 +143,7 @@ router.post('/:id/v75', validateObjectIdParam('id'), async (req, res) => {
       return res.json(result)
     }
 
-    const suggestion = await buildV75Suggestion(req.params.id, {
+    const suggestion = await buildV85Suggestion(req.params.id, {
       templateKey,
       stake,
       maxCost,
@@ -155,8 +155,8 @@ router.post('/:id/v75', validateObjectIdParam('id'), async (req, res) => {
     }
     res.json(suggestion)
   } catch (error) {
-    console.error('Failed to build V75 suggestion:', error)
-    res.status(500).json({ error: 'Det gick inte att skapa V75-spelförslag' })
+    console.error('Failed to build V85 suggestion:', error)
+    res.status(500).json({ error: 'Det gick inte att skapa V85-spelförslag' })
   }
 })
 

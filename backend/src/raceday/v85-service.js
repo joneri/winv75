@@ -6,55 +6,61 @@ import gameService from '../game/game-service.js'
 const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
 
 const ROW_COST = 0.5
-const DEFAULT_MAX_BUDGET = Number.isFinite(Number(process.env.V75_DEFAULT_MAX_BUDGET))
-  ? Number(process.env.V75_DEFAULT_MAX_BUDGET)
+const DEFAULT_MAX_BUDGET = Number.isFinite(Number(process.env.V85_DEFAULT_MAX_BUDGET))
+  ? Number(process.env.V85_DEFAULT_MAX_BUDGET)
   : Infinity
-const ENV_MAX_SELECTIONS = Number(process.env.V75_MAX_SELECTIONS_PER_LEG)
+const ENV_MAX_SELECTIONS = Number(process.env.V85_MAX_SELECTIONS_PER_LEG)
 const MAX_SELECTIONS_PER_LEG = Number.isFinite(ENV_MAX_SELECTIONS) && ENV_MAX_SELECTIONS > 0
   ? ENV_MAX_SELECTIONS
   : 8
 const SCORE_EPSILON = 1e-6
 const DEFAULT_SUGGESTION_MODES = ['balanced', 'public', 'value']
-const V75_PWIN_WEIGHT = Number.isFinite(Number(process.env.V75_PWIN_WEIGHT))
-  ? Number(process.env.V75_PWIN_WEIGHT)
+const V85_PWIN_WEIGHT = Number.isFinite(Number(process.env.V85_PWIN_WEIGHT))
+  ? Number(process.env.V85_PWIN_WEIGHT)
   : 24
 
-export const V75_TEMPLATES = [
+export const V85_TEMPLATES = [
   {
     key: 'two-spikes-one-lock',
     label: '2 spikar ett lås',
-    counts: [1, 1, 2, 3, 3, 3, 3],
+    counts: [1, 1, 2, 3, 4, 4, 5, 6],
+    assignment: 'bestToWorst'
+  },
+  {
+    key: 'three-spikes-one-lock',
+    label: '3 spikar ett lås',
+    counts: [1, 1, 1, 2, 3, 4, 5, 6],
     assignment: 'bestToWorst'
   },
   {
     key: 'one-spike',
-    label: '1 spik',
-    counts: [1, 2, 3, 3, 3, 4, 4],
+    label: '2 spikar',
+    counts: [1, 1, 2, 3, 4, 5, 5, 6],
     assignment: 'bestToWorst'
   },
   {
     key: 'tv-system',
     label: 'TV-system',
-    counts: [1, 2, 3, 3, 4, 4, 5],
-    assignment: 'bestToWorst'
+    counts: [6, 5, 4, 4, 3, 3, 2, 1],
+    assignment: 'sequential'
   },
   {
     key: 'inverse-t',
-    label: 'Omvänt T-system',
-    counts: [1, 2, 3, 3, 4, 4, 5],
-    assignment: 'worstToBest'
+    label: 'Omvänt TV-system',
+    counts: [1, 2, 3, 3, 4, 4, 5, 6],
+    assignment: 'sequential'
   },
   {
     key: 'no-spikes',
     label: 'Inga spikar',
-    counts: [3, 3, 4, 4, 4, 5, 5],
+    counts: [3, 3, 4, 4, 4, 5, 5, 5],
     assignment: 'worstToBest'
   }
 ]
 
-const templateMap = new Map(V75_TEMPLATES.map(t => [t.key, t]))
+const templateMap = new Map(V85_TEMPLATES.map(t => [t.key, t]))
 
-export const listV75Templates = () => V75_TEMPLATES.map(t => ({ key: t.key, label: t.label, counts: t.counts }))
+export const listV85Templates = () => V85_TEMPLATES.map(t => ({ key: t.key, label: t.label, counts: t.counts }))
 
 const toNumber = (value, fallback = 0) => {
   const num = Number(value)
@@ -66,7 +72,7 @@ const toScore = (horse) => {
   const composite = toNumber(horse.compositeScore ?? horse.rating ?? 0, 0)
   const pWin = Number(horse.winProbability)
   if (Number.isFinite(pWin) && pWin > 0) {
-    return composite + V75_PWIN_WEIGHT * pWin
+    return composite + V85_PWIN_WEIGHT * pWin
   }
   return composite
 }
@@ -82,15 +88,15 @@ const buildSuggestionContext = async (racedayId, context = null) => {
     return null
   }
 
-  if (!ctx.v75InfoResolved) {
-    const racedayDoc = await Raceday.findById(racedayId, { v75Info: 1 }).lean()
-    ctx.v75Info = racedayDoc?.v75Info || null
-    ctx.v75InfoResolved = true
+  if (!ctx.v85InfoResolved) {
+    const racedayDoc = await Raceday.findById(racedayId, { v85Info: 1 }).lean()
+    ctx.v85Info = racedayDoc?.v85Info || null
+    ctx.v85InfoResolved = true
   }
 
-  if (!ctx.v75Prepared) {
+  if (!ctx.v85Prepared) {
     const map = new Map()
-    const infoLegs = ctx.v75Info?.legs || []
+    const infoLegs = ctx.v85Info?.legs || []
     for (const leg of infoLegs) {
       const raceNumber = Number(leg?.raceNumber)
       if (!Number.isFinite(raceNumber)) continue
@@ -104,9 +110,9 @@ const buildSuggestionContext = async (racedayId, context = null) => {
       const legMap = new Map(selections.map(sel => [sel.horseId, sel]))
       map.set(raceNumber, { leg, map: legMap, selections })
     }
-    ctx.v75ByRaceNumber = map
-    ctx.v75Available = map.size > 0
-    ctx.v75Prepared = true
+    ctx.v85ByRaceNumber = map
+    ctx.v85Available = map.size > 0
+    ctx.v85Prepared = true
   }
 
   return ctx
@@ -137,7 +143,7 @@ const fetchGameDetails = async (gameId) => {
   return data
 }
 
-export const updateV75DistributionForRaceday = async (racedayId) => {
+export const updateV85DistributionForRaceday = async (racedayId) => {
   const raceday = await Raceday.findById(racedayId)
   if (!raceday) {
     throw new Error('Raceday not found')
@@ -145,9 +151,9 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
 
   await ensureGameDataForRaceday(raceday)
 
-  const v75Entries = raceday.atgCalendarGamesRaw?.V75 || []
-  if (!Array.isArray(v75Entries) || v75Entries.length === 0) {
-    throw new Error('Ingen V75-omgång hittades för denna tävlingsdag')
+  const v85Entries = raceday.atgCalendarGamesRaw?.V85 || []
+  if (!Array.isArray(v85Entries) || v85Entries.length === 0) {
+    throw new Error('Ingen V85-omgång hittades för denna tävlingsdag')
   }
 
   const raceNumberMap = new Map((raceday.raceList || []).map(r => [Number(r.raceNumber), r]))
@@ -156,7 +162,7 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
   let selectedGameData = null
   let bestMatchCount = -1
 
-  for (const entry of v75Entries) {
+  for (const entry of v85Entries) {
     try {
       const gameData = await fetchGameDetails(entry.id)
       const matchCount = (gameData.races || []).reduce((acc, race) => {
@@ -174,14 +180,14 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
   }
 
   if (!selectedEntry || !selectedGameData) {
-    throw new Error('Misslyckades med att hämta V75-data från ATG')
+    throw new Error('Misslyckades med att hämta V85-data från ATG')
   }
 
   // reset previous values
   for (const race of raceday.raceList || []) {
     for (const horse of race.horses || []) {
-      horse.v75Percent = null
-      horse.v75Trend = null
+      horse.v85Percent = null
+      horse.v85Trend = null
     }
   }
 
@@ -199,7 +205,7 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
     for (const start of raceData.starts || []) {
       const horseId = Number(start?.horse?.id)
       if (!Number.isFinite(horseId)) continue
-      const poolInfo = start?.pools?.V75
+      const poolInfo = start?.pools?.V85
       if (!poolInfo || poolInfo.betDistribution == null) continue
       const betDistribution = toNumber(poolInfo.betDistribution, null)
       if (!Number.isFinite(betDistribution)) continue
@@ -210,8 +216,8 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
 
       const horseDoc = horseMap.get(horseId)
       if (horseDoc) {
-        horseDoc.v75Percent = percent
-        horseDoc.v75Trend = trend
+        horseDoc.v85Percent = percent
+        horseDoc.v85Trend = trend
       }
 
       selections.push({
@@ -232,7 +238,7 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
     })
   })
 
-  raceday.v75Info = {
+  raceday.v85Info = {
     updatedAt,
     gameId: selectedEntry.id,
     source: 'ATG',
@@ -240,10 +246,10 @@ export const updateV75DistributionForRaceday = async (racedayId) => {
   }
 
   raceday.markModified('raceList')
-  raceday.markModified('v75Info')
+  raceday.markModified('v85Info')
   await raceday.save()
 
-  const info = raceday.v75Info?.toObject ? raceday.v75Info.toObject() : raceday.v75Info
+  const info = raceday.v85Info?.toObject ? raceday.v85Info.toObject() : raceday.v85Info
   return info
 }
 
@@ -339,8 +345,8 @@ const pickHorses = (legData, count, distributionMap = new Map(), weightOverrides
     compositeScore: toNumber(base?.compositeScore ?? composite, null),
     plusPoints: Array.isArray(base?.plusPoints) ? base.plusPoints : [],
     formScore: toNumber(base?.formScore, null),
-    v75Percent: dist?.percent ?? (dist?.betDistribution != null ? dist.betDistribution / 100 : null),
-    v75Trend: dist?.trend ?? null,
+    v85Percent: dist?.percent ?? (dist?.betDistribution != null ? dist.betDistribution / 100 : null),
+    v85Trend: dist?.trend ?? null,
     publicRank,
     isPublicFavorite: Boolean(isPublicFavorite)
   }))
@@ -372,7 +378,7 @@ const computeLegMetrics = (leg, distributionMap = new Map()) => {
 }
 
 
-export const buildV75Suggestion = async (racedayId, options = {}, sharedContext = null) => {
+export const buildV85Suggestion = async (racedayId, options = {}, sharedContext = null) => {
   const {
     templateKey,
     stake,
@@ -382,7 +388,7 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
   } = options || {}
 
   try {
-    const template = templateMap.get(templateKey) || V75_TEMPLATES[0]
+    const template = templateMap.get(templateKey) || V85_TEMPLATES[0]
     const modeKey = typeof mode === 'string' ? mode : 'balanced'
     const budgetInput = [maxCost, maxBudget, stake].map(v => toNumber(v, NaN)).find(val => Number.isFinite(val))
     const budgetLimit = Number.isFinite(budgetInput) && budgetInput > 0 ? budgetInput : DEFAULT_MAX_BUDGET
@@ -395,9 +401,9 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
 
     const {
       aiData,
-      v75ByRaceNumber = new Map(),
-      v75Available = false,
-      v75Info = null
+      v85ByRaceNumber = new Map(),
+      v85Available = false,
+      v85Info = null
     } = context
 
     const modeConfigs = {
@@ -409,9 +415,9 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
       },
       public: {
         label: 'Publikfavorit',
-        spikScoreWeight: 1.25,
-        publicScoreWeight: 2.0,
-        pickWeights: { composite: 0.4, rank: 0.2, distribution: 0.4 }
+        spikScoreWeight: 0.8,
+        publicScoreWeight: 3.5,
+        pickWeights: { composite: 0.15, rank: 0.05, distribution: 0.8 }
       },
       value: {
         label: 'Värdejakt',
@@ -425,13 +431,13 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
 
     const legs = (aiData.races || [])
       .map(r => {
-        const v75Game = (r.games || []).find(g => g.game === 'V75')
-        if (!v75Game) return null
-        const raceNumber = Number(r.race?.raceNumber ?? v75Game.leg)
-        const distributionEntry = v75ByRaceNumber.get(raceNumber)
+        const v85Game = (r.games || []).find(g => g.game === 'V85')
+        if (!v85Game) return null
+        const raceNumber = Number(r.race?.raceNumber ?? v85Game.leg)
+        const distributionEntry = v85ByRaceNumber.get(raceNumber)
         const distributionMap = distributionEntry?.map || new Map()
         return {
-          leg: v75Game.leg,
+          leg: v85Game.leg,
           raceNumber,
           ranking: r.ranking || [],
           race: r.race || null,
@@ -443,7 +449,7 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
       .sort((a, b) => a.leg - b.leg)
 
     if (!legs.length) {
-      return { error: 'Ingen V75 hittades för denna tävlingsdag' }
+      return { error: 'Ingen V85 hittades för denna tävlingsdag' }
     }
 
     if (legs.length !== template.counts.length) {
@@ -455,23 +461,36 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
       (leg.metrics?.publicSpikScore ?? 0) * (modeCfg.publicScoreWeight ?? 1)
     )
 
-    const order = template.assignment === 'worstToBest'
-      ? [...legs].sort((a, b) => legScore(a) - legScore(b))
-      : [...legs].sort((a, b) => legScore(b) - legScore(a))
-
-    const counts = template.assignment === 'worstToBest'
-      ? [...template.counts].sort((a, b) => b - a)
-      : [...template.counts].sort((a, b) => a - b)
+    const sanitizeCount = (value) => Math.min(
+      MAX_SELECTIONS_PER_LEG,
+      Math.max(1, toNumber(value, 1))
+    )
 
     const allocation = new Map()
-    for (let i = 0; i < order.length; i += 1) {
-      const leg = order[i]
-      const count = counts[i] ?? counts[counts.length - 1]
-      allocation.set(leg.leg, count)
+    if (template.assignment === 'sequential') {
+      for (let i = 0; i < legs.length; i += 1) {
+        const leg = legs[i]
+        const count = template.counts[i] ?? template.counts[template.counts.length - 1]
+        allocation.set(leg.leg, sanitizeCount(count))
+      }
+    } else {
+      const order = template.assignment === 'worstToBest'
+        ? [...legs].sort((a, b) => legScore(a) - legScore(b))
+        : [...legs].sort((a, b) => legScore(b) - legScore(a))
+
+      const counts = template.assignment === 'worstToBest'
+        ? [...template.counts].sort((a, b) => b - a)
+        : [...template.counts].sort((a, b) => a - b)
+
+      for (let i = 0; i < order.length; i += 1) {
+        const leg = order[i]
+        const count = counts[i] ?? counts[counts.length - 1]
+        allocation.set(leg.leg, sanitizeCount(count))
+      }
     }
 
     const baseLegs = legs.map(leg => {
-      const count = allocation.get(leg.leg) ?? template.counts[leg.leg - 1] ?? 3
+      const count = sanitizeCount(allocation.get(leg.leg) ?? template.counts[leg.leg - 1] ?? 3)
       return {
         leg: leg.leg,
         raceNumber: leg.raceNumber,
@@ -585,7 +604,7 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
         type,
         poolSize,
         selections,
-        v75Distribution: Array.from((leg.distribution || new Map()).values())
+        v85Distribution: Array.from((leg.distribution || new Map()).values())
       }
     })
 
@@ -660,10 +679,10 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
       maxBudget: Number.isFinite(budgetLimit) ? budgetLimit : null,
       budget: budgetSummary,
       generatedAt: new Date().toISOString(),
-      v75: {
-        used: v75Available,
-        updatedAt: v75Info?.updatedAt ? new Date(v75Info.updatedAt).toISOString() : null,
-        gameId: v75Info?.gameId || null
+      v85: {
+        used: v85Available,
+        updatedAt: v85Info?.updatedAt ? new Date(v85Info.updatedAt).toISOString() : null,
+        gameId: v85Info?.gameId || null
       },
       legs: detailedLegs,
       spikes,
@@ -681,7 +700,7 @@ export const buildV75Suggestion = async (racedayId, options = {}, sharedContext 
   }
 }
 
-export const buildV75Suggestions = async (racedayId, options = {}) => {
+export const buildV85Suggestions = async (racedayId, options = {}) => {
   const { modes, ...rest } = options || {}
   const modeCandidates = Array.isArray(modes) && modes.length ? modes : DEFAULT_SUGGESTION_MODES
   const uniqueModes = []
@@ -701,7 +720,7 @@ export const buildV75Suggestions = async (racedayId, options = {}) => {
   const suggestions = []
   const errors = []
   for (const mode of uniqueModes) {
-    const result = await buildV75Suggestion(racedayId, { ...rest, mode }, context)
+    const result = await buildV85Suggestion(racedayId, { ...rest, mode }, context)
     if (result?.error) {
       errors.push({ mode, error: result.error })
       continue
@@ -710,7 +729,7 @@ export const buildV75Suggestions = async (racedayId, options = {}) => {
   }
 
   if (!suggestions.length) {
-    return { error: errors.length ? errors[0]?.error : 'Det gick inte att skapa V75-spelförslag' }
+    return { error: errors.length ? errors[0]?.error : 'Det gick inte att skapa V85-spelförslag' }
   }
 
   return {
@@ -721,9 +740,9 @@ export const buildV75Suggestions = async (racedayId, options = {}) => {
   }
 }
 export default {
-  V75_TEMPLATES,
-  listV75Templates,
-  updateV75DistributionForRaceday,
-  buildV75Suggestion,
-  buildV75Suggestions
+  V85_TEMPLATES,
+  listV85Templates,
+  updateV85DistributionForRaceday,
+  buildV85Suggestion,
+  buildV85Suggestions
 }

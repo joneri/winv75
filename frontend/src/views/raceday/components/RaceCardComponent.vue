@@ -64,7 +64,7 @@ export default {
     const loading = ref(false)
     const errorMessage = ref('')
 
-    const majorGames = ['V75', 'V64', 'V65', 'V86', 'GS75']
+    const majorGames = ['V85', 'V64', 'V65', 'V86', 'GS75']
     const primaryMajorGame = computed(() => games.value.find(g => majorGames.includes(g.game))?.game)
     const accentColor = computed(() => primaryMajorGame.value ? getGameColor(primaryMajorGame.value) : '#e5e7eb')
     const hexToRgba = (hex, alpha = 0.08) => {
@@ -212,7 +212,7 @@ export default {
 .card-actions { padding-top: 0; }
 
 /* Accent borders per major game */
-.v75-accent { border-left-color: #1e3a8a; }
+.v85-accent { border-left-color: #1e3a8a; }
 .v64-accent { border-left-color: #ed6c15; }
 .v65-accent { border-left-color: #c00a26; }
 .v86-accent { border-left-color: #6b21a8; }

@@ -1,5 +1,5 @@
 export const GAME_COLORS = {
-  V75: '#1e3a8a',
+  V85: '#1e3a8a',
   V86: '#6b21a8',
   V64: '#ed6c15',
   V65: '#ea580c',
