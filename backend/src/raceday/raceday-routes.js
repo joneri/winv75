@@ -124,7 +124,9 @@ router.post('/:id/v85', validateObjectIdParam('id'), async (req, res) => {
       maxBudget,
       mode,
       modes,
-      multi
+      multi,
+      variantCount,
+      userSeeds
     } = req.body || {}
 
     const wantsMulti = multi === true || (Array.isArray(modes) && modes.length > 0)
@@ -135,7 +137,9 @@ router.post('/:id/v85', validateObjectIdParam('id'), async (req, res) => {
         stake,
         maxCost,
         maxBudget,
-        modes
+        modes,
+        variantCount,
+        userSeeds
       })
       if (result?.error) {
         return res.status(400).json(result)
@@ -148,7 +152,8 @@ router.post('/:id/v85', validateObjectIdParam('id'), async (req, res) => {
       stake,
       maxCost,
       maxBudget,
-      mode
+      mode,
+      userSeeds
     })
     if (suggestion?.error) {
       return res.status(400).json(suggestion)

@@ -14,10 +14,16 @@ const MAX_SELECTIONS_PER_LEG = Number.isFinite(ENV_MAX_SELECTIONS) && ENV_MAX_SE
   ? ENV_MAX_SELECTIONS
   : 8
 const SCORE_EPSILON = 1e-6
-const DEFAULT_SUGGESTION_MODES = ['balanced', 'public', 'value']
+const DEFAULT_SUGGESTION_MODES = ['balanced', 'mix', 'public', 'value']
 const V85_PWIN_WEIGHT = Number.isFinite(Number(process.env.V85_PWIN_WEIGHT))
   ? Number(process.env.V85_PWIN_WEIGHT)
   : 24
+const MAX_VARIANTS_PER_MODE = 5
+const ENV_VARIANTS_PER_MODE = Number(process.env.V85_VARIANTS_PER_MODE)
+const DEFAULT_VARIANTS_PER_MODE = Number.isFinite(ENV_VARIANTS_PER_MODE) && ENV_VARIANTS_PER_MODE > 0
+  ? Math.min(MAX_VARIANTS_PER_MODE, ENV_VARIANTS_PER_MODE)
+  : 3
+const DEFAULT_VARIANT_LABELS = ['Variant A', 'Variant B', 'Variant C', 'Variant D', 'Variant E']
 
 export const V85_TEMPLATES = [
   {
@@ -59,6 +65,260 @@ export const V85_TEMPLATES = [
 ]
 
 const templateMap = new Map(V85_TEMPLATES.map(t => [t.key, t]))
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
+const rotateArray = (list = [], steps = 0) => {
+  if (!Array.isArray(list) || !list.length) return []
+  const len = list.length
+  const offset = ((steps % len) + len) % len
+  if (offset === 0) return [...list]
+  return [...list.slice(offset), ...list.slice(0, offset)]
+}
+
+const interleaveCounts = (list = []) => {
+  const result = []
+  let start = 0
+  let end = list.length - 1
+  let toggle = true
+  while (start <= end) {
+    if (toggle) {
+      result.push(list[start])
+      start += 1
+    } else {
+      result.push(list[end])
+      end -= 1
+    }
+    toggle = !toggle
+  }
+  return result
+}
+
+const shuffleArray = (list = [], rng = Math.random) => {
+  const copy = [...list]
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const rand = typeof rng === 'function' ? rng() : Math.random()
+    const j = Math.floor(rand * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
+const hashString = (value) => {
+  const str = String(value ?? '')
+  let hash = 0
+  for (let i = 0; i < str.length; i += 1) {
+    hash = Math.imul(31, hash) + str.charCodeAt(i)
+    hash |= 0
+  }
+  return hash >>> 0
+}
+
+const createRng = (seedValue = Date.now()) => {
+  let seed = typeof seedValue === 'number' ? seedValue >>> 0 : hashString(seedValue)
+  if (seed === 0) seed = 0x6d2b79f5
+  return () => {
+    seed += 0x6d2b79f5
+    let t = seed
+    t = Math.imul(t ^ (t >>> 15), 1 | t)
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+const lerp = (a, b, t) => a + (b - a) * t
+const clamp01 = (value) => clamp(value, 0, 1)
+
+const MODE_PICK_WEIGHTS = {
+  balanced: { composite: 0.5, rank: 0.25, distribution: 0.25 },
+  public: { composite: 0.15, rank: 0.05, distribution: 0.8 },
+  value: { composite: 0.6, rank: 0.3, distribution: 0.15 }
+}
+
+const blendWeights = (a = {}, b = {}, mix = 0.5) => ({
+  composite: clamp01(lerp(a.composite ?? 0, b.composite ?? 0, mix)),
+  rank: clamp01(lerp(a.rank ?? 0, b.rank ?? 0, mix)),
+  distribution: clamp01(lerp(a.distribution ?? 0, b.distribution ?? 0, mix))
+})
+
+const MODE_CONFIGS = {
+  balanced: {
+    label: 'Balanserad',
+    spikScoreWeight: 1,
+    publicScoreWeight: 1,
+    pickWeights: MODE_PICK_WEIGHTS.balanced,
+    chaosFactor: 0
+  },
+  public: {
+    label: 'Publikfavorit',
+    spikScoreWeight: 0.8,
+    publicScoreWeight: 3.5,
+    pickWeights: MODE_PICK_WEIGHTS.public,
+    chaosFactor: 0
+  },
+  value: {
+    label: 'Värdejakt',
+    spikScoreWeight: 1,
+    publicScoreWeight: -0.6,
+    pickWeights: MODE_PICK_WEIGHTS.value,
+    chaosFactor: 0.05
+  },
+  mix: {
+    label: 'MIX',
+    spikScoreWeight: 1.05,
+    publicScoreWeight: 0.5,
+    pickWeights: ({ rng }) => {
+      const mixValue = typeof rng === 'function' ? rng() : Math.random()
+      const base = blendWeights(MODE_PICK_WEIGHTS.balanced, MODE_PICK_WEIGHTS.value, mixValue)
+      const jitter = ((typeof rng === 'function' ? rng() : Math.random()) - 0.5) * 0.35
+      return {
+        composite: clamp01(base.composite + jitter * 0.4),
+        rank: clamp01(base.rank + jitter * 0.2),
+        distribution: clamp01(base.distribution - jitter * 0.3)
+      }
+    },
+    chaosFactor: 0.35
+  }
+}
+
+const VARIANT_STRATEGY_LABELS = {
+  default: 'Original',
+  'shift-forward': 'Skifta fram',
+  'shift-back': 'Skifta bak',
+  spread: 'Spridning',
+  mirror: 'Spegel',
+  chaos: 'Fri mix'
+}
+
+const MODE_VARIANT_ORDER = {
+  balanced: ['default', 'shift-forward', 'spread', 'mirror', 'chaos'],
+  mix: ['chaos', 'shift-forward', 'spread', 'mirror', 'default'],
+  public: ['default', 'mirror', 'shift-back', 'spread', 'chaos'],
+  value: ['default', 'spread', 'shift-back', 'chaos', 'mirror'],
+  default: ['default', 'shift-forward', 'spread', 'mirror', 'chaos']
+}
+
+const resolveVariantDescriptors = (modeKey, requestedCount = DEFAULT_VARIANTS_PER_MODE) => {
+  const count = clamp(Math.floor(Number(requestedCount) || DEFAULT_VARIANTS_PER_MODE), 1, MAX_VARIANTS_PER_MODE)
+  const order = MODE_VARIANT_ORDER[modeKey] || MODE_VARIANT_ORDER.default
+  const descriptors = []
+  let idx = 0
+  while (descriptors.length < count && idx < order.length) {
+    const strategy = order[idx]
+    descriptors.push({
+      strategy,
+      label: DEFAULT_VARIANT_LABELS[descriptors.length] || `Variant ${descriptors.length + 1}`,
+      strategyLabel: VARIANT_STRATEGY_LABELS[strategy] || strategy
+    })
+    idx += 1
+  }
+  while (descriptors.length < count) {
+    descriptors.push({
+      strategy: 'chaos',
+      label: DEFAULT_VARIANT_LABELS[descriptors.length] || `Variant ${descriptors.length + 1}`,
+      strategyLabel: VARIANT_STRATEGY_LABELS.chaos
+    })
+  }
+  return descriptors.map((entry, index) => ({
+    ...entry,
+    key: `${modeKey}-${entry.strategy}-${index}`,
+    seedSuffix: `${entry.strategy}-${index}`
+  }))
+}
+
+const transformCountsByStrategy = (counts, strategy, rng) => {
+  if (!Array.isArray(counts) || !counts.length) return []
+  switch (strategy) {
+    case 'shift-forward':
+      return rotateArray(counts, 1)
+    case 'shift-back':
+      return rotateArray(counts, -1)
+    case 'spread':
+      return interleaveCounts(counts)
+    case 'mirror':
+      return [...counts].reverse()
+    case 'chaos':
+      return shuffleArray(counts, rng)
+    default:
+      return [...counts]
+  }
+}
+
+const buildAllocationWithStrategy = (legs, template, strategy, legScore, sanitizeCount, rng) => {
+  const strategyKey = strategy || 'default'
+  const allocation = new Map()
+  if (template.assignment === 'sequential') {
+    const variantCounts = transformCountsByStrategy([...template.counts], strategyKey, rng)
+    for (let i = 0; i < legs.length; i += 1) {
+      const leg = legs[i]
+      const count = variantCounts[i] ?? variantCounts[variantCounts.length - 1] ?? template.counts[template.counts.length - 1]
+      allocation.set(leg.leg, sanitizeCount(count))
+    }
+    return allocation
+  }
+
+  const order = template.assignment === 'worstToBest'
+    ? [...legs].sort((a, b) => legScore(a) - legScore(b))
+    : [...legs].sort((a, b) => legScore(b) - legScore(a))
+
+  const baseCounts = template.assignment === 'worstToBest'
+    ? [...template.counts].sort((a, b) => b - a)
+    : [...template.counts].sort((a, b) => a - b)
+
+  const variantCounts = transformCountsByStrategy(baseCounts, strategyKey, rng)
+
+  for (let i = 0; i < order.length; i += 1) {
+    const leg = order[i]
+    const count = variantCounts[i] ?? variantCounts[variantCounts.length - 1] ?? baseCounts[baseCounts.length - 1]
+    allocation.set(leg.leg, sanitizeCount(count))
+  }
+
+  return allocation
+}
+
+const describeSpikeSummary = (spikes = []) => {
+  if (!Array.isArray(spikes) || !spikes.length) {
+    return 'Inga spikar – bred gardering'
+  }
+  const legs = spikes
+    .map(spike => Number(spike?.leg))
+    .filter(num => Number.isFinite(num))
+    .sort((a, b) => a - b)
+  if (!legs.length) {
+    return 'Inga spikar – bred gardering'
+  }
+  if (legs.length === 1) {
+    return `Spik i Avd ${legs[0]}`
+  }
+  if (legs.length === 2) {
+    return `Spikar Avd ${legs[0]} & Avd ${legs[1]}`
+  }
+  const prefix = legs.slice(0, -1).map(num => `Avd ${num}`).join(', ')
+  return `Spikar ${prefix} & Avd ${legs[legs.length - 1]}`
+}
+
+const normalizeUserSeeds = (value) => {
+  const map = new Map()
+  if (!value) return map
+  const entries = Array.isArray(value)
+    ? value
+    : Object.entries(value).map(([leg, horseIds]) => ({ leg, horseIds }))
+  for (const entry of entries) {
+    const legNumber = Number(entry?.leg)
+    if (!Number.isFinite(legNumber)) continue
+    const ids = Array.isArray(entry?.horseIds) ? entry.horseIds : []
+    const normalized = []
+    const seen = new Set()
+    for (const rawId of ids) {
+      const id = Number(rawId)
+      if (!Number.isFinite(id) || seen.has(id)) continue
+      seen.add(id)
+      normalized.push(id)
+    }
+    if (!normalized.length) continue
+    map.set(legNumber, { ids: normalized, set: seen })
+  }
+  return map
+}
 
 export const listV85Templates = () => V85_TEMPLATES.map(t => ({ key: t.key, label: t.label, counts: t.counts }))
 
@@ -260,7 +520,7 @@ const classifyLegType = (count) => {
   return 'gardering'
 }
 
-const pickHorses = (legData, count, distributionMap = new Map(), weightOverrides = {}) => {
+const pickHorses = (legData, count, distributionMap = new Map(), options = {}) => {
   const ranking = Array.isArray(legData?.ranking) ? legData.ranking : []
   if (!ranking.length && !distributionMap.size) return []
 
@@ -290,6 +550,14 @@ const pickHorses = (legData, count, distributionMap = new Map(), weightOverrides
     })
   }
 
+  const forcedOrder = Array.isArray(options.forcedIds)
+    ? options.forcedIds.map(id => Number(id)).filter(id => Number.isFinite(id))
+    : []
+  const forcedSet = new Set(forcedOrder)
+  const chaosFactor = Number(options.chaosFactor || 0)
+  const rng = typeof options.rng === 'function' ? options.rng : null
+  const weightOverrides = options.weights || {}
+
   const entries = [...allIds].map(id => {
     const base = rankingMap.get(id)
     const distInfo = distributionMap.get(id)
@@ -311,9 +579,14 @@ const pickHorses = (legData, count, distributionMap = new Map(), weightOverrides
       distribution: distPercent != null ? (weightOverrides.distribution ?? 0.25) : 0
     }
     const totalWeight = Object.values(weights).reduce((sum, val) => sum + val, 0) || 1
-    const score = totalWeight > 0
+    let score = totalWeight > 0
       ? ((compNorm * weights.composite) + (rankNorm * weights.rank) + (distNorm * weights.distribution)) / totalWeight
       : 0
+
+    if (chaosFactor > 0 && rng) {
+      const noise = (rng() - 0.5) * 2 * chaosFactor
+      score = Math.max(0, score + noise)
+    }
 
     const publicRank = percentRanks.get(Number(id)) ?? null
     const isPublicFavorite = distPercent != null && maxDistribution > 0
@@ -329,14 +602,67 @@ const pickHorses = (legData, count, distributionMap = new Map(), weightOverrides
       rank,
       distPercent,
       publicRank,
-      isPublicFavorite
+      isPublicFavorite,
+      tieBreaker: rng ? rng() : 0
     }
   })
 
-  entries.sort((a, b) => b.score - a.score)
+  entries.sort((a, b) => {
+    if (Math.abs(b.score - a.score) > SCORE_EPSILON) {
+      return b.score - a.score
+    }
+    if (Math.abs((b.tieBreaker || 0) - (a.tieBreaker || 0)) > SCORE_EPSILON) {
+      return (b.tieBreaker || 0) - (a.tieBreaker || 0)
+    }
+    return toNumber(a.rank, Number.MAX_SAFE_INTEGER) - toNumber(b.rank, Number.MAX_SAFE_INTEGER)
+  })
+
+  const ensureEntryForId = (targetId) => {
+    const match = entries.find(entry => Number(entry.id) === targetId)
+    if (match) return match
+    const base = rankingMap.get(targetId)
+    const distInfo = distributionMap.get(targetId)
+    if (!base && !distInfo) return null
+    return {
+      id: targetId,
+      score: -1,
+      base,
+      dist: distInfo,
+      composite: toScore(base),
+      rank: toNumber(base?.rank, 0),
+      distPercent: distInfo?.percent ?? (distInfo?.betDistribution != null ? distInfo.betDistribution / 100 : null),
+      publicRank: percentRanks.get(targetId) ?? null,
+      isPublicFavorite: false,
+      tieBreaker: 0
+    }
+  }
 
   const limit = Math.max(1, count)
-  return entries.slice(0, limit).map(({ base, dist, composite, id, publicRank, isPublicFavorite }) => ({
+  const usedIds = new Set()
+  const selected = []
+
+  for (const forcedId of forcedOrder) {
+    if (usedIds.has(forcedId)) continue
+    const entry = ensureEntryForId(forcedId)
+    if (!entry) continue
+    selected.push(entry)
+    usedIds.add(forcedId)
+    if (selected.length >= limit) break
+  }
+
+  if (selected.length < limit) {
+    for (const entry of entries) {
+      const idNum = Number(entry.id)
+      if (usedIds.has(idNum) || forcedSet.has(idNum)) continue
+      selected.push(entry)
+      usedIds.add(idNum)
+      if (selected.length >= limit) break
+    }
+  }
+
+  const finalList = selected.slice(0, limit)
+
+  return finalList.map(({ base, dist, composite, id, publicRank, isPublicFavorite }) => ({
     id,
     programNumber: base?.programNumber ?? dist?.programNumber ?? null,
     name: base?.name ?? dist?.horseName ?? '',
@@ -348,7 +674,8 @@ const pickHorses = (legData, count, distributionMap = new Map(), weightOverrides
     v85Percent: dist?.percent ?? (dist?.betDistribution != null ? dist.betDistribution / 100 : null),
     v85Trend: dist?.trend ?? null,
     publicRank,
-    isPublicFavorite: Boolean(isPublicFavorite)
+    isPublicFavorite: Boolean(isPublicFavorite),
+    isUserPick: forcedSet.has(Number(id))
   }))
 }
 
@@ -384,12 +711,19 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
     stake,
     maxCost,
     maxBudget,
-    mode = 'balanced'
+    mode = 'balanced',
+    userSeeds = [],
+    variantStrategy = 'default',
+    variantLabel = null,
+    variantKey = null,
+    variantStrategyLabel = null,
+    variantSeed = null
   } = options || {}
 
   try {
     const template = templateMap.get(templateKey) || V85_TEMPLATES[0]
     const modeKey = typeof mode === 'string' ? mode : 'balanced'
+    const resolvedVariantStrategy = variantStrategy || (modeKey === 'mix' ? 'chaos' : 'default')
     const budgetInput = [maxCost, maxBudget, stake].map(v => toNumber(v, NaN)).find(val => Number.isFinite(val))
     const budgetLimit = Number.isFinite(budgetInput) && budgetInput > 0 ? budgetInput : DEFAULT_MAX_BUDGET
     const stakePerRow = ROW_COST
@@ -406,28 +740,12 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
       v85Info = null
     } = context
 
-    const modeConfigs = {
-      balanced: {
-        label: 'Balanserad',
-        spikScoreWeight: 1,
-        publicScoreWeight: 1,
-        pickWeights: { composite: 0.5, rank: 0.25, distribution: 0.25 }
-      },
-      public: {
-        label: 'Publikfavorit',
-        spikScoreWeight: 0.8,
-        publicScoreWeight: 3.5,
-        pickWeights: { composite: 0.15, rank: 0.05, distribution: 0.8 }
-      },
-      value: {
-        label: 'Värdejakt',
-        spikScoreWeight: 1,
-        publicScoreWeight: -0.6,
-        pickWeights: { composite: 0.6, rank: 0.3, distribution: 0.15 }
-      }
-    }
+    const userSeedMap = normalizeUserSeeds(userSeeds)
+    const variantId = variantKey || resolvedVariantStrategy || 'default'
+    const seedBase = variantSeed || `${racedayId}:${template.key}:${modeKey}:${variantId}`
+    const allocationRng = createRng(`${seedBase}:alloc`)
 
-    const modeCfg = modeConfigs[modeKey] || modeConfigs.balanced
+    const modeCfg = MODE_CONFIGS[modeKey] || MODE_CONFIGS.balanced
 
     const legs = (aiData.races || [])
       .map(r => {
@@ -466,31 +784,12 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
       Math.max(1, toNumber(value, 1))
     )
 
-    const allocation = new Map()
-    if (template.assignment === 'sequential') {
-      for (let i = 0; i < legs.length; i += 1) {
-        const leg = legs[i]
-        const count = template.counts[i] ?? template.counts[template.counts.length - 1]
-        allocation.set(leg.leg, sanitizeCount(count))
-      }
-    } else {
-      const order = template.assignment === 'worstToBest'
-        ? [...legs].sort((a, b) => legScore(a) - legScore(b))
-        : [...legs].sort((a, b) => legScore(b) - legScore(a))
-
-      const counts = template.assignment === 'worstToBest'
-        ? [...template.counts].sort((a, b) => b - a)
-        : [...template.counts].sort((a, b) => a - b)
-
-      for (let i = 0; i < order.length; i += 1) {
-        const leg = order[i]
-        const count = counts[i] ?? counts[counts.length - 1]
-        allocation.set(leg.leg, sanitizeCount(count))
-      }
-    }
+    const allocation = buildAllocationWithStrategy(legs, template, resolvedVariantStrategy, legScore, sanitizeCount, allocationRng)
 
     const baseLegs = legs.map(leg => {
-      const count = sanitizeCount(allocation.get(leg.leg) ?? template.counts[leg.leg - 1] ?? 3)
+      const forcedCount = userSeedMap.get(leg.leg)?.ids.length ?? 0
+      const assignedCount = sanitizeCount(allocation.get(leg.leg) ?? template.counts[leg.leg - 1] ?? 3)
+      const count = Math.min(MAX_SELECTIONS_PER_LEG, Math.max(assignedCount, forcedCount || 0))
       return {
         leg: leg.leg,
         raceNumber: leg.raceNumber,
@@ -499,7 +798,8 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
         metrics: leg.metrics,
         ranking: leg.ranking,
         distribution: leg.distribution,
-        count
+        count,
+        forcedCount
       }
     })
 
@@ -514,9 +814,10 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
         throw new Error('Angivet maxbelopp är för lågt – minst 0,5 kr krävs.')
       }
 
-      const canReduce = () => copy.some(l => l.count > 1)
+      const minCountFor = (leg) => Math.max(1, leg.forcedCount || 0)
+      const canReduce = () => copy.some(l => l.count > minCountFor(l))
       const chooseTarget = () => copy
-        .filter(l => l.count > 1)
+        .filter(l => l.count > minCountFor(l))
         .sort((a, b) => {
           if (b.count !== a.count) return b.count - a.count
           const scoreA = (a.metrics?.spikScore ?? 0) + (a.metrics?.publicSpikScore ?? 0)
@@ -528,6 +829,9 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
         const target = chooseTarget()
         if (!target) break
         target.count -= 1
+        if (target.count < minCountFor(target)) {
+          target.count = minCountFor(target)
+        }
       }
 
       const rows = product(copy)
@@ -586,10 +890,23 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
       }
     }
 
-    const pickWeights = modeCfg.pickWeights || {}
+    const pickWeightsSource = modeCfg.pickWeights || {}
+    const chaosFactor = Number(modeCfg.chaosFactor || 0)
 
     const detailedLegs = adjustedLegs.map(leg => {
-      const selections = pickHorses(leg, leg.count, leg.distribution, pickWeights)
+      const legSeedBase = `${seedBase}:leg-${leg.leg}`
+      const weightRng = createRng(`${legSeedBase}:weights`)
+      const selectionRng = createRng(`${legSeedBase}:pick`)
+      const weightInput = typeof pickWeightsSource === 'function'
+        ? pickWeightsSource({ leg, template, mode: modeKey, rng: weightRng })
+        : pickWeightsSource
+      const forcedIds = userSeedMap.get(leg.leg)?.ids || []
+      const selections = pickHorses(leg, leg.count, leg.distribution, {
+        weights: weightInput || {},
+        forcedIds,
+        chaosFactor,
+        rng: selectionRng
+      })
       const type = classifyLegType(leg.count)
       const poolSize = Math.max(
         Array.isArray(leg.ranking) ? leg.ranking.length : 0,
@@ -622,6 +939,14 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
         selections: leg.selections,
         publicTop: baseLegs.find(b => b.leg === leg.leg)?.metrics?.publicTop ?? null
       }))
+
+    const variantInfo = {
+      key: variantKey || variantId,
+      label: variantLabel || null,
+      strategy: resolvedVariantStrategy || 'default',
+      strategyLabel: variantStrategyLabel || VARIANT_STRATEGY_LABELS[resolvedVariantStrategy] || null,
+      summary: describeSpikeSummary(spikes)
+    }
 
     const spikeCandidates = legs.map(leg => {
       const distribution = Array.from((leg.distribution || new Map()).values())
@@ -673,6 +998,7 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
       template: { key: template.key, label: template.label },
       mode: modeKey,
       modeLabel: modeCfg.label,
+      variant: variantInfo,
       stakePerRow,
       rows,
       totalCost,
@@ -689,8 +1015,9 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
       spikeCandidates,
       metadata: {
         templateCounts: [...template.counts],
-        baseRows
-      }
+        baseRows,
+        variantStrategy: resolvedVariantStrategy || 'default'
+    }
     }
   } catch (err) {
     if (err instanceof Error) {
@@ -701,7 +1028,7 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
 }
 
 export const buildV85Suggestions = async (racedayId, options = {}) => {
-  const { modes, ...rest } = options || {}
+  const { modes, variantCount, ...rest } = options || {}
   const modeCandidates = Array.isArray(modes) && modes.length ? modes : DEFAULT_SUGGESTION_MODES
   const uniqueModes = []
   const seen = new Set()
@@ -719,13 +1046,29 @@ export const buildV85Suggestions = async (racedayId, options = {}) => {
 
   const suggestions = []
   const errors = []
+  const variantsPerMode = clamp(Number.isFinite(Number(variantCount)) ? Number(variantCount) : DEFAULT_VARIANTS_PER_MODE, 1, MAX_VARIANTS_PER_MODE)
   for (const mode of uniqueModes) {
-    const result = await buildV85Suggestion(racedayId, { ...rest, mode }, context)
-    if (result?.error) {
-      errors.push({ mode, error: result.error })
-      continue
+    const descriptors = resolveVariantDescriptors(mode, variantsPerMode)
+    for (const descriptor of descriptors) {
+      const result = await buildV85Suggestion(
+        racedayId,
+        {
+          ...rest,
+          mode,
+          variantStrategy: descriptor.strategy,
+          variantLabel: descriptor.label,
+          variantStrategyLabel: descriptor.strategyLabel,
+          variantKey: descriptor.key,
+          variantSeed: `${racedayId}:${mode}:${descriptor.seedSuffix}`
+        },
+        context
+      )
+      if (result?.error) {
+        errors.push({ mode, variant: descriptor.key, variantLabel: descriptor.label, error: result.error })
+        continue
+      }
+      suggestions.push(result)
     }
-    suggestions.push(result)
   }
 
   if (!suggestions.length) {

@@ -32,6 +32,98 @@
             Generera spelförslag
           </v-btn>
         </div>
+        <div class="advanced-controls">
+          <div class="mode-group">
+            <div class="field-label">AI-stilar</div>
+            <div class="mode-chip-group">
+              <v-chip
+                v-for="mode in modeOptions"
+                :key="mode.value"
+                :value="mode.value"
+                filter
+                size="small"
+                :class="['mode-chip', { active: isModeActive(mode.value) }]"
+                @click="toggleMode(mode.value)"
+              >
+                {{ mode.label }}
+              </v-chip>
+            </div>
+          </div>
+          <v-select
+            v-model.number="variantCount"
+            :items="variantCountOptions"
+            item-title="label"
+            item-value="value"
+            label="Varianter per stil"
+            density="comfortable"
+            :disabled="loading"
+            variant="underlined"
+          />
+          <v-btn
+            variant="text"
+            class="seed-toggle"
+            :disabled="loading"
+            @click="toggleSeedBuilder"
+          >
+            {{ seedBuilderOpen ? 'Dölj ursprungshästar' : 'Välj ursprungshästar' }}
+          </v-btn>
+        </div>
+        <div v-if="seedBuilderOpen" class="seed-builder mt-2">
+          <div class="seed-header">
+            <div>
+              <div class="seed-title">Välj ursprungshästar</div>
+              <div class="seed-sub">Agenten fyller på resten per vald AI-variant.</div>
+            </div>
+            <div>
+              <v-btn
+                size="small"
+                variant="text"
+                :disabled="!hasSeedSelections"
+                @click="clearSeeds"
+              >
+                Rensa val
+              </v-btn>
+            </div>
+          </div>
+          <v-alert v-if="seedError" type="error" variant="tonal" class="mt-2">
+            {{ seedError }}
+          </v-alert>
+          <v-progress-linear v-if="seedLoading" indeterminate class="mt-2" />
+          <div v-else class="seed-leg-list">
+            <div
+              v-for="leg in seedLegs"
+              :key="leg.leg"
+              class="seed-leg-card"
+            >
+              <div class="seed-leg-header">
+                <div class="seed-leg-title">Avd {{ leg.leg }} · Lopp {{ leg.raceNumber }}</div>
+                <div class="seed-leg-meta">{{ leg.horses.length }} hästar</div>
+              </div>
+              <v-chip-group
+                :model-value="seedSelections[leg.leg] || []"
+                multiple
+                column
+                class="seed-chip-group"
+                @update:model-value="value => updateSeedSelection(leg.leg, value)"
+              >
+                <v-chip
+                  v-for="horse in leg.horses"
+                  :key="horse.id"
+                  :value="horse.id"
+                  filter
+                  size="small"
+                  class="seed-chip"
+                  :class="{ selected: isSeedSelected(leg.leg, horse.id) }"
+                >
+                  <span class="nr">{{ horse.programNumber }}</span>
+                  <span class="name">{{ horse.name }}</span>
+                  <span class="tier" v-if="horse.tier">{{ horse.tier }}</span>
+                  <span class="rank" v-if="horse.rank">#{{ horse.rank }}</span>
+                </v-chip>
+              </v-chip-group>
+            </div>
+          </div>
+        </div>
         <v-alert v-if="error" type="error" variant="tonal" class="mt-4">
           {{ error }}
         </v-alert>
@@ -45,20 +137,30 @@
           Kunde inte generera förslag för: {{ formatErrorModes(suggestionErrors) }}
         </v-alert>
         <div v-if="suggestions.length && !loading" class="mode-switch mt-4">
-          <v-btn-toggle
+          <v-slide-group
             v-if="suggestions.length > 1"
             v-model="activeSuggestionIndex"
-            density="comfortable"
+            class="suggestion-slide-group"
             mandatory
+            show-arrows
+            center-active
           >
-            <v-btn
+            <v-slide-group-item
               v-for="(item, index) in suggestions"
-              :key="item.mode || index"
+              :key="item.variant?.key || item.mode || index"
               :value="index"
             >
-              {{ item.modeLabel || `Förslag ${index + 1}` }}
-            </v-btn>
-          </v-btn-toggle>
+              <v-chip
+                class="suggestion-chip"
+                :class="{ active: activeSuggestionIndex === index }"
+                variant="tonal"
+                size="small"
+                @click="setActiveSuggestion(index)"
+              >
+                {{ formatSuggestionLabel(item, index) }}
+              </v-chip>
+            </v-slide-group-item>
+          </v-slide-group>
           <v-btn
             variant="text"
             size="small"
@@ -73,6 +175,7 @@
           <div class="ticket-header">
             <div>
               <div class="ticket-title">{{ currentTemplateLabel }}<span v-if="currentModeLabel"> · {{ currentModeLabel }}</span></div>
+              <div v-if="currentVariantLabel" class="ticket-variant">{{ currentVariantLabel }}</div>
               <div class="ticket-sub">Insats {{ formatCurrency(currentSuggestion.stakePerRow) }} kr per rad</div>
             </div>
             <div class="ticket-summary">
@@ -87,7 +190,8 @@
             </div>
           </div>
           <div class="ticket-status">
-            {{ v85StatusText }}
+            <div>{{ v85StatusText }}</div>
+            <div v-if="currentVariantSummary" class="variant-summary">{{ currentVariantSummary }}</div>
           </div>
           <div class="legs">
             <div
@@ -107,7 +211,7 @@
                       v-for="selection in leg.selections"
                       :key="selection.id"
                       class="selection"
-                      :class="{ 'public-favorite': selection.isPublicFavorite }"
+                      :class="{ 'public-favorite': selection.isPublicFavorite, 'user-picked': selection.isUserPick }"
                     >
                       <span class="nr">{{ selection.programNumber }}</span>
                       <span class="name">{{ selection.name }}</span>
@@ -117,6 +221,7 @@
                         aria-hidden="true"
                         title="Publikens favorit"
                       >★</span>
+                      <span v-if="selection.isUserPick" class="user-pick" title="Din ursprungshäst">DU</span>
                       <span v-if="selection.tier" class="tier">{{ selection.tier }}</span>
                       <span v-if="selection.v85Percent != null" class="percent">{{ formatPercent(selection.v85Percent) }}</span>
                     </div>
@@ -138,7 +243,7 @@
 import { ref, watch, computed } from 'vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 
-const DEFAULT_MODES = ['balanced', 'public', 'value']
+const DEFAULT_MODES = ['balanced', 'mix', 'public', 'value']
 
 export default {
   name: 'V85SuggestionModal',
@@ -162,13 +267,50 @@ export default {
     const activeSuggestionIndex = ref(0)
     const suggestionErrors = ref([])
     const maxCost = ref(null)
+    const modeOptions = [
+      { value: 'balanced', label: 'Balanserad' },
+      { value: 'mix', label: 'MIX' },
+      { value: 'public', label: 'Publikfavorit' },
+      { value: 'value', label: 'Värdejakt' }
+    ]
+    const selectedModes = ref([...DEFAULT_MODES])
+    const variantCountOptions = [
+      { value: 1, label: '1 variant/stil' },
+      { value: 2, label: '2 varianter/stil' },
+      { value: 3, label: '3 varianter/stil' },
+      { value: 4, label: '4 varianter/stil' }
+    ]
+    const variantCount = ref(3)
+    const seedBuilderOpen = ref(false)
+    const seedLegs = ref([])
+    const seedLoading = ref(false)
+    const seedError = ref('')
+    const seedSelections = ref({})
+
+    const isModeActive = (value) => selectedModes.value.includes(value)
+    const toggleMode = (value) => {
+      if (!value) return
+      const list = new Set(selectedModes.value)
+      if (list.has(value)) {
+        list.delete(value)
+      } else {
+        list.add(value)
+      }
+      selectedModes.value = list.size ? [...list] : [...DEFAULT_MODES]
+    }
 
     const emitClose = (value) => {
       emit('update:modelValue', value)
       if (!value) {
         error.value = ''
         suggestionErrors.value = []
+        seedBuilderOpen.value = false
       }
+    }
+
+    const setActiveSuggestion = (index) => {
+      if (typeof index !== 'number') return
+      activeSuggestionIndex.value = index
     }
 
     const templateOptions = computed(() => templates.value)
@@ -182,6 +324,16 @@ export default {
       if (!currentSuggestion.value) return ''
       return currentSuggestion.value.modeLabel || normalizeModeLabel(currentSuggestion.value.mode)
     })
+    const currentVariantLabel = computed(() => {
+      const variant = currentSuggestion.value?.variant
+      if (!variant) return ''
+      const parts = []
+      if (variant.strategyLabel) parts.push(variant.strategyLabel)
+      if (variant.label) parts.push(variant.label)
+      return parts.join(' · ')
+    })
+    const currentVariantSummary = computed(() => currentSuggestion.value?.variant?.summary || '')
+    const hasSeedSelections = computed(() => Object.values(seedSelections.value).some(list => Array.isArray(list) && list.length))
 
     const formatCurrency = (value) => {
       try {
@@ -227,6 +379,75 @@ export default {
       return 'V85%-data används inte i detta förslag'
     })
 
+    const ensureSeedData = async () => {
+      if (seedLegs.value.length || seedLoading.value) return
+      try {
+        seedLoading.value = true
+        seedError.value = ''
+        const data = await RacedayService.fetchRacedayAiList(props.racedayId)
+        const legs = (data?.races || [])
+          .map(r => {
+            const v85Game = (r.games || []).find(g => g.game === 'V85')
+            if (!v85Game) return null
+            const horses = (r.ranking || []).slice(0, 15).map(horse => ({
+              id: horse.id,
+              programNumber: horse.programNumber,
+              name: horse.name,
+              tier: horse.tier || '',
+              rank: horse.rank ?? null
+            }))
+            return {
+              leg: v85Game.leg,
+              raceNumber: r.race?.raceNumber ?? v85Game.leg,
+              horses
+            }
+          })
+          .filter(Boolean)
+          .sort((a, b) => a.leg - b.leg)
+        seedLegs.value = legs
+        if (!legs.length) {
+          seedError.value = 'Inga V85-lopp hittades för urval.'
+        }
+      } catch (err) {
+        console.error('Failed to load AI list for seed builder', err)
+        seedError.value = 'Kunde inte ladda AI-listan för urval.'
+      } finally {
+        seedLoading.value = false
+      }
+    }
+
+    const toggleSeedBuilder = () => {
+      seedBuilderOpen.value = !seedBuilderOpen.value
+      if (seedBuilderOpen.value) {
+        ensureSeedData()
+      }
+    }
+
+    const updateSeedSelection = (leg, ids) => {
+      const list = Array.isArray(ids) ? ids : []
+      seedSelections.value = {
+        ...seedSelections.value,
+        [leg]: list
+      }
+    }
+
+    const clearSeeds = () => {
+      seedSelections.value = {}
+    }
+
+    const buildSeedPayload = () => Object.entries(seedSelections.value)
+      .map(([leg, ids]) => ({
+        leg: Number(leg),
+        horseIds: (Array.isArray(ids) ? ids : []).map(Number).filter(id => Number.isFinite(id))
+      }))
+      .filter(entry => Number.isFinite(entry.leg) && entry.horseIds.length)
+
+    const isSeedSelected = (leg, horseId) => {
+      const list = seedSelections.value[leg]
+      if (!Array.isArray(list)) return false
+      return list.some(value => Number(value) === Number(horseId))
+    }
+
     const loadTemplates = async () => {
       try {
         templates.value = await RacedayService.fetchV85Templates()
@@ -247,6 +468,7 @@ export default {
       } else {
         loading.value = false
         activeSuggestionIndex.value = 0
+        seedBuilderOpen.value = false
       }
     })
 
@@ -256,6 +478,7 @@ export default {
       if (lower === 'balanced') return 'Balanserad'
       if (lower === 'public') return 'Publikfavorit'
       if (lower === 'value') return 'Värdejakt'
+      if (lower === 'mix') return 'MIX'
       return modeKey
     }
 
@@ -274,11 +497,21 @@ export default {
           payload.maxCost = maxBudget
         }
 
+        const seedsPayload = buildSeedPayload()
+        if (seedsPayload.length) {
+          payload.userSeeds = seedsPayload
+        }
+
         if (modeOverride) {
           payload.mode = modeOverride
         } else {
           payload.multi = true
-          payload.modes = DEFAULT_MODES
+          const finalModes = (selectedModes.value || []).filter(Boolean)
+          payload.modes = finalModes.length ? finalModes : DEFAULT_MODES
+          const countValue = Number(variantCount.value)
+          if (Number.isFinite(countValue) && countValue > 0) {
+            payload.variantCount = Math.min(5, Math.max(1, Math.round(countValue)))
+          }
         }
 
         const result = await RacedayService.fetchV85Suggestion(props.racedayId, payload)
@@ -351,6 +584,7 @@ export default {
         if (!distribution.length) return leg
 
         const current = Array.isArray(leg.selections) && leg.selections.length ? leg.selections[0] : null
+        if (current?.isUserPick) return leg
         const ranked = distribution
           .map(entry => ({ entry, percent: percentOf(entry) }))
           .filter(item => item.percent != null)
@@ -423,9 +657,22 @@ export default {
 
     const formatErrorModes = (errorList) => {
       if (!Array.isArray(errorList) || !errorList.length) return ''
-      const unique = [...new Set(errorList.map(item => item?.mode).filter(Boolean))]
+      const unique = [...new Set(errorList
+        .map(item => {
+          const modeLabel = normalizeModeLabel(item?.mode)
+          if (!modeLabel) return ''
+          return item?.variantLabel ? `${modeLabel} (${item.variantLabel})` : modeLabel
+        })
+        .filter(Boolean))]
       if (!unique.length) return ''
-      return unique.map(normalizeModeLabel).join(', ')
+      return unique.join(', ')
+    }
+
+    const formatSuggestionLabel = (item, index) => {
+      if (!item) return `Förslag ${index + 1}`
+      const base = item.modeLabel || normalizeModeLabel(item.mode) || `Förslag ${index + 1}`
+      const variant = item.variant?.label || item.variant?.strategyLabel || ''
+      return variant ? `${base} · ${variant}` : base
     }
 
     return {
@@ -440,7 +687,21 @@ export default {
       currentSuggestion,
       currentTemplateLabel,
       currentModeLabel,
+      currentVariantLabel,
+      currentVariantSummary,
       maxCost,
+      modeOptions,
+      selectedModes,
+      variantCountOptions,
+      variantCount,
+      seedBuilderOpen,
+      seedLegs,
+      seedLoading,
+      seedError,
+      seedSelections,
+      hasSeedSelections,
+      isModeActive,
+      isSeedSelected,
       formatCurrency,
       formatTypeClass,
       formatPercent,
@@ -449,6 +710,12 @@ export default {
       formatErrorModes,
       generate,
       applyPublicSpikes,
+      toggleSeedBuilder,
+      toggleMode,
+      setActiveSuggestion,
+      updateSeedSelection,
+      clearSeeds,
+      formatSuggestionLabel,
       emitClose
     }
   }
@@ -461,6 +728,151 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   align-items: end;
+}
+
+.advanced-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.mode-group .field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.mode-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mode-chip {
+  background: rgba(15, 118, 110, 0.08);
+  color: #064e3b;
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  cursor: pointer;
+}
+
+.mode-chip.active {
+  background: #047857;
+  color: #ecfdf5;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 1px rgba(4, 120, 87, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mode-chip {
+    background: rgba(16, 185, 129, 0.15);
+    color: #d1fae5;
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+  .mode-chip.active {
+    background: #10b981;
+    color: #03201b;
+    border-color: #34d399;
+  }
+}
+
+.seed-builder {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fdfcf5;
+}
+
+.seed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.seed-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.seed-sub {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.seed-leg-list {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.seed-leg-card {
+  border: 1px dashed #d1c59a;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fffef8;
+  color: #1f2937;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.seed-leg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.seed-leg-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.seed-leg-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.seed-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.seed-chip-group .seed-chip {
+  font-size: 0.8rem;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  color: #1f2937;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.seed-chip-group .seed-chip.selected {
+  background: #2563eb;
+  color: #f8fafc;
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  .seed-chip-group .seed-chip {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(147, 197, 253, 0.3);
+    color: #e0f2fe;
+  }
+  .seed-chip-group .seed-chip.selected {
+    background: rgba(96, 165, 250, 0.75);
+    color: #0f172a;
+    border-color: rgba(191, 219, 254, 0.9);
+    box-shadow: 0 0 0 1px rgba(191, 219, 254, 0.6);
+  }
 }
 
 .ticket {
@@ -490,6 +902,11 @@ export default {
   color: #121212;
 }
 
+.ticket-variant {
+  font-size: 0.85rem;
+  color: #6b4c00;
+}
+
 .ticket-summary {
   text-align: right;
   font-size: 0.95rem;
@@ -500,6 +917,14 @@ export default {
   font-size: 0.85rem;
   color: #1f2933;
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.variant-summary {
+  color: #374151;
+  font-size: 0.85rem;
 }
 
 .ticket-summary div {
@@ -513,12 +938,27 @@ export default {
   align-items: center;
 }
 
-.mode-switch .v-btn-toggle {
-  flex-wrap: wrap;
+.suggestion-slide-group {
+  flex: 1;
+  min-width: 200px;
 }
 
-.mode-switch .v-btn {
-  text-transform: none;
+.suggestion-slide-group .v-slide-group__content {
+  gap: 8px;
+}
+
+.suggestion-chip {
+  cursor: pointer;
+  white-space: nowrap;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.suggestion-chip.active {
+  background: #2563eb;
+  color: #f8fafc;
+  border-color: #1e3a8a;
 }
 
 .legs {
@@ -621,6 +1061,11 @@ export default {
   box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);
 }
 
+.selection.user-picked {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
 .selection .nr {
   font-weight: 700;
 }
@@ -629,6 +1074,13 @@ export default {
   font-size: 0.75rem;
   text-transform: uppercase;
   color: #7a6a2a;
+}
+
+.selection .user-pick {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #1d4ed8;
 }
 
 .selection .percent {
@@ -645,5 +1097,31 @@ export default {
 @media (prefers-color-scheme: dark) {
   .ticket-status { color: #e5e7eb; }
   .selection .percent { color: #86efac; }
+  .seed-builder { background: rgba(31, 41, 55, 0.5); border-color: #374151; }
+  .seed-leg-card {
+    background: rgba(15, 23, 42, 0.8);
+    color: #f5f5f5;
+    border-color: rgba(199, 210, 254, 0.4);
+    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.2);
+  }
+  .suggestion-chip {
+    background: rgba(96, 165, 250, 0.24);
+    color: #e0f2fe;
+    border-color: rgba(191, 219, 254, 0.4);
+  }
+  .suggestion-chip.active {
+    background: #60a5fa;
+    color: #0f172a;
+    border-color: #bfdbfe;
+  }
+}
+
+@media (max-width: 720px) {
+  .advanced-controls {
+    grid-template-columns: 1fr;
+  }
+  .seed-leg-list {
+    max-height: none;
+  }
 }
 </style>

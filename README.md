@@ -3,6 +3,7 @@ MODE=development
 # Server
 PORT=3001
 MONGO_URI=mongodb://localhost:27017/winv75
+V85_VARIANTS_PER_MODE=3
 
 # Elo seeding (ST points)
 ELO_SEED_BASE=10
