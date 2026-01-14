@@ -182,6 +182,9 @@
                                   <div v-if="formatV85Percent(slotRow(slotProps)?.statsDetails?.v85Percent)" class="v85-row">
                                     V85 {{ formatV85Percent(slotRow(slotProps)?.statsDetails?.v85Percent) }}
                                   </div>
+                                  <div v-if="formatV86Percent(slotRow(slotProps)?.statsDetails?.v86Percent)" class="v86-row">
+                                    V86 {{ formatV86Percent(slotRow(slotProps)?.statsDetails?.v86Percent) }}
+                                  </div>
                                 </div>
                             </template>
                             <template v-slot:[`item.advantages`]="slotProps">
@@ -309,6 +312,7 @@ export default {
         const racedayTrackCode = ref('')
         const trackMeta = ref({})
         const spelformer = ref({})
+        const v86GameView = ref(null)
         const activeTab = ref(0)
 
         // --- AI summary state and handler ---
@@ -345,6 +349,18 @@ export default {
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
         const rankedMap = computed(() => new Map((rankedHorses.value || []).map(r => [r.id, r])))
+
+        const v86LegByRaceId = computed(() => {
+          const map = new Map()
+          const legs = v86GameView.value?.legs || []
+          for (const leg of legs) {
+            const raceId = leg?.raceId
+            const legNumber = Number(leg?.legNumber ?? leg?.leg)
+            if (raceId == null || !Number.isFinite(legNumber)) continue
+            map.set(String(raceId), legNumber)
+          }
+          return map
+        })
 
         watch(
           () => route.params.raceId,
@@ -617,6 +633,7 @@ export default {
               driverElo: getDriverEloFor(merged),
               driverName: merged?.driver?.name || '—',
               v85Percent: Number.isFinite(Number(merged?.v85Percent)) ? Number(merged.v85Percent) : null,
+              v86Percent: Number.isFinite(Number(merged?.v86Percent)) ? Number(merged.v86Percent) : null,
               statsScore: statsDetails.formScore ?? computeFormLast5(merged) ?? 0,
               statsDetails,
               statsText: getStatsFormatted(merged),
@@ -830,9 +847,15 @@ export default {
           return `${(Math.round(num * 10) / 10).toFixed(1)}%`
         }
 
+        const formatV86Percent = (value) => {
+          const num = Number(value)
+          if (!Number.isFinite(num)) return null
+          return `${(Math.round(num * 10) / 10).toFixed(1)}%`
+        }
+
         // Structured stats for pretty rendering in the Stats column
         function getStatsDetails(horse) {
-          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null, v85Percent: null }
+          if (!horse) return { starts: null, wins: null, placePct: null, winPct: null, formScore: null, v85Percent: null, v86Percent: null }
           const ranked = rankedMap.value.get(horse.id) || {}
           const stats = horse.stats || {}
 
@@ -871,7 +894,8 @@ export default {
             placePct: Number.isFinite(placePct) ? placePct : null,
             winPct: Number.isFinite(winPct) ? winPct : null,
             formScore: Number.isFinite(formScore) ? formScore : null,
-            v85Percent: Number.isFinite(Number(horse.v85Percent)) ? Number(horse.v85Percent) : null
+            v85Percent: Number.isFinite(Number(horse.v85Percent)) ? Number(horse.v85Percent) : null,
+            v86Percent: Number.isFinite(Number(horse.v86Percent)) ? Number(horse.v86Percent) : null
           }
         }
 
@@ -948,6 +972,11 @@ export default {
             parts.push(`V85 ${(Math.round(v85PercentRaw * 10) / 10).toFixed(1)}%`)
           }
 
+          const v86PercentRaw = Number.isFinite(Number(horse.v86Percent)) ? Number(horse.v86Percent) : null
+          if (Number.isFinite(v86PercentRaw)) {
+            parts.push(`V86 ${(Math.round(v86PercentRaw * 10) / 10).toFixed(1)}%`)
+          }
+
           return parts.length ? parts.join(' • ') : '—'
         }
 
@@ -1014,6 +1043,7 @@ export default {
           racedayTrackCode,
           raceStartMethod,
           hasHandicap,
+          v86LegByRaceId,
         })
 
         const fetchAi = async () => {
@@ -1110,11 +1140,25 @@ export default {
             }
         }
 
+        const fetchV86GameView = async () => {
+            if (!route.params.racedayId) {
+                v86GameView.value = null
+                return
+            }
+            try {
+                v86GameView.value = await RacedayService.fetchV86GameView(route.params.racedayId)
+            } catch (error) {
+                console.error('Failed to fetch V86 game view:', error)
+                v86GameView.value = null
+            }
+        }
+
         onMounted(async () => {
             const raceId = route.params.raceId
             await fetchDataAndUpdate(raceId)
             await fetchTrackInfo()
             await fetchSpelformer()
+            await fetchV86GameView()
             await fetchAi()
             // Preload saved AI summaries for horses in this race
             try {
@@ -1156,6 +1200,7 @@ export default {
         watch(() => route.params.racedayId, async () => {
             await fetchTrackInfo()
             await fetchSpelformer()
+            await fetchV86GameView()
         })
 
         onBeforeUnmount(() => {
@@ -1220,6 +1265,7 @@ export default {
             formatWinsStarts,
             formatPlaceWinPct,
             formatV85Percent,
+            formatV86Percent,
             slotRow,
             slotVal,
             horseLink,
@@ -1353,6 +1399,7 @@ export default {
 .stats-pair { color: #111827; }
 .sep { color: #9ca3af; }
 .v85-row { font-size: 0.82rem; color: #166534; }
+.v86-row { font-size: 0.82rem; color: #1d4ed8; }
 
 @media (prefers-color-scheme: dark) {
   .stats-text { color: #e5e7eb; }
@@ -1363,6 +1410,7 @@ export default {
   .form-fill { background: linear-gradient(90deg, #93c5fd, #60a5fa); }
   .stats-row { color: #9ca3af; }
   .stats-pair { color: #e5e7eb; }
-.v85-row { color: #86efac; }
+  .v85-row { color: #86efac; }
+  .v86-row { color: #93c5fd; }
 }
 </style>

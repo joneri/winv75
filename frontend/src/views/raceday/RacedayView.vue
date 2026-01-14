@@ -26,16 +26,35 @@
               <div class="buttons">
                 <v-btn density="compact" color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
                 <v-btn density="compact" class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
-                <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV85Modal = true">V85-spelförslag</v-btn>
-                <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV85" :loading="updatingV85" :disabled="updatingV85 || downloading || regenerating">Uppdatera V85%</v-btn>
               </div>
-              <div class="v85-status" v-if="v85UpdatedLabel">
-                {{ v85UpdatedLabel }}
+              <div class="game-actions" v-if="hasV85">
+                <div class="game-actions-title">V85</div>
+                <div class="buttons">
+                  <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV85Modal = true">V85-spelförslag</v-btn>
+                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV85" :loading="updatingV85" :disabled="updatingV85 || downloading || regenerating">Uppdatera V85%</v-btn>
+                </div>
+                <div class="v85-status" v-if="v85UpdatedLabel">
+                  {{ v85UpdatedLabel }}
+                </div>
+                <div class="v85-status muted" v-else>
+                  V85% ej hämtad ännu
+                </div>
+                <div v-if="v85UpdateMessage" class="v85-message">{{ v85UpdateMessage }}</div>
               </div>
-              <div class="v85-status muted" v-else>
-                V85% ej hämtad ännu
+              <div class="game-actions" v-if="hasV86">
+                <div class="game-actions-title">V86</div>
+                <div class="buttons">
+                  <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV86Modal = true">V86-spelförslag</v-btn>
+                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV86" :loading="updatingV86" :disabled="updatingV86 || downloading || regenerating">Uppdatera V86%</v-btn>
+                </div>
+                <div class="v86-status" v-if="v86UpdatedLabel">
+                  {{ v86UpdatedLabel }}
+                </div>
+                <div class="v86-status muted" v-else>
+                  V86% ej hämtad ännu
+                </div>
+                <div v-if="v86UpdateMessage" class="v86-message">{{ v86UpdateMessage }}</div>
               </div>
-              <div v-if="v85UpdateMessage" class="v85-message">{{ v85UpdateMessage }}</div>
             </div>
           </div>
 
@@ -60,6 +79,11 @@
     @update:modelValue="showV85Modal = $event"
     :raceday-id="route.params.racedayId"
   />
+  <V86SuggestionModal
+    :model-value="showV86Modal"
+    @update:modelValue="showV86Modal = $event"
+    :raceday-id="route.params.racedayId"
+  />
 </template>
 
 <script>
@@ -70,13 +94,15 @@ import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import V85SuggestionModal from './components/V85SuggestionModal.vue'
+import V86SuggestionModal from './components/V86SuggestionModal.vue'
 import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
   components: {
     RaceCardComponent,
     SpelformBadge,
-    V85SuggestionModal
+    V85SuggestionModal,
+    V86SuggestionModal
   },
   setup(props, { root }) {
     const route = useRoute()
@@ -96,12 +122,16 @@ export default {
     const downloading = ref(false)
     const regenerating = ref(false)
     const updatingV85 = ref(false)
+    const updatingV86 = ref(false)
     const showV85Modal = ref(false)
+    const showV86Modal = ref(false)
+    const v86GameView = ref(null)
     const loading = ref(true)
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
     const v85UpdateMessage = ref('')
+    const v86UpdateMessage = ref('')
     const isRecentlyUpdated = (timestamp) => {
       const sixDaysAgo = new Date()
       sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
@@ -132,6 +162,7 @@ export default {
         loading.value = true
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
+        await loadV86GameView()
       } catch (error) {
         console.error('Error fetching raceday details:', error)
         errorMessage.value = 'Error fetching raceday details. Please try again later.'
@@ -174,8 +205,18 @@ export default {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
+        await loadV86GameView()
       } catch (error) {
         console.error('Error refreshing raceday details:', error)
+      }
+    }
+
+    const loadV86GameView = async () => {
+      try {
+        v86GameView.value = await RacedayService.fetchV86GameView(route.params.racedayId)
+      } catch (error) {
+        console.error('Failed to load V86 game view', error)
+        v86GameView.value = null
       }
     }
 
@@ -193,6 +234,37 @@ export default {
       return `V85% uppdaterad ${formatDateTime(ts)}`
     })
 
+    const v86UpdatedLabel = computed(() => {
+      const ts = racedayDetails.value?.v86Info?.updatedAt
+      if (!ts) return ''
+      return `V86% uppdaterad ${formatDateTime(ts)}`
+    })
+
+    const hasV85 = computed(() => Array.isArray(spelformer.value?.V85) && spelformer.value.V85.length > 0)
+    const hasV86 = computed(() => {
+      if (Array.isArray(spelformer.value?.V86) && spelformer.value.V86.length > 0) return true
+      return v86GameView.value?.status === 'ok'
+    })
+
+    const v86LegByRaceId = computed(() => {
+      const map = new Map()
+      const legs = v86GameView.value?.legs || []
+      for (const leg of legs) {
+        const raceId = leg?.raceId
+        const legNumber = Number(leg?.legNumber ?? leg?.leg)
+        if (raceId == null || !Number.isFinite(legNumber)) continue
+        map.set(String(raceId), legNumber)
+      }
+      return map
+    })
+
+    const capabilities = computed(() => ({
+      hasV85: hasV85.value,
+      hasV86: hasV86.value,
+      v85GameId: racedayDetails.value?.v85Info?.gameId || racedayDetails.value?.atgCalendarGamesRaw?.V85?.[0]?.id || null,
+      v86GameId: v86GameView.value?.gameId || racedayDetails.value?.atgCalendarGamesRaw?.V86?.[0]?.id || null
+    }))
+
     const sortedRaceList = computed(() => {
       return racedayDetails.value?.raceList.sort((a, b) => a.raceNumber - b.raceNumber) || []
     })
@@ -205,8 +277,14 @@ export default {
 
     const getRaceGames = raceId => {
       const res = []
+      const raceKey = String(raceId)
+      const v86Leg = v86LegByRaceId.value.get(raceKey)
+      if (Number.isFinite(v86Leg)) {
+        res.push({ game: 'V86', leg: v86Leg })
+      }
       for (const [game, ids] of Object.entries(spelformer.value)) {
-        const idx = ids.indexOf(raceId)
+        if (game === 'V86') continue
+        const idx = ids.findIndex(id => String(id) === raceKey)
         if (idx !== -1) res.push({ game, leg: idx + 1 })
       }
       return res
@@ -324,6 +402,7 @@ export default {
 
     const updateV85 = async () => {
       try {
+        if (!hasV85.value) return
         updatingV85.value = true
         v85UpdateMessage.value = ''
         await RacedayService.updateV85Distribution(route.params.racedayId)
@@ -337,6 +416,26 @@ export default {
       }
     }
 
+    const updateV86 = async () => {
+      try {
+        if (!hasV86.value) return
+        updatingV86.value = true
+        v86UpdateMessage.value = ''
+        const result = await RacedayService.updateV86Distribution(route.params.racedayId)
+        if (result?.ok === false) {
+          v86UpdateMessage.value = result?.message || 'Misslyckades att uppdatera V86%'
+          return
+        }
+        await refreshRaceday()
+        v86UpdateMessage.value = v86UpdatedLabel.value || 'V86% uppdaterad.'
+      } catch (error) {
+        console.error('Failed to update V86%', error)
+        v86UpdateMessage.value = error?.error || 'Misslyckades att uppdatera V86%'
+      } finally {
+        updatingV86.value = false
+      }
+    }
+
     return {
       racedayDetails,
       errorMessage,
@@ -347,20 +446,28 @@ export default {
       getRaceGames,
       isRecentlyUpdated,
       refreshRaceday,
+      hasV85,
+      hasV86,
       downloading,
       downloadAiList,
       regenerating,
       regenerateAiList,
       updateV85,
+      updateV86,
       racedayGames,
       loading,
       totalRaces,
       formattedFirstStart,
       showV85Modal,
+      showV86Modal,
       route,
       updatingV85,
+      updatingV86,
       v85UpdatedLabel,
-      v85UpdateMessage
+      v85UpdateMessage,
+      v86UpdatedLabel,
+      v86UpdateMessage,
+      capabilities
     }
   }
 }
@@ -385,9 +492,23 @@ export default {
   .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .games { display: flex; gap: 6px; }
   .buttons { display: flex; gap: 8px; }
-  .v85-status { font-size: 0.85rem; color: #1f2933; }
-  .v85-status.muted { color: #6b7280; }
-  .v85-message { font-size: 0.82rem; color: #2563eb; }
+  .game-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(0,0,0,0.12);
+  }
+  .game-actions-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #4b5563;
+  }
+  .v85-status, .v86-status { font-size: 0.85rem; color: #1f2933; }
+  .v85-status.muted, .v86-status.muted { color: #6b7280; }
+  .v85-message, .v86-message { font-size: 0.82rem; color: #2563eb; }
   .race-row { margin-bottom: 10px; }
   .error-message { color: #ef4444; font-size: 0.95rem; margin-top: 1rem; }
   .loading-wrap { padding-top: 24px; }
@@ -397,8 +518,10 @@ export default {
     .muted { color: #9ca3af; }
     .dot { color: #6b7280; }
     .error-message { color: #f87171; }
-    .v85-status { color: #d1d5db; }
-    .v85-status.muted { color: #9ca3af; }
-    .v85-message { color: #93c5fd; }
+    .game-actions { border-top-color: rgba(255,255,255,0.2); }
+    .game-actions-title { color: #9ca3af; }
+    .v85-status, .v86-status { color: #d1d5db; }
+    .v85-status.muted, .v86-status.muted { color: #9ca3af; }
+    .v85-message, .v86-message { color: #93c5fd; }
   }
 </style>

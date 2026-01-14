@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { getTrackName } from '@/utils/track'
 
-export function useRaceMeta({ currentRace, trackMeta, spelformer, racedayTrackCode, raceStartMethod, hasHandicap }) {
+export function useRaceMeta({ currentRace, trackMeta, spelformer, racedayTrackCode, raceStartMethod, hasHandicap, v86LegByRaceId = null }) {
   const displayStartMethod = computed(() => {
     if (raceStartMethod.value === 'Voltstart' && hasHandicap.value) {
       return 'Voltstart med tillägg'
@@ -57,8 +57,17 @@ export function useRaceMeta({ currentRace, trackMeta, spelformer, racedayTrackCo
     const res = []
     const raceId = currentRace.value?.raceId
     if (!raceId) return res
+    const raceKey = String(raceId)
+    const v86Map = v86LegByRaceId && Object.prototype.hasOwnProperty.call(v86LegByRaceId, 'value')
+      ? v86LegByRaceId.value
+      : v86LegByRaceId
+    if (v86Map instanceof Map) {
+      const leg = v86Map.get(raceKey)
+      if (Number.isFinite(leg)) res.push({ game: 'V86', leg })
+    }
     for (const [game, ids] of Object.entries(spelformer.value)) {
-      const idx = ids.indexOf(raceId)
+      if (game === 'V86') continue
+      const idx = ids.findIndex(id => String(id) === raceKey)
       if (idx !== -1) res.push({ game, leg: idx + 1 })
     }
     return res

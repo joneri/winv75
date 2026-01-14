@@ -42,12 +42,33 @@ async function fetchV85Info(racedayId) {
   }
 }
 
+async function fetchV86Info(racedayId) {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/info`)
+    return response.data?.info || null
+  } catch (error) {
+    console.error('Error fetching V86 info:', error)
+    throw error
+  }
+}
+
 async function updateV85Distribution(racedayId) {
   try {
     const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85/update`)
     return response.data
   } catch (error) {
     console.error('Error updating V85 distribution:', error)
+    if (error.response?.data) throw error.response.data
+    throw error
+  }
+}
+
+async function updateV86Distribution(racedayId) {
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/update`)
+    return response.data
+  } catch (error) {
+    console.error('Error updating V86 distribution:', error)
     if (error.response?.data) throw error.response.data
     throw error
   }
@@ -63,6 +84,16 @@ async function fetchV85Templates() {
   }
 }
 
+async function fetchV86Templates() {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/v86/templates`)
+    return response.data?.templates || []
+  } catch (error) {
+    console.error('Error fetching V86 templates:', error)
+    throw error
+  }
+}
+
 async function fetchV85Suggestion(racedayId, payload) {
   try {
     const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85`, payload)
@@ -72,6 +103,39 @@ async function fetchV85Suggestion(racedayId, payload) {
     if (error.response?.data) {
       throw error.response.data
     }
+    throw error
+  }
+}
+
+async function fetchV86Suggestion(racedayId, payload) {
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86`, payload)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching V86 suggestion:', error)
+    if (error.response?.data) {
+      throw error.response.data
+    }
+    throw error
+  }
+}
+
+async function fetchV86AiList(racedayId) {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/ai-list`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching V86 AI list:', error)
+    throw error
+  }
+}
+
+async function fetchV86GameView(racedayId) {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/game`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching V86 game view:', error)
     throw error
   }
 }
@@ -93,8 +157,14 @@ export default {
   fetchSpelformer,
   fetchRacedayAiList,
   fetchV85Info,
+  fetchV86Info,
   updateV85Distribution,
+  updateV86Distribution,
   fetchV85Templates,
+  fetchV86Templates,
   fetchV85Suggestion,
+  fetchV86Suggestion,
+  fetchV86AiList,
+  fetchV86GameView,
   refreshRacedayAi
 }

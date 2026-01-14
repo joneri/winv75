@@ -8,6 +8,15 @@ import {
   buildV85Suggestions,
   updateV85DistributionForRaceday
 } from './v85-service.js'
+import {
+  listV86Templates,
+  buildV86Suggestion,
+  buildV86Suggestions,
+  updateV86DistributionForRaceday,
+  getV86PairingForRaceday,
+  getV86GameViewForRaceday,
+  getV86AiListForRaceday
+} from './v86-service.js'
 
 const router = express.Router()
 
@@ -95,6 +104,15 @@ router.get('/v85/templates', async (_req, res) => {
   }
 })
 
+router.get('/v86/templates', async (_req, res) => {
+  try {
+    res.json({ templates: listV86Templates() })
+  } catch (error) {
+    console.error('Error fetching V86 templates:', error)
+    res.status(500).json({ error: 'Failed to fetch V86 templates' })
+  }
+})
+
 router.get('/:id/v85/info', validateObjectIdParam('id'), async (req, res) => {
   try {
     const raceday = await Raceday.findById(req.params.id, { v85Info: 1 }).lean()
@@ -102,6 +120,46 @@ router.get('/:id/v85/info', validateObjectIdParam('id'), async (req, res) => {
   } catch (error) {
     console.error('Failed to fetch V85 info:', error)
     res.status(500).json({ error: 'Misslyckades hämta V85-information' })
+  }
+})
+
+router.get('/:id/v86/info', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const raceday = await Raceday.findById(req.params.id, { v86Info: 1 }).lean()
+    res.json({ info: raceday?.v86Info || null })
+  } catch (error) {
+    console.error('Failed to fetch V86 info:', error)
+    res.status(500).json({ error: 'Misslyckades hämta V86-information' })
+  }
+})
+
+router.get('/:id/v86/pairing', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const result = await getV86PairingForRaceday(req.params.id)
+    res.json(result)
+  } catch (error) {
+    console.error('Failed to fetch V86 pairing:', error)
+    res.status(500).json({ error: 'Misslyckades hämta V86-parning' })
+  }
+})
+
+router.get('/:id/v86/game', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const result = await getV86GameViewForRaceday(req.params.id)
+    res.json(result)
+  } catch (error) {
+    console.error('Failed to fetch V86 game view:', error)
+    res.status(500).json({ error: 'Misslyckades hämta V86-game view' })
+  }
+})
+
+router.get('/:id/v86/ai-list', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const result = await getV86AiListForRaceday(req.params.id)
+    res.json(result)
+  } catch (error) {
+    console.error('Failed to fetch V86 AI list:', error)
+    res.status(500).json({ error: 'Misslyckades hämta V86 AI-lista' })
   }
 })
 
@@ -162,6 +220,66 @@ router.post('/:id/v85', validateObjectIdParam('id'), async (req, res) => {
   } catch (error) {
     console.error('Failed to build V85 suggestion:', error)
     res.status(500).json({ error: 'Det gick inte att skapa V85-spelförslag' })
+  }
+})
+
+router.post('/:id/v86/update', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const result = await updateV86DistributionForRaceday(req.params.id)
+    res.json(result)
+  } catch (error) {
+    console.error('Failed to update V86 distribution:', error)
+    res.status(500).json({ error: error.message || 'Misslyckades att uppdatera V86%' })
+  }
+})
+
+router.post('/:id/v86', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const {
+      templateKey,
+      stake,
+      maxCost,
+      maxBudget,
+      mode,
+      modes,
+      multi,
+      variantCount,
+      userSeeds
+    } = req.body || {}
+
+    const wantsMulti = multi === true || (Array.isArray(modes) && modes.length > 0)
+
+    if (wantsMulti) {
+      const result = await buildV86Suggestions(req.params.id, {
+        templateKey,
+        stake,
+        maxCost,
+        maxBudget,
+        modes,
+        variantCount,
+        userSeeds
+      })
+      if (result?.error) {
+        return res.status(400).json(result)
+      }
+      return res.json(result)
+    }
+
+    const suggestion = await buildV86Suggestion(req.params.id, {
+      templateKey,
+      stake,
+      maxCost,
+      maxBudget,
+      mode,
+      userSeeds
+    })
+    if (suggestion?.error) {
+      return res.status(400).json(suggestion)
+    }
+    res.json(suggestion)
+  } catch (error) {
+    console.error('Failed to build V86 suggestion:', error)
+    res.status(500).json({ error: 'Det gick inte att skapa V86-spelförslag' })
   }
 })
 
