@@ -25,6 +25,8 @@ If manual verification is needed, list steps and mark ready for Gate E.
 - Always include current execution mode context (`Strict` or `Auto`) in review framing.
 - Default to a verification summary and readiness signal, not a generic approval request.
 - Make clear what was verified already and what the user may still want to test.
+- In this repo, run Playwright CLI for UI-facing verification whenever the affected flow is browser-visible and automatable.
+- Fall back to manual browser steps only when Playwright CLI cannot run or the flow cannot be automated safely.
 
 ## Feature doc rule
 
@@ -37,3 +39,4 @@ Write `.aim/reviews/review-{increment:03d}.md` including:
 - completed and remaining Epic criteria
 - concrete change list
 - recommendation signal for Gate E
+- exact Playwright CLI verification command and result for UI-facing increments

@@ -107,6 +107,21 @@ Each repository must define a repository profile in `AGENTS.md` that states:
 - verification/testing strategy
 - role-specific behavioral constraints for `PO`, `TDO`, `Dev`, and `Reviewer`
 
+winv75 repository profile:
+- stack and runtime assumptions:
+  - frontend: Vue 3, Vite and Vuetify in `frontend/`
+  - backend: Node.js, Express and MongoDB in `backend/`
+  - betting flows depend on the local backend API and stored raceday, horse, driver and Elo data
+- verification and testing strategy:
+  - backend verification: `cd backend && npm test`
+  - frontend verification: `cd frontend && npm run build`
+  - browser verification for user-facing flows: `cd frontend && npm run test:e2e`
+  - Playwright CLI is the default browser verifier in this repo when a change affects runtime UI behavior
+- role-specific constraints for this repo:
+  - `Dev` must use Playwright CLI for browser-level repro or flow mapping before editing when the increment touches a user-facing frontend path
+  - `Reviewer` must use Playwright CLI for browser verification when the increment touches a user-facing frontend path
+  - manual browser-only verification is fallback only when Playwright CLI cannot run or the scenario is not automatable
+
 Required AIM file structure:
 - `AGENTS.md`
 - `docs/workflow/agile-iteration-method.md`

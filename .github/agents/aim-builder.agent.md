@@ -19,6 +19,7 @@ Implement exactly the increment approved at Gate B.
 - Respect selected execution mode (`Strict` or `Auto`) exactly as provided by orchestrator.
 - Default to an informational implementation update, not an approval request.
 - Make clear what changed and what was verified before the `Reviewer` checkpoint.
+- In this repo, use Playwright CLI before editing when the increment touches a user-facing browser flow so the issue is reproduced or mapped in the live UI first.
 
 ## Required output
 
@@ -28,6 +29,7 @@ Write `.aim/increments/{increment:03d}-wip.md` with:
 - evidence/log of decisions
 - tests/verification run
 - explicit scope check
+- include the Playwright CLI repro command and outcome for UI-facing increments
 
 ## Escalate when
 

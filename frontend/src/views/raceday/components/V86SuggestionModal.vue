@@ -558,14 +558,7 @@ export default {
       selectedModes,
       variantCountOptions,
       variantCount,
-      seedBuilderOpen,
-      seedLegs,
-      seedLoading,
-      seedError,
-      seedSelections,
-      hasSeedSelections,
       isModeActive,
-      isSeedSelected,
       formatCurrency,
       formatTypeClass,
       formatPercent,
@@ -574,11 +567,8 @@ export default {
       formatErrorModes,
       generate,
       applyPublicSpikes,
-      toggleSeedBuilder,
       toggleMode,
       setActiveSuggestion,
-      updateSeedSelection,
-      clearSeeds,
       formatSuggestionLabel,
       emitClose
     }
@@ -639,108 +629,6 @@ export default {
     background: #10b981;
     color: #03201b;
     border-color: #34d399;
-  }
-}
-
-.seed-builder {
-  margin-top: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #fdfcf5;
-}
-
-.seed-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.seed-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #1f2937;
-}
-
-.seed-sub {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.seed-leg-list {
-  margin-top: 12px;
-  display: grid;
-  gap: 12px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.seed-leg-card {
-  border: 1px dashed #d1c59a;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fffef8;
-  color: #1f2937;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-}
-
-.seed-leg-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 8px;
-}
-
-.seed-leg-title {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.seed-track {
-  font-weight: 500;
-  color: #6b7280;
-}
-
-.seed-leg-meta {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.seed-chip-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.seed-chip-group .seed-chip {
-  font-size: 0.8rem;
-  background: #f8fafc;
-  border: 1px solid rgba(15, 23, 42, 0.15);
-  color: #1f2937;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.seed-chip-group .seed-chip.selected {
-  background: #2563eb;
-  color: #f8fafc;
-  border-color: #1d4ed8;
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
-}
-
-@media (prefers-color-scheme: dark) {
-  .seed-chip-group .seed-chip {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(147, 197, 253, 0.3);
-    color: #e0f2fe;
-  }
-  .seed-chip-group .seed-chip.selected {
-    background: rgba(96, 165, 250, 0.75);
-    color: #0f172a;
-    border-color: rgba(191, 219, 254, 0.9);
-    box-shadow: 0 0 0 1px rgba(191, 219, 254, 0.6);
   }
 }
 
