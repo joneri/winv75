@@ -20,7 +20,6 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, triggers asyn
 
 ## Key decisions
 - Keep ingestion and horse-refresh decoupled (horse refresh is async after raceday upsert).
-- Preserve previously generated per-horse AI summary fields during new upserts.
 - Provide lightweight summary projection for list performance.
 
 ## Defaults and fallbacks

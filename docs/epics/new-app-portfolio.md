@@ -71,27 +71,21 @@ After finishing:
 3. `epic-track-and-race-context-intelligence.md`
 4. `epic-race-prediction-and-tips-engine.md`
 5. `epic-v85-v86-and-ticket-strategy.md`
-6. `epic-ai-explanation-and-transparency.md`
-7. `epic-horse-and-driver-intelligence.md`
-8. `epic-global-search-and-discovery.md`
-9. `epic-weights-presets-and-analyst-workbench.md`
-10. `epic-observability-ops-and-governance.md`
+6. `epic-horse-and-driver-intelligence.md`
+7. `epic-global-search-and-discovery.md`
 
 ## feature mapping
 - `raceday-ingestion-and-listing.md` -> `epic-platform-data-foundation.md`
 - `raceday-overview-and-game-context.md` -> `epic-race-prediction-and-tips-engine.md`
 - `race-analysis-and-ai-ranking.md` -> `epic-race-prediction-and-tips-engine.md`
-- `horse-ai-summary.md` -> `epic-ai-explanation-and-transparency.md`
 - `horse-catalog-and-detail.md` -> `epic-horse-and-driver-intelligence.md`
 - `driver-catalog-and-detail.md` -> `epic-horse-and-driver-intelligence.md`
 - `track-metadata-and-stats.md` -> `epic-track-and-race-context-intelligence.md`
 - `ratings-and-elo-engine.md` -> `epic-modeling-elo-and-form-elo.md`
-- `ai-profiles-and-preview.md` -> `epic-weights-presets-and-analyst-workbench.md`
 - `v85-suggestion-engine.md` -> `epic-v85-v86-and-ticket-strategy.md`
 - `v86-suggestion-engine-and-pairing.md` -> `epic-v85-v86-and-ticket-strategy.md`
 - `global-search.md` -> `epic-global-search-and-discovery.md`
-- `weight-studio-presets-and-sessions.md` -> `epic-weights-presets-and-analyst-workbench.md`
-- `admin-operations-and-observability.md` -> `epic-observability-ops-and-governance.md`
 
 ## change log
 - 2026-02-27: Initial rewrite portfolio mapped from current feature inventory.
+- 2026-04-04: Trimmed removed admin, weight, and AI-helper feature tracks from the rewrite portfolio.

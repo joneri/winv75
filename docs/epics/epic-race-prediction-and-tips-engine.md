@@ -49,7 +49,7 @@ Deliver the core race-level prediction and tipping engine for every ATG race wit
 
 ## dependencies
 - prerequisites: `epic-platform-data-foundation.md`, `epic-modeling-elo-and-form-elo.md`, `epic-track-and-race-context-intelligence.md`.
-- downstream: `epic-v85-v86-and-ticket-strategy.md`, `epic-ai-explanation-and-transparency.md`.
+- downstream: `epic-v85-v86-and-ticket-strategy.md`.
 
 ## files likely involved
 - docs/epics/epic-race-prediction-and-tips-engine.md

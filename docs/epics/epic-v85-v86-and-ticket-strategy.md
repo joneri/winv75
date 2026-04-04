@@ -49,7 +49,7 @@ Provide high-quality, strategy-aware ticket suggestions for V85/V86 that leverag
 
 ## dependencies
 - prerequisites: `epic-race-prediction-and-tips-engine.md`.
-- downstream: `epic-ai-explanation-and-transparency.md`, `epic-observability-ops-and-governance.md`.
+- downstream: none.
 
 ## files likely involved
 - docs/epics/epic-v85-v86-and-ticket-strategy.md

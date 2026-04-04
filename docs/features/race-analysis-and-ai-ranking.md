@@ -1,30 +1,30 @@
 # Race analysis and AI ranking
 
 ## Purpose
-Produce race-level ranking and insights for each horse, combining rating, form, signals, and confidence/tier outputs.
+Provide the active race view with horse ranking support, Elo/form context, and linked navigation inside a raceday.
 
 ## User experience
-In race view, users get ranked horses, AI tier indicators, race banners, ranking table, and integrated context (track, game legs, probabilities).
+In race view, users get a sortable horse table with Elo, form, driver context, past performance lines, game badges, and quick links to horse, driver, and neighboring races.
 
 ## How it works
-Backend `buildRaceInsights` computes normalized scores, tiers, and highlights. Race endpoint enriches horses with horse/driver ratings. Frontend composes ranking + AI insight data into sortable table/tabs.
+Backend race detail fetch enriches horses with horse and driver Elo data. Frontend combines that race payload with horse score endpoints, race metadata, and navigation context to render the protected race flow.
 
 ## Inputs and outputs
 - Inputs:
   - `GET /api/race/:id`
-  - `GET /api/race/:id/ai-list`
   - `GET /api/horses/rankings/:raceId`
   - `GET /api/horses/scores`
+  - `GET /api/driver/ratings`
 - Outputs:
-  - Ranked race payload with horse-level fields (`rating`, `formRating`, AI metrics).
-  - AI list payload with tier/config guidance.
+  - Enriched race payload with horse and driver Elo values.
+  - Ranking and score support data used by the race table.
 
 ## Key decisions
-- Keep race detail fetch separate from AI insight build to allow partial rendering.
+- Keep race detail fetch separate from horse ranking and score support so the view can degrade gracefully.
 - Merge horse and driver rating enrichment server-side to reduce frontend joins.
 
 ## Defaults and fallbacks
-- If AI insight fetch fails, race view still renders from race/ranking endpoints.
+- If score/ranking support fails, the race view still renders from the main race payload.
 - Missing enrichment values fall back to base race payload fields.
 
 ## Edge cases
@@ -32,23 +32,22 @@ Backend `buildRaceInsights` computes normalized scores, tiers, and highlights. R
 - Missing or malformed horse/driver ids are filtered during enrichment.
 
 ## Data correctness and trust
-- Ranking calculations are derived from stored race and horse datasets plus profile settings.
-- UI preserves saved AI summary metadata per horse when available.
+- Ranking calculations are derived from stored race, horse, and driver datasets.
+- The race view does not rely on removed AI summary or profile layers.
 
 ## Debugging
-- Primary log: backend race route and `race-insights` logs/warnings.
-- What "good" looks like: consistent horse ordering and AI tier presence across same race/profile.
-- What "bad" looks like: duplicated/missing horses or mismatch between displayed rank and AI payload ids.
+- Primary log: backend race route warnings plus frontend race-service failures.
+- What "good" looks like: race view renders one consistent horse list with working horse and driver links.
+- What "bad" looks like: duplicated or missing horses, missing Elo enrichment, or broken race navigation.
 
 ## Related files
 - `backend/src/race/race-routes.js`
-- `backend/src/race/race-insights.js`
 - `backend/src/horse/horse-service.js`
 - `frontend/src/views/race/RaceHorsesView.vue`
 - `frontend/src/views/race/services/RaceHorsesService.js`
-- `frontend/src/views/race/components/AiBanner.vue`
-- `frontend/src/views/race/components/AiTierCell.vue`
-- `frontend/src/views/race/components/RankedHorsesTable.vue`
+- `frontend/src/views/race/components/RaceHeader.vue`
+- `frontend/src/views/race/components/RaceNavigation.vue`
 
 ## Change log
 - 2026-02-27: Initial feature documentation.
+- 2026-04-04: Removed old AI-list, tier, and summary framing so the doc matches the active race flow.

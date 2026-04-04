@@ -31,6 +31,6 @@ The cleanup explicitly protects:
 
 ## Refactor later
 These areas were left for later cleanup instead of broad rewrite in this increment:
-- simplify backend startup and remove dead files that are now runtime-isolated
+- simplify backend startup after the delete-pass and remove remaining duplicate legacy views
 - split large raceday and suggestion responsibilities into smaller modules
-- clean repo documentation and configuration structure after the runtime surface is stable
+- keep trimming repo documentation and configuration now that the runtime surface is smaller

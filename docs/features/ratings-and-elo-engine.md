@@ -4,10 +4,10 @@
 Maintain and evaluate horse/driver Elo ratings, including per-race updates, full rebuilds, form-vs-career variants, and auto-tune experimentation.
 
 ## User experience
-Admins can trigger rating rebuilds, evaluate RMSE, launch/cancel auto-tune jobs, and manually update/recompute driver Elo values.
+These are maintenance-oriented backend flows used for controlled rating updates, evaluation, and driver Elo recomputation.
 
 ## How it works
-Horse and driver Elo services process race placements with configurable K/decay parameters. Rating routes expose update/eval/auto-tune APIs. Admin UI orchestrates these workflows.
+Horse and driver Elo services process race placements with configurable K/decay parameters. Rating routes expose update/eval/auto-tune APIs for controlled maintenance use.
 
 ## Inputs and outputs
 - Inputs:
@@ -51,9 +51,7 @@ Horse and driver Elo services process race placements with configurable K/decay 
 - `backend/src/rating/elo-eval.js`
 - `backend/src/rating/auto-tune.js`
 - `backend/src/driver/driver-elo-service.js`
-- `frontend/src/views/Admin/services/AdminService.js`
-- `frontend/src/views/Admin/services/AutoTuneService.js`
-- `frontend/src/views/Admin/AdminView.vue`
 
 ## Change log
 - 2026-02-27: Initial feature documentation.
+- 2026-04-04: Removed references to the deleted admin frontend surface.
