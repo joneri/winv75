@@ -1,8 +1,10 @@
 import axios from 'axios'
 
+const API_BASE = '/api'
+
 const fetchRacedayDetails = async racedayId => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}`)
+    const response = await axios.get(`${API_BASE}/raceday/${racedayId}`)
     return response.data
   } catch (error) {
     console.error('Error fetching raceday details:', error)
@@ -12,7 +14,7 @@ const fetchRacedayDetails = async racedayId => {
 
 async function fetchSpelformer(racedayId) {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/spelformer/${racedayId}`)
+    const response = await axios.get(`${API_BASE}/spelformer/${racedayId}`)
     return response.data
   } catch (error) {
     console.error('Error fetching spelformer:', error)
@@ -22,7 +24,7 @@ async function fetchSpelformer(racedayId) {
 
 async function fetchV85Info(racedayId) {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85/info`)
+    const response = await axios.get(`${API_BASE}/raceday/${racedayId}/v85/info`)
     return response.data?.info || null
   } catch (error) {
     console.error('Error fetching V85 info:', error)
@@ -32,7 +34,7 @@ async function fetchV85Info(racedayId) {
 
 async function fetchV86Info(racedayId) {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/info`)
+    const response = await axios.get(`${API_BASE}/raceday/${racedayId}/v86/info`)
     return response.data?.info || null
   } catch (error) {
     console.error('Error fetching V86 info:', error)
@@ -42,7 +44,7 @@ async function fetchV86Info(racedayId) {
 
 async function updateV85Distribution(racedayId) {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85/update`)
+    const response = await axios.post(`${API_BASE}/raceday/${racedayId}/v85/update`)
     return response.data
   } catch (error) {
     console.error('Error updating V85 distribution:', error)
@@ -53,7 +55,7 @@ async function updateV85Distribution(racedayId) {
 
 async function updateV86Distribution(racedayId) {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/update`)
+    const response = await axios.post(`${API_BASE}/raceday/${racedayId}/v86/update`)
     return response.data
   } catch (error) {
     console.error('Error updating V86 distribution:', error)
@@ -64,7 +66,7 @@ async function updateV86Distribution(racedayId) {
 
 async function fetchV85Templates() {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/v85/templates`)
+    const response = await axios.get(`${API_BASE}/raceday/v85/templates`)
     return response.data?.templates || []
   } catch (error) {
     console.error('Error fetching V85 templates:', error)
@@ -74,7 +76,7 @@ async function fetchV85Templates() {
 
 async function fetchV86Templates() {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/v86/templates`)
+    const response = await axios.get(`${API_BASE}/raceday/v86/templates`)
     return response.data?.templates || []
   } catch (error) {
     console.error('Error fetching V86 templates:', error)
@@ -84,7 +86,7 @@ async function fetchV86Templates() {
 
 async function fetchV85Suggestion(racedayId, payload) {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85`, payload)
+    const response = await axios.post(`${API_BASE}/raceday/${racedayId}/v85`, payload)
     return response.data
   } catch (error) {
     console.error('Error fetching V85 suggestion:', error)
@@ -97,7 +99,7 @@ async function fetchV85Suggestion(racedayId, payload) {
 
 async function fetchV86Suggestion(racedayId, payload) {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86`, payload)
+    const response = await axios.post(`${API_BASE}/raceday/${racedayId}/v86`, payload)
     return response.data
   } catch (error) {
     console.error('Error fetching V86 suggestion:', error)
@@ -110,7 +112,7 @@ async function fetchV86Suggestion(racedayId, payload) {
 
 async function fetchV86GameView(racedayId) {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/game`)
+    const response = await axios.get(`${API_BASE}/raceday/${racedayId}/v86/game`)
     return response.data
   } catch (error) {
     console.error('Error fetching V86 game view:', error)

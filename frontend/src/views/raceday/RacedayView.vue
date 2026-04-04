@@ -100,6 +100,12 @@ export default {
     V85SuggestionModal,
     V86SuggestionModal
   },
+  props: {
+    racedayId: {
+      type: [String, Number],
+      default: null
+    }
+  },
   setup(props, { root }) {
     const route = useRoute()
     console.log('RacedayView Props:', props);
