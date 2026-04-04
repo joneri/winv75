@@ -14,8 +14,7 @@ import {
   buildV86Suggestions,
   updateV86DistributionForRaceday,
   getV86PairingForRaceday,
-  getV86GameViewForRaceday,
-  getV86AiListForRaceday
+  getV86GameViewForRaceday
 } from './v86-service.js'
 
 const router = express.Router()
@@ -153,16 +152,6 @@ router.get('/:id/v86/game', validateObjectIdParam('id'), async (req, res) => {
   }
 })
 
-router.get('/:id/v86/ai-list', validateObjectIdParam('id'), async (req, res) => {
-  try {
-    const result = await getV86AiListForRaceday(req.params.id)
-    res.json(result)
-  } catch (error) {
-    console.error('Failed to fetch V86 AI list:', error)
-    res.status(500).json({ error: 'Misslyckades hämta V86 AI-lista' })
-  }
-})
-
 router.post('/:id/v85/update', validateObjectIdParam('id'), async (req, res) => {
   try {
     const info = await updateV85DistributionForRaceday(req.params.id)
@@ -280,43 +269,6 @@ router.post('/:id/v86', validateObjectIdParam('id'), async (req, res) => {
   } catch (error) {
     console.error('Failed to build V86 suggestion:', error)
     res.status(500).json({ error: 'Det gick inte att skapa V86-spelförslag' })
-  }
-})
-
-// New: AI-style list for an entire raceday (each race) with caching
-router.get('/:id/ai-list', validateObjectIdParam('id'), async (req, res) => {
-  try {
-    const force = String(req.query.force || '').toLowerCase() === 'true'
-    const data = await raceDayService.getRacedayAiList(req.params.id, { force })
-    if (!data) return res.status(404).send('Raceday not found')
-    res.json(data)
-  } catch (err) {
-    console.error('Failed to build raceday AI list', err)
-    res.status(500).send('Failed to build raceday AI list')
-  }
-})
-
-// Admin: Precompute upcoming raceday AI lists (cron target)
-router.post('/_admin/precompute-ai', async (req, res) => {
-  try {
-    const daysAhead = req.query.daysAhead ? Number(req.query.daysAhead) : 3
-    const result = await raceDayService.precomputeUpcomingAiLists(daysAhead)
-    res.json(result)
-  } catch (e) {
-    console.error('Precompute failed', e)
-    res.status(500).send('Precompute failed')
-  }
-})
-
-// Admin: Force refresh cache for a raceday
-router.post('/:_id/_admin/refresh-ai', validateObjectIdParam('_id'), async (req, res) => {
-  try {
-    const data = await raceDayService.getRacedayAiList(req.params._id, { force: true })
-    if (!data) return res.status(404).send('Raceday not found')
-    res.json({ ok: true, generatedAt: new Date().toISOString() })
-  } catch (e) {
-    console.error('Refresh AI failed', e)
-    res.status(500).send('Refresh AI failed')
   }
 })
 

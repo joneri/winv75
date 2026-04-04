@@ -23,15 +23,11 @@
               <div class="games" v-if="racedayGames.length">
                 <SpelformBadge v-for="g in racedayGames" :key="g" :game="g" :leg="1" />
               </div>
-              <div class="buttons">
-                <v-btn density="compact" color="primary" @click="downloadAiList" :loading="downloading" :disabled="downloading || regenerating">Generera AI-lista</v-btn>
-                <v-btn density="compact" class="ml-2" color="secondary" @click="regenerateAiList" :loading="regenerating" :disabled="downloading || regenerating">Regenerera AI</v-btn>
-              </div>
               <div class="game-actions" v-if="hasV85">
                 <div class="game-actions-title">V85</div>
                 <div class="buttons">
                   <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV85Modal = true">V85-spelförslag</v-btn>
-                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV85" :loading="updatingV85" :disabled="updatingV85 || downloading || regenerating">Uppdatera V85%</v-btn>
+                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV85" :loading="updatingV85" :disabled="updatingV85">Uppdatera V85%</v-btn>
                 </div>
                 <div class="v85-status" v-if="v85UpdatedLabel">
                   {{ v85UpdatedLabel }}
@@ -45,7 +41,7 @@
                 <div class="game-actions-title">V86</div>
                 <div class="buttons">
                   <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV86Modal = true">V86-spelförslag</v-btn>
-                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV86" :loading="updatingV86" :disabled="updatingV86 || downloading || regenerating">Uppdatera V86%</v-btn>
+                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV86" :loading="updatingV86" :disabled="updatingV86">Uppdatera V86%</v-btn>
                 </div>
                 <div class="v86-status" v-if="v86UpdatedLabel">
                   {{ v86UpdatedLabel }}
@@ -119,8 +115,6 @@ export default {
 
     const racedayDetails = ref(null)
     const errorMessage = ref(null)
-    const downloading = ref(false)
-    const regenerating = ref(false)
     const updatingV85 = ref(false)
     const updatingV86 = ref(false)
     const showV85Modal = ref(false)
@@ -290,116 +284,6 @@ export default {
       return res
     }
 
-    const formatGameSuffix = (games) => {
-      if (!games || !games.length) return ''
-      return ' ' + games.map(g => `${g.game}-${g.leg}`).join(' ')
-    }
-
-    const formatInsights = (data) => {
-      const lines = []
-      lines.push(`# ${data.raceday.trackName} ${data.raceday.raceDayDate}`)
-      const races = [...data.races].sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
-      for (const r of races) {
-        const gameSuffix = formatGameSuffix(r.games)
-        lines.push(`\nLopp ${r.race.raceNumber}${gameSuffix} (${r.race.distance} m)`)      
-        const topFormEloStr = r.topByElo.map(h => `${h.programNumber} ${h.name} (${h.elo})`).join(', ')
-        const bestFormStr = r.bestForm.map(h => `${h.programNumber} ${h.name} (${h.formScore})`).join(', ')
-        lines.push(`Top Form Elo: ${topFormEloStr}`)
-        lines.push(`Form: ${bestFormStr}`)
-        if (r.plusPoints.length) {
-          const plusStr = r.plusPoints.map(h => `${h.programNumber} ${h.name} [${h.points.join(', ')}]`).join('; ')
-          lines.push(`Pluspoäng: ${plusStr}`)
-        }
-        // Tier summary line
-        const tiers = (r.ranking || []).reduce((acc, h) => { acc[h.tier] = (acc[h.tier]||0)+1; return acc }, {})
-        const tierStr = ['A','B','C'].filter(t=>tiers[t]).map(t=>`${t}:${tiers[t]}`).join(' ')
-        if (tierStr) lines.push(`Tiers: ${tierStr} (by ${r.rankConfig?.tierBy || 'formElo'})`)
-        lines.push(`Ranking: ${r.ranking.map(h => `${h.programNumber} ${h.name}`).join(', ')}`)
-
-        // Pretty console logging (browser devtools)
-        try {
-          if (typeof window !== 'undefined' && window.console) {
-            const title = `[AI] ${data.raceday.trackName} — Lopp ${r.race.raceNumber} (${r.race.distance} m)`
-            console.groupCollapsed(title)
-            console.log('Top Form Elo:', topFormEloStr)
-            console.log('Form:', bestFormStr)
-            if (r.plusPoints.length) {
-              console.log('Pluspoäng:', r.plusPoints.map(h => `${h.programNumber} ${h.name} [${h.points.join(', ')}]`).join('; '))
-            }
-            if (r.rankConfig) {
-              console.log('Rank config:', r.rankConfig)
-            }
-            console.table((r.ranking || []).map(h => ({
-              '#': h.rank,
-              Tier: h.tier || '-',
-              Nr: h.programNumber,
-              Häst: h.name,
-              FormElo: h.rating,
-              EloTerm: Number(h.eloTerm?.toFixed ? h.eloTerm.toFixed(3) : h.eloTerm),
-              Form: h.formScore,
-              FormDelta: Number.isFinite(h.formDelta) ? Number(h.formDelta.toFixed ? h.formDelta.toFixed(2) : h.formDelta) : h.formDelta,
-              DeltaTerm: Number(h.deltaTerm?.toFixed ? h.deltaTerm.toFixed(3) : h.deltaTerm),
-              LegacyFormTerm: Number(h.legacyFormTerm?.toFixed ? h.legacyFormTerm.toFixed(3) : h.legacyFormTerm),
-              WinScoreTerm: Number(h.winScoreTerm?.toFixed ? h.winScoreTerm.toFixed(3) : h.winScoreTerm),
-              Bonus: Number(h.bonus?.toFixed ? h.bonus.toFixed(3) : h.bonus),
-              HandicapAdj: Number(h.handicapAdj?.toFixed ? h.handicapAdj.toFixed(3) : h.handicapAdj),
-              Dist: h.baseDistance ? `${h.baseDistance}${h.distanceDiff ? ` (${h.distanceDiff > 0 ? '+' : ''}${h.distanceDiff})` : ''}` : '',
-              Pluspoäng: (h.plusPoints || []).join(', '),
-              Composite: Number(h.compositeScore?.toFixed ? h.compositeScore.toFixed(3) : h.compositeScore)
-            })))
-            console.groupEnd()
-          }
-        } catch {}
-      }
-      return lines.join('\n')
-    }
-
-    const downloadAiList = async () => {
-      try {
-        downloading.value = true
-        const data = await RacedayService.fetchRacedayAiList(route.params.racedayId)
-        const text = formatInsights(data)
-        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${data.raceday.trackName}-${data.raceday.raceDayDate}-AI.txt`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
-      } catch (e) {
-        console.error('Failed to generate AI list', e)
-      } finally {
-        downloading.value = false
-      }
-    }
-
-    const regenerateAiList = async () => {
-      try {
-        regenerating.value = true
-        await RacedayService.refreshRacedayAi(route.params.racedayId)
-        // Refresh UI data
-        await refreshRaceday()
-        // Fetch fresh list with force=true and download
-        const data = await RacedayService.fetchRacedayAiList(route.params.racedayId, { force: true })
-        const text = formatInsights(data)
-        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${data.raceday.trackName}-${data.raceday.raceDayDate}-AI.txt`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
-      } catch (e) {
-        console.error('Failed to regenerate AI list', e)
-      } finally {
-        regenerating.value = false
-      }
-    }
-
     const updateV85 = async () => {
       try {
         if (!hasV85.value) return
@@ -448,10 +332,6 @@ export default {
       refreshRaceday,
       hasV85,
       hasV86,
-      downloading,
-      downloadAiList,
-      regenerating,
-      regenerateAiList,
       updateV85,
       updateV86,
       racedayGames,

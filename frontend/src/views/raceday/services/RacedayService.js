@@ -20,18 +20,6 @@ async function fetchSpelformer(racedayId) {
   }
 }
 
-// Allow optional force flag to bypass cache
-async function fetchRacedayAiList(racedayId, { force = false } = {}) {
-  try {
-    const url = `${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/ai-list${force ? '?force=true' : ''}`
-    const response = await axios.get(url)
-    return response.data
-  } catch (error) {
-    console.error('Error fetching raceday AI list:', error)
-    throw error
-  }
-}
-
 async function fetchV85Info(racedayId) {
   try {
     const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v85/info`)
@@ -120,16 +108,6 @@ async function fetchV86Suggestion(racedayId, payload) {
   }
 }
 
-async function fetchV86AiList(racedayId) {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/ai-list`)
-    return response.data
-  } catch (error) {
-    console.error('Error fetching V86 AI list:', error)
-    throw error
-  }
-}
-
 async function fetchV86GameView(racedayId) {
   try {
     const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/v86/game`)
@@ -140,22 +118,9 @@ async function fetchV86GameView(racedayId) {
   }
 }
 
-// Admin: force refresh AI cache for a raceday
-async function refreshRacedayAi(racedayId) {
-  try {
-    const url = `${import.meta.env.VITE_BE_URL}/api/raceday/${racedayId}/_admin/refresh-ai`
-    const response = await axios.post(url)
-    return response.data
-  } catch (error) {
-    console.error('Error refreshing raceday AI cache:', error)
-    throw error
-  }
-}
-
 export default {
   fetchRacedayDetails,
   fetchSpelformer,
-  fetchRacedayAiList,
   fetchV85Info,
   fetchV86Info,
   updateV85Distribution,
@@ -164,7 +129,5 @@ export default {
   fetchV86Templates,
   fetchV85Suggestion,
   fetchV86Suggestion,
-  fetchV86AiList,
-  fetchV86GameView,
-  refreshRacedayAi
+  fetchV86GameView
 }

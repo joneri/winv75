@@ -1,7 +1,7 @@
 import axios from 'axios'
-import raceDayService from './raceday-service.js'
 import Raceday from './raceday-model.js'
 import gameService from '../game/game-service.js'
+import horseService from '../horse/horse-service.js'
 
 const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
 
@@ -393,26 +393,6 @@ const buildSuggestionContext = async (racedayId, context = null) => {
     return ctx
   }
 
-  if (!ctx.aiByRaceId) {
-    const aiByRaceId = new Map()
-    const raceDayIds = [...new Set((ctx.gameView.legs || [])
-      .map(leg => leg.raceDayId)
-      .filter(Boolean)
-      .map(id => String(id)))]
-    for (const raceDayId of raceDayIds) {
-      const aiData = await raceDayService.getRacedayAiList(raceDayId)
-      const races = Array.isArray(aiData?.races) ? aiData.races : []
-      for (const race of races) {
-        const raceId = Number(race?.race?.raceId ?? race?.raceId)
-        if (!Number.isFinite(raceId)) continue
-        if (!aiByRaceId.has(raceId)) {
-          aiByRaceId.set(raceId, race)
-        }
-      }
-    }
-    ctx.aiByRaceId = aiByRaceId
-  }
-
   if (!ctx.v86InfoResolved) {
     const racedayDoc = await Raceday.findById(racedayId, { v86Info: 1 }).lean()
     const gameId = ctx.gameView?.gameId || null
@@ -456,27 +436,7 @@ const buildSuggestionContext = async (racedayId, context = null) => {
   }
 
   if (!ctx.legBase) {
-    const legs = (ctx.gameView.legs || [])
-      .map(leg => {
-        const raceId = Number(leg?.raceId)
-        if (!Number.isFinite(raceId)) return null
-        const aiRace = ctx.aiByRaceId.get(raceId)
-        if (!aiRace) return null
-        const raceData = aiRace.race || null
-        return {
-          leg: leg.legNumber,
-          raceNumber: leg.raceNumber ?? raceData?.raceNumber ?? leg.legNumber,
-          raceId,
-          raceDayId: leg.raceDayId ?? null,
-          trackName: leg.trackName ?? raceData?.trackName ?? null,
-          startTime: leg.startTime ?? raceData?.startDateTime ?? null,
-          ranking: aiRace.ranking || [],
-          race: raceData
-        }
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.leg - b.leg)
-    ctx.legBase = legs
+    ctx.legBase = await buildLegBaseFromGameView(ctx.gameView)
   }
 
   return ctx
@@ -599,6 +559,40 @@ const buildLegsFromRaceKeys = async (raceKeys, trackIndex) => {
   })
 
   return legs
+}
+
+const buildLegBaseFromGameView = async (gameView) => {
+  const raceDayIds = [...new Set((gameView?.legs || [])
+    .map(leg => leg.raceDayId)
+    .filter(Boolean)
+    .map(id => String(id)))]
+
+  const racedays = raceDayIds.length
+    ? await Raceday.find({ _id: { $in: raceDayIds } }, { trackName: 1, raceList: 1 }).lean()
+    : []
+  const racedayById = new Map(racedays.map(raceday => [String(raceday._id), raceday]))
+
+  const legs = []
+  for (const leg of gameView?.legs || []) {
+    const raceId = Number(leg?.raceId)
+    if (!Number.isFinite(raceId)) continue
+    const raceday = racedayById.get(String(leg.raceDayId)) || null
+    const raceData = (raceday?.raceList || []).find(race => Number(race.raceId) === raceId) || null
+    if (!raceData) continue
+    const ranking = await horseService.getHorseRankings(String(raceId))
+    legs.push({
+      leg: leg.legNumber,
+      raceNumber: leg.raceNumber ?? raceData.raceNumber ?? leg.legNumber,
+      raceId,
+      raceDayId: leg.raceDayId ?? null,
+      trackName: leg.trackName ?? raceday?.trackName ?? null,
+      startTime: leg.startTime ?? raceData.startDateTime ?? null,
+      ranking,
+      race: raceData
+    })
+  }
+
+  return legs.sort((a, b) => a.leg - b.leg)
 }
 
 const resolveV86GameForRaceday = async (racedayId, { includeGameData = false } = {}) => {
@@ -1406,51 +1400,11 @@ export const buildV86Suggestions = async (racedayId, options = {}) => {
   }
 }
 
-export const getV86AiListForRaceday = async (racedayId) => {
-  const context = await buildSuggestionContext(racedayId, null)
-  if (!context) {
-    return { status: 'not_found', message: V86_STATUS_MESSAGES.not_found, legs: [] }
-  }
-
-  if (context.gameViewStatus && context.gameViewStatus !== 'ok') {
-    return {
-      status: context.gameViewStatus,
-      message: context.gameViewMessage || V86_STATUS_MESSAGES.missing_game,
-      gameId: context.gameView?.gameId || null,
-      legs: []
-    }
-  }
-
-  const legs = (context.legBase || []).map(leg => ({
-    leg: leg.leg,
-    raceNumber: leg.raceNumber,
-    raceId: leg.raceId ?? null,
-    raceDayId: leg.raceDayId ?? null,
-    trackName: leg.trackName ?? null,
-    startTime: leg.startTime ?? null,
-    horses: (leg.ranking || []).slice(0, 15).map(horse => ({
-      id: horse.id,
-      programNumber: horse.programNumber,
-      name: horse.name,
-      tier: horse.tier || '',
-      rank: horse.rank ?? null
-    }))
-  }))
-
-  return {
-    status: 'ok',
-    message: null,
-    gameId: context.gameView?.gameId || null,
-    legs
-  }
-}
-
 export default {
   V86_TEMPLATES,
   listV86Templates,
   getV86PairingForRaceday,
   getV86GameViewForRaceday,
-  getV86AiListForRaceday,
   updateV86DistributionForRaceday,
   buildV86Suggestion,
   buildV86Suggestions

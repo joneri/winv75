@@ -2,8 +2,6 @@ import Raceday from './raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import axios from 'axios'
 import horseService from '../horse/horse-service.js'
-import { buildRaceInsights } from '../race/race-insights.js'
-import { aiMetrics } from '../middleware/metrics.js'
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -55,29 +53,6 @@ const upsertStartlistData = async (racedayJSON) => {
     const raceDayId = racedayJSON.raceDayId
     let raceDay
     try {
-        // Merge previously saved per-horse AI summaries and meta into incoming JSON
-        const existing = await Raceday.findOne({ raceDayId: raceDayId }).lean()
-        if (existing && Array.isArray(existing.raceList) && Array.isArray(racedayJSON.raceList)) {
-            const savedMap = new Map()
-            for (const r of existing.raceList) {
-                const keyR = String(r.raceId)
-                const horseMap = new Map()
-                for (const h of (r.horses || [])) {
-                    horseMap.set(String(h.id), { aiSummary: h.aiSummary, aiSummaryMeta: h.aiSummaryMeta })
-                }
-                savedMap.set(keyR, horseMap)
-            }
-            for (const r of racedayJSON.raceList) {
-                const keyR = String(r.raceId)
-                const horseMap = savedMap.get(keyR)
-                if (!horseMap) continue
-                r.horses = (r.horses || []).map(h => {
-                    const saved = horseMap.get(String(h.id))
-                    return saved ? { ...h, ...saved } : h
-                })
-            }
-        }
-
         raceDay = await Raceday.findOneAndUpdate(
             { raceDayId: raceDayId },
             racedayJSON,
@@ -272,83 +247,11 @@ const getRacedaysPaged = async (skip = 0, limit = null, fields = null) => {
   }
 }
 
-// Return AI list for a raceday, using cache if fresh; rebuild and persist if stale/missing
-const getRacedayAiList = async (racedayId, { force = false, overrides = null } = {}) => {
-  const ttlMinutes = Number(process.env.AI_RACEDAY_CACHE_TTL_MINUTES || 120)
-  const now = Date.now()
-
-  const raceday = await Raceday.findById(
-    racedayId,
-    { aiListCache: 1, firstStart: 1, trackName: 1, raceDayDate: 1, raceList: 1, gameTypes: 1 }
-  )
-  if (!raceday) return null
-
-  const activePreset = process.env // placeholder: will be resolved via buildRaceInsights return
-  // If cache preset differs from current active preset, treat as stale (force rebuild)
-  const cachedPreset = raceday.aiListCache?.presetKey || null
-
-  const genAt = raceday.aiListCache?.generatedAt ? new Date(raceday.aiListCache.generatedAt).getTime() : 0
-  const fresh = !!genAt && (now - genAt) <= ttlMinutes * 60 * 1000
-
-  if (!force && fresh && Array.isArray(raceday.aiListCache?.races) && raceday.aiListCache.races.length) {
-    try { aiMetrics.raceday.cacheHits += 1 } catch {}
-    return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races: raceday.aiListCache.races }
-  }
-  try { aiMetrics.raceday.cacheMisses += 1 } catch {}
-
-  // Rebuild
-  const gamesMap = {}
-  const gt = raceday.gameTypes || {}
-  for (const [game, ids] of Object.entries(gt)) {
-    ids.forEach((rid, idx) => {
-      if (!gamesMap[rid]) gamesMap[rid] = []
-      gamesMap[rid].push({ game, leg: idx + 1 })
-    })
-  }
-
-  const raceIds = (raceday.raceList || []).map(r => r.raceId)
-  const races = []
-  let presetKey = null
-  for (const rid of raceIds) {
-    const insights = await buildRaceInsights(rid, overrides || undefined)
-    if (insights) {
-      presetKey = presetKey || (insights.rankConfig?.preset || null)
-      races.push({ ...insights, games: gamesMap[rid] || [] })
-    }
-  }
-  races.sort((a, b) => (a.race?.raceNumber || 0) - (b.race?.raceNumber || 0))
-
-  raceday.aiListCache = { generatedAt: new Date(), races, presetKey }
-  await raceday.save()
-
-  return { raceday: { id: raceday._id, trackName: raceday.trackName, raceDayDate: raceday.raceDayDate }, races }
-}
-
-// Precompute and cache AI list for a specific raceday id
-const precomputeRacedayAiList = async (racedayId) => {
-  await getRacedayAiList(racedayId, { force: true })
-  return { ok: true }
-}
-
-const precomputeUpcomingAiLists = async (daysAhead = 3) => {
-  const today = new Date()
-  const target = new Date(today)
-  target.setDate(target.getDate() + daysAhead)
-  const items = await Raceday.find({ firstStart: { $gte: today, $lte: target } }, { _id: 1 }).lean()
-  for (const it of items) {
-    try { await precomputeRacedayAiList(it._id) } catch (e) { console.error('AI precompute failed for', it._id, e) }
-  }
-  return { count: items.length }
-}
-
 export default {
     upsertStartlistData,
     getAllRacedays,
     getRacedayById,
     updateEarliestUpdatedHorseTimestamp,
     fetchAndStoreByDate,
-    getRacedaysPaged,
-    precomputeRacedayAiList,
-    precomputeUpcomingAiLists,
-    getRacedayAiList
+    getRacedaysPaged
 }

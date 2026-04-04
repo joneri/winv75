@@ -6,10 +6,6 @@
           :race-meta-string="raceMetaString"
           :track-meta-string="trackMetaString"
           :race-games="raceGames"
-          :ai-preset-key="aiPresetKey"
-          :ai-preset-label="aiPresetLabel"
-          :active-profile="activeProfile"
-          :ai-rank-config="aiRankConfig"
           @navigate-to-raceday="navigateToRaceDay"
         />
         <RaceNavigation
@@ -20,23 +16,14 @@
         />
         <v-row>
             <v-col>
-                <v-tabs v-model="activeTab">
-                    <v-tab :value="0">Startlista</v-tab>
-                    <v-tab :value="1">Vikt-studio</v-tab>
-                </v-tabs>
-                <v-window v-model="activeTab">
-                    <v-window-item :value="0">
-                    <v-data-table :headers="headers" :items="tableItems" :items-per-page="16"
-                            :custom-key-sort="customKeySort"
-                            :must-sort="false"
-                            :multi-sort="false"
-                            class="elevation-1">
-                            <template v-slot:[`item.ai`]="slotProps">
-                              <AiTierCell :ai="aiById[(slotProps?.value ?? slotRow(slotProps)?.id)]" />
-                            </template>
+                <v-data-table :headers="headers" :items="tableItems" :items-per-page="16"
+                        :custom-key-sort="customKeySort"
+                        :must-sort="false"
+                        :multi-sort="false"
+                        class="elevation-1">
                             <template v-slot:[`item.programNumber`]="slotProps">
                               <div class="start-cell">
-                                <div class="start-line1">#{{ (slotProps?.value ?? slotRow(slotProps)?.programNumber) }} <span v-if="aiById[slotRow(slotProps)?.id]?.highlight" class="hl-star" title="Highlight">★</span></div>
+                                <div class="start-line1">#{{ (slotProps?.value ?? slotRow(slotProps)?.programNumber) }}</div>
                                 <div class="start-line2">
                                   <template v-if="raceStartMethod === 'Autostart'">
                                     <span>
@@ -99,31 +86,6 @@
                                       </div>
                                       <div v-if="buildUnifiedPastDisplay(slotRow(slotProps)?.id, recentCoreFor(slotRow(slotProps) || {})).length === 0" class="text-caption past-line">
                                         Inga tidigare starter tillgängliga
-                                      </div>
-                                    </div>
-                                    <!-- AI summary block remains -->
-                                    <div class="mt-2">
-                                      <v-btn
-                                        size="x-small"
-                                        variant="outlined"
-                                        :loading="aiSummaryLoading[slotRow(slotProps)?.id]"
-                                        @click="onGenerateSummary(slotRow(slotProps) || null)"
-                                      >
-                                        AI-sammanfattning
-                                      </v-btn>
-                                      <div v-if="aiSummary[slotRow(slotProps)?.id] || slotRow(slotProps)?.aiSummary" class="ai-summary-block mt-1">
-                                        <strong>AI:</strong>
-                                        <span style="white-space: pre-line">
-                                          {{ (aiSummary[slotRow(slotProps)?.id] || slotRow(slotProps)?.aiSummary)?.split(/(?<=\.|!|\?)\s+/).join('\n') }}
-                                        </span>
-                                        <span v-if="(aiSummaryMeta[slotRow(slotProps)?.id]?.generatedAt)" class="text-caption text-success ml-2">(sparad)</span>
-                                        <span v-else class="text-caption text-warning ml-2">(ny)</span>
-                                        <div v-if="aiSummaryMeta[slotRow(slotProps)?.id]?.context" class="text-caption mt-1">
-                                          Kontext: ELO {{ aiSummaryMeta[slotRow(slotProps)?.id].context.eloRating || '—' }}, fält {{ aiSummaryMeta[slotRow(slotProps)?.id].context.fieldElo?.median || '—' }}, start {{ aiSummaryMeta[slotRow(slotProps)?.id].context.startMethod || '—' }} {{ aiSummaryMeta[slotRow(slotProps)?.id].context.startPosition || '—' }}, distans {{ aiSummaryMeta[slotRow(slotProps)?.id].context.actualDistance || aiSummaryMeta[slotRow(slotProps)?.id].context.baseDistance || '—' }}<template v-if="aiSummaryMeta[slotRow(slotProps)?.id].context.hasOpenStretch"> • open stretch (x{{ aiSummaryMeta[slotRow(slotProps)?.id].context.openStretchLanes || 1 }})</template>
-                                         </div>
-                                      </div>
-                                      <div v-if="aiSummaryError[slotRow(slotProps)?.id]" class="text-error mt-1">
-                                        {{ aiSummaryError[slotRow(slotProps)?.id] }}
                                       </div>
                                     </div>
                                 </div>
@@ -211,16 +173,7 @@
                                     {{ formatStartListShoe(slotRow(slotProps)) || (slotProps?.value ?? '—') }}
                                 </span>
                             </template>
-                        </v-data-table>
-                    </v-window-item>
-                    <v-window-item :value="1">
-                      <WeightStudio
-                        :ranking="rankingList"
-                        :config="aiRankConfig"
-                        :race-id="currentRace?.raceId || route.params.raceId"
-                      />
-                    </v-window-item>
-                </v-window>
+                </v-data-table>
             </v-col>
         </v-row>
         <v-row v-if="raceList.length" class="race-navigation">
@@ -241,17 +194,12 @@ import { useRaceMeta } from '@/composables/useRaceMeta.js'
 import { getTrackName, getTrackCodeFromName } from '@/utils/track'
 import RaceHeader from './components/RaceHeader.vue'
 import RaceNavigation from './components/RaceNavigation.vue'
-import AiTierCell from './components/AiTierCell.vue'
-import WeightStudio from './components/WeightStudio.vue'
 import {
     fetchRaceFromRaceId,
-    fetchHorseScores,
-    fetchRaceAiList
+    fetchHorseScores
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import TrackService from '@/views/race/services/TrackService.js'
-import { fetchHorseSummary, fetchSavedHorseSummary } from '@/ai/horseSummaryClient.js'
-import AiProfiles from '@/views/Admin/services/AiProfilesService.js'
 import { formatElo, formatStartPosition } from '@/utils/formatters.js'
 import { formatStartListShoe, startListShoeTooltip } from '@/composables/useShoes.js'
 import { useStartAdvantages } from '@/composables/useStartAdvantages.js'
@@ -270,7 +218,7 @@ export default {
       default: null
     }
   },
-    components: { RaceHeader, RaceNavigation, AiTierCell, WeightStudio },
+    components: { RaceHeader, RaceNavigation },
 
   setup() {
         const route = useRoute()
@@ -313,38 +261,6 @@ export default {
         const trackMeta = ref({})
         const spelformer = ref({})
         const v86GameView = ref(null)
-        const activeTab = ref(0)
-
-        // --- AI summary state and handler ---
-        const aiSummary = ref({})
-        const aiSummaryLoading = ref({})
-        const aiSummaryError = ref({})
-        const aiSummaryMeta = ref({})
-        const userId = ref('anon')
-        
-        // Per-race AI insights state
-        const aiInsights = ref(null)
-        const aiById = computed(() => {
-          const map = {}
-          const list = aiInsights.value?.ranking || []
-          for (const h of list) map[h.id] = h
-          return map
-        })
-        const rankingList = computed(() => aiInsights.value?.ranking || [])
-        const aiRankConfig = computed(() => aiInsights.value?.rankConfig || null)
-        const aiPresetKey = computed(() => aiRankConfig.value?.preset || null)
-
-        // Active profile + all profiles (for label/key mapping)
-        const activeProfile = ref(null)
-        const profiles = ref([])
-        const aiPresetLabel = computed(() => {
-          const key = aiPresetKey.value
-          if (!key) return null
-          const p = profiles.value.find(p => p.key === key)
-          if (p) return `${p.label} (${key})`
-          if (activeProfile.value && activeProfile.value.key === key) return `${activeProfile.value.label} (${key})`
-          return null
-        })
 
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
@@ -440,21 +356,7 @@ export default {
           trackMeta,
         })
 
-        // Custom sort: AI column by A/B/C tier, then probability
-        const tierOrderMap = { A: 3, B: 2, C: 1 }
         const customKeySort = computed(() => ({
-          // We store horse.id in each row's `ai` field and look up details from aiById
-          ai: (idA, idB) => {
-            const A = (aiById.value && aiById.value[idA]) || {}
-            const B = (aiById.value && aiById.value[idB]) || {}
-            const tA = tierOrderMap[A.tier] || 0
-            const tB = tierOrderMap[B.tier] || 0
-            if (tA !== tB) return tA - tB // ascending: C < B < A
-            const pA = Number(A.prob || 0)
-            const pB = Number(B.prob || 0)
-            if (pA !== pB) return pA - pB // ascending by prob
-            return 0
-          },
           formRating: (valA, valB, itemA, itemB) => {
             const rowA = itemA?.raw ?? itemA
             const rowB = itemB?.raw ?? itemB
@@ -483,7 +385,6 @@ export default {
 
         // Data-table headers used by the Start List
         const headers = [
-          { title: 'AI', key: 'ai', sortable: true, width: 84 },
           { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
           { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
           { title: 'Form Elo', key: 'formRating', sortable: true, align: 'end', width: 110 },
@@ -626,7 +527,6 @@ export default {
             const statsDetails = getStatsDetails(merged)
             return {
               ...merged,
-              ai: merged.id,
               eloRating: getEloFor(merged),
               formRating: getFormEloFor(merged),
               formDelta: getFormDeltaFor(merged),
@@ -996,45 +896,6 @@ export default {
           }
         }
 
-        // AI summary generator
-        const onGenerateSummary = async (horse) => {
-          if (!horse || !currentRace.value?.raceId) return
-          const hid = horse.id
-          try {
-            aiSummaryLoading.value[hid] = true
-            aiSummaryError.value[hid] = ''
-            const summary = await fetchHorseSummary({
-              eloRating: horse.columns?.eloRating ?? horse.eloRating,
-              numberOfStarts: horse.numberOfStarts,
-              startMethod: raceStartMethod.value,
-              startPosition: horse.actualStartPosition || horse.startPosition || null,
-              actualDistance: horse.actualDistance || null,
-              baseDistance: currentRace.value?.distance || null,
-              hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
-              openStretchLanes: trackMeta.value?.openStretchLanes || 1,
-            }, currentRace.value.raceId, hid, userId.value)
-            aiSummary.value[hid] = summary
-            aiSummaryMeta.value[hid] = {
-              generatedAt: new Date().toISOString(),
-              context: {
-                eloRating: horse.columns?.eloRating ?? horse.eloRating,
-                fieldElo: { median: (rankedHorses.value || []).reduce((acc, h, _, arr) => acc + (((h.columns?.eloRating ?? h.eloRating) || 0) / (arr.length || 1)), 0) },
-                startMethod: raceStartMethod.value,
-                startPosition: horse.actualStartPosition || horse.startPosition || null,
-                actualDistance: horse.actualDistance || null,
-                baseDistance: currentRace.value?.distance || null,
-                hasOpenStretch: !!trackMeta.value?.hasOpenStretch,
-                openStretchLanes: trackMeta.value?.openStretchLanes || 1,
-              }
-            }
-          } catch (e) {
-            console.error('AI summary failed', e)
-            aiSummaryError.value[hid] = 'AI-summary misslyckades. Försök igen.'
-          } finally {
-            aiSummaryLoading.value[hid] = false
-          }
-        }
-
         // Race meta strings and games badges
         const { raceMetaString, trackMetaString, raceGames } = useRaceMeta({
           currentRace,
@@ -1045,29 +906,6 @@ export default {
           hasHandicap,
           v86LegByRaceId,
         })
-
-        const fetchAi = async () => {
-          try {
-            const raceId = route.params.raceId
-            if (!raceId) return
-            aiInsights.value = await fetchRaceAiList(raceId)
-          } catch (e) {
-            console.warn('Failed to fetch AI insights', e)
-          }
-        }
-
-        const fetchActiveProfile = async () => {
-          try {
-            activeProfile.value = await AiProfiles.active()
-          } catch (e) {
-            // ignore
-          }
-        }
-        const fetchProfiles = async () => {
-          try {
-            profiles.value = await AiProfiles.list()
-          } catch {}
-        }
 
         const navigateToRaceDay = (raceDayId) => {
             const currentPath = router.currentRoute.value.fullPath
@@ -1159,18 +997,6 @@ export default {
             await fetchTrackInfo()
             await fetchSpelformer()
             await fetchV86GameView()
-            await fetchAi()
-            // Preload saved AI summaries for horses in this race
-            try {
-              const horses = currentRace.value?.horses || []
-              for (const h of horses) {
-                const saved = await fetchSavedHorseSummary(raceId, h.id)
-                if (saved.summary) aiSummary.value[h.id] = saved.summary
-                if (saved.meta) aiSummaryMeta.value[h.id] = saved.meta
-              }
-            } catch {}
-            await fetchActiveProfile()
-            await fetchProfiles()
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -1178,21 +1004,9 @@ export default {
         watch(() => route.params.raceId, async (newRaceId) => {
             store.commit('raceHorses/clearRankedHorses')
             store.commit('raceHorses/clearCurrentRace')
-            aiSummary.value = {}
-            aiSummaryMeta.value = {}
-            aiInsights.value = null
             await fetchDataAndUpdate(newRaceId)
             await fetchTrackInfo()
             await fetchSpelformer()
-            await fetchAi()
-            try {
-              const horses = currentRace.value?.horses || []
-              for (const h of horses) {
-                const saved = await fetchSavedHorseSummary(newRaceId, h.id)
-                if (saved.summary) aiSummary.value[h.id] = saved.summary
-                if (saved.meta) aiSummaryMeta.value[h.id] = saved.meta
-              }
-            } catch {}
             await nextTick()
             window.scrollTo(0, scrollPosition.value)
         })
@@ -1212,15 +1026,10 @@ export default {
 
         return {
             // core
-            aiSummary,
-            aiSummaryLoading,
-            aiSummaryError,
-            aiSummaryMeta,
             headers,
             racedayTrackName,
             navigateToRaceDay,
             currentRace,
-            activeTab,
             raceList,
             previousRaceId,
             nextRaceId,
@@ -1238,11 +1047,6 @@ export default {
             formatElo,
             formatStartPosition,
             customKeySort,
-            aiById,
-            aiRankConfig,
-            aiPresetKey,
-            aiPresetLabel,
-            activeProfile,
             tableItems,
             // past display
             buildUnifiedPastDisplay,
@@ -1256,7 +1060,6 @@ export default {
             raceMetaString,
             trackMetaString,
             raceGames,
-            onGenerateSummary,
             // stats
             getStatsFormatted,
             getStatsDetails,
@@ -1270,7 +1073,6 @@ export default {
             slotVal,
             horseLink,
             driverLink,
-            rankingList,
         }
     }
 }

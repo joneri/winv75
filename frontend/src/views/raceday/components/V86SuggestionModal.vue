@@ -59,73 +59,6 @@
             :disabled="loading"
             variant="underlined"
           />
-          <v-btn
-            variant="text"
-            class="seed-toggle"
-            :disabled="loading"
-            @click="toggleSeedBuilder"
-          >
-            {{ seedBuilderOpen ? 'Dölj ursprungshästar' : 'Välj ursprungshästar' }}
-          </v-btn>
-        </div>
-        <div v-if="seedBuilderOpen" class="seed-builder mt-2">
-          <div class="seed-header">
-            <div>
-              <div class="seed-title">Välj ursprungshästar</div>
-              <div class="seed-sub">Agenten fyller på resten per vald AI-variant.</div>
-            </div>
-            <div>
-              <v-btn
-                size="small"
-                variant="text"
-                :disabled="!hasSeedSelections"
-                @click="clearSeeds"
-              >
-                Rensa val
-              </v-btn>
-            </div>
-          </div>
-          <v-alert v-if="seedError" type="error" variant="tonal" class="mt-2">
-            {{ seedError }}
-          </v-alert>
-          <v-progress-linear v-if="seedLoading" indeterminate class="mt-2" />
-          <div v-else class="seed-leg-list">
-            <div
-              v-for="leg in seedLegs"
-              :key="leg.leg"
-              class="seed-leg-card"
-            >
-              <div class="seed-leg-header">
-                <div class="seed-leg-title">
-                  Avd {{ leg.leg }} · Lopp {{ leg.raceNumber }}
-                  <span v-if="leg.trackName" class="seed-track">· {{ leg.trackName }}</span>
-                </div>
-                <div class="seed-leg-meta">{{ leg.horses.length }} hästar</div>
-              </div>
-              <v-chip-group
-                :model-value="seedSelections[leg.leg] || []"
-                multiple
-                column
-                class="seed-chip-group"
-                @update:model-value="value => updateSeedSelection(leg.leg, value)"
-              >
-                <v-chip
-                  v-for="horse in leg.horses"
-                  :key="horse.id"
-                  :value="horse.id"
-                  filter
-                  size="small"
-                  class="seed-chip"
-                  :class="{ selected: isSeedSelected(leg.leg, horse.id) }"
-                >
-                  <span class="nr">{{ horse.programNumber }}</span>
-                  <span class="name">{{ horse.name }}</span>
-                  <span class="tier" v-if="horse.tier">{{ horse.tier }}</span>
-                  <span class="rank" v-if="horse.rank">#{{ horse.rank }}</span>
-                </v-chip>
-              </v-chip-group>
-            </div>
-          </div>
         </div>
         <v-alert v-if="error" type="error" variant="tonal" class="mt-4">
           {{ error }}
@@ -295,12 +228,6 @@ export default {
       { value: 4, label: '4 varianter/stil' }
     ]
     const variantCount = ref(3)
-    const seedBuilderOpen = ref(false)
-    const seedLegs = ref([])
-    const seedLoading = ref(false)
-    const seedError = ref('')
-    const seedSelections = ref({})
-
     const isModeActive = (value) => selectedModes.value.includes(value)
     const toggleMode = (value) => {
       if (!value) return
@@ -318,7 +245,6 @@ export default {
       if (!value) {
         error.value = ''
         suggestionErrors.value = []
-        seedBuilderOpen.value = false
       }
     }
 
@@ -347,7 +273,6 @@ export default {
       return parts.join(' · ')
     })
     const currentVariantSummary = computed(() => currentSuggestion.value?.variant?.summary || '')
-    const hasSeedSelections = computed(() => Object.values(seedSelections.value).some(list => Array.isArray(list) && list.length))
 
     const formatCurrency = (value) => {
       try {
@@ -393,72 +318,6 @@ export default {
       return 'V86%-data används inte i detta förslag'
     })
 
-    const ensureSeedData = async () => {
-      if (seedLegs.value.length || seedLoading.value) return
-      try {
-        seedLoading.value = true
-        seedError.value = ''
-        const data = await RacedayService.fetchV86AiList(props.racedayId)
-        if (data?.status && data.status !== 'ok') {
-          seedError.value = data?.message || 'Kunde inte identifiera V86-loppen.'
-          seedLegs.value = []
-          return
-        }
-        const legs = (data?.legs || [])
-          .map(leg => ({
-            leg: leg.leg,
-            raceNumber: leg.raceNumber,
-            trackName: leg.trackName || '',
-            raceDayId: leg.raceDayId,
-            raceId: leg.raceId,
-            horses: Array.isArray(leg.horses) ? leg.horses : []
-          }))
-          .filter(leg => Number.isFinite(Number(leg.leg)))
-          .sort((a, b) => a.leg - b.leg)
-        seedLegs.value = legs
-        if (!legs.length) {
-          seedError.value = 'Inga V86-lopp hittades för urval.'
-        }
-      } catch (err) {
-        console.error('Failed to load AI list for seed builder', err)
-        seedError.value = 'Kunde inte ladda AI-listan för urval.'
-      } finally {
-        seedLoading.value = false
-      }
-    }
-
-    const toggleSeedBuilder = () => {
-      seedBuilderOpen.value = !seedBuilderOpen.value
-      if (seedBuilderOpen.value) {
-        ensureSeedData()
-      }
-    }
-
-    const updateSeedSelection = (leg, ids) => {
-      const list = Array.isArray(ids) ? ids : []
-      seedSelections.value = {
-        ...seedSelections.value,
-        [leg]: list
-      }
-    }
-
-    const clearSeeds = () => {
-      seedSelections.value = {}
-    }
-
-    const buildSeedPayload = () => Object.entries(seedSelections.value)
-      .map(([leg, ids]) => ({
-        leg: Number(leg),
-        horseIds: (Array.isArray(ids) ? ids : []).map(Number).filter(id => Number.isFinite(id))
-      }))
-      .filter(entry => Number.isFinite(entry.leg) && entry.horseIds.length)
-
-    const isSeedSelected = (leg, horseId) => {
-      const list = seedSelections.value[leg]
-      if (!Array.isArray(list)) return false
-      return list.some(value => Number(value) === Number(horseId))
-    }
-
     const loadTemplates = async () => {
       try {
         templates.value = await RacedayService.fetchV86Templates()
@@ -479,7 +338,6 @@ export default {
       } else {
         loading.value = false
         activeSuggestionIndex.value = 0
-        seedBuilderOpen.value = false
       }
     })
 
@@ -506,11 +364,6 @@ export default {
         const payload = { templateKey: selectedTemplate.value }
         if (Number.isFinite(maxBudget) && maxBudget > 0) {
           payload.maxCost = maxBudget
-        }
-
-        const seedsPayload = buildSeedPayload()
-        if (seedsPayload.length) {
-          payload.userSeeds = seedsPayload
         }
 
         if (modeOverride) {

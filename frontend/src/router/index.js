@@ -4,8 +4,6 @@ import RacedayView from '@/views/raceday/RacedayView.vue'
 import RaceHorsesView from '@/views/race/RaceHorsesView.vue'
 import HorseView from '@/views/horse/HorseView.vue'
 import DriverView from '@/views/driver/DriverView.vue'
-import DevRatingsView from '@/views/DevRatingsView.vue'
-import AdminView from '@/views/Admin/AdminView.vue'
 import HorseSearchView from '@/views/horses/HorseSearchView.vue'
 import DriverSearchView from '@/views/drivers/DriverSearchView.vue'
 
@@ -112,30 +110,6 @@ const routes = [
       breadcrumb: (route) => ({
         label: route.meta?.breadcrumbLabel || `Kusk ${route.params?.driverId ?? ''}`
       })
-    }
-  },
-  {
-    path: '/dev/ratings',
-    name: 'DevRatings',
-    component: DevRatingsView,
-    meta: {
-      parent: 'RacedayInput',
-      breadcrumb: {
-        label: 'ELO-översikt',
-        to: { name: 'DevRatings' }
-      }
-    }
-  },
-  {
-    path: '/admin',
-    name: 'Admin',
-    component: AdminView,
-    meta: {
-      parent: 'RacedayInput',
-      breadcrumb: {
-        label: 'Administration',
-        to: { name: 'Admin' }
-      }
     }
   }
 ]

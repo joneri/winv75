@@ -73,23 +73,5 @@ export const navigationSections: NavigationSection[] = [
         matchRoutes: ['DriverDetail']
       }
     ]
-  },
-  {
-    title: 'Administration',
-    icon: 'mdi-shield-cog',
-    items: [
-      {
-        title: 'Administration',
-        icon: 'mdi-shield-cog-outline',
-        to: { name: 'Admin' },
-        description: 'Manuella uppdateringar och verktyg.'
-      },
-      {
-        title: 'ELO-översikt',
-        icon: 'mdi-finance',
-        to: { name: 'DevRatings' },
-        description: 'Översikt av aktuella ELO-värden.'
-      }
-    ]
   }
 ]

@@ -1,7 +1,7 @@
 import axios from 'axios'
-import raceDayService from './raceday-service.js'
 import Raceday from './raceday-model.js'
 import gameService from '../game/game-service.js'
+import horseService from '../horse/horse-service.js'
 
 const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
 
@@ -337,11 +337,52 @@ const toScore = (horse) => {
   return composite
 }
 
+const buildAiRacesForRaceday = async (racedayId) => {
+  const raceday = await Raceday.findById(
+    racedayId,
+    { trackName: 1, raceDayDate: 1, raceList: 1, gameTypes: 1 }
+  ).lean()
+  if (!raceday) return null
+
+  const gamesMap = {}
+  for (const [game, ids] of Object.entries(raceday.gameTypes || {})) {
+    ;(ids || []).forEach((raceId, index) => {
+      if (!gamesMap[raceId]) gamesMap[raceId] = []
+      gamesMap[raceId].push({ game, leg: index + 1 })
+    })
+  }
+
+  const races = []
+  for (const race of raceday.raceList || []) {
+    const ranking = await horseService.getHorseRankings(String(race.raceId))
+    races.push({
+      race: {
+        raceId: race.raceId,
+        raceNumber: race.raceNumber,
+        distance: race.distance,
+        startDateTime: race.startDateTime,
+        trackName: raceday.trackName
+      },
+      ranking,
+      games: gamesMap[race.raceId] || []
+    })
+  }
+
+  return {
+    raceday: {
+      id: raceday._id,
+      trackName: raceday.trackName,
+      raceDayDate: raceday.raceDayDate
+    },
+    races
+  }
+}
+
 const buildSuggestionContext = async (racedayId, context = null) => {
   const ctx = context || {}
 
   if (!ctx.aiData) {
-    ctx.aiData = await raceDayService.getRacedayAiList(racedayId)
+    ctx.aiData = await buildAiRacesForRaceday(racedayId)
   }
 
   if (!ctx.aiData) {
