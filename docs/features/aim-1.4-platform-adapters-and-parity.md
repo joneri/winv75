@@ -16,6 +16,8 @@ AIM 1.4 keeps one runtime contract and lets adapters differ only at the interfac
 ### Adapter responsibilities
 - Codex adapter:
   - uses repository instructions plus the available Codex tool/runtime surface
+  - treats the repository as the canonical AIM contract
+  - can expose `/aim` through the AIM skill or another compatible runtime adapter
   - can expose Codex-specific tools such as MCP integrations where available
   - must still preserve shared `.aim`, gate, and ownership semantics
 - Copilot adapter:
@@ -60,8 +62,9 @@ If a capability is unavailable in one adapter:
 
 | Capability | Classification | Codex adapter | Copilot adapter | Claude Code adapter | Fallback / notes |
 | --- | --- | --- | --- | --- | --- |
-| Start AIM session | shared_with_adapter_differences | Chat entry using repo instructions and runtime tools | Slash command, natural-language start, or custom-agent entry | Explicit `EPIC: ...` start or repo-defined command in `.claude/commands/` | Same bootstrap sequence must apply |
+| Start AIM session | shared_with_adapter_differences | `/aim start "EPIC: ..."` when the skill is installed, or explicit AIM prompt against the repo contract when it is not | Slash command, natural-language start, or custom-agent entry | Explicit `EPIC: ...` start or repo-defined command in `.claude/commands/` | Same bootstrap sequence must apply |
 | Resume active Epic | shared_with_adapter_differences | Resume from `.aim/state.json` in the main thread | `/aim continue` and checkpoint-based resume | Resume from `.aim/state.json` through the main Claude AIM thread | Must not silently start a parallel Epic |
+| `/aim` command surface | shared_with_adapter_differences | Exposed by the AIM skill or a compatible Codex runtime adapter | Exposed through the Copilot `aim` agent layer | Exposed only when the repo ships matching Claude commands | If missing, fall back to explicit AIM prompts without changing authority |
 | Create `.aim` | shared | AIM-in-Codex creates `.aim` if missing | Copilot-layer AIM creates `.aim` if missing | Claude Code AIM creates `.aim` if missing | Same runtime contract |
 | Read `.aim` | shared | Reads official runtime workspace directly | Reads the same workspace through Copilot layer | Reads the same workspace through `CLAUDE.md`-guided flow | Helper artifacts stay secondary |
 | Update increment state | shared_with_adapter_differences | Main AIM thread updates shared state directly | Main AIM thread updates shared state through Copilot orchestration | Main AIM thread updates shared state through Claude Code execution | Only main thread may write authoritative state |
@@ -101,6 +104,7 @@ If a capability is unavailable in one adapter:
 ## Edge cases
 - a repo can have Copilot prompt-file coverage that lags behind the shared runtime docs; this is a packaging gap, not a change to AIM core
 - Codex can expose MCP-backed capabilities that do not map to the Copilot layer; these stay adapter-specific until parity exists
+- a Codex repo can be fully repo-aware even when the skill is absent; that changes the start surface, not the canonical AIM contract
 - Claude Code can add bridge files or helper commands that improve entry UX without changing the shared runtime contract
 - bounded parallel capability can exist in one adapter without changing who owns `state.json`, gates, or acceptance
 

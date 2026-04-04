@@ -8,7 +8,7 @@ Use this guide if you want the shortest correct path into AIM.
 ## Choose your adapter
 
 - Codex:
-  use the AIM skill and the repo docs.
+  use the repo docs as the source of truth and the AIM skill when you want the `/aim` command surface.
 - Copilot:
   use the packaged `aim` agent and add prompt helpers when you want Copilot-style command entrypoints.
 - Claude Code:
@@ -20,11 +20,19 @@ Shared install note:
 - `.github/agents/aim*.agent.md` are part of the AIM instruction layer generally.
 - `.github/prompts/` are optional Copilot prompt helpers.
 
+## Adapter cheat sheet
+
+| Adapter | Canonical repo contract | Convenience surface | Normal start | Surface requirement |
+| --- | --- | --- | --- | --- |
+| Codex | `AGENTS.md`, `docs/workflow/agile-iteration-method.md`, `.github/agents/aim*.agent.md` | AIM skill exposing `/aim` | `/aim start "EPIC: ..."` | The skill must be installed and enabled for `/aim` |
+| Copilot | `AGENTS.md`, `docs/workflow/agile-iteration-method.md`, `.github/agents/aim*.agent.md` | `aim` agent and optional `.github/prompts/` files | `/aim start "EPIC: ..."` in the `aim` agent | The Copilot layer must be installed |
+| Claude Code | `AGENTS.md`, `docs/workflow/agile-iteration-method.md`, `.github/agents/aim*.agent.md`, `CLAUDE.md` | Optional `.claude/commands/` and `.claude/agents/` helpers | repo command or explicit `EPIC: ...` start | `CLAUDE.md` is required for the Claude adapter |
+
 ## One obvious way to start
 
 Preferred production starts:
 - Codex:
-  - invoke `[$agile-iteration-method](...)` and provide `EPIC: ...`
+  - run `/aim start "EPIC: ..."` when the AIM skill is installed and enabled
 - Copilot:
   - select the `aim` agent and run `/aim start "EPIC: ..."`
 - Claude Code:
@@ -33,11 +41,16 @@ Preferred production starts:
 
 Secondary starts:
 - Codex:
-  - a natural-language AIM start is acceptable when the intent is explicit
+  - if the skill is not installed, use an explicit AIM start prompt against the repo contract
 - Copilot:
   - `Install AIM` or `Start working according to AIM` remain valid when the optional Copilot layer is installed
 - Claude Code:
   - explicit `EPIC: ...` plus `Mode: Strict` or `Mode: Auto` is the safe fallback when no Claude command wrapper exists
+
+Codex rule:
+- `/aim` is the normal user-facing Codex surface when the skill is installed
+- the skill is a convenience layer, not the canonical AIM contract
+- without the skill, `/aim` is unavailable, but repo-aware AIM can still run from an explicit start prompt when the repo contains the shared AIM contract
 
 If you already have a strong Epic candidate:
 - provide it directly
@@ -73,10 +86,11 @@ Good example:
 Mode: Auto
 ```
 
-Codex-oriented equivalent:
+Codex fallback without the skill:
 
 ```text
-[$agile-iteration-method](...) Start new AIM Loop with "EPIC: Make AIM easier for new users to start and understand"
+Start AIM in this repo
+EPIC: Make AIM easier for new users to start and understand
 Mode: Auto
 ```
 
@@ -136,6 +150,11 @@ If slash commands are not available in the current adapter:
 - use the documented secondary natural-language intent
 - or use the adapter bridge and shipped helper files (`CLAUDE.md`, `.claude/commands/start-aim.md`, `.claude/agents/aim.md`)
 - or use the relevant workflow doc directly
+
+For Codex:
+- do not treat old skill-link syntax as the preferred user-facing start path
+- use `/aim` when the skill exists
+- use the explicit fallback prompt when it does not
 
 Next guide:
 - `docs/workflow/aim-1.4-usage-guides.md`

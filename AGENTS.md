@@ -78,6 +78,28 @@ Quick start phrases:
 
 These layers improve UX and speed, but must preserve this file's gate and escalation semantics.
 
+## Codex skill and repo-aware AIM
+
+For repo-aware AIM, the repository is the canonical contract.
+
+In Codex:
+- the AIM skill is a bootstrap and convenience layer
+- the skill can expose the `/aim` command family, such as `/aim start "EPIC: ..."`
+- the skill can also expose convenience entrypoints such as `/aim help`, `/aim status`, `/aim config`, `/aim validate` and `/aim upgrade 1.2-to-1.4`
+
+Authority rule:
+- `AGENTS.md`, `docs/workflow/agile-iteration-method.md` and `.github/agents/aim*.agent.md` define repo-aware AIM behavior
+- the Codex skill must not replace that repo-owned contract with a hidden second source of truth
+
+Availability rule:
+- when the AIM skill is installed and enabled, `/aim` is the normal user-facing Codex start surface
+- without the skill, `/aim` is not available in Codex
+- without the skill, repo-aware AIM can still run in Codex through an explicit AIM start prompt when the repository already contains the shared AIM contract
+
+Practical rule:
+- use the skill when you want the fastest Codex start, bootstrap help, or the `/aim` command surface
+- use the repo contract as the source of truth in all cases
+
 ## Repository profile (required)
 
 Each repository must define a repository profile in `AGENTS.md` that states:

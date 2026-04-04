@@ -471,6 +471,13 @@ Installation note:
 - In Copilot, the same files also act as native custom-agent files.
 - `.github/prompts/` are optional Copilot-style command helpers rather than the canonical AIM contract.
 
+Codex product model:
+- the repository is the canonical AIM contract for repo-aware AIM
+- the Codex skill is a bootstrap and convenience layer
+- when the skill is installed and enabled, `/aim start "EPIC: ..."` is the normal Codex start surface
+- without the skill, `/aim` is unavailable, but repo-aware AIM can still start from an explicit AIM prompt when the repository already contains the shared contract
+- the skill is useful for bootstrap, onboarding and repos that are not fully prepared yet
+
 Startup triggers (no manual bootstrap expected):
 - `Install AIM`
 - `Start working according to AIM`
@@ -898,8 +905,14 @@ In Codex, AIM runs through repository instructions plus the available Codex tool
   - use bounded parallel subagents when runtime support actually exists
 - adapter differences:
   - the exact interaction surface is Codex chat and its toolset
+  - the AIM skill can expose the `/aim` command family as the normal user-facing Codex surface
   - controlled parallelism depends on whether the runtime actually exposes bounded subagent capability
   - some capabilities can be exposed through Codex-specific MCP integrations
+- authority and availability:
+  - the repository remains the canonical contract for repo-aware AIM
+  - the skill is a bootstrap and convenience layer rather than a second source of truth
+  - without the skill, `/aim` is unavailable in Codex
+  - without the skill, repo-aware AIM can still run from an explicit AIM start prompt when the repo contains the shared contract
 - `.aim` behavior:
   - if `.aim` does not exist when AIM starts or resumes, AIM-in-Codex must create it automatically before entering the role loop
   - this is AIM runtime behavior exposed through the Codex adapter, not a built-in Codex app guarantee outside AIM

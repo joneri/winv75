@@ -21,7 +21,9 @@ There is one shared mental model:
 
 The installation surface depends on adapter:
 - Codex:
-  - requires the AIM skill plus the repository AIM docs and shared instruction-layer files
+  - repo-aware AIM requires the repository AIM docs and shared instruction-layer files
+  - the AIM skill is required only for the `/aim` command surface and other Codex convenience commands
+  - without the skill, Codex can still start repo-aware AIM from an explicit AIM prompt when the repo contract is present
 - Copilot:
   - requires the repository AIM docs plus `.github/agents/aim*.agent.md`
   - may add `.github/prompts/*.prompt.md` for packaged Copilot command entrypoints
@@ -63,11 +65,21 @@ If a behavior comes from repo policy or adapter limits, AIM should say so explic
 Minimum viable setup:
 - AIM docs and repo policy files present in the repository
 - `.github/agents/aim*.agent.md` present as shared AIM instruction-layer files
-- an adapter entrypoint available:
-  - Codex skill invocation or compatible runtime
-  - Copilot custom agent files, with prompt files optional
-  - Claude Code explicit start prompt or repository command helper
 - `.aim/` created automatically on first valid start or resume when missing
+
+Codex command-surface layer:
+- the `agile-iteration-method` skill, or another compatible Codex AIM runtime adapter, exposes `/aim`
+- that layer is optional for repo-aware AIM itself
+- that layer is required for `/aim`, `/aim help`, `/aim status`, `/aim config`, `/aim validate`, and `/aim upgrade 1.2-to-1.4` in Codex
+
+Adapter entrypoints:
+- Codex:
+  - `/aim ...` when the skill is installed and enabled
+  - explicit AIM prompt when the repo contract is present but the skill is absent
+- Copilot:
+  - custom `aim` agent, with prompt files optional
+- Claude Code:
+  - explicit start prompt or repository command helper
 
 ### Upgrade model
 `/aim upgrade 1.2-to-1.4` should point users to the shared migration workflow and explain:
@@ -98,15 +110,17 @@ Minimum viable setup:
 
 ## Edge cases
 - if the adapter lacks a packaged helper prompt, the conceptual command still exists and the fallback must be explained explicitly
+- if `/aim` is missing in Codex, the likely cause is that the skill is missing or disabled
 - if `.aim/state.json` exists but is contradictory, status should direct the user to validation and repair instead of pretending the session is healthy
 - if repo-aware policy requests a capability the adapter cannot execute, config should preserve the intended rule and show the fallback
 
 ## Debugging
 The single best check to verify behavior:
-- compare `docs/workflow/install-aim-1.4.md`, `docs/workflow/copilot-layer.md`, `.github/agents/aim.agent.md`, and the packaged prompt files
+- compare `docs/workflow/install-aim-1.4.md`, `docs/workflow/quick-start-aim-1.4.md`, `docs/features/aim-1.4-command-surface-and-onboarding.md`, and `.github/agents/aim.agent.md`
 
 What "good" looks like:
 - install steps match actual repo packaging
+- Codex docs say clearly that the skill exposes `/aim` but does not replace repo authority
 - `.github/agents/aim*.agent.md` are treated as required AIM instruction-layer files rather than Copilot-only decoration
 - `.github/prompts/` are treated as optional Copilot helpers
 - status and config explain the same state model used by runtime docs

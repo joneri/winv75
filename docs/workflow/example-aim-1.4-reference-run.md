@@ -33,8 +33,9 @@ Runtime assumptions:
 
 1. Open the repo in VS Code.
 2. Open Codex chat for the workspace.
-3. Invoke `[$agile-iteration-method](...)` and provide the Epic candidate directly.
-4. Make mode explicit, for example `Mode: Strict`.
+3. If the AIM skill is installed and enabled, run `/aim start "EPIC: ..."` and provide the Epic candidate directly.
+4. If the skill is not installed, start with an explicit AIM prompt against the repo contract.
+5. Make mode explicit, for example `Mode: Strict`.
 
 Expected behavior:
 - AIM detects repo root
@@ -80,7 +81,9 @@ If the checkpoint is contradictory:
 ## Step 4: Compare Codex and Copilot
 
 Codex reference:
-- uses the AIM skill together with the repo instructions and the available Codex runtime/tool surface
+- uses the repo instructions as the canonical contract
+- uses the AIM skill when the `/aim` command surface is wanted
+- can still run repo-aware AIM without the skill through an explicit AIM start prompt
 - may expose bounded parallel capability where runtime support exists
 
 Copilot reference:
@@ -138,7 +141,6 @@ If bounded parallel capability is missing:
 
 ## Related documents
 
-- `README.md`
 - `AGENTS.md`
 - `docs/workflow/agile-iteration-method.md`
 - `docs/workflow/aim-1.4-interaction-examples.md`

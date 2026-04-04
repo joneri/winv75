@@ -12,7 +12,7 @@ Users should be able to answer:
 - how Epic input differs from TDO-owned Done Increment definition
 
 ## How it works
-AIM should prefer one obvious way to begin:
+AIM should prefer one obvious way to begin in adapters that expose the AIM command surface:
 - canonical command-style start:
   - `/aim start "EPIC: ..."`
 - natural-language equivalent:
@@ -20,9 +20,16 @@ AIM should prefer one obvious way to begin:
 
 Adapter note:
 - Copilot may expose `/aim ...` directly
-- Codex may use the AIM skill entrypoint
+- Codex uses `/aim ...` when the AIM skill is installed and enabled
+- without the skill, Codex falls back to an explicit AIM prompt against the repo contract
 - Claude Code may use a repo-defined command in `.claude/commands/` or an explicit `EPIC: ...` start guided by `CLAUDE.md`
 - when the repository ships a Claude starter layer, the concrete command files should be named and cross-linked in onboarding docs
+
+Codex product rule:
+- the repository is the canonical AIM contract
+- the skill is a bootstrap and convenience layer
+- the skill exposes `/aim` and related convenience commands
+- the skill does not replace repo-aware AIM authority
 
 Mode is explicit:
 - `Mode: Strict`
@@ -80,7 +87,7 @@ Must remain true:
 
 ## Debugging
 The single best check to verify behavior:
-- compare the documented quick-start and command surface in `README.md`, `docs/workflow/quick-start-aim-1.4.md`, and `.github/agents/aim.agent.md`
+- compare the documented quick-start and command surface in `docs/workflow/quick-start-aim-1.4.md`, `docs/workflow/install-aim-1.4.md`, and `.github/agents/aim.agent.md`
 
 What "good" looks like:
 - one obvious start path
@@ -95,11 +102,11 @@ What "bad" looks like:
 - command docs claim behavior the repo packaging does not expose
 
 ## Related files
-- README.md
 - CLAUDE.md
 - .claude/commands/start-aim.md
 - .claude/agents/aim.md
 - .github/agents/aim.agent.md
+- docs/workflow/install-aim-1.4.md
 - docs/workflow/quick-start-aim-1.4.md
 - docs/workflow/copilot-layer.md
 - docs/epics/aim-1.3x-onboarding-command-surface.md

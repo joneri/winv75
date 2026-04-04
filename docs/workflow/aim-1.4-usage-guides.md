@@ -12,7 +12,8 @@ Use when:
 
 Recommended start:
 - Codex:
-  - invoke `[$agile-iteration-method](...)` with the Epic candidate inline
+  - run `/aim start "EPIC: ..."` when the AIM skill is installed and enabled
+  - use an explicit AIM start prompt when the repo is AIM-aware but the skill is absent
 - Copilot:
   - select `aim` and run `/aim start "EPIC: ..."`
 
@@ -147,7 +148,7 @@ If you are unsure where to begin:
 - inspect `.github/agents/aim.agent.md`
 
 Adapter reminders:
-- Codex discoverability usually starts with the AIM skill and repo docs
+- Codex discoverability usually starts with `/aim` through the AIM skill or, without the skill, through the repo docs and an explicit AIM start prompt
 - Copilot discoverability usually starts with the `aim` agent and the documented slash-command surface
 
 ## 9. Know what to do at each checkpoint

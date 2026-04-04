@@ -31,8 +31,13 @@ Required in the repository:
 - `.github/agents/aim-reviewer.agent.md`
 - `.aim/` created automatically when AIM starts if missing
 
-Required for Codex:
-- access to the `agile-iteration-method` skill or another compatible AIM runtime adapter
+Required for repo-aware AIM in Codex:
+- the repository files above
+- a Codex run that can read and follow the repository AIM contract
+
+Optional Codex convenience layer:
+- the `agile-iteration-method` skill installed and enabled
+- or another compatible Codex AIM runtime adapter that exposes the `/aim` command surface
 
 Optional Copilot prompt helpers:
 - `.github/prompts/start-aim.prompt.md`
@@ -52,6 +57,19 @@ Claude Code rule:
 - `.github/agents/aim*.agent.md` remain part of the shared AIM instruction layer
 - `CLAUDE.md` and `.claude/` files are adapter helpers, not replacements for the shared runtime contract
 
+## Codex product model
+
+For Codex, AIM 1.4.x uses this model:
+- the repository is the canonical AIM contract
+- the Codex skill is a bootstrap and convenience layer
+- the skill is useful for onboarding, bootstrap and the `/aim` command surface
+- the skill is not the only way repo-aware AIM can work in Codex
+
+Practical meaning:
+- if the skill is installed and enabled, `/aim start "EPIC: ..."` is the normal Codex start path
+- if the skill is not installed, `/aim` is not available
+- if the repository already contains the shared AIM contract, Codex can still run repo-aware AIM from an explicit AIM start prompt without the skill
+
 ## What lives where
 
 Shared runtime guidance lives in repo docs:
@@ -67,14 +85,15 @@ Repo-local working state lives in:
 - `.aim/reviews/`
 
 Adapter-specific entrypoints live in:
-- Codex skill packaging outside the repo
+- Codex skill packaging outside the repo when you want the `/aim` command surface
 - repository `.github/agents/aim*.agent.md` as shared AIM instruction-layer files
 - Copilot `.github/prompts/` files as optional Copilot entry helpers
 - Claude Code `CLAUDE.md`, `.claude/agents/`, and `.claude/commands/` inside the repo
 
 Recommended user-facing adapter choice:
 - Codex:
-  - use the AIM skill
+  - use `/aim` through the AIM skill when the skill is installed
+  - use an explicit AIM start prompt when the repo is AIM-aware but the skill is absent
 - Copilot:
   - use the packaged `aim` agent and add prompt helpers when you want Copilot-style command entrypoints
 - Claude Code:
@@ -93,12 +112,19 @@ Recommended default for the official AIM repository:
 ## Recommended installation flow
 
 ### Codex
-1. Confirm the AIM skill is available.
-2. Confirm the repository AIM docs are present.
-3. Start with:
-   - `[$agile-iteration-method](...) Start new AIM Loop with "EPIC: ..."`
-   - or another compatible AIM runtime entrypoint
-4. Confirm the active skill baseline is AIM 1.4 rather than an older AIM variant.
+1. Confirm the repository AIM docs are present.
+2. If you want `/aim`, confirm the AIM skill is installed and enabled.
+3. Preferred start when the skill is present:
+   - `/aim start "EPIC: ..."`
+4. Fallback when the skill is absent but the repo is already AIM-aware:
+   - start with an explicit AIM prompt such as:
+     - `Start AIM in this repo`
+     - `EPIC: <desired outcome>`
+     - `Mode: Strict` or `Mode: Auto`
+5. Use `Install AIM` when you are bootstrapping or checking setup, not as the normal production start path.
+6. Confirm the active model:
+   - the repo is canonical
+   - the skill is a convenience layer
 
 ### Copilot
 1. Run the install helper:
@@ -130,11 +156,8 @@ Recommended default for the official AIM repository:
 After installation, a user should be able to:
 - start AIM
 - resume AIM
-- inspect status with `/aim status`
-- inspect config with `/aim config`
-- validate runtime state with `/aim validate`
-- read help with `/aim help`
-- start upgrade guidance with `/aim upgrade 1.2-to-1.4`
+- use `/aim start`, `/aim status`, `/aim config`, `/aim validate`, `/aim help` and `/aim upgrade 1.2-to-1.4` when the Codex skill is installed
+- use the documented explicit fallback prompts when the repo is AIM-aware but the Codex skill is absent
 
 ## Runtime status and configuration
 
@@ -158,6 +181,7 @@ After installation, a user should be able to:
 Friendly fallback rule:
 - if the user starts AIM in recognizable language, treat it as a start intent
 - if a helper prompt is missing, explain the equivalent manual command
+- if `/aim` is missing in Codex, explain that the skill is missing or disabled and give the explicit repo-aware fallback
 - if `.aim` is missing, create it before continuing
 - if repo policy is contradictory, stop and escalate instead of guessing
 

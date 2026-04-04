@@ -29,6 +29,20 @@ AIM does not start cleanly.
 - AIM creates `.aim` if it is missing
 - AIM stops and escalates if repo-aware context is contradictory in a trust-affecting way
 
+### Symptom
+`/aim` does not work in Codex.
+
+### Check
+- confirm the AIM skill is installed and enabled
+- confirm the repository still contains `AGENTS.md`, `docs/workflow/agile-iteration-method.md`, and `.github/agents/aim*.agent.md`
+- confirm you are not treating `.github/prompts/` as required for Codex
+
+### Expected AIM 1.4 behavior
+- when the skill is installed, `/aim` is the normal Codex start surface
+- when the skill is absent, `/aim` is unavailable
+- when the skill is absent, repo-aware AIM can still run from an explicit AIM prompt if the repo contract is present
+- the skill does not replace the repo contract
+
 ## Resume issues
 
 ### Symptom
