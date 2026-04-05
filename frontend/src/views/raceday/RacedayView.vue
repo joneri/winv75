@@ -84,7 +84,7 @@
                 </div>
                 <div class="game-card-actions">
                   <v-btn color="secondary" variant="elevated" @click="showV85Modal = true">
-                    Öppna V85-förslag
+                    V85-spelförslag
                   </v-btn>
                   <v-btn color="info" variant="tonal" :loading="updatingV85" :disabled="updatingV85" @click="updateV85">
                     Uppdatera V85%
@@ -92,6 +92,31 @@
                 </div>
                 <div v-if="v85UpdateMessage" class="game-card-message">
                   {{ v85UpdateMessage }}
+                </div>
+              </article>
+
+              <article v-if="hasV5" class="game-card">
+                <div class="game-card-top">
+                  <div>
+                    <div class="game-card-title">V5</div>
+                    <div class="game-card-status">
+                      {{ v5UpdatedLabel || 'V5-procent är inte uppdaterad ännu' }}
+                    </div>
+                  </div>
+                  <div class="games" v-if="racedayGames.includes('V5')">
+                    <SpelformBadge game="V5" :leg="1" />
+                  </div>
+                </div>
+                <div class="game-card-actions">
+                  <v-btn color="secondary" variant="elevated" @click="showV5Modal = true">
+                    V5-spelförslag
+                  </v-btn>
+                  <v-btn color="info" variant="tonal" :loading="updatingV5" :disabled="updatingV5" @click="updateV5">
+                    Uppdatera V5%
+                  </v-btn>
+                </div>
+                <div v-if="v5UpdateMessage" class="game-card-message">
+                  {{ v5UpdateMessage }}
                 </div>
               </article>
 
@@ -109,7 +134,7 @@
                 </div>
                 <div class="game-card-actions">
                   <v-btn color="secondary" variant="elevated" @click="showV86Modal = true">
-                    Öppna V86-förslag
+                    V86-spelförslag
                   </v-btn>
                   <v-btn color="info" variant="tonal" :loading="updatingV86" :disabled="updatingV86" @click="updateV86">
                     Uppdatera V86%
@@ -120,8 +145,28 @@
                 </div>
               </article>
 
-              <div v-if="!hasV85 && !hasV86" class="empty-rail-message">
-                Inga V85- eller V86-spel hittades för den här tävlingsdagen.
+              <article v-if="hasDD" class="game-card">
+                <div class="game-card-top">
+                  <div>
+                    <div class="game-card-title">Dagens Dubbel</div>
+                    <div class="game-card-status">
+                      {{ ddStatusLabel }}
+                    </div>
+                  </div>
+                  <div class="games" v-if="racedayGames.includes('DD')">
+                    <SpelformBadge game="DD" :leg="1" />
+                    <SpelformBadge game="DD" :leg="2" />
+                  </div>
+                </div>
+                <div class="game-card-actions">
+                  <v-btn color="secondary" variant="elevated" @click="showDdModal = true">
+                    DD-förslag
+                  </v-btn>
+                </div>
+              </article>
+
+              <div v-if="!hasV85 && !hasV5 && !hasV86 && !hasDD" class="empty-rail-message">
+                Inga stödda spelformer hittades för den här tävlingsdagen.
               </div>
             </div>
           </section>
@@ -195,7 +240,7 @@
             </div>
           </section>
 
-          <section class="page-panel history-panel">
+          <section class="page-panel history-panel saved-suggestions-panel">
               <div class="saved-header">
                 <div>
                   <div class="saved-title">Historik för tävlingsdagen</div>
@@ -355,9 +400,21 @@
     @generated="handleGeneratedSuggestions"
     :raceday-id="route.params.racedayId"
   />
+  <V5SuggestionModal
+    :model-value="showV5Modal"
+    @update:modelValue="showV5Modal = $event"
+    @generated="handleGeneratedSuggestions"
+    :raceday-id="route.params.racedayId"
+  />
   <V86SuggestionModal
     :model-value="showV86Modal"
     @update:modelValue="showV86Modal = $event"
+    @generated="handleGeneratedSuggestions"
+    :raceday-id="route.params.racedayId"
+  />
+  <DdSuggestionModal
+    :model-value="showDdModal"
+    @update:modelValue="showDdModal = $event"
     @generated="handleGeneratedSuggestions"
     :raceday-id="route.params.racedayId"
   />
@@ -445,16 +502,20 @@ import RacedayService from '@/views/raceday/services/RacedayService.js'
 import SuggestionService from '@/views/suggestion/services/SuggestionService.js'
 import { useRoute } from 'vue-router'
 import SpelformBadge from '@/components/SpelformBadge.vue'
+import V5SuggestionModal from './components/V5SuggestionModal.vue'
 import V85SuggestionModal from './components/V85SuggestionModal.vue'
 import V86SuggestionModal from './components/V86SuggestionModal.vue'
+import DdSuggestionModal from './components/DdSuggestionModal.vue'
 import { setBreadcrumbLabel } from '@/navigation/breadcrumbs'
 
 export default {
   components: {
     RaceCardComponent,
     SpelformBadge,
+    V5SuggestionModal,
     V85SuggestionModal,
-    V86SuggestionModal
+    V86SuggestionModal,
+    DdSuggestionModal
   },
   props: {
     racedayId: {
@@ -475,10 +536,14 @@ export default {
 
     const racedayDetails = ref(null)
     const errorMessage = ref(null)
+    const updatingV5 = ref(false)
     const updatingV85 = ref(false)
     const updatingV86 = ref(false)
+    const showV5Modal = ref(false)
     const showV85Modal = ref(false)
     const showV86Modal = ref(false)
+    const showDdModal = ref(false)
+    const ddGameView = ref(null)
     const v86GameView = ref(null)
     const loading = ref(true)
     const sessionSuggestions = ref([])
@@ -498,8 +563,13 @@ export default {
     const deletingSuggestionId = ref('')
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
+    const v5UpdateMessage = ref('')
     const v85UpdateMessage = ref('')
     const v86UpdateMessage = ref('')
+    const normalizeGameCode = (value) => {
+      const upper = String(value || '').toUpperCase()
+      return upper === 'DD' ? 'DD' : upper
+    }
     const formatTimeShort = (dateString) => {
       try {
         const d = new Date(dateString)
@@ -523,6 +593,7 @@ export default {
         loading.value = true
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
+        await loadDdGameView()
         await loadV86GameView()
         await refreshSavedSuggestions()
       } catch (error) {
@@ -559,7 +630,7 @@ export default {
 
     const racedayGames = computed(() => {
       const order = ['V85','V86','V64','V65','GS75','V5','V4','DD']
-      const keys = Object.keys(spelformer.value || {})
+      const keys = [...new Set(Object.keys(spelformer.value || {}).map(normalizeGameCode))]
       return keys.sort((a,b) => (order.indexOf(a) === -1 ? 999 : order.indexOf(a)) - (order.indexOf(b) === -1 ? 999 : order.indexOf(b)))
     })
 
@@ -567,6 +638,7 @@ export default {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
+        await loadDdGameView()
         await loadV86GameView()
         await refreshSavedSuggestions()
       } catch (error) {
@@ -737,6 +809,15 @@ export default {
       }
     }
 
+    const loadDdGameView = async () => {
+      try {
+        ddGameView.value = await RacedayService.fetchDdGameView(route.params.racedayId)
+      } catch (error) {
+        console.error('Failed to load DD game view', error)
+        ddGameView.value = null
+      }
+    }
+
     const formatDateTime = (value) => {
       try {
         return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
@@ -744,6 +825,12 @@ export default {
         return ''
       }
     }
+
+    const v5UpdatedLabel = computed(() => {
+      const ts = racedayDetails.value?.v5Info?.updatedAt
+      if (!ts) return ''
+      return `V5% uppdaterad ${formatDateTime(ts)}`
+    })
 
     const v85UpdatedLabel = computed(() => {
       const ts = racedayDetails.value?.v85Info?.updatedAt
@@ -758,9 +845,22 @@ export default {
     })
 
     const hasV85 = computed(() => Array.isArray(spelformer.value?.V85) && spelformer.value.V85.length > 0)
+    const hasV5 = computed(() => Array.isArray(spelformer.value?.V5) && spelformer.value.V5.length > 0)
     const hasV86 = computed(() => {
       if (Array.isArray(spelformer.value?.V86) && spelformer.value.V86.length > 0) return true
       return v86GameView.value?.status === 'ok'
+    })
+    const hasDD = computed(() => {
+      if (Array.isArray(spelformer.value?.DD) && spelformer.value.DD.length > 0) return true
+      if (Array.isArray(spelformer.value?.dd) && spelformer.value.dd.length > 0) return true
+      return ddGameView.value?.status === 'ok'
+    })
+
+    const ddStatusLabel = computed(() => {
+      if (ddGameView.value?.status === 'ok' && ddGameView.value?.gameId) {
+        return `DD-omgång ${ddGameView.value.gameId}`
+      }
+      return 'DD-omgången hämtas när förslaget öppnas'
     })
 
     const v86LegByRaceId = computed(() => {
@@ -799,11 +899,28 @@ export default {
         res.push({ game: 'V86', leg: v86Leg })
       }
       for (const [game, ids] of Object.entries(spelformer.value)) {
-        if (game === 'V86') continue
+        const normalizedGame = normalizeGameCode(game)
+        if (normalizedGame === 'V86') continue
         const idx = ids.findIndex(id => String(id) === raceKey)
-        if (idx !== -1) res.push({ game, leg: idx + 1 })
+        if (idx !== -1) res.push({ game: normalizedGame, leg: idx + 1 })
       }
       return res
+    }
+
+    const updateV5 = async () => {
+      try {
+        if (!hasV5.value) return
+        updatingV5.value = true
+        v5UpdateMessage.value = ''
+        await RacedayService.updateV5Distribution(route.params.racedayId)
+        await refreshRaceday()
+        v5UpdateMessage.value = v5UpdatedLabel.value || 'V5% uppdaterad.'
+      } catch (error) {
+        console.error('Failed to update V5%', error)
+        v5UpdateMessage.value = error?.error || 'Misslyckades att uppdatera V5%'
+      } finally {
+        updatingV5.value = false
+      }
     }
 
     const updateV85 = async () => {
@@ -1004,7 +1121,10 @@ export default {
       getRaceGames,
       refreshRaceday,
       hasV85,
+      hasV5,
       hasV86,
+      hasDD,
+      updateV5,
       updateV85,
       updateV86,
       racedayGames,
@@ -1013,15 +1133,21 @@ export default {
       racedayDateLabel,
       formattedFirstStart,
       settledSuggestionCount,
+      showV5Modal,
       showV85Modal,
       showV86Modal,
+      showDdModal,
       route,
+      updatingV5,
       updatingV85,
       updatingV86,
+      v5UpdatedLabel,
+      v5UpdateMessage,
       v85UpdatedLabel,
       v85UpdateMessage,
       v86UpdatedLabel,
       v86UpdateMessage,
+      ddStatusLabel,
       handleGeneratedSuggestions,
       sessionUnsavedSuggestions,
       sessionPreviewOpen,

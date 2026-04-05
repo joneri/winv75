@@ -57,6 +57,8 @@ const horseSchema = new mongoose.Schema({
   v85Trend: { type: Number, default: null },
   v86Percent: { type: Number, default: null },
   v86Trend: { type: Number, default: null },
+  v5Percent: { type: Number, default: null },
+  v5Trend: { type: Number, default: null },
   // pastRaceComments removed: all past race comments are now only in atgExtendedRaw
   aiSummary: { type: String, default: '' },
   aiSummaryMeta: {
@@ -138,6 +140,12 @@ const racedaySchema = new mongoose.Schema({
     legs: { type: Array, default: [] }
   },
   v86Info: {
+    updatedAt: { type: Date, default: null },
+    gameId: { type: String, default: null },
+    source: { type: String, default: 'ATG' },
+    legs: { type: Array, default: [] }
+  },
+  v5Info: {
     updatedAt: { type: Date, default: null },
     gameId: { type: String, default: null },
     source: { type: String, default: 'ATG' },

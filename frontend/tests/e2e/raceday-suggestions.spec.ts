@@ -67,7 +67,7 @@ test('Saved suggestions can be reopened from the raceday page', async ({ page, r
   await expect(savedLink).toBeVisible()
   await savedLink.click()
 
-  await expect(page.getByText(/Historisk biljett/)).toBeVisible()
+  await expect(page.getByText(/Sparad biljett/)).toBeVisible()
   await expect(page.getByText(/Samma tävlingsdag/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Uppdatera resultat' })).toBeVisible()
 

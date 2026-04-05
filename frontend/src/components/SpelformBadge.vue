@@ -22,13 +22,14 @@ export default {
     leg: { type: Number, required: true }
   },
   setup(props) {
-    const raw = getGameColor(props.game)
+    const normalizedGame = computed(() => String(props.game || '').toUpperCase())
+    const raw = getGameColor(normalizedGame.value)
     const isNeutral = !raw || raw === 'transparent'
     const lightNeutralBg = 'rgba(0,0,0,0.06)'
     const bgColor = isNeutral ? lightNeutralBg : raw
     const textColor = isNeutral ? '#111827' : getContrastColor(raw)
     const borderColor = isNeutral ? 'rgba(0,0,0,0.12)' : 'transparent'
-    const label = `${props.game}-${props.leg}`
+    const label = `${normalizedGame.value}-${props.leg}`
     return { bgColor, textColor, label, isNeutral, borderColor }
   }
 }

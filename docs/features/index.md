@@ -18,6 +18,7 @@ This file is the top-level inventory of repo features and links to each AIM feat
 - `elo-prediction-model.md`: Runtime model for career/form/driver/effective Elo, normalized field probabilities, and debug output.
 - `v85-suggestion-engine.md`: Build V85 ticket suggestions with modes, templates, variants, and optional seed horses.
 - `v86-suggestion-engine-and-pairing.md`: Build V86 pairing/game view/suggestions with status fallbacks.
+- `v5-and-dd-suggestion-support.md`: Build V5 and Dagens Dubbel suggestions with live market support and raceday actions.
 - `global-search.md`: Multi-entity global search (horses, drivers, upcoming races, racedays, tracks, results).
 
 ## Inputs and outputs

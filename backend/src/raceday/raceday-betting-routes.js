@@ -8,6 +8,12 @@ import {
   updateV85DistributionForRaceday
 } from './v85-service.js'
 import {
+  listV5Templates,
+  buildV5Suggestion,
+  buildV5Suggestions,
+  updateV5DistributionForRaceday
+} from './v5-service.js'
+import {
   listV86Templates,
   buildV86Suggestion,
   buildV86Suggestions,
@@ -15,6 +21,12 @@ import {
   getV86PairingForRaceday,
   getV86GameViewForRaceday
 } from './v86-service.js'
+import {
+  listDdTemplates,
+  buildDdSuggestion,
+  buildDdSuggestions,
+  getDdGameViewForRaceday
+} from './dd-service.js'
 import { listSuggestionsByRaceday, deleteSuggestionsByRaceday } from '../suggestion/suggestion-service.js'
 
 const router = express.Router()
@@ -112,9 +124,12 @@ function createSuggestionHandler({ buildSingle, buildMulti, fallbackMessage }) {
 }
 
 router.get('/v85/templates', createTemplateHandler(listV85Templates, 'V85'))
+router.get('/v5/templates', createTemplateHandler(listV5Templates, 'V5'))
 router.get('/v86/templates', createTemplateHandler(listV86Templates, 'V86'))
+router.get('/dd/templates', createTemplateHandler(listDdTemplates, 'DD'))
 
 router.get('/:id/v85/info', validateObjectIdParam('id'), createInfoHandler('v85Info', 'V85'))
+router.get('/:id/v5/info', validateObjectIdParam('id'), createInfoHandler('v5Info', 'V5'))
 router.get('/:id/v86/info', validateObjectIdParam('id'), createInfoHandler('v86Info', 'V86'))
 
 router.get('/:id/v86/pairing', validateObjectIdParam('id'), async (req, res) => {
@@ -134,6 +149,16 @@ router.get('/:id/v86/game', validateObjectIdParam('id'), async (req, res) => {
   } catch (error) {
     console.error('Failed to fetch V86 game view:', error)
     res.status(500).json({ error: 'Misslyckades hämta V86-game view' })
+  }
+})
+
+router.get('/:id/dd/game', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const result = await getDdGameViewForRaceday(req.params.id)
+    res.json(result)
+  } catch (error) {
+    console.error('Failed to fetch DD game view:', error)
+    res.status(500).json({ error: 'Misslyckades hämta DD-omgång' })
   }
 })
 
@@ -168,6 +193,12 @@ router.post('/:id/v85/update', validateObjectIdParam('id'), createDistributionUp
   true
 ))
 
+router.post('/:id/v5/update', validateObjectIdParam('id'), createDistributionUpdateHandler(
+  updateV5DistributionForRaceday,
+  'Misslyckades att uppdatera V5%',
+  true
+))
+
 router.post('/:id/v86/update', validateObjectIdParam('id'), createDistributionUpdateHandler(
   updateV86DistributionForRaceday,
   'Misslyckades att uppdatera V86%'
@@ -179,10 +210,22 @@ router.post('/:id/v85', validateObjectIdParam('id'), createSuggestionHandler({
   fallbackMessage: 'Det gick inte att skapa V85-spelförslag'
 }))
 
+router.post('/:id/v5', validateObjectIdParam('id'), createSuggestionHandler({
+  buildSingle: buildV5Suggestion,
+  buildMulti: buildV5Suggestions,
+  fallbackMessage: 'Det gick inte att skapa V5-spelförslag'
+}))
+
 router.post('/:id/v86', validateObjectIdParam('id'), createSuggestionHandler({
   buildSingle: buildV86Suggestion,
   buildMulti: buildV86Suggestions,
   fallbackMessage: 'Det gick inte att skapa V86-spelförslag'
+}))
+
+router.post('/:id/dd', validateObjectIdParam('id'), createSuggestionHandler({
+  buildSingle: buildDdSuggestion,
+  buildMulti: buildDdSuggestions,
+  fallbackMessage: 'Det gick inte att skapa DD-spelförslag'
 }))
 
 export default router

@@ -8,4 +8,4 @@ export const GAME_COLORS = {
   LD: '#16a34a'
 }
 
-export const getGameColor = (code) => GAME_COLORS[code] || 'transparent'
+export const getGameColor = (code) => GAME_COLORS[String(code || '').toUpperCase()] || 'transparent'

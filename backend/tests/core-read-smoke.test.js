@@ -209,3 +209,53 @@ test('suggestion history endpoints persist and expose saved snapshots', async ()
     assert.ok([200, 404].includes(response.status))
   }
 })
+
+test('V5 and DD suggestion endpoints return playable live suggestions', async () => {
+  const { response: racedayListResponse, body: racedays } = await getJson('/api/raceday?limit=400')
+  assert.equal(racedayListResponse.status, 200)
+
+  const v5Raceday = racedays.find((item) => Array.isArray(item?.gameTypes?.V5) && item.gameTypes.V5.length > 0)
+  assert.ok(v5Raceday?._id, 'Expected a raceday with V5 support')
+
+  const { response: v5UpdateResponse, body: v5UpdateBody } = await postJson(`/api/raceday/${v5Raceday._id}/v5/update`, {})
+  assert.equal(v5UpdateResponse.status, 200)
+  assert.ok(v5UpdateBody?.info?.updatedAt || v5UpdateBody?.updatedAt, 'Expected V5 update metadata')
+
+  const { response: v5Response, body: v5Body } = await postJson(`/api/raceday/${v5Raceday._id}/v5`, {
+    multi: true,
+    modes: ['balanced', 'public'],
+    variantCount: 1,
+    maxCost: 960
+  })
+  assert.equal(v5Response.status, 200)
+  assert.ok(Array.isArray(v5Body?.suggestions) && v5Body.suggestions.length > 0, 'Expected generated V5 suggestions')
+  const v5Suggestion = v5Body.suggestions[0]
+  assert.equal(v5Suggestion?.gameType, 'V5')
+  assert.equal(Number(v5Suggestion?.stakePerRow), 1)
+  assert.equal(v5Suggestion?.legs?.length, 5)
+
+  const v5Spikes = (v5Suggestion?.legs || []).filter((leg) => String(leg?.type || '').toLowerCase().includes('spik'))
+  const v5Locks = (v5Suggestion?.legs || []).filter((leg) => String(leg?.type || '').toLowerCase().includes('lås') || String(leg?.type || '').toLowerCase().includes('las'))
+  assert.ok(v5Spikes.length <= 1, 'Expected at most one V5 spik')
+  assert.ok(v5Locks.length <= 1, 'Expected at most one V5 lås')
+
+  const ddRaceday = racedays.find((item) => Array.isArray(item?.gameTypes?.dd) && item.gameTypes.dd.length > 0)
+  assert.ok(ddRaceday?._id, 'Expected a raceday with DD support')
+
+  const { response: ddViewResponse, body: ddViewBody } = await getJson(`/api/raceday/${ddRaceday._id}/dd/game`)
+  assert.equal(ddViewResponse.status, 200)
+  assert.equal(ddViewBody?.status, 'ok')
+  assert.equal(ddViewBody?.legs?.length, 2)
+
+  const { response: ddResponse, body: ddBody } = await postJson(`/api/raceday/${ddRaceday._id}/dd`, {
+    templateKey: 'combo-cover',
+    mode: 'balanced',
+    maxCost: 120
+  })
+  assert.equal(ddResponse.status, 200)
+  const ddSuggestion = ddBody?.suggestion || ddBody
+  assert.equal(ddSuggestion?.gameType, 'DD')
+  assert.equal(Number(ddSuggestion?.stakePerRow), 10)
+  assert.equal(ddSuggestion?.legs?.length, 2)
+  assert.ok(Array.isArray(ddSuggestion?.metadata?.comboInsights), 'Expected DD combo insights')
+})
