@@ -20,6 +20,7 @@ Turn winv75 Elo into an explainable race prediction model with explicit career, 
   - start method
   - distance bucket
   - track affinity when the horse has enough same-track history
+  - shoe signal when the current shoe setup can be matched safely against horse-relative history
 - `effectiveElo` is then converted to normalized field probabilities with a softmax step per race.
 
 ## Effective Elo formula
@@ -31,6 +32,21 @@ Track affinity is calculated as a same-track relative performance signal:
 - require a minimum same-track sample before it can affect the score
 - shrink the signal hard before converting it into `deltaElo`
 - cap the final impact so it cannot dominate the Elo blend
+
+Shoe signal is calculated as a horse-relative shoe-context signal:
+- raw codes are normalized into a canonical internal taxonomy
+- trusted current states are `all_shoes`, `barefoot_front`, `barefoot_back` and `barefoot_all`
+- raw code `9` and other non-canonical values are treated as unreliable and do not get model impact
+- if the current horse setup represents a reliable change and there is enough same-change history, the model uses that change sample
+- otherwise it falls back to same-state shoe history when the sample is strong enough
+- the final shoe delta is confidence-weighted and hard-capped before it enters `effectiveElo`
+
+Future context features should follow the same contract:
+- `rawMeasurement`
+- `sampleSize`
+- `confidence`
+- `deltaElo`
+- `reason`
 
 ## Result and recency handling
 - Wins and strong placings score clearly positive.
@@ -68,6 +84,8 @@ Inspect `eloDebug` for:
 - inactivity penalty
 - context adjustments
 - track affinity raw measurement, sample size, confidence and `deltaElo`
+- shoe raw codes, normalized states, change classification, sample sizes, confidence and `deltaElo`
+- lane-bias placeholder contract for the next context feature
 - effective Elo breakdown by component
 - recency profiles
 - final effective Elo
@@ -90,3 +108,5 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 - 2026-04-05: Added explicit career/form/driver/effective Elo prediction model with debug and field-normalized probabilities.
 - 2026-04-05: Unified rebuild, direct update, and runtime prediction around shared Elo result and recency policies.
 - 2026-04-05: Added track affinity as the first explicit contextual prediction signal with min-sample protection, shrinkage and detailed debug breakdown.
+- 2026-04-05: Added normalized shoe taxonomy and shoe signal as context feature #2 with strict handling of unreliable shoe codes.
+- 2026-04-05: Added a lane-bias placeholder in the shared context-feature debug contract for the next increment.

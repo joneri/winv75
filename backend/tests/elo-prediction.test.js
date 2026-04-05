@@ -265,3 +265,126 @@ test('track affinity stays inactive below the minimum sample threshold', () => {
   assert.equal(prediction.debug.contextAdjustments.trackAffinity.deltaElo, 0)
   assert.equal(prediction.debug.contextAdjustments.trackAffinity.reason, 'insufficient_sample')
 })
+
+test('shoe signal activates from horse-relative repeated shoe-change history and is exposed in the effective elo breakdown', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 5,
+      shoeOption: { code: 1 },
+      previousShoeOption: { code: 4 },
+      results: [
+        {
+          raceInformation: { raceId: 51, date: daysAgo(5) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '1' } }
+        },
+        {
+          raceInformation: { raceId: 52, date: daysAgo(14) },
+          placement: { sortValue: 7, displayValue: '7' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 53, date: daysAgo(24) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B',
+          equipmentOptions: { shoeOptions: { code: '1' } }
+        },
+        {
+          raceInformation: { raceId: 54, date: daysAgo(35) },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 55, date: daysAgo(48) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'J',
+          equipmentOptions: { shoeOptions: { code: '1' } }
+        },
+        {
+          raceInformation: { raceId: 56, date: daysAgo(61) },
+          placement: { sortValue: 8, displayValue: '8' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'J',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1008
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.normalizedCurrentShoeState, 'barefoot_all')
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.normalizedPreviousShoeState, 'all_shoes')
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.matchMode, 'change')
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.changeSampleSize, 3)
+  assert.ok(prediction.debug.contextAdjustments.shoeSignal.rawMeasurement > 0, 'Expected positive shoe measurement')
+  assert.ok(prediction.debug.contextAdjustments.shoeSignal.deltaElo > 0, 'Expected shoe signal to lift effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.shoeSignalDelta,
+    prediction.debug.contextAdjustments.shoeSignal.deltaElo
+  )
+})
+
+test('shoe signal suppresses unknown or unreliable current shoe codes strictly', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 6,
+      shoeOption: { code: 9 },
+      previousShoeOption: { code: 4 },
+      results: [
+        {
+          raceInformation: { raceId: 61, date: daysAgo(5) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '9' } }
+        },
+        {
+          raceInformation: { raceId: 62, date: daysAgo(16) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.currentShoeReliability, 'unreliable')
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.shoeSignal.reason, 'unknown_current_shoe')
+})

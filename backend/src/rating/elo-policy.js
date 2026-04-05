@@ -1,5 +1,5 @@
 export const DEFAULT_ELO = Number(process.env.DEFAULT_ELO_RATING || 1000)
-export const ELO_ENGINE_VERSION = process.env.ELO_VERSION || 'winv75-elo-v3'
+export const ELO_ENGINE_VERSION = process.env.ELO_VERSION || 'winv75-elo-v4'
 
 export const CAREER_ELO_WEIGHT = Number(process.env.ELO_EFFECTIVE_CAREER_WEIGHT || 0.38)
 export const FORM_ELO_WEIGHT = Number(process.env.ELO_EFFECTIVE_FORM_WEIGHT || 0.62)
@@ -13,6 +13,22 @@ export const DRIVER_FORM_HALF_LIFE_DAYS = Number(process.env.DRIVER_FORM_HALF_LI
 export const CAREER_RECENCY_HALF_LIFE_DAYS = Number(process.env.ELO_CAREER_RECENCY_HALF_LIFE_DAYS || 240)
 export const FORM_RECENCY_HALF_LIFE_DAYS = Number(process.env.ELO_FORM_RECENCY_HALF_LIFE_DAYS || 45)
 export const RESULT_WINDOW_DAYS = Number(process.env.ELO_RESULT_WINDOW_DAYS || 220)
+
+const SHOE_STATE_BY_CODE = Object.freeze({
+  '1': 'barefoot_all',
+  '2': 'barefoot_back',
+  '3': 'barefoot_front',
+  '4': 'all_shoes'
+})
+
+const SHOE_RELIABILITY_BY_CODE = Object.freeze({
+  '1': 'known',
+  '2': 'known',
+  '3': 'known',
+  '4': 'known',
+  '9': 'unreliable',
+  '0': 'unknown'
+})
 
 const clamp = (value, min, max) => {
   if (!Number.isFinite(value)) return Number.isFinite(min) ? min : 0
@@ -196,6 +212,98 @@ const normalizeTrack = (value) => {
   return raw || 'unknown'
 }
 
+const normalizeRawShoeCode = (value) => {
+  if (value == null || value === '') return null
+  const raw = String(value).trim()
+  return raw || null
+}
+
+const normalizeShoeState = (value) => {
+  const rawCode = normalizeRawShoeCode(value)
+  const reliability = rawCode == null
+    ? 'unknown'
+    : (SHOE_RELIABILITY_BY_CODE[rawCode] || 'unreliable')
+  const state = rawCode != null && SHOE_STATE_BY_CODE[rawCode]
+    ? SHOE_STATE_BY_CODE[rawCode]
+    : 'unknown'
+
+  return {
+    rawCode,
+    state,
+    reliability,
+    trusted: reliability === 'known'
+  }
+}
+
+const SHOE_LIGHTNESS_BY_STATE = Object.freeze({
+  unknown: null,
+  all_shoes: 0,
+  barefoot_front: 1,
+  barefoot_back: 1,
+  barefoot_all: 2
+})
+
+const classifyShoeChange = (currentValue, previousValue) => {
+  const current = normalizeShoeState(currentValue)
+  const previous = normalizeShoeState(previousValue)
+
+  if (!current.trusted) {
+    return {
+      current,
+      previous,
+      changed: false,
+      reliable: false,
+      classification: 'unknown',
+      direction: 'unknown',
+      changeKey: null,
+      reason: 'unknown_current_shoe'
+    }
+  }
+
+  if (!previous.trusted) {
+    return {
+      current,
+      previous,
+      changed: false,
+      reliable: false,
+      classification: 'unknown',
+      direction: 'unknown',
+      changeKey: null,
+      reason: 'unknown_previous_shoe'
+    }
+  }
+
+  if (current.state === previous.state) {
+    return {
+      current,
+      previous,
+      changed: false,
+      reliable: true,
+      classification: 'unchanged',
+      direction: 'flat',
+      changeKey: `${previous.state}->${current.state}`,
+      reason: 'unchanged'
+    }
+  }
+
+  const currentLightness = SHOE_LIGHTNESS_BY_STATE[current.state]
+  const previousLightness = SHOE_LIGHTNESS_BY_STATE[previous.state]
+  const direction = currentLightness > previousLightness
+    ? 'lighter'
+    : (currentLightness < previousLightness ? 'heavier' : 'mixed')
+
+  return {
+    current,
+    previous,
+    changed: true,
+    reliable: true,
+    classification: 'changed',
+    direction,
+    changeKey: `${previous.state}->${current.state}`,
+    reason: 'changed'
+  }
+}
+
 export {
   clamp,
   safeNumber,
@@ -210,5 +318,8 @@ export {
   normalizeStartMethod,
   getDistanceBucket,
   normalizeTrack,
+  normalizeRawShoeCode,
+  normalizeShoeState,
+  classifyShoeChange,
   outcomeScoreFromPlacement
 }
