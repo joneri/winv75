@@ -21,6 +21,7 @@ Turn winv75 Elo into an explainable race prediction model with explicit career, 
   - distance bucket
   - track affinity when the horse has enough same-track history
   - shoe signal when the current shoe setup can be matched safely against horse-relative history
+  - lane bias when the contextual start-position bucket is strong enough after hierarchical shrinkage
 - `effectiveElo` is then converted to normalized field probabilities with a softmax step per race.
 
 ## Effective Elo formula
@@ -47,6 +48,16 @@ Future context features should follow the same contract:
 - `confidence`
 - `deltaElo`
 - `reason`
+
+Lane bias is now context feature #3:
+- key = `trackCode + startMethod + distanceBucket + startPosition`
+- exact bucket outcome is shrunk toward:
+  - `trackCode + startMethod + distanceBucket`
+  - `trackCode + startMethod`
+  - global baseline
+- the final lane effect is the exact bucket's shrunk outcome relative to the shrunk distance-context baseline
+- the signal only activates when the exact bucket has enough starts
+- the final `laneBiasDelta` is capped hard so it stays a context nudge, not a dominant score
 
 ## Result and recency handling
 - Wins and strong placings score clearly positive.
@@ -85,7 +96,7 @@ Inspect `eloDebug` for:
 - context adjustments
 - track affinity raw measurement, sample size, confidence and `deltaElo`
 - shoe raw codes, normalized states, change classification, sample sizes, confidence and `deltaElo`
-- lane-bias placeholder contract for the next context feature
+- lane bias keys, hierarchy sample sizes, shrunk baselines, confidence and `deltaElo`
 - effective Elo breakdown by component
 - recency profiles
 - final effective Elo
@@ -109,4 +120,4 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 - 2026-04-05: Unified rebuild, direct update, and runtime prediction around shared Elo result and recency policies.
 - 2026-04-05: Added track affinity as the first explicit contextual prediction signal with min-sample protection, shrinkage and detailed debug breakdown.
 - 2026-04-05: Added normalized shoe taxonomy and shoe signal as context feature #2 with strict handling of unreliable shoe codes.
-- 2026-04-05: Added a lane-bias placeholder in the shared context-feature debug contract for the next increment.
+- 2026-04-05: Added lane bias as context feature #3 with hierarchical shrinkage over exact, distance, track-method and global context.

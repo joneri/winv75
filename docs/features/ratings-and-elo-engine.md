@@ -13,7 +13,7 @@ Horse and driver Elo services process historical race placements with configurab
 - driver `careerElo`
 - driver `elo` as driver form Elo
 
-Horse rebuild, direct race update, and runtime prediction now share the same result-code and recency policy layer. At read time, the prediction layer rebuilds a race-time `formElo`, adds controlled driver support, applies race context, applies same-track affinity when the sample is strong enough, applies shoe signal when the shoe taxonomy is trustworthy, and produces `effectiveElo` plus field-normalized `modelProbability`.
+Horse rebuild, direct race update, and runtime prediction now share the same result-code and recency policy layer. At read time, the prediction layer rebuilds a race-time `formElo`, adds controlled driver support, applies race context, applies same-track affinity when the sample is strong enough, applies shoe signal when the shoe taxonomy is trustworthy, applies lane bias through hierarchical shrinkage, and produces `effectiveElo` plus field-normalized `modelProbability`.
 
 ## Inputs and outputs
 - Inputs:
@@ -34,6 +34,7 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 - Make between-race recency explicit through stored `lastRaceDate` and `formLastRaceDate` on horse ratings.
 - Keep runtime prediction explainable instead of hiding the final score in ad hoc horse helpers.
 - Model context features with one shared contract: raw measurement, sample size, confidence, capped `deltaElo`, and reason.
+- Keep lane bias conservative by shrinking exact start-position buckets toward broader track/method/distance baselines.
 - Persist rating history snapshots for horse Elo updates.
 - Allow driver manual override and full recompute path.
 
@@ -56,7 +57,7 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 
 ## Debugging
 - Primary log: route-level failures (`Manual rating update failed`, `Elo evaluation failed`, `Failed to start auto-tune`).
-- What "good" looks like: race and horse payloads include `effectiveElo`, `eloVersion`, `eloWeights`, `eloDebug.contextAdjustments.trackAffinity`, `eloDebug.contextAdjustments.shoeSignal`, `eloDebug.contextAdjustments.laneBias`, and `eloDebug.effectiveEloBreakdown`; evaluation returns baseline and upgraded RMSE.
+- What "good" looks like: race and horse payloads include `effectiveElo`, `eloVersion`, `eloWeights`, `eloDebug.contextAdjustments.trackAffinity`, `eloDebug.contextAdjustments.shoeSignal`, `eloDebug.contextAdjustments.laneBias`, and `eloDebug.effectiveEloBreakdown`; lane bias shows exact and broad sample sizes plus a capped delta; evaluation returns baseline and upgraded RMSE.
 - What "bad" looks like: auto-tune stuck with no processed combinations.
 
 ## Related files
@@ -77,4 +78,4 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 - 2026-04-05: Unified stored Elo update paths with the runtime result and recency policy layer.
 - 2026-04-05: Added min-sample-protected track affinity in the runtime prediction layer and exposed its delta in debug.
 - 2026-04-05: Added normalized shoe taxonomy and a capped horse-relative shoe signal as context feature #2.
-- 2026-04-05: Reserved the lane-bias slot in the context-feature debug contract without adding live lane-bias scoring yet.
+- 2026-04-05: Added lane bias as context feature #3 with hierarchical shrinkage and capped runtime impact.

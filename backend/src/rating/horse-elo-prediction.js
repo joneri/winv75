@@ -20,6 +20,7 @@ import {
   safeNumber,
   toDate
 } from './elo-policy.js'
+import Horse from '../horse/horse-model.js'
 
 export const ELO_PREDICTION_VERSION = ELO_ENGINE_VERSION
 
@@ -50,8 +51,21 @@ const SHOE_SIGNAL_MIN_SAMPLE = Number(process.env.ELO_SHOE_SIGNAL_MIN_SAMPLE || 
 const SHOE_SIGNAL_CHANGE_MIN_SAMPLE = Number(process.env.ELO_SHOE_SIGNAL_CHANGE_MIN_SAMPLE || 3)
 const SHOE_SIGNAL_SHRINK_K = Number(process.env.ELO_SHOE_SIGNAL_SHRINK_K || 5)
 const SHOE_SIGNAL_CAP = Number(process.env.ELO_SHOE_SIGNAL_CAP || 18)
+const LANE_BIAS_WEIGHT = Number(process.env.ELO_LANE_BIAS_WEIGHT || 16)
+const LANE_BIAS_CAP = Number(process.env.ELO_LANE_BIAS_CAP || 10)
+const LANE_BIAS_EXACT_MIN_SAMPLE = Number(process.env.ELO_LANE_BIAS_EXACT_MIN_SAMPLE || 10)
+const LANE_BIAS_EXACT_SHRINK_K = Number(process.env.ELO_LANE_BIAS_EXACT_SHRINK_K || 80)
+const LANE_BIAS_DISTANCE_SHRINK_K = Number(process.env.ELO_LANE_BIAS_DISTANCE_SHRINK_K || 140)
+const LANE_BIAS_TRACK_METHOD_SHRINK_K = Number(process.env.ELO_LANE_BIAS_TRACK_METHOD_SHRINK_K || 220)
+const LANE_BIAS_CACHE_TTL_MS = Number(process.env.ELO_LANE_BIAS_CACHE_TTL_MS || 6 * 60 * 60 * 1000)
 
 const FIELD_SOFTMAX_SCALE = Number(process.env.ELO_FIELD_SOFTMAX_SCALE || 45)
+
+let laneBiasCache = {
+  loadedAt: 0,
+  store: null,
+  promise: null
+}
 
 const buildRaceContext = (raceContext = {}, fallbackDate = new Date()) => ({
   raceDate: toDate(raceContext?.raceDate ?? raceContext?.startDateTime ?? fallbackDate) || new Date(),
@@ -85,6 +99,157 @@ const buildInactiveContextFeature = (extra = {}) => ({
   reason: 'inactive',
   ...extra
 })
+
+const buildLaneBiasKey = ({ track, startMethod, distanceBucket, startPosition }) =>
+  `${track}|${startMethod}|${distanceBucket}|${startPosition}`
+
+const buildLaneBiasDistanceKey = ({ track, startMethod, distanceBucket }) =>
+  `${track}|${startMethod}|${distanceBucket}`
+
+const buildLaneBiasTrackMethodKey = ({ track, startMethod }) =>
+  `${track}|${startMethod}`
+
+const createAccumulator = () => ({
+  sumOutcome: 0,
+  sampleSize: 0
+})
+
+const addOutcomeToAccumulator = (map, key, outcomeScore) => {
+  let entry = map.get(key)
+  if (!entry) {
+    entry = createAccumulator()
+    map.set(key, entry)
+  }
+  entry.sumOutcome += outcomeScore
+  entry.sampleSize += 1
+}
+
+const finalizeAccumulatorMap = (map) =>
+  new Map(Array.from(map.entries(), ([key, entry]) => [
+    key,
+    {
+      sampleSize: entry.sampleSize,
+      outcome: entry.sampleSize > 0
+        ? Number((entry.sumOutcome / entry.sampleSize).toFixed(4))
+        : 0
+    }
+  ]))
+
+export const buildLaneBiasStoreFromRows = (rows = []) => {
+  const exact = new Map()
+  const trackMethodDistance = new Map()
+  const trackMethod = new Map()
+  let global = createAccumulator()
+
+  for (const row of rows) {
+    const startMethod = normalizeStartMethod(row?.startMethod)
+    const track = normalizeTrack(row?.trackCode)
+    const distanceBucket = getDistanceBucket(row?.distance)
+    const startPosition = safeNumber(row?.startPosition, NaN)
+
+    if (!['auto', 'volt'].includes(startMethod)) continue
+    if (track === 'unknown' || distanceBucket === 'unknown') continue
+    if (!Number.isInteger(startPosition) || startPosition < 1 || startPosition > 20) continue
+
+    const signal = getResultSignal({
+      raceInformation: { date: row?.raceDate ?? row?.date ?? null },
+      placement: row?.placement != null
+        ? { sortValue: row.placement, displayValue: row.display ?? String(row.placement) }
+        : { displayValue: row.display ?? '' },
+      withdrawn: row?.withdrawn === true
+    }, {
+      referenceDate: row?.referenceDate ?? new Date(),
+      fieldSize: safeNumber(row?.fieldSize, 8)
+    })
+
+    if (!Number.isFinite(signal.outcomeScore)) continue
+
+    const exactKey = buildLaneBiasKey({ track, startMethod, distanceBucket, startPosition })
+    const distanceKey = buildLaneBiasDistanceKey({ track, startMethod, distanceBucket })
+    const trackMethodKey = buildLaneBiasTrackMethodKey({ track, startMethod })
+
+    addOutcomeToAccumulator(exact, exactKey, signal.outcomeScore)
+    addOutcomeToAccumulator(trackMethodDistance, distanceKey, signal.outcomeScore)
+    addOutcomeToAccumulator(trackMethod, trackMethodKey, signal.outcomeScore)
+    global.sumOutcome += signal.outcomeScore
+    global.sampleSize += 1
+  }
+
+  return {
+    exact: finalizeAccumulatorMap(exact),
+    trackMethodDistance: finalizeAccumulatorMap(trackMethodDistance),
+    trackMethod: finalizeAccumulatorMap(trackMethod),
+    global: {
+      sampleSize: global.sampleSize,
+      outcome: global.sampleSize > 0
+        ? Number((global.sumOutcome / global.sampleSize).toFixed(4))
+        : 0
+    }
+  }
+}
+
+const loadLaneBiasRows = async () => {
+  const rows = await Horse.aggregate([
+    {
+      $project: {
+        resultsArr: {
+          $cond: [{ $isArray: '$results' }, '$results', []]
+        }
+      }
+    },
+    { $unwind: '$resultsArr' },
+    {
+      $project: {
+        raceDate: '$resultsArr.raceInformation.date',
+        trackCode: '$resultsArr.trackCode',
+        startMethod: '$resultsArr.startMethod',
+        distance: '$resultsArr.distance.sortValue',
+        startPosition: '$resultsArr.startPosition.sortValue',
+        placement: '$resultsArr.placement.sortValue',
+        display: '$resultsArr.placement.displayValue',
+        withdrawn: '$resultsArr.withdrawn'
+      }
+    }
+  ]).allowDiskUse(true)
+
+  return rows
+}
+
+export const getLaneBiasStore = async ({ forceRefresh = false } = {}) => {
+  const now = Date.now()
+  if (!forceRefresh && laneBiasCache.store && (now - laneBiasCache.loadedAt) < LANE_BIAS_CACHE_TTL_MS) {
+    return laneBiasCache.store
+  }
+
+  if (!forceRefresh && laneBiasCache.promise) {
+    return laneBiasCache.promise
+  }
+
+  laneBiasCache.promise = (async () => {
+    const rows = await loadLaneBiasRows()
+    const store = buildLaneBiasStoreFromRows(rows)
+    laneBiasCache = {
+      loadedAt: Date.now(),
+      store,
+      promise: null
+    }
+    return store
+  })()
+
+  try {
+    return await laneBiasCache.promise
+  } catch (error) {
+    laneBiasCache.promise = null
+    throw error
+  }
+}
+
+const shrinkOutcome = (entry, fallbackOutcome, shrinkK) => {
+  if (!entry || !Number.isFinite(entry.outcome)) return Number(fallbackOutcome.toFixed(4))
+  const sampleSize = safeNumber(entry.sampleSize, 0)
+  const shrink = clamp(sampleSize / (sampleSize + shrinkK), 0, 1)
+  return Number((fallbackOutcome + ((entry.outcome - fallbackOutcome) * shrink)).toFixed(4))
+}
 
 const listRelevantResults = (results = [], targetRaceDate = new Date()) => {
   if (!Array.isArray(results)) return []
@@ -353,10 +518,145 @@ const computeShoeSignal = ({
   }
 }
 
-const buildLaneBiasPlaceholder = () => buildInactiveContextFeature({
-  laneKey: null,
-  reason: 'not_implemented_yet'
-})
+const computeLaneBias = ({
+  laneBiasStore,
+  horse,
+  raceContext
+}) => {
+  const track = raceContext.track
+  const startMethod = raceContext.startMethod
+  const distanceBucket = raceContext.distanceBucket
+  const startPosition = safeNumber(horse?.startPosition, NaN)
+
+  if (track === 'unknown') {
+    return buildInactiveContextFeature({
+      laneKey: null,
+      trackCode: track,
+      startMethod,
+      distanceBucket,
+      startPosition: Number.isFinite(startPosition) ? startPosition : null,
+      reason: 'missing_track_context'
+    })
+  }
+
+  if (!['auto', 'volt'].includes(startMethod)) {
+    return buildInactiveContextFeature({
+      laneKey: null,
+      trackCode: track,
+      startMethod,
+      distanceBucket,
+      startPosition: Number.isFinite(startPosition) ? startPosition : null,
+      reason: 'unsupported_start_method'
+    })
+  }
+
+  if (distanceBucket === 'unknown') {
+    return buildInactiveContextFeature({
+      laneKey: null,
+      trackCode: track,
+      startMethod,
+      distanceBucket,
+      startPosition: Number.isFinite(startPosition) ? startPosition : null,
+      reason: 'inactive_by_policy'
+    })
+  }
+
+  if (!Number.isInteger(startPosition) || startPosition < 1 || startPosition > 20) {
+    return buildInactiveContextFeature({
+      laneKey: null,
+      trackCode: track,
+      startMethod,
+      distanceBucket,
+      startPosition: null,
+      reason: 'missing_start_position'
+    })
+  }
+
+  if (!laneBiasStore?.global?.sampleSize) {
+    return buildInactiveContextFeature({
+      laneKey: buildLaneBiasKey({ track, startMethod, distanceBucket, startPosition }),
+      trackCode: track,
+      startMethod,
+      distanceBucket,
+      startPosition,
+      reason: 'inactive_by_policy'
+    })
+  }
+
+  const laneKey = buildLaneBiasKey({ track, startMethod, distanceBucket, startPosition })
+  const distanceKey = buildLaneBiasDistanceKey({ track, startMethod, distanceBucket })
+  const trackMethodKey = buildLaneBiasTrackMethodKey({ track, startMethod })
+
+  const exactEntry = laneBiasStore.exact.get(laneKey) || null
+  const distanceEntry = laneBiasStore.trackMethodDistance.get(distanceKey) || null
+  const trackMethodEntry = laneBiasStore.trackMethod.get(trackMethodKey) || null
+  const globalEntry = laneBiasStore.global
+
+  const globalOutcome = Number((globalEntry?.outcome ?? 0).toFixed(4))
+  const trackMethodOutcome = shrinkOutcome(trackMethodEntry, globalOutcome, LANE_BIAS_TRACK_METHOD_SHRINK_K)
+  const distanceOutcome = shrinkOutcome(distanceEntry, trackMethodOutcome, LANE_BIAS_DISTANCE_SHRINK_K)
+
+  if (!exactEntry || safeNumber(exactEntry.sampleSize, 0) < LANE_BIAS_EXACT_MIN_SAMPLE) {
+    return buildInactiveContextFeature({
+      laneKey,
+      trackCode: track,
+      startMethod,
+      distanceBucket,
+      startPosition,
+      exactSampleSize: safeNumber(exactEntry?.sampleSize, 0),
+      distanceContextSampleSize: safeNumber(distanceEntry?.sampleSize, 0),
+      trackMethodSampleSize: safeNumber(trackMethodEntry?.sampleSize, 0),
+      globalSampleSize: safeNumber(globalEntry?.sampleSize, 0),
+      exactOutcome: exactEntry?.outcome ?? null,
+      distanceContextOutcome: distanceEntry?.outcome ?? null,
+      trackMethodOutcome: trackMethodEntry?.outcome ?? null,
+      globalOutcome,
+      shrunkTrackMethodOutcome: trackMethodOutcome,
+      shrunkDistanceOutcome: distanceOutcome,
+      minSample: LANE_BIAS_EXACT_MIN_SAMPLE,
+      cappedBy: LANE_BIAS_CAP,
+      reason: 'insufficient_sample'
+    })
+  }
+
+  const shrunkExactOutcome = shrinkOutcome(exactEntry, distanceOutcome, LANE_BIAS_EXACT_SHRINK_K)
+  const rawMeasurement = Number((shrunkExactOutcome - distanceOutcome).toFixed(4))
+  const confidence = Number(clamp(
+    safeNumber(exactEntry.sampleSize, 0) / (safeNumber(exactEntry.sampleSize, 0) + LANE_BIAS_EXACT_SHRINK_K),
+    0,
+    1
+  ).toFixed(4))
+  const deltaElo = Number(clamp(
+    rawMeasurement * LANE_BIAS_WEIGHT * confidence,
+    -LANE_BIAS_CAP,
+    LANE_BIAS_CAP
+  ).toFixed(2))
+
+  return {
+    laneKey,
+    trackCode: track,
+    startMethod,
+    distanceBucket,
+    startPosition,
+    exactSampleSize: safeNumber(exactEntry.sampleSize, 0),
+    distanceContextSampleSize: safeNumber(distanceEntry?.sampleSize, 0),
+    trackMethodSampleSize: safeNumber(trackMethodEntry?.sampleSize, 0),
+    globalSampleSize: safeNumber(globalEntry?.sampleSize, 0),
+    exactOutcome: exactEntry.outcome,
+    distanceContextOutcome: distanceEntry?.outcome ?? null,
+    trackMethodOutcome: trackMethodEntry?.outcome ?? null,
+    globalOutcome,
+    shrunkTrackMethodOutcome: trackMethodOutcome,
+    shrunkDistanceOutcome: distanceOutcome,
+    rawMeasurement,
+    sampleSize: safeNumber(exactEntry.sampleSize, 0),
+    confidence,
+    deltaElo,
+    minSample: LANE_BIAS_EXACT_MIN_SAMPLE,
+    cappedBy: LANE_BIAS_CAP,
+    reason: 'active'
+  }
+}
 
 const computeContextAdjustments = ({
   relevantResults,
@@ -436,6 +736,7 @@ export const buildHorseEloPrediction = ({
   ratingDoc = {},
   driver = {},
   raceContext = {},
+  laneBiasStore = null,
   now = new Date()
 }) => {
   const targetContext = buildRaceContext(raceContext, now)
@@ -462,7 +763,11 @@ export const buildHorseEloPrediction = ({
     baselineOutcome: form.weightedOutcome
   })
 
-  const laneBias = buildLaneBiasPlaceholder()
+  const laneBias = computeLaneBias({
+    laneBiasStore,
+    horse,
+    raceContext: targetContext
+  })
 
   const contextAdjustments = computeContextAdjustments({
     relevantResults,
@@ -507,7 +812,8 @@ export const buildHorseEloPrediction = ({
       form: FORM_WEIGHT,
       driver: DRIVER_SUPPORT_WEIGHT,
       trackAffinity: TRACK_AFFINITY_WEIGHT,
-      shoeSignal: SHOE_SIGNAL_WEIGHT
+      shoeSignal: SHOE_SIGNAL_WEIGHT,
+      laneBias: LANE_BIAS_WEIGHT
     },
     recencyProfiles: {
       career: 'persisted-long-horizon',
@@ -567,7 +873,8 @@ export const buildHorseEloPrediction = ({
         form: FORM_WEIGHT,
         driver: DRIVER_SUPPORT_WEIGHT,
         trackAffinity: TRACK_AFFINITY_WEIGHT,
-        shoeSignal: SHOE_SIGNAL_WEIGHT
+        shoeSignal: SHOE_SIGNAL_WEIGHT,
+        laneBias: LANE_BIAS_WEIGHT
       }
     }
   }
@@ -610,6 +917,8 @@ export const attachFieldProbabilities = (entries = []) => {
 
 export default {
   ELO_PREDICTION_VERSION,
+  buildLaneBiasStoreFromRows,
+  getLaneBiasStore,
   buildHorseEloPrediction,
   attachFieldProbabilities
 }

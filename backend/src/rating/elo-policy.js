@@ -1,5 +1,5 @@
 export const DEFAULT_ELO = Number(process.env.DEFAULT_ELO_RATING || 1000)
-export const ELO_ENGINE_VERSION = process.env.ELO_VERSION || 'winv75-elo-v4'
+export const ELO_ENGINE_VERSION = process.env.ELO_VERSION || 'winv75-elo-v5'
 
 export const CAREER_ELO_WEIGHT = Number(process.env.ELO_EFFECTIVE_CAREER_WEIGHT || 0.38)
 export const FORM_ELO_WEIGHT = Number(process.env.ELO_EFFECTIVE_FORM_WEIGHT || 0.62)
@@ -194,6 +194,8 @@ const getRecencyWeight = (
 const normalizeStartMethod = (value) => {
   const raw = String(value || '').trim().toLowerCase()
   if (!raw) return 'unknown'
+  if (raw === 'v') return 'volt'
+  if (raw === 'a') return 'auto'
   if (raw.includes('volt')) return 'volt'
   if (raw.includes('auto')) return 'auto'
   return raw

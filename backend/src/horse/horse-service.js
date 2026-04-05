@@ -9,7 +9,8 @@ import Driver from '../driver/driver-model.js'
 import Raceday from '../raceday/raceday-model.js'
 import {
     attachFieldProbabilities,
-    buildHorseEloPrediction
+    buildHorseEloPrediction,
+    getLaneBiasStore
 } from '../rating/horse-elo-prediction.js'
 
 const fetchResults = async (horseId) => {
@@ -168,9 +169,11 @@ const getHorseData = async (horseId) => {
         const obj = horse.toObject()
         obj.score = calculateHorseScore(obj)
         const ratingDoc = await HorseRating.findOne({ horseId })
+        const laneBiasStore = await getLaneBiasStore()
         const prediction = buildHorseEloPrediction({
             horse: obj,
-            ratingDoc
+            ratingDoc,
+            laneBiasStore
         })
         return applyPredictionFields(obj, prediction)
     } catch (error) {
@@ -183,6 +186,7 @@ const getHorseRankings = async (raceId) => {
     try {
         const ranked = await horseRanking.aggregateHorses(raceId)
         const raceContext = await loadRaceContext(raceId)
+        const laneBiasStore = await getLaneBiasStore()
         const horseIds = ranked.map(r => r.id)
         const ratingDocs = await HorseRating.find({ horseId: { $in: ranked.map(r => r.id) } })
         const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
@@ -213,7 +217,8 @@ const getHorseRankings = async (raceId) => {
                 },
                 ratingDoc,
                 driver: driverDoc,
-                raceContext
+                raceContext,
+                laneBiasStore
             })
 
             return applyPredictionFields({
@@ -245,11 +250,13 @@ const getHorsesByScore = async ({ ids, minScore } = {}) => {
     })
     const ratingDocs = await HorseRating.find({ horseId: { $in: results.map(r => r.id) } })
     const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
+    const laneBiasStore = await getLaneBiasStore()
     results.forEach(r => {
         const ratingDoc = docMap.get(r.id)
         const prediction = buildHorseEloPrediction({
             horse: r,
-            ratingDoc
+            ratingDoc,
+            laneBiasStore
         })
         Object.assign(r, applyPredictionFields(r, prediction))
     })

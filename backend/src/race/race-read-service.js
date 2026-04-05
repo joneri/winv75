@@ -5,7 +5,8 @@ import Driver from '../driver/driver-model.js'
 import trackService from '../track/track-service.js'
 import {
   attachFieldProbabilities,
-  buildHorseEloPrediction
+  buildHorseEloPrediction,
+  getLaneBiasStore
 } from '../rating/horse-elo-prediction.js'
 
 export async function getRaceWithRatings(raceId) {
@@ -17,6 +18,7 @@ export async function getRaceWithRatings(raceId) {
   let enrichedHorses = null
 
   try {
+    const laneBiasStore = await getLaneBiasStore()
     const track = race?.trackCode
       ? { trackCode: race.trackCode }
       : await trackService.getTrackByName(race?.trackName ?? null)
@@ -65,7 +67,8 @@ export async function getRaceWithRatings(raceId) {
           },
           ratingDoc: rating,
           driver,
-          raceContext
+          raceContext,
+          laneBiasStore
         })
 
         return {

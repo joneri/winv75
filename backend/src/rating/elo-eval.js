@@ -4,7 +4,7 @@ import { seedFromHorseDoc } from './rating-seed.js'
 import { classFactorFromPurse } from './class-factor.js'
 import { rmse } from './elo-utils.js'
 import { processDriverRace } from '../driver/driver-elo-service.js'
-import { buildHorseEloPrediction } from './horse-elo-prediction.js'
+import { buildHorseEloPrediction, getLaneBiasStore } from './horse-elo-prediction.js'
 
 const DEFAULT_DRIVER_RATING = Number(process.env.DRIVER_DEFAULT_RATING || 900)
 const DEFAULT_FORM_DECAY_DAYS = Number(process.env.FORM_RATING_DECAY_DAYS || 90)
@@ -128,6 +128,7 @@ export async function evaluateElo({
   ]
 
   const races = await Horse.aggregate(pipeline)
+  const laneBiasStore = await getLaneBiasStore()
 
   const ids = new Set()
   for (const race of races) {
@@ -182,7 +183,8 @@ export async function evaluateElo({
           startMethod: race.startMethod,
           distance: race.distance,
           trackCode: race.trackCode
-        }
+        },
+        laneBiasStore
       })
 
       return {

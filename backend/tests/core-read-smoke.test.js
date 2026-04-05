@@ -96,6 +96,7 @@ test('preserved core read endpoints return live data', async () => {
   assert.ok(raceHorseWithPrediction?.eloDebug?.contextAdjustments?.laneBias, 'Expected race detail to expose lane-bias placeholder debug')
   assert.ok(raceHorseWithPrediction?.eloDebug?.effectiveEloBreakdown, 'Expected race detail to expose effective Elo breakdown')
   assert.ok('shoeSignalDelta' in (raceHorseWithPrediction?.eloDebug?.effectiveEloBreakdown || {}), 'Expected race detail breakdown to expose shoe signal delta')
+  assert.ok('laneBiasDelta' in (raceHorseWithPrediction?.eloDebug?.effectiveEloBreakdown || {}), 'Expected race detail breakdown to expose lane-bias delta')
 
   const { response: rankingResponse, body: rankings } = await getJson(`/api/horses/rankings/${seedRace.raceId}`)
   assert.equal(rankingResponse.status, 200)
@@ -104,6 +105,7 @@ test('preserved core read endpoints return live data', async () => {
   assert.ok(Number.isFinite(Number(rankings[0]?.modelProbability)), 'Expected ranking rows to expose model probability')
   assert.ok(rankings[0]?.eloDebug?.contextAdjustments?.trackAffinity, 'Expected ranking rows to expose track affinity debug')
   assert.ok(rankings[0]?.eloDebug?.contextAdjustments?.shoeSignal, 'Expected ranking rows to expose shoe signal debug')
+  assert.ok(rankings[0]?.eloDebug?.contextAdjustments?.laneBias, 'Expected ranking rows to expose lane-bias debug')
 
   const seedHorse = race.horses.find((horse) => Number.isFinite(Number(horse?.id)))
   assert.ok(seedHorse?.id, 'Expected a horse id from race detail')

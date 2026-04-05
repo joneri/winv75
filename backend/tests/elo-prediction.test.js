@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 
 import {
   attachFieldProbabilities,
-  buildHorseEloPrediction
+  buildHorseEloPrediction,
+  buildLaneBiasStoreFromRows
 } from '../src/rating/horse-elo-prediction.js'
 import { ELO_PROFILES, processRace } from '../src/rating/elo-engine.js'
 
@@ -387,4 +388,125 @@ test('shoe signal suppresses unknown or unreliable current shoe codes strictly',
   assert.equal(prediction.debug.contextAdjustments.shoeSignal.currentShoeReliability, 'unreliable')
   assert.equal(prediction.debug.contextAdjustments.shoeSignal.deltaElo, 0)
   assert.equal(prediction.debug.contextAdjustments.shoeSignal.reason, 'unknown_current_shoe')
+})
+
+test('lane bias activates conservatively from the contextual exact bucket and matches the breakdown delta', () => {
+  const laneBiasStore = buildLaneBiasStoreFromRows([
+    ...Array.from({ length: 120 }, (_, index) => ({
+      trackCode: 'S',
+      startMethod: 'Autostart',
+      distance: 2140,
+      startPosition: 1,
+      placement: index < 42 ? 1 : (index < 78 ? 3 : 7),
+      date: daysAgo(40 + index)
+    })),
+    ...Array.from({ length: 280 }, (_, index) => ({
+      trackCode: 'S',
+      startMethod: 'Autostart',
+      distance: 2140,
+      startPosition: 5,
+      placement: index < 28 ? 1 : (index < 98 ? 3 : 7),
+      date: daysAgo(60 + index)
+    })),
+    ...Array.from({ length: 320 }, (_, index) => ({
+      trackCode: 'S',
+      startMethod: 'Autostart',
+      distance: 2140,
+      startPosition: 8,
+      placement: index < 25 ? 1 : (index < 85 ? 3 : 7),
+      date: daysAgo(70 + index)
+    })),
+    ...Array.from({ length: 220 }, (_, index) => ({
+      trackCode: 'S',
+      startMethod: 'Autostart',
+      distance: 1640,
+      startPosition: 1,
+      placement: index < 30 ? 1 : (index < 88 ? 3 : 6),
+      date: daysAgo(80 + index)
+    }))
+  ])
+
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 7,
+      startPosition: 1,
+      results: [
+        {
+          raceInformation: { raceId: 71, date: daysAgo(5) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1005
+    },
+    raceContext: {
+      startMethod: 'A',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.laneBias.trackCode, 'S')
+  assert.equal(prediction.debug.contextAdjustments.laneBias.startMethod, 'auto')
+  assert.equal(prediction.debug.contextAdjustments.laneBias.distanceBucket, 'medium')
+  assert.equal(prediction.debug.contextAdjustments.laneBias.startPosition, 1)
+  assert.ok(prediction.debug.contextAdjustments.laneBias.exactSampleSize >= 120)
+  assert.ok(prediction.debug.contextAdjustments.laneBias.rawMeasurement > 0, 'Expected positive lane raw measurement')
+  assert.ok(prediction.debug.contextAdjustments.laneBias.deltaElo > 0, 'Expected positive lane delta')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.laneBiasDelta,
+    prediction.debug.contextAdjustments.laneBias.deltaElo
+  )
+})
+
+test('lane bias stays inactive when the exact bucket sample is too small', () => {
+  const laneBiasStore = buildLaneBiasStoreFromRows([
+    ...Array.from({ length: 9 }, (_, index) => ({
+      trackCode: 'S',
+      startMethod: 'Autostart',
+      distance: 2140,
+      startPosition: 12,
+      placement: index < 4 ? 1 : 7,
+      date: daysAgo(10 + index)
+    })),
+    ...Array.from({ length: 80 }, (_, index) => ({
+      trackCode: 'S',
+      startMethod: 'Autostart',
+      distance: 2140,
+      startPosition: 5,
+      placement: index < 12 ? 1 : 7,
+      date: daysAgo(30 + index)
+    }))
+  ])
+
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 8,
+      startPosition: 12,
+      results: []
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.laneBias.exactSampleSize, 9)
+  assert.equal(prediction.debug.contextAdjustments.laneBias.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.laneBias.reason, 'insufficient_sample')
 })
