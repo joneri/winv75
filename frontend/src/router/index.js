@@ -6,6 +6,8 @@ import HorseView from '@/views/horse/HorseView.vue'
 import DriverView from '@/views/driver/DriverView.vue'
 import HorseSearchView from '@/views/horses/HorseSearchView.vue'
 import DriverSearchView from '@/views/drivers/DriverSearchView.vue'
+import SuggestionDetailView from '@/views/suggestion/SuggestionDetailView.vue'
+import SuggestionAnalyticsView from '@/views/suggestion/SuggestionAnalyticsView.vue'
 
 const routes = [
   {
@@ -50,6 +52,37 @@ const routes = [
           }
         }
       })
+    }
+  },
+  {
+    path: '/raceday/:racedayId/suggestions/:suggestionId',
+    name: 'SuggestionDetail',
+    component: SuggestionDetailView,
+    props: true,
+    meta: {
+      parent: 'Raceday',
+      breadcrumb: (route) => ({
+        label: route.meta?.breadcrumbLabel || `Spelförslag ${route.params?.suggestionId ?? ''}`,
+        to: {
+          name: 'SuggestionDetail',
+          params: {
+            racedayId: route.params?.racedayId,
+            suggestionId: route.params?.suggestionId
+          }
+        }
+      })
+    }
+  },
+  {
+    path: '/suggestions/analytics',
+    name: 'SuggestionAnalytics',
+    component: SuggestionAnalyticsView,
+    meta: {
+      parent: 'RacedayInput',
+      breadcrumb: {
+        label: 'Suggestion analytics',
+        to: { name: 'SuggestionAnalytics' }
+      }
     }
   },
   {

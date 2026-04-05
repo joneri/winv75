@@ -54,6 +54,68 @@
             </div>
           </div>
 
+          <div class="saved-suggestions-panel">
+            <div class="saved-header">
+              <div>
+                <div class="saved-title">Sparade spelförslag</div>
+                <div class="muted">Öppna tidigare biljetter för dagen och jämför hur de gick.</div>
+              </div>
+              <v-btn
+                variant="text"
+                color="secondary"
+                :to="{ name: 'SuggestionAnalytics' }"
+              >
+                Analytics
+              </v-btn>
+            </div>
+
+            <div v-if="savedSuggestionsLoading" class="saved-loading">
+              <v-skeleton-loader type="list-item-three-line" />
+            </div>
+            <div v-else-if="savedSuggestions.length">
+              <div class="saved-summary-grid">
+                <div
+                  v-for="summary in savedSuggestionSummary"
+                  :key="summary.gameType"
+                  class="saved-summary-card"
+                >
+                  <div class="saved-summary-top">
+                    <span class="saved-summary-game">{{ summary.gameType }}</span>
+                    <span class="saved-summary-count">{{ summary.count }} st</span>
+                  </div>
+                  <div class="saved-summary-note">{{ summary.strategies.join(', ') || 'Inga strategier ännu' }}</div>
+                </div>
+              </div>
+
+              <div class="saved-list">
+                <router-link
+                  v-for="item in savedSuggestions"
+                  :key="item.id"
+                  class="saved-item"
+                  :to="{ name: 'SuggestionDetail', params: { racedayId: route.params.racedayId, suggestionId: item.id } }"
+                >
+                  <div class="saved-item-top">
+                    <span class="saved-game">{{ item.gameType }}</span>
+                    <span class="saved-time">{{ formatSavedDateTime(item.generatedAt) }}</span>
+                  </div>
+                  <div class="saved-item-title">{{ formatSavedStrategy(item) }}</div>
+                  <div class="saved-item-meta">
+                    <span>{{ item.rowCount }} rader</span>
+                    <span>{{ formatCurrency(item.totalCost) }} kr</span>
+                    <span>{{ formatSavedSettlement(item) }}</span>
+                  </div>
+                  <div class="saved-item-note">{{ item.settlement?.summary || 'Inväntar resultat' }}</div>
+                </router-link>
+              </div>
+            </div>
+            <div v-else class="muted">
+              Inga sparade spelförslag för den här tävlingsdagen ännu.
+            </div>
+            <div v-if="savedSuggestionsError" class="error-message">
+              {{ savedSuggestionsError }}
+            </div>
+          </div>
+
           <div v-for="race in sortedRaceList" :key="race.id" class="race-row">
             <RaceCardComponent
               :race="race"
@@ -73,11 +135,13 @@
   <V85SuggestionModal
     :model-value="showV85Modal"
     @update:modelValue="showV85Modal = $event"
+    @generated="refreshSavedSuggestions"
     :raceday-id="route.params.racedayId"
   />
   <V86SuggestionModal
     :model-value="showV86Modal"
     @update:modelValue="showV86Modal = $event"
+    @generated="refreshSavedSuggestions"
     :raceday-id="route.params.racedayId"
   />
 </template>
@@ -86,6 +150,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import RaceCardComponent from './components/RaceCardComponent.vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
+import SuggestionService from '@/views/suggestion/services/SuggestionService.js'
 import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
 import SpelformBadge from '@/components/SpelformBadge.vue'
@@ -127,6 +192,10 @@ export default {
     const showV86Modal = ref(false)
     const v86GameView = ref(null)
     const loading = ref(true)
+    const savedSuggestions = ref([])
+    const savedSuggestionSummary = ref([])
+    const savedSuggestionsLoading = ref(false)
+    const savedSuggestionsError = ref('')
     const { formatDate } = useDateFormat()
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
@@ -163,6 +232,7 @@ export default {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
         await loadV86GameView()
+        await refreshSavedSuggestions()
       } catch (error) {
         console.error('Error fetching raceday details:', error)
         errorMessage.value = 'Error fetching raceday details. Please try again later.'
@@ -206,8 +276,24 @@ export default {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
         await loadV86GameView()
+        await refreshSavedSuggestions()
       } catch (error) {
         console.error('Error refreshing raceday details:', error)
+      }
+    }
+
+    const refreshSavedSuggestions = async () => {
+      try {
+        savedSuggestionsLoading.value = true
+        savedSuggestionsError.value = ''
+        const result = await SuggestionService.fetchRacedaySuggestions(route.params.racedayId)
+        savedSuggestions.value = Array.isArray(result?.items) ? result.items : []
+        savedSuggestionSummary.value = Array.isArray(result?.summary) ? result.summary : []
+      } catch (error) {
+        console.error('Failed to load saved suggestions', error)
+        savedSuggestionsError.value = error?.response?.data?.error || 'Kunde inte hämta sparade spelförslag.'
+      } finally {
+        savedSuggestionsLoading.value = false
       }
     }
 
@@ -326,6 +412,38 @@ export default {
       }
     }
 
+    const formatCurrency = (value) => {
+      const numeric = Number(value)
+      if (!Number.isFinite(numeric)) return '0'
+      return new Intl.NumberFormat('sv-SE', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(numeric)
+    }
+
+    const formatSavedDateTime = (value) => {
+      if (!value) return ''
+      return new Intl.DateTimeFormat('sv-SE', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      }).format(new Date(value))
+    }
+
+    const formatSavedStrategy = (item) => {
+      const parts = [
+        item?.strategy?.modeLabel || item?.strategy?.mode,
+        item?.strategy?.variantLabel || item?.strategy?.variantStrategyLabel
+      ].filter(Boolean)
+      return parts.join(' · ') || 'Okänd strategi'
+    }
+
+    const formatSavedSettlement = (item) => {
+      const totalLegs = Number(item?.settlement?.totalLegs || 0)
+      const correctLegs = Number(item?.settlement?.correctLegs || 0)
+      if (!item?.settlement?.resultsAvailable) return 'Inväntar resultat'
+      return `${correctLegs}/${totalLegs} rätt`
+    }
+
     return {
       racedayDetails,
       errorMessage,
@@ -353,7 +471,16 @@ export default {
       v85UpdateMessage,
       v86UpdatedLabel,
       v86UpdateMessage,
-      capabilities
+      capabilities,
+      savedSuggestions,
+      savedSuggestionSummary,
+      savedSuggestionsLoading,
+      savedSuggestionsError,
+      refreshSavedSuggestions,
+      formatSavedDateTime,
+      formatCurrency,
+      formatSavedStrategy,
+      formatSavedSettlement
     }
   }
 }
@@ -396,6 +523,96 @@ export default {
   .v85-status.muted, .v86-status.muted { color: #6b7280; }
   .v85-message, .v86-message { font-size: 0.82rem; color: #2563eb; }
   .race-row { margin-bottom: 10px; }
+  .saved-suggestions-panel {
+    margin-bottom: 16px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(15,23,42,0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+    box-shadow: 0 10px 24px rgba(15,23,42,0.05);
+  }
+  .saved-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .saved-title {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .saved-loading { padding-top: 6px; }
+  .saved-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .saved-summary-card {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(15,23,42,0.08);
+  }
+  .saved-summary-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.92rem;
+  }
+  .saved-summary-game {
+    font-weight: 700;
+  }
+  .saved-summary-count {
+    color: #6b7280;
+  }
+  .saved-summary-note {
+    margin-top: 6px;
+    font-size: 0.88rem;
+    color: #6b7280;
+  }
+  .saved-list {
+    display: grid;
+    gap: 10px;
+  }
+  .saved-item {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.94);
+    border: 1px solid rgba(15,23,42,0.08);
+  }
+  .saved-item-top,
+  .saved-item-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+  }
+  .saved-game {
+    font-weight: 700;
+  }
+  .saved-time,
+  .saved-item-meta,
+  .saved-item-note {
+    color: #6b7280;
+  }
+  .saved-item-title {
+    margin-top: 6px;
+    font-weight: 700;
+  }
+  .saved-item-meta {
+    margin-top: 6px;
+  }
+  .saved-item-note {
+    margin-top: 6px;
+    font-size: 0.9rem;
+  }
   .error-message { color: #ef4444; font-size: 0.95rem; margin-top: 1rem; }
   .loading-wrap { padding-top: 24px; }
 
@@ -409,5 +626,11 @@ export default {
     .v85-status, .v86-status { color: #d1d5db; }
     .v85-status.muted, .v86-status.muted { color: #9ca3af; }
     .v85-message, .v86-message { color: #93c5fd; }
+    .saved-suggestions-panel,
+    .saved-summary-card,
+    .saved-item {
+      background: rgba(17,24,39,0.82);
+      border-color: rgba(255,255,255,0.08);
+    }
   }
 </style>

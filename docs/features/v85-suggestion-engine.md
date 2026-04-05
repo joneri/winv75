@@ -7,7 +7,7 @@ Generate V85 betting suggestions using templates, strategy modes, and optional u
 From raceday UI, users open V85 modal, choose template/modes/variants/budget, optionally lock origin horses, and receive one or multiple V85 ticket proposals.
 
 ## How it works
-Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates pick counts by template/strategy, then emits ticket structure and budget summary. Frontend renders mode/variant switcher and ticket breakdown.
+Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates pick counts by template/strategy, emits ticket structure and budget summary, then persists each generated ticket as a frozen suggestion snapshot. Frontend renders mode/variant switcher, ticket breakdown and raceday-level access to saved suggestions.
 
 ## Inputs and outputs
 - Inputs:
@@ -18,11 +18,13 @@ Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates 
 - Outputs:
   - Single suggestion or multi-suggestion payload (`suggestions`, `errors`, mode/variant metadata).
   - Updated V85 distribution info for raceday.
+  - Persisted snapshot ids on saved tickets.
 
 ## Key decisions
 - Support deterministic variant generation via seeded RNG.
 - Support multi-mode + multi-variant generation in one request.
 - Allow user seed horses per leg while still auto-filling remaining picks.
+- Persist the generated ticket immediately so later Elo or UI changes do not rewrite history.
 
 ## Defaults and fallbacks
 - Default modes: balanced/mix/public/value.
@@ -44,9 +46,12 @@ Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates 
 
 ## Related files
 - `backend/src/raceday/v85-service.js`
-- `backend/src/raceday/raceday-routes.js`
+- `backend/src/raceday/raceday-betting-routes.js`
+- `backend/src/suggestion/suggestion-service.js`
 - `frontend/src/views/raceday/components/V85SuggestionModal.vue`
 - `frontend/src/views/raceday/services/RacedayService.js`
+- `frontend/src/views/raceday/RacedayView.vue`
 
 ## Change log
 - 2026-02-27: Initial feature documentation.
+- 2026-04-05: Added automatic snapshot persistence and raceday history access for generated V85 tickets.

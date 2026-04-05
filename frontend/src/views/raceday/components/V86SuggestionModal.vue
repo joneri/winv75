@@ -204,7 +204,7 @@ export default {
       required: true
     }
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'generated'],
   setup(props, { emit }) {
     const templates = ref([])
     const selectedTemplate = ref(null)
@@ -395,6 +395,10 @@ export default {
 
         suggestions.value = combined
         suggestionErrors.value = Array.isArray(result?.errors) ? result.errors : []
+        emit('generated', {
+          gameType: 'V86',
+          snapshotIds: combined.map(item => item?.snapshotId).filter(Boolean)
+        })
 
         if (modeOverride) {
           const idx = suggestions.value.findIndex(s => s?.mode === modeOverride)

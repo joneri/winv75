@@ -6,6 +6,7 @@ import eloRoutes from '../rating/elo-routes.js'
 import driverRoutes from '../driver/driver-routes.js'
 import gameRoutes from '../game/game-routes.js'
 import searchRoutes from '../search/search-routes.js'
+import suggestionRoutes from '../suggestion/suggestion-routes.js'
 
 export const API_ROUTE_GROUPS = [
   {
@@ -23,7 +24,8 @@ export const API_ROUTE_GROUPS = [
     routes: [
       ['/api/track', trackRoutes],
       ['/api/spelformer', gameRoutes],
-      ['/api/search', searchRoutes]
+      ['/api/search', searchRoutes],
+      ['/api/suggestions', suggestionRoutes]
     ]
   }
 ]

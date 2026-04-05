@@ -31,6 +31,12 @@ export const navigationSections: NavigationSection[] = [
         matchRoutes: ['Raceday']
       },
       {
+        title: 'Suggestion analytics',
+        icon: 'mdi-chart-line',
+        to: { name: 'SuggestionAnalytics' },
+        description: 'Folj sparade spel och modellforandringar over tid.'
+      },
+      {
         title: 'Startlista',
         icon: 'mdi-clipboard-text-outline',
         disabled: true,

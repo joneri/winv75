@@ -30,6 +30,7 @@ test('V85 suggestions can be generated from the raceday view', async ({ page, re
 
   await expect(dialog.locator('.ticket')).toBeVisible()
   await expect(dialog.getByText(/kr totalt/)).toBeVisible()
+  await expect.poll(async () => page.locator('.saved-suggestions-panel .saved-item').count()).toBeGreaterThan(0)
 })
 
 test('V86 suggestions can be generated from the raceday view', async ({ page, request }) => {
@@ -42,4 +43,39 @@ test('V86 suggestions can be generated from the raceday view', async ({ page, re
 
   await expect(dialog.locator('.ticket')).toBeVisible()
   await expect(dialog.getByText(/kr totalt/)).toBeVisible()
+})
+
+test('Saved suggestions can be reopened from the raceday page', async ({ page, request }) => {
+  const racedayId = await findRacedayId(request, 'V85')
+
+  await page.goto(`/raceday/${racedayId}`)
+
+  const { dialog, generateButton } = await openSuggestionDialog(page, 'V85-spelförslag')
+  await generateButton.click()
+  await expect(dialog.locator('.ticket')).toBeVisible()
+  await dialog.locator('.v-card-title button').click()
+
+  const savedLink = page.locator('.saved-suggestions-panel .saved-item').first()
+  await expect(savedLink).toBeVisible()
+  await savedLink.click()
+
+  await expect(page.getByText(/Historisk biljett/)).toBeVisible()
+  await expect(page.getByText(/Samma tävlingsdag/)).toBeVisible()
+})
+
+test('Suggestion analytics view loads recent performance data', async ({ page, request }) => {
+  const racedayId = await findRacedayId(request, 'V85')
+  await request.post(`http://127.0.0.1:3001/api/raceday/${racedayId}/v85`, {
+    data: {
+      multi: true,
+      modes: ['balanced'],
+      variantCount: 1
+    }
+  })
+
+  await page.goto('/suggestions/analytics')
+
+  await expect(page.getByRole('heading', { name: 'Resultat över tid' })).toBeVisible()
+  await expect(page.getByText(/Sparade förslag/)).toBeVisible()
+  await expect(page.locator('.recent-link').first()).toBeVisible()
 })

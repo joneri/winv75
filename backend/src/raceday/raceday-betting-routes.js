@@ -15,6 +15,7 @@ import {
   getV86PairingForRaceday,
   getV86GameViewForRaceday
 } from './v86-service.js'
+import { listSuggestionsByRaceday, persistGeneratedSuggestions } from '../suggestion/suggestion-service.js'
 
 const router = express.Router()
 
@@ -58,7 +59,7 @@ function createDistributionUpdateHandler(updateDistribution, fallbackMessage, wr
   }
 }
 
-function createSuggestionHandler({ buildSingle, buildMulti, fallbackMessage }) {
+function createSuggestionHandler({ buildSingle, buildMulti, fallbackMessage, gameType }) {
   return async (req, res) => {
     try {
       const {
@@ -92,7 +93,13 @@ function createSuggestionHandler({ buildSingle, buildMulti, fallbackMessage }) {
         if (result?.error) {
           return res.status(400).json(result)
         }
-        return res.json(result)
+        const persisted = await persistGeneratedSuggestions({
+          racedayId: req.params.id,
+          gameType,
+          requestSnapshot: req.body || {},
+          responsePayload: result
+        })
+        return res.json(persisted)
       }
 
       const suggestion = await buildSingle(req.params.id, {
@@ -102,7 +109,13 @@ function createSuggestionHandler({ buildSingle, buildMulti, fallbackMessage }) {
       if (suggestion?.error) {
         return res.status(400).json(suggestion)
       }
-      res.json(suggestion)
+      const persisted = await persistGeneratedSuggestions({
+        racedayId: req.params.id,
+        gameType,
+        requestSnapshot: req.body || {},
+        responsePayload: suggestion
+      })
+      res.json(persisted)
     } catch (error) {
       console.error('Failed to build suggestion:', error)
       res.status(500).json({ error: fallbackMessage })
@@ -136,6 +149,19 @@ router.get('/:id/v86/game', validateObjectIdParam('id'), async (req, res) => {
   }
 })
 
+router.get('/:id/suggestions', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const suggestions = await listSuggestionsByRaceday(req.params.id, {
+      gameType: req.query?.gameType || null,
+      limit: req.query?.limit || null
+    })
+    res.json(suggestions)
+  } catch (error) {
+    console.error(`Failed to fetch suggestions for raceday ${req.params.id}:`, error)
+    res.status(500).json({ error: 'Misslyckades hämta sparade spelförslag' })
+  }
+})
+
 router.post('/:id/v85/update', validateObjectIdParam('id'), createDistributionUpdateHandler(
   updateV85DistributionForRaceday,
   'Misslyckades att uppdatera V85%',
@@ -150,13 +176,15 @@ router.post('/:id/v86/update', validateObjectIdParam('id'), createDistributionUp
 router.post('/:id/v85', validateObjectIdParam('id'), createSuggestionHandler({
   buildSingle: buildV85Suggestion,
   buildMulti: buildV85Suggestions,
-  fallbackMessage: 'Det gick inte att skapa V85-spelförslag'
+  fallbackMessage: 'Det gick inte att skapa V85-spelförslag',
+  gameType: 'V85'
 }))
 
 router.post('/:id/v86', validateObjectIdParam('id'), createSuggestionHandler({
   buildSingle: buildV86Suggestion,
   buildMulti: buildV86Suggestions,
-  fallbackMessage: 'Det gick inte att skapa V86-spelförslag'
+  fallbackMessage: 'Det gick inte att skapa V86-spelförslag',
+  gameType: 'V86'
 }))
 
 export default router

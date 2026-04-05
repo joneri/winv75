@@ -19,6 +19,18 @@ const getJson = async (path) => {
   return { response, body }
 }
 
+const postJson = async (path, payload) => {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  const body = await response.json()
+  return { response, body }
+}
+
 before(async () => {
   await connectDB()
 
@@ -94,4 +106,46 @@ test('preserved core read endpoints return live data', async () => {
   const { response: driverListResponse, body: driverList } = await getJson('/api/driver?limit=5')
   assert.equal(driverListResponse.status, 200)
   assert.ok(Array.isArray(driverList?.items) && driverList.items.length > 0, 'Expected driver list items')
+})
+
+test('suggestion history endpoints persist and expose saved snapshots', async () => {
+  const { response: racedayListResponse, body: racedays } = await getJson('/api/raceday?limit=200')
+  assert.equal(racedayListResponse.status, 200)
+  const seedRaceday = racedays.find((item) => Array.isArray(item?.gameTypes?.V85) && item.gameTypes.V85.length > 0)
+  assert.ok(seedRaceday?._id, 'Expected a raceday with V85 support')
+
+  const { response: generateResponse, body: generateBody } = await postJson(`/api/raceday/${seedRaceday._id}/v85`, {
+    multi: true,
+    modes: ['balanced'],
+    variantCount: 1
+  })
+  assert.equal(generateResponse.status, 200)
+  assert.ok(Array.isArray(generateBody?.suggestions) && generateBody.suggestions.length > 0, 'Expected generated suggestions')
+  assert.ok(generateBody.suggestions[0]?.snapshotId, 'Expected persisted snapshot id on generated suggestion')
+
+  const { response: historyResponse, body: historyBody } = await getJson(`/api/raceday/${seedRaceday._id}/suggestions`)
+  assert.equal(historyResponse.status, 200)
+  assert.ok(Array.isArray(historyBody?.items) && historyBody.items.length > 0, 'Expected saved suggestion history')
+
+  const savedItem = historyBody.items.find((item) => String(item.id) === String(generateBody.suggestions[0].snapshotId)) || historyBody.items[0]
+  assert.ok(savedItem?.id, 'Expected a saved suggestion item')
+
+  const { response: detailResponse, body: detailBody } = await getJson(`/api/suggestions/${savedItem.id}`)
+  assert.equal(detailResponse.status, 200)
+  assert.equal(String(detailBody?.item?.id), String(savedItem.id))
+  assert.ok(Array.isArray(detailBody?.item?.ticket?.legs) && detailBody.item.ticket.legs.length > 0, 'Expected stored ticket legs')
+
+  const { response: analyticsResponse, body: analyticsBody } = await getJson('/api/suggestions/analytics')
+  assert.equal(analyticsResponse.status, 200)
+  assert.ok(Number.isFinite(Number(analyticsBody?.summary?.totalSuggestions || 0)), 'Expected analytics summary')
+
+  const markerLabel = `Smoke marker ${Date.now()}`
+  const { response: markerResponse, body: markerBody } = await postJson('/api/suggestions/markers', {
+    label: markerLabel,
+    category: 'strategy',
+    description: 'Created by smoke test',
+    occurredAt: new Date().toISOString()
+  })
+  assert.equal(markerResponse.status, 201)
+  assert.equal(markerBody?.label, markerLabel)
 })

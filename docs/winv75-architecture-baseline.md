@@ -69,6 +69,16 @@ The protected core remains:
 - `backend/src/search/*`
   - global search across the protected catalogues
 
+### Suggestion history
+- `backend/src/suggestion/suggestion-snapshot-model.js`
+  - stores frozen generated tickets with request, selected-state and version snapshots
+- `backend/src/suggestion/suggestion-settlement-service.js`
+  - derives winners, correct-leg counts, spike hit rate and top-rank hit rate from stored horse results
+- `backend/src/suggestion/suggestion-service.js`
+  - persists generated tickets, refreshes settlement and aggregates analytics plus timeline markers
+- `backend/src/suggestion/suggestion-routes.js`
+  - exposes ticket detail, analytics and marker APIs
+
 ## What was split in this increment
 - `backend/src/raceday/raceday-service.js`
   - before: one mixed module for external fetch, startlist upsert, ATG comment persistence, horse refresh, timestamp updates, list queries, detail reads, and summary projection
@@ -93,6 +103,7 @@ The protected core remains:
 - route files should validate inputs, call domain services, and translate errors
 - shared betting mechanics belong in `betting-suggestion-support.js`
 - game-specific betting orchestration remains owned by `v85-service.js` and `v86-service.js`
+- historical suggestion persistence and settlement belong in `backend/src/suggestion/*`
 
 ## Refactor next
 - split the remaining game-specific orchestration inside `v85-service.js` and `v86-service.js` without changing betting semantics
