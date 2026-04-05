@@ -51,6 +51,10 @@ const SHOE_SIGNAL_MIN_SAMPLE = Number(process.env.ELO_SHOE_SIGNAL_MIN_SAMPLE || 
 const SHOE_SIGNAL_CHANGE_MIN_SAMPLE = Number(process.env.ELO_SHOE_SIGNAL_CHANGE_MIN_SAMPLE || 3)
 const SHOE_SIGNAL_SHRINK_K = Number(process.env.ELO_SHOE_SIGNAL_SHRINK_K || 5)
 const SHOE_SIGNAL_CAP = Number(process.env.ELO_SHOE_SIGNAL_CAP || 18)
+const DRIVER_HORSE_AFFINITY_WEIGHT = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_WEIGHT || 18)
+const DRIVER_HORSE_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_MIN_SAMPLE || 3)
+const DRIVER_HORSE_AFFINITY_SHRINK_K = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_SHRINK_K || 6)
+const DRIVER_HORSE_AFFINITY_CAP = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_CAP || 12)
 const LANE_BIAS_WEIGHT = Number(process.env.ELO_LANE_BIAS_WEIGHT || 16)
 const LANE_BIAS_CAP = Number(process.env.ELO_LANE_BIAS_CAP || 10)
 const LANE_BIAS_EXACT_MIN_SAMPLE = Number(process.env.ELO_LANE_BIAS_EXACT_MIN_SAMPLE || 10)
@@ -285,6 +289,7 @@ const listRelevantResults = (results = [], targetRaceDate = new Date()) => {
         code,
         outcomeScore,
         recencyWeight,
+        driverId: safeNumber(result?.driver?.id ?? result?.driverId ?? result?.driver?.licenseId, null),
         startMethod: normalizeStartMethod(result?.startMethod),
         distanceBucket: getDistanceBucket(result?.distance),
         track: normalizeTrack(result?.trackCode),
@@ -518,6 +523,81 @@ const computeShoeSignal = ({
   }
 }
 
+const resolveCurrentDriverId = (horse = {}, driver = {}) => {
+  const candidates = [
+    driver?._id,
+    driver?.id,
+    driver?.licenseId,
+    horse?.driver?.licenseId,
+    horse?.driver?.id
+  ]
+
+  for (const candidate of candidates) {
+    const parsed = Number(candidate)
+    if (Number.isFinite(parsed) && parsed > 0) return parsed
+  }
+
+  return null
+}
+
+const computeDriverHorseAffinity = ({
+  relevantResults,
+  horse,
+  driver,
+  baselineOutcome
+}) => {
+  const currentDriverId = resolveCurrentDriverId(horse, driver)
+  const basePayload = {
+    currentDriverId,
+    baselineOutcome: Number(baselineOutcome.toFixed(4)),
+    matchedOutcome: null,
+    weightSum: 0,
+    minSample: DRIVER_HORSE_AFFINITY_MIN_SAMPLE,
+    cappedBy: DRIVER_HORSE_AFFINITY_CAP
+  }
+
+  if (!Number.isFinite(currentDriverId)) {
+    return buildInactiveContextFeature({
+      ...basePayload,
+      reason: 'missing_current_driver'
+    })
+  }
+
+  const matched = relevantResults.filter((result) => Number(result?.driverId) === currentDriverId)
+  if (matched.length < DRIVER_HORSE_AFFINITY_MIN_SAMPLE) {
+    return buildInactiveContextFeature({
+      ...basePayload,
+      sampleSize: matched.length,
+      weightSum: Number(matched.reduce((sum, result) => sum + result.recencyWeight, 0).toFixed(4)),
+      reason: 'insufficient_sample'
+    })
+  }
+
+  const weightedMatch = computeWeightedOutcome(matched)
+  const rawMeasurement = Number((weightedMatch.outcome - baselineOutcome).toFixed(4))
+  const confidence = Number(clamp(
+    matched.length / (matched.length + DRIVER_HORSE_AFFINITY_SHRINK_K),
+    0,
+    1
+  ).toFixed(4))
+  const deltaElo = Number(clamp(
+    rawMeasurement * DRIVER_HORSE_AFFINITY_WEIGHT * confidence,
+    -DRIVER_HORSE_AFFINITY_CAP,
+    DRIVER_HORSE_AFFINITY_CAP
+  ).toFixed(2))
+
+  return {
+    ...basePayload,
+    rawMeasurement,
+    sampleSize: matched.length,
+    confidence,
+    deltaElo,
+    matchedOutcome: weightedMatch.outcome,
+    weightSum: weightedMatch.weightSum,
+    reason: 'active'
+  }
+}
+
 const computeLaneBias = ({
   laneBiasStore,
   horse,
@@ -663,6 +743,7 @@ const computeContextAdjustments = ({
   raceContext,
   trackAffinity,
   shoeSignal,
+  driverHorseAffinity,
   laneBias
 }) => {
   const makeAdjustment = (matchFn, weightCap) => {
@@ -694,6 +775,7 @@ const computeContextAdjustments = ({
     distance.adjustment +
     trackAffinity.deltaElo +
     shoeSignal.deltaElo +
+    driverHorseAffinity.deltaElo +
     laneBias.deltaElo
   ).toFixed(2))
 
@@ -703,6 +785,7 @@ const computeContextAdjustments = ({
     distance,
     trackAffinity,
     shoeSignal,
+    driverHorseAffinity,
     laneBias
   }
 }
@@ -763,6 +846,13 @@ export const buildHorseEloPrediction = ({
     baselineOutcome: form.weightedOutcome
   })
 
+  const driverHorseAffinity = computeDriverHorseAffinity({
+    relevantResults,
+    horse,
+    driver,
+    baselineOutcome: form.weightedOutcome
+  })
+
   const laneBias = computeLaneBias({
     laneBiasStore,
     horse,
@@ -774,6 +864,7 @@ export const buildHorseEloPrediction = ({
     raceContext: targetContext,
     trackAffinity,
     shoeSignal,
+    driverHorseAffinity,
     laneBias
   })
 
@@ -794,6 +885,7 @@ export const buildHorseEloPrediction = ({
     distanceDelta: contextAdjustments.distance.adjustment,
     trackAffinityDelta: trackAffinity.deltaElo,
     shoeSignalDelta: shoeSignal.deltaElo,
+    driverHorseAffinityDelta: driverHorseAffinity.deltaElo,
     laneBiasDelta: laneBias.deltaElo,
     contextTotal: contextAdjustments.total,
     effectiveElo
@@ -813,6 +905,7 @@ export const buildHorseEloPrediction = ({
       driver: DRIVER_SUPPORT_WEIGHT,
       trackAffinity: TRACK_AFFINITY_WEIGHT,
       shoeSignal: SHOE_SIGNAL_WEIGHT,
+      driverHorseAffinity: DRIVER_HORSE_AFFINITY_WEIGHT,
       laneBias: LANE_BIAS_WEIGHT
     },
     recencyProfiles: {
@@ -863,6 +956,7 @@ export const buildHorseEloPrediction = ({
         startMethod: result.startMethod,
         distanceBucket: result.distanceBucket,
         track: result.track,
+        driverId: result.driverId,
         shoeState: result?.shoeState?.state ?? 'unknown',
         shoeReliability: result?.shoeState?.reliability ?? 'unknown',
         shoeChangeClassification: result?.shoeChange?.classification ?? 'unknown',
@@ -874,6 +968,7 @@ export const buildHorseEloPrediction = ({
         driver: DRIVER_SUPPORT_WEIGHT,
         trackAffinity: TRACK_AFFINITY_WEIGHT,
         shoeSignal: SHOE_SIGNAL_WEIGHT,
+        driverHorseAffinity: DRIVER_HORSE_AFFINITY_WEIGHT,
         laneBias: LANE_BIAS_WEIGHT
       }
     }

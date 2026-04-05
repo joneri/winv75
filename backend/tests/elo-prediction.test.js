@@ -510,3 +510,133 @@ test('lane bias stays inactive when the exact bucket sample is too small', () =>
   assert.equal(prediction.debug.contextAdjustments.laneBias.deltaElo, 0)
   assert.equal(prediction.debug.contextAdjustments.laneBias.reason, 'insufficient_sample')
 })
+
+test('driver-horse affinity activates when the current driver has strong horse-relative history', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 9,
+      driver: { licenseId: 77 },
+      results: [
+        {
+          raceInformation: { raceId: 91, date: daysAgo(6) },
+          placement: { sortValue: 1, displayValue: '1' },
+          driver: { id: 77 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 92, date: daysAgo(18) },
+          placement: { sortValue: 2, displayValue: '2' },
+          driver: { id: 77 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 93, date: daysAgo(31) },
+          placement: { sortValue: 1, displayValue: '1' },
+          driver: { id: 77 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'J',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 94, date: daysAgo(45) },
+          placement: { sortValue: 7, displayValue: '7' },
+          driver: { id: 55 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 95, date: daysAgo(59) },
+          placement: { sortValue: 6, displayValue: '6' },
+          driver: { id: 56 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1010
+    },
+    driver: {
+      _id: 77,
+      elo: 1020,
+      careerElo: 1005
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.currentDriverId, 77)
+  assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.sampleSize, 3)
+  assert.ok(prediction.debug.contextAdjustments.driverHorseAffinity.rawMeasurement > 0, 'Expected positive driver-horse measurement')
+  assert.ok(prediction.debug.contextAdjustments.driverHorseAffinity.deltaElo > 0, 'Expected driver-horse affinity to lift effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.driverHorseAffinityDelta,
+    prediction.debug.contextAdjustments.driverHorseAffinity.deltaElo
+  )
+})
+
+test('driver-horse affinity stays inactive when the current driver has too little shared history', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 10,
+      driver: { licenseId: 88 },
+      results: [
+        {
+          raceInformation: { raceId: 101, date: daysAgo(10) },
+          placement: { sortValue: 1, displayValue: '1' },
+          driver: { id: 88 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        },
+        {
+          raceInformation: { raceId: 102, date: daysAgo(25) },
+          placement: { sortValue: 5, displayValue: '5' },
+          driver: { id: 44 },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S',
+          equipmentOptions: { shoeOptions: { code: '4' } }
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    driver: {
+      _id: 88,
+      elo: 1005,
+      careerElo: 1000
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.sampleSize, 1)
+  assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.reason, 'insufficient_sample')
+})

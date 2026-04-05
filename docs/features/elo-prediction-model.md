@@ -21,6 +21,7 @@ Turn winv75 Elo into an explainable race prediction model with explicit career, 
   - distance bucket
   - track affinity when the horse has enough same-track history
   - shoe signal when the current shoe setup can be matched safely against horse-relative history
+  - driver-horse affinity when the current driver has enough shared history with this horse
   - lane bias when the contextual start-position bucket is strong enough after hierarchical shrinkage
 - `effectiveElo` is then converted to normalized field probabilities with a softmax step per race.
 
@@ -48,6 +49,13 @@ Future context features should follow the same contract:
 - `confidence`
 - `deltaElo`
 - `reason`
+
+Driver-horse affinity is calculated as a horse-relative shared-driver signal:
+- identify the current driver from the live race context
+- compare the horse's weighted outcome with that same driver against the horse's overall baseline
+- require a minimum shared-history sample
+- shrink the effect before converting it into `deltaElo`
+- cap the final impact so it remains a context nudge rather than a duplicate of driver Elo
 
 Lane bias is now context feature #3:
 - key = `trackCode + startMethod + distanceBucket + startPosition`
@@ -96,6 +104,7 @@ Inspect `eloDebug` for:
 - context adjustments
 - track affinity raw measurement, sample size, confidence and `deltaElo`
 - shoe raw codes, normalized states, change classification, sample sizes, confidence and `deltaElo`
+- current driver id, shared-history sample size, confidence and `driverHorseAffinityDelta`
 - lane bias keys, hierarchy sample sizes, shrunk baselines, confidence and `deltaElo`
 - effective Elo breakdown by component
 - recency profiles
@@ -120,4 +129,5 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 - 2026-04-05: Unified rebuild, direct update, and runtime prediction around shared Elo result and recency policies.
 - 2026-04-05: Added track affinity as the first explicit contextual prediction signal with min-sample protection, shrinkage and detailed debug breakdown.
 - 2026-04-05: Added normalized shoe taxonomy and shoe signal as context feature #2 with strict handling of unreliable shoe codes.
+- 2026-04-05: Added driver-horse affinity as a capped horse-relative shared-driver signal.
 - 2026-04-05: Added lane bias as context feature #3 with hierarchical shrinkage over exact, distance, track-method and global context.
