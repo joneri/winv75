@@ -43,6 +43,8 @@ The protected core remains:
   - import, upsert, list, summary, detail, and timestamp routes
 - `backend/src/raceday/raceday-betting-routes.js`
   - V85 and V86 template, info, update, pairing, game-view, and suggestion routes
+- `backend/src/raceday/betting-suggestion-support.js`
+  - shared template definitions, variant descriptors, seeded RNG, and allocation helpers used by both V85 and V86
 - `backend/src/raceday/raceday-service.js`
   - now acts as a compatibility facade over the smaller raceday modules
 
@@ -80,15 +82,19 @@ The protected core remains:
 - startup wiring
   - before: `app.js` and `index.js` manually listed every route and scheduler
   - after: route and scheduler registration are grouped in dedicated startup modules
+- `backend/src/raceday/v85-service.js` and `backend/src/raceday/v86-service.js`
+  - before: both files duplicated template definitions, variant math, seeded RNG, and spike/seed helpers alongside their product-specific betting logic
+  - after: shared mechanics live in `betting-suggestion-support.js`, leaving each betting service focused on its own game-specific orchestration
 
 ## Current ownership boundaries
 - import and external fetch logic belongs in `*-client.js` and import services
 - read/query logic belongs in `*-query-service.js` or `*-read-service.js`
 - mutation and persistence logic belongs in write or update services
 - route files should validate inputs, call domain services, and translate errors
-- betting logic remains owned by `v85-service.js` and `v86-service.js`
+- shared betting mechanics belong in `betting-suggestion-support.js`
+- game-specific betting orchestration remains owned by `v85-service.js` and `v86-service.js`
 
 ## Refactor next
-- split the large V85 and V86 services into smaller internal modules without changing betting semantics
+- split the remaining game-specific orchestration inside `v85-service.js` and `v86-service.js` without changing betting semantics
 - reduce old logging noise in race and horse flows
 - reconcile `docs/features/` with the now-cleaner module structure and domain ownership
