@@ -72,6 +72,14 @@
         >
           Kunde inte generera förslag för: {{ formatErrorModes(suggestionErrors) }}
         </v-alert>
+        <v-alert
+          v-if="suggestions.length && !loading"
+          type="info"
+          variant="tonal"
+          class="mt-4"
+        >
+          Genererade forslag sparas inte automatiskt. Välj själv vad som ska in i historiken.
+        </v-alert>
         <div v-if="suggestions.length && !loading" class="mode-switch mt-4">
           <v-slide-group
             v-if="suggestions.length > 1"
@@ -107,6 +115,37 @@
             Välj publikspikar
           </v-btn>
         </div>
+        <div v-if="suggestions.length && !loading" class="save-actions">
+          <v-btn
+            variant="tonal"
+            color="primary"
+            size="small"
+            :loading="saveLoading"
+            :disabled="!currentSuggestion || currentSuggestionSaved"
+            @click="saveCurrentSuggestion"
+          >
+            {{ currentSuggestionSaved ? 'Redan sparad' : 'Spara detta forslag' }}
+          </v-btn>
+          <v-btn
+            variant="text"
+            size="small"
+            :loading="saveLoading"
+            :disabled="!unsavedSuggestions.length"
+            @click="saveVisibleSuggestions"
+          >
+            Spara synliga forslag
+          </v-btn>
+          <v-btn
+            variant="text"
+            size="small"
+            color="secondary"
+            :disabled="!unsavedSuggestions.length"
+            @click="clearUnsavedGenerated"
+          >
+            Rensa osparade
+          </v-btn>
+        </div>
+        <div v-if="saveMessage" class="save-message">{{ saveMessage }}</div>
         <div v-if="currentSuggestion && !loading" class="ticket mt-6">
           <div class="ticket-header">
             <div>
@@ -189,6 +228,7 @@
 <script>
 import { ref, watch, computed } from 'vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
+import SuggestionService from '@/views/suggestion/services/SuggestionService.js'
 
 const DEFAULT_MODES = ['balanced', 'mix', 'public', 'value']
 
@@ -213,6 +253,9 @@ export default {
     const suggestions = ref([])
     const activeSuggestionIndex = ref(0)
     const suggestionErrors = ref([])
+    const saveMessage = ref('')
+    const saveLoading = ref(false)
+    const currentRequestSnapshot = ref({})
     const maxCost = ref(null)
     const modeOptions = [
       { value: 'balanced', label: 'Balanserad' },
@@ -245,7 +288,18 @@ export default {
       if (!value) {
         error.value = ''
         suggestionErrors.value = []
+        saveMessage.value = ''
       }
+    }
+
+    const buildClientKey = (item, index) => `${Date.now()}-${index}-${item?.mode || 'mode'}-${item?.variant?.key || 'variant'}`
+
+    const emitSessionState = () => {
+      emit('generated', {
+        gameType: 'V86',
+        requestSnapshot: { ...currentRequestSnapshot.value },
+        suggestions: suggestions.value.map(item => JSON.parse(JSON.stringify(item)))
+      })
     }
 
     const setActiveSuggestion = (index) => {
@@ -273,6 +327,8 @@ export default {
       return parts.join(' · ')
     })
     const currentVariantSummary = computed(() => currentSuggestion.value?.variant?.summary || '')
+    const unsavedSuggestions = computed(() => suggestions.value.filter(item => !item?.isSaved))
+    const currentSuggestionSaved = computed(() => Boolean(currentSuggestion.value?.isSaved))
 
     const formatCurrency = (value) => {
       try {
@@ -359,6 +415,7 @@ export default {
         suggestionErrors.value = []
         suggestions.value = []
         activeSuggestionIndex.value = 0
+        saveMessage.value = ''
 
         const maxBudget = Number(maxCost.value)
         const payload = { templateKey: selectedTemplate.value }
@@ -377,6 +434,7 @@ export default {
             payload.variantCount = Math.min(5, Math.max(1, Math.round(countValue)))
           }
         }
+        currentRequestSnapshot.value = { ...payload }
 
         const result = await RacedayService.fetchV86Suggestion(props.racedayId, payload)
         const serverSuggestions = Array.isArray(result?.suggestions) ? result.suggestions : []
@@ -387,18 +445,19 @@ export default {
           throw new Error('Inga spelförslag kunde genereras.')
         }
 
-        combined.forEach(item => {
-          if (item && !item.modeLabel && item.mode) {
-            item.modeLabel = normalizeModeLabel(item.mode)
+        suggestions.value = combined.map((item, index) => {
+          const next = {
+            ...item,
+            clientKey: buildClientKey(item, index),
+            isSaved: false
           }
+          if (next && !next.modeLabel && next.mode) {
+            next.modeLabel = normalizeModeLabel(next.mode)
+          }
+          return next
         })
-
-        suggestions.value = combined
         suggestionErrors.value = Array.isArray(result?.errors) ? result.errors : []
-        emit('generated', {
-          gameType: 'V86',
-          snapshotIds: combined.map(item => item?.snapshotId).filter(Boolean)
-        })
+        emitSessionState()
 
         if (modeOverride) {
           const idx = suggestions.value.findIndex(s => s?.mode === modeOverride)
@@ -521,6 +580,60 @@ export default {
 
       suggestions.value.splice(idx, 1, clone)
       error.value = ''
+      emitSessionState()
+    }
+
+    const saveSuggestions = async (items = []) => {
+      const targets = items.filter(item => item && !item.isSaved)
+      if (!targets.length) {
+        saveMessage.value = 'Inga osparade forslag att spara.'
+        return
+      }
+
+      try {
+        saveLoading.value = true
+        saveMessage.value = ''
+        const result = await SuggestionService.saveSuggestionSelections(props.racedayId, targets.map(item => ({
+          clientKey: item.clientKey,
+          gameType: 'V86',
+          suggestion: item,
+          requestSnapshot: currentRequestSnapshot.value
+        })))
+
+        const savedMap = new Map((result?.items || []).map(item => [item.clientKey, item]))
+        suggestions.value = suggestions.value.map(item => {
+          const saved = savedMap.get(item.clientKey)
+          if (!saved) return item
+          return {
+            ...item,
+            isSaved: true,
+            snapshotId: saved.id
+          }
+        })
+        saveMessage.value = targets.length === 1 ? 'Förslaget sparades.' : `${targets.length} forslag sparades.`
+        emitSessionState()
+      } catch (err) {
+        console.error('Failed to save V86 suggestions', err)
+        saveMessage.value = err?.response?.data?.error || err?.message || 'Kunde inte spara forslagen.'
+      } finally {
+        saveLoading.value = false
+      }
+    }
+
+    const saveCurrentSuggestion = async () => {
+      if (!currentSuggestion.value) return
+      await saveSuggestions([currentSuggestion.value])
+    }
+
+    const saveVisibleSuggestions = async () => {
+      await saveSuggestions(unsavedSuggestions.value)
+    }
+
+    const clearUnsavedGenerated = () => {
+      suggestions.value = suggestions.value.filter(item => item?.isSaved)
+      activeSuggestionIndex.value = 0
+      saveMessage.value = 'Osparade forslag togs bort från vyn.'
+      emitSessionState()
     }
 
     const formatErrorModes = (errorList) => {
@@ -557,6 +670,7 @@ export default {
       currentModeLabel,
       currentVariantLabel,
       currentVariantSummary,
+      currentSuggestionSaved,
       maxCost,
       modeOptions,
       selectedModes,
@@ -571,6 +685,12 @@ export default {
       formatErrorModes,
       generate,
       applyPublicSpikes,
+      saveCurrentSuggestion,
+      saveVisibleSuggestions,
+      clearUnsavedGenerated,
+      saveMessage,
+      saveLoading,
+      unsavedSuggestions,
       toggleMode,
       setActiveSuggestion,
       formatSuggestionLabel,

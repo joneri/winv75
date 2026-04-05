@@ -1,9 +1,11 @@
 <template>
   <v-app>
     <NavigationBar />
-    <v-main>
+    <v-main class="app-shell-main">
       <AppBreadcrumbs />
-      <router-view />
+      <div class="app-page">
+        <router-view />
+      </div>
     </v-main>
   </v-app>
 </template>

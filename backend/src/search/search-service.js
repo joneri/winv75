@@ -83,7 +83,7 @@ async function globalSearch(query) {
       })
         .sort({ firstStart: 1 })
         .limit(24)
-        .select('raceDayId trackName raceDayDate firstStart'),
+        .select('_id raceDayId trackName raceDayDate firstStart'),
 
       // Results (past): match by track name, horse name, or driver name
       Raceday.find({
@@ -100,7 +100,7 @@ async function globalSearch(query) {
       })
         .sort({ firstStart: -1 })
         .limit(24)
-        .select('raceDayId trackName raceDayDate firstStart')
+        .select('_id raceDayId trackName raceDayDate firstStart')
     ])
 
     // Rank client-side for name-based categories
@@ -149,7 +149,7 @@ async function globalSearch(query) {
           $project: {
             _id: 0,
             id: '$raceList.raceId',
-            racedayId: '$raceDayId',
+            racedayId: '$_id',
             trackName: '$trackName',
             startTime: '$raceList.startDateTime',
             raceNumber: '$raceList.raceNumber',

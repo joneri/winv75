@@ -6,7 +6,11 @@ import { getWeights } from '../config/scoring.js'
 import HorseRating from './horse-rating-model.js'
 import trackService from '../track/track-service.js'
 import Driver from '../driver/driver-model.js'
-import { computeHorseFormMetrics } from './horse-form-metrics.js'
+import Raceday from '../raceday/raceday-model.js'
+import {
+    attachFieldProbabilities,
+    buildHorseEloPrediction
+} from '../rating/horse-elo-prediction.js'
 
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
@@ -84,6 +88,74 @@ const upsertHorseData = async (horseId) => {
     return horse
 }
 
+const loadRaceContext = async (raceId) => {
+    const numericRaceId = Number(raceId)
+    if (!Number.isFinite(numericRaceId)) {
+        return {}
+    }
+
+    const raceday = await Raceday.findOne(
+        { 'raceList.raceId': numericRaceId },
+        {
+            trackName: 1,
+            raceDayDate: 1,
+            raceList: { $elemMatch: { raceId: numericRaceId } }
+        }
+    ).lean()
+
+    const race = raceday?.raceList?.[0]
+    if (!race) {
+        return {}
+    }
+
+    return {
+        raceDate: race.startDateTime ?? raceday?.raceDayDate ?? null,
+        startMethod: race.startMethod ?? race.raceType?.text ?? null,
+        distance: race.distance ?? null,
+        trackName: raceday?.trackName ?? null
+    }
+}
+
+const buildDriverPayload = (baseDriver, driverDoc) => {
+    if (!driverDoc) return baseDriver
+
+    const enriched = {
+        ...(baseDriver || {}),
+        elo: driverDoc.elo ?? null,
+        formElo: driverDoc.elo ?? null,
+        careerElo: driverDoc.careerElo ?? null
+    }
+
+    if (!enriched.displayName && driverDoc.name) {
+        enriched.displayName = driverDoc.name
+    }
+
+    return enriched
+}
+
+const applyPredictionFields = (entity, prediction) => ({
+    ...entity,
+    rating: prediction.careerElo,
+    careerElo: prediction.careerElo,
+    rawFormRating: prediction.storedFormElo,
+    storedFormElo: prediction.storedFormElo,
+    formRating: prediction.formElo,
+    formElo: prediction.formElo,
+    formDelta: prediction.debug.formDelta,
+    effectiveElo: prediction.effectiveElo,
+    modelProbability: prediction.modelProbability ?? null,
+    winProbability: prediction.modelProbability ?? null,
+    winScore: prediction.effectiveElo,
+    formGapMetric: prediction.debug.daysSinceLast,
+    formModelVersion: prediction.version,
+    eloVersion: prediction.version,
+    eloWeights: prediction.weights,
+    formComponents: prediction.debug,
+    eloDebug: prediction.debug,
+    compositeScore: prediction.effectiveElo,
+    prediction
+})
+
 const getHorseData = async (horseId) => {
     try {
         const horse = await Horse.findOne({ id: horseId })
@@ -91,25 +163,11 @@ const getHorseData = async (horseId) => {
         const obj = horse.toObject()
         obj.score = calculateHorseScore(obj)
         const ratingDoc = await HorseRating.findOne({ horseId })
-        const baseRating = ratingDoc?.rating ?? obj.rating
-        if (Number.isFinite(baseRating)) obj.rating = baseRating
-        const rawFormRating = ratingDoc?.formRating ?? ratingDoc?.rating ?? obj.formRating
-        const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? obj.results?.length ?? 0
-        const metrics = computeHorseFormMetrics({
-            baseRating: obj.rating,
-            rawFormRating,
-            formRaceCount,
-            results: obj.results
+        const prediction = buildHorseEloPrediction({
+            horse: obj,
+            ratingDoc
         })
-        obj.rawFormRating = rawFormRating
-        obj.formRating = metrics.formRating
-        obj.formDelta = metrics.deltaForm
-        obj.winScore = metrics.winScore
-        obj.winProbability = metrics.pWin
-        obj.formGapMetric = metrics.gapMetric
-        obj.formModelVersion = metrics.modelVersion
-        obj.formComponents = metrics.components
-        return obj
+        return applyPredictionFields(obj, prediction)
     } catch (error) {
         console.error(`Error retrieving horse ${horseId}:`, error.message)
         throw new Error('Failed to retrieve horse')
@@ -119,8 +177,14 @@ const getHorseData = async (horseId) => {
 const getHorseRankings = async (raceId) => {
     try {
         const ranked = await horseRanking.aggregateHorses(raceId)
+        const raceContext = await loadRaceContext(raceId)
+        const horseIds = ranked.map(r => r.id)
         const ratingDocs = await HorseRating.find({ horseId: { $in: ranked.map(r => r.id) } })
         const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
+        const horseDocs = horseIds.length
+            ? await Horse.find({ id: { $in: horseIds } }, { id: 1, results: 1, rating: 1, formRating: 1 }).lean()
+            : []
+        const horseMap = new Map(horseDocs.map(doc => [doc.id, doc]))
         const driverIds = ranked
             .map(r => {
                 const driverId = r?.driver?.licenseId ?? r?.driver?.id
@@ -132,49 +196,29 @@ const getHorseRankings = async (raceId) => {
             ? await Driver.find({ _id: { $in: driverIds } }, { _id: 1, elo: 1, careerElo: 1 }).lean()
             : []
         const driverMap = new Map(driverDocs.map(d => [Number(d._id), d]))
-        return ranked.map(r => {
+        const predictions = ranked.map(r => {
+            const horseDoc = horseMap.get(r.id) || {}
             const ratingDoc = docMap.get(r.id)
-            const baseRating = ratingDoc?.rating ?? r.rating ?? 0
-            const rawForm = ratingDoc?.formRating ?? ratingDoc?.rating ?? r.formRating
-            const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? r.results?.length ?? 0
             const driverId = Number(r?.driver?.licenseId ?? r?.driver?.id)
             const driverDoc = Number.isFinite(driverId) ? driverMap.get(driverId) : null
-            const metrics = computeHorseFormMetrics({
-                baseRating,
-                rawFormRating: rawForm,
-                formRaceCount,
-                results: r.results,
-                driverElo: driverDoc?.elo ?? null
+            const prediction = buildHorseEloPrediction({
+                horse: {
+                    ...r,
+                    results: horseDoc?.results || []
+                },
+                ratingDoc,
+                driver: driverDoc,
+                raceContext
             })
 
-            const driverEnriched = (() => {
-                if (!driverDoc) return r.driver
-                const enriched = {
-                    ...r.driver,
-                    elo: driverDoc.elo ?? null,
-                    formElo: driverDoc.elo ?? null,
-                    careerElo: driverDoc.careerElo ?? null
-                }
-                if (!enriched.displayName && driverDoc.name) {
-                    enriched.displayName = driverDoc.name
-                }
-                return enriched
-            })()
-
-            return {
+            return applyPredictionFields({
                 ...r,
-                rating: Number.isFinite(baseRating) ? baseRating : 0,
-                rawFormRating: rawForm,
-                formRating: metrics.formRating,
-                formDelta: metrics.deltaForm,
-                winScore: metrics.winScore,
-                winProbability: metrics.pWin,
-                formGapMetric: metrics.gapMetric,
-                formModelVersion: metrics.modelVersion,
-                formComponents: metrics.components,
-                driver: driverEnriched
-            }
+                results: horseDoc?.results || [],
+                driver: buildDriverPayload(r.driver, driverDoc)
+            }, prediction)
         })
+
+        return attachFieldProbabilities(predictions)
     } catch (error) {
         console.error(`Error retrieving horse rankings for raceId ${raceId}:`, error.message)
         throw new Error('Failed to retrieve horse rankings')
@@ -198,23 +242,11 @@ const getHorsesByScore = async ({ ids, minScore } = {}) => {
     const docMap = new Map(ratingDocs.map(r => [r.horseId, r]))
     results.forEach(r => {
         const ratingDoc = docMap.get(r.id)
-        if (ratingDoc?.rating != null) r.rating = ratingDoc.rating
-        const rawForm = ratingDoc?.formRating ?? ratingDoc?.rating ?? r.formRating
-        const formRaceCount = ratingDoc?.formNumberOfRaces ?? ratingDoc?.numberOfRaces ?? r.results?.length ?? 0
-        const metrics = computeHorseFormMetrics({
-            baseRating: r.rating,
-            rawFormRating: rawForm,
-            formRaceCount,
-            results: r.results
+        const prediction = buildHorseEloPrediction({
+            horse: r,
+            ratingDoc
         })
-        r.rawFormRating = rawForm
-        r.formRating = metrics.formRating
-        r.formDelta = metrics.deltaForm
-        r.winScore = metrics.winScore
-        r.winProbability = metrics.pWin
-        r.formGapMetric = metrics.gapMetric
-        r.formModelVersion = metrics.modelVersion
-        r.formComponents = metrics.components
+        Object.assign(r, applyPredictionFields(r, prediction))
     })
     if (typeof minScore === 'number') {
         results = results.filter(h => h.score >= minScore)

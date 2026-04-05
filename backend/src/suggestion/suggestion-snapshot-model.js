@@ -26,6 +26,11 @@ const suggestionSnapshotSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+    dedupeKey: {
+      type: String,
+      required: true,
+      index: true
+    },
     template: {
       key: { type: String, default: null },
       label: { type: String, default: null }
@@ -116,5 +121,6 @@ const suggestionSnapshotSchema = new mongoose.Schema(
 suggestionSnapshotSchema.index({ racedayObjectId: 1, generatedAt: -1 })
 suggestionSnapshotSchema.index({ gameType: 1, generatedAt: -1 })
 suggestionSnapshotSchema.index({ 'strategy.mode': 1, generatedAt: -1 })
+suggestionSnapshotSchema.index({ racedayObjectId: 1, dedupeKey: 1 }, { unique: true })
 
 export default mongoose.model('SuggestionSnapshot', suggestionSnapshotSchema)

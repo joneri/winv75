@@ -73,9 +73,9 @@ export type SearchResponse = {
   horses?: Array<{ id?: string | number; name: string }>
   drivers?: Array<{ _id?: string | number; name: string }>
   // Support both keys for compatibility
-  racedays?: Array<{ raceDayId: string | number; trackName: string; raceDayDate: string }>
-  raceDays?: Array<{ raceDayId: string | number; trackName: string; raceDayDate: string }>
-  results?: Array<{ raceDayId: string | number; trackName: string; raceDayDate: string }>
+  racedays?: Array<{ _id?: string | number; raceDayId: string | number; trackName: string; raceDayDate: string }>
+  raceDays?: Array<{ _id?: string | number; raceDayId: string | number; trackName: string; raceDayDate: string }>
+  results?: Array<{ _id?: string | number; raceDayId: string | number; trackName: string; raceDayDate: string }>
   tracks?: Array<{ trackCode: string; trackName: string }>
   upcomingRaces?: Array<{
     id: number | string

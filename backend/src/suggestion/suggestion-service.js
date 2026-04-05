@@ -2,6 +2,9 @@ import Raceday from '../raceday/raceday-model.js'
 import SuggestionSnapshot from './suggestion-snapshot-model.js'
 import SuggestionMarker from './suggestion-marker-model.js'
 import { buildSettlementFromTicket, loadRaceWinnerMap } from './suggestion-settlement-service.js'
+import { fetchStartlistById } from '../raceday/raceday-atg-client.js'
+import { upsertStartlistData } from '../raceday/raceday-write-service.js'
+import { ELO_PREDICTION_VERSION } from '../rating/horse-elo-prediction.js'
 
 const DEFAULT_LIMIT = 200
 
@@ -12,6 +15,28 @@ const toNumber = (value, fallback = null) => {
 
 const cloneData = (value) => JSON.parse(JSON.stringify(value))
 
+const toObjectIdString = (value, fallback = null) => {
+  const normalized = typeof value === 'string' ? value.trim() : ''
+  if (/^[a-f0-9]{24}$/i.test(normalized)) {
+    return normalized
+  }
+  return fallback
+}
+
+const buildSuggestionSelectionSignature = (suggestion = {}) => JSON.stringify({
+  templateKey: suggestion?.template?.key || null,
+  mode: suggestion?.mode || null,
+  variantKey: suggestion?.variant?.key || null,
+  generatedAt: suggestion?.generatedAt || null,
+  rows: Number(suggestion?.rows || 0),
+  totalCost: Number(suggestion?.totalCost || 0),
+  legs: (suggestion?.legs || []).map((leg) => ({
+    leg: Number(leg?.leg) || null,
+    raceId: Number(leg?.raceId) || null,
+    selections: (leg?.selections || []).map((selection) => Number(selection?.id) || null)
+  }))
+})
+
 const enrichLeg = (leg = {}, raceByNumber = new Map(), spikeByLeg = new Map()) => {
   const raceNumber = toNumber(leg?.raceNumber, null)
   const race = Number.isFinite(raceNumber) ? raceByNumber.get(raceNumber) || null : null
@@ -20,7 +45,7 @@ const enrichLeg = (leg = {}, raceByNumber = new Map(), spikeByLeg = new Map()) =
   return {
     ...cloneData(leg),
     raceId: toNumber(leg?.raceId, race?.raceId ?? null),
-    raceDayId: toNumber(leg?.raceDayId, race?.raceDayId ?? null),
+    raceDayId: toObjectIdString(leg?.raceDayId, race?.raceDayId ?? null),
     trackName: leg?.trackName || race?.trackName || null,
     aiSelections: Array.isArray(spikeCandidate?.aiSelections) ? cloneData(spikeCandidate.aiSelections) : []
   }
@@ -32,7 +57,7 @@ const enrichTicketSnapshot = (raceday, suggestion) => {
       Number(race?.raceNumber),
       {
         raceId: Number(race?.raceId) || null,
-        raceDayId: Number(raceday?.raceDayId) || null,
+        raceDayId: String(raceday?._id || ''),
         trackName: raceday?.trackName || ''
       }
     ])
@@ -75,9 +100,23 @@ const buildSelectedStateSnapshot = (ticket = {}) => ({
   }))
 })
 
+const normalizeTicketRouteRefs = (ticket = {}, racedayObjectId) => {
+  const fallbackRacedayId = String(racedayObjectId || '')
+  const normalizeLeg = (leg = {}) => ({
+    ...leg,
+    raceDayId: toObjectIdString(leg?.raceDayId, fallbackRacedayId || null)
+  })
+
+  return {
+    ...ticket,
+    legs: (ticket?.legs || []).map(normalizeLeg),
+    spikes: (ticket?.spikes || []).map(normalizeLeg)
+  }
+}
+
 const buildVersionSnapshot = (gameType, requestSnapshot = {}) => ({
   gameType,
-  eloVersion: process.env.ELO_VERSION || process.env.FORM_ELO_VERSION || null,
+  eloVersion: process.env.ELO_VERSION || process.env.FORM_ELO_VERSION || ELO_PREDICTION_VERSION,
   algorithmVersion: process.env.SUGGESTION_ALGORITHM_VERSION || process.env.ALGORITHM_VERSION || null,
   strategyVersion: process.env.STRATEGY_VERSION || null,
   configValues: {
@@ -90,7 +129,7 @@ const buildVersionSnapshot = (gameType, requestSnapshot = {}) => ({
   }
 })
 
-const buildSnapshotSummary = (doc) => ({
+const buildSnapshotSummary = (doc, extra = {}) => ({
   id: String(doc._id),
   racedayObjectId: String(doc.racedayObjectId),
   raceDayId: doc.raceDayId ?? null,
@@ -103,7 +142,8 @@ const buildSnapshotSummary = (doc) => ({
   rowCount: doc.rowCount || 0,
   totalCost: doc.totalCost || 0,
   stakePerRow: doc.stakePerRow || 0,
-  settlement: doc.settlement || {}
+  settlement: doc.settlement || {},
+  ...extra
 })
 
 async function settleSnapshotsIfPossible(snapshotDocs = []) {
@@ -142,15 +182,7 @@ async function settleSnapshotsIfPossible(snapshotDocs = []) {
   return docs
 }
 
-export async function persistGeneratedSuggestions({ racedayId, gameType, requestSnapshot = {}, responsePayload = {} }) {
-  const suggestions = Array.isArray(responsePayload?.suggestions)
-    ? responsePayload.suggestions
-    : [responsePayload?.suggestion || responsePayload].filter((entry) => entry && !entry?.error && Array.isArray(entry?.legs))
-
-  if (!suggestions.length) {
-    return responsePayload
-  }
-
+async function loadRacedayForSnapshots(racedayId) {
   const raceday = await Raceday.findById(racedayId, {
     _id: 1,
     raceDayId: 1,
@@ -159,23 +191,27 @@ export async function persistGeneratedSuggestions({ racedayId, gameType, request
     raceList: 1
   }).lean()
 
-  if (!raceday) {
-    return responsePayload
-  }
+  return raceday || null
+}
 
-  const savedSuggestions = []
+async function saveSuggestionSnapshot({ raceday, gameType, suggestion, requestSnapshot = {}, clientKey = null }) {
+  const enrichedTicket = enrichTicketSnapshot(raceday, suggestion)
+  const generatedAt = suggestion?.generatedAt ? new Date(suggestion.generatedAt) : new Date()
+  const dedupeKey = `${gameType}:${buildSuggestionSelectionSignature(enrichedTicket)}`
 
-  for (let index = 0; index < suggestions.length; index += 1) {
-    const suggestion = suggestions[index]
-    const enrichedTicket = enrichTicketSnapshot(raceday, suggestion)
-    const generatedAt = suggestion?.generatedAt ? new Date(suggestion.generatedAt) : new Date()
+  let snapshot = await SuggestionSnapshot.findOne({
+    racedayObjectId: raceday._id,
+    dedupeKey
+  })
 
-    const snapshot = await SuggestionSnapshot.create({
+  if (!snapshot) {
+    snapshot = await SuggestionSnapshot.create({
       racedayObjectId: raceday._id,
       raceDayId: Number(raceday.raceDayId) || null,
       raceDayDate: raceday.raceDayDate || null,
       trackName: raceday.trackName || '',
       gameType,
+      dedupeKey,
       template: suggestion?.template || {},
       strategy: {
         mode: suggestion?.mode || null,
@@ -196,22 +232,38 @@ export async function persistGeneratedSuggestions({ racedayId, gameType, request
       requestSnapshot: cloneData(requestSnapshot),
       versionSnapshot: buildVersionSnapshot(gameType, requestSnapshot)
     })
-
-    const [settledSnapshot] = await settleSnapshotsIfPossible([snapshot])
-    const summary = buildSnapshotSummary(settledSnapshot)
-
-    suggestion.snapshotId = String(settledSnapshot._id)
-    suggestion.settlement = settledSnapshot.settlement || null
-    savedSuggestions.push(summary)
   }
 
-  if (Array.isArray(responsePayload?.suggestions)) {
-    responsePayload.savedSuggestions = savedSuggestions
-  } else if (savedSuggestions[0]) {
-    responsePayload.savedSuggestion = savedSuggestions[0]
+  const [settledSnapshot] = await settleSnapshotsIfPossible([snapshot])
+  return buildSnapshotSummary(settledSnapshot, {
+    clientKey
+  })
+}
+
+export async function saveSuggestionSelections({ racedayId, items = [] }) {
+  const validItems = (items || []).filter((item) => item?.gameType && item?.suggestion && Array.isArray(item?.suggestion?.legs))
+  if (!validItems.length) {
+    return { items: [] }
   }
 
-  return responsePayload
+  const raceday = await loadRacedayForSnapshots(racedayId)
+  if (!raceday) {
+    return { items: [] }
+  }
+
+  const savedItems = []
+  for (const item of validItems) {
+    const summary = await saveSuggestionSnapshot({
+      raceday,
+      gameType: String(item.gameType).toUpperCase(),
+      suggestion: item.suggestion,
+      requestSnapshot: item.requestSnapshot || {},
+      clientKey: item.clientKey || null
+    })
+    savedItems.push(summary)
+  }
+
+  return { items: savedItems }
 }
 
 export async function listSuggestionsByRaceday(racedayId, filters = {}) {
@@ -274,7 +326,7 @@ export async function getSuggestionById(id) {
       totalCost: doc.totalCost || 0,
       stakePerRow: doc.stakePerRow || 0,
       maxBudget: doc.maxBudget ?? null,
-      ticket: doc.ticket || {},
+      ticket: normalizeTicketRouteRefs(doc.ticket || {}, doc.racedayObjectId),
       selectedStateSnapshot: doc.selectedStateSnapshot || {},
       requestSnapshot: doc.requestSnapshot || {},
       versionSnapshot: doc.versionSnapshot || {},
@@ -282,6 +334,49 @@ export async function getSuggestionById(id) {
     },
     related: relatedDocs.map((relatedDoc) => buildSnapshotSummary(relatedDoc))
   }
+}
+
+export async function deleteSuggestionById(id) {
+  const doc = await SuggestionSnapshot.findByIdAndDelete(id)
+  if (!doc) {
+    return null
+  }
+
+  return {
+    id: String(doc._id),
+    racedayObjectId: String(doc.racedayObjectId),
+    gameType: doc.gameType,
+    deleted: true
+  }
+}
+
+export async function deleteSuggestionsByRaceday(racedayId, filters = {}) {
+  const query = { racedayObjectId: racedayId }
+  if (filters?.gameType) {
+    query.gameType = String(filters.gameType).toUpperCase()
+  }
+
+  const result = await SuggestionSnapshot.deleteMany(query)
+  return {
+    racedayObjectId: String(racedayId),
+    gameType: query.gameType || null,
+    deletedCount: Number(result?.deletedCount || 0)
+  }
+}
+
+export async function refreshSuggestionResults(id) {
+  const doc = await SuggestionSnapshot.findById(id)
+  if (!doc) {
+    return null
+  }
+
+  const raceDayId = Number(doc.raceDayId)
+  if (Number.isFinite(raceDayId)) {
+    const startlist = await fetchStartlistById(raceDayId)
+    await upsertStartlistData(startlist, { refreshHorses: false })
+  }
+
+  return getSuggestionById(id)
 }
 
 const groupBy = (items, getKey) => {
@@ -405,9 +500,12 @@ export async function createMarker(payload = {}) {
 }
 
 export default {
-  persistGeneratedSuggestions,
+  saveSuggestionSelections,
   listSuggestionsByRaceday,
   getSuggestionById,
+  deleteSuggestionById,
+  deleteSuggestionsByRaceday,
+  refreshSuggestionResults,
   getSuggestionAnalytics,
   listMarkers,
   createMarker

@@ -1,44 +1,62 @@
 <template>
-  <v-card
-    :class="['clickable-card', gameClass, { 'has-major': hasMajorGame }]"
+  <article
+    :class="['race-card', gameClass, { 'has-major': hasMajorGame }]"
+    :style="{ '--accent-color': accentColor, '--accent-tint': accentTint }"
+    role="button"
+    tabindex="0"
     @click="viewRaceDetails"
-    :style="{ '--hover-bg': hoverBg, '--hover-fg': hoverFg, '--accent-color': accentColor, '--accent-tint': accentTint }"
+    @keydown.enter.prevent="viewRaceDetails"
+    @keydown.space.prevent="viewRaceDetails"
   >
-    <v-card-title class="card-title">
-      <div class="title-line">
-        <span class="race-no">Lopp {{ race.raceNumber }}</span>
-        <span class="meta" v-if="race.distance">• {{ race.distance }} m</span>
-        <span class="meta" v-if="startTime">• Start {{ startTime }}</span>
-      </div>
-    </v-card-title>
+    <div class="race-card-shell">
+      <div class="race-head">
+        <div class="race-heading">
+          <div class="race-eyebrow">Lopp {{ race.raceNumber }}</div>
+          <div class="race-topline">
+            <span v-if="race.distance" class="race-chip">{{ race.distance }} m</span>
+            <span v-if="startTime" class="race-chip race-chip-accent">Start {{ startTime }}</span>
+            <span class="race-chip">{{ horseCount }} hästar</span>
+          </div>
+          <p v-if="raceSummary" class="race-summary">
+            {{ raceSummary }}
+          </p>
+          <div v-if="lastUpdatedHorseTimestamp !== null" class="updated-indication">
+            Hästar senast uppdaterade {{ formattedUpdated }}
+          </div>
+        </div>
 
-    <v-card-text class="card-body">
-      <div class="muted" v-if="race.propTexts && race.propTexts.length">
-        {{ (race.propTexts[0]?.text || '') + ' ' + (race.propTexts[1]?.text || '') }}
+        <div class="race-side">
+          <div class="badge-rail" v-if="games.length">
+            <SpelformBadge
+              v-for="g in games"
+              :key="`${g.game}-${g.leg}`"
+              :game="g.game"
+              :leg="g.leg"
+            />
+          </div>
+        </div>
       </div>
-      <div v-if="lastUpdatedHorseTimestamp !== null" class="updated-indication">
-        Senast häst uppdaterad: {{ formattedUpdated }}
-      </div>
-    </v-card-text>
 
-    <div class="spelformer-row" v-if="games.length">
-      <SpelformBadge
-        v-for="g in games"
-        :key="`${g.game}-${g.leg}`"
-        :game="g.game"
-        :leg="g.leg"
-      />
+      <div class="race-actions">
+        <v-btn @click.stop="viewRaceDetails" size="small" variant="tonal" color="info">
+          Öppna lopp
+        </v-btn>
+        <v-btn
+          @click.stop="updateRace"
+          :disabled="loading"
+          size="small"
+          variant="outlined"
+          color="secondary"
+        >
+          {{ loading ? 'Uppdaterar…' : 'Uppdatera hästar' }}
+        </v-btn>
+      </div>
+
+      <v-alert v-if="errorMessage" type="error" variant="tonal" class="race-error">
+        {{ errorMessage }}
+      </v-alert>
     </div>
-
-    <v-card-actions class="card-actions">
-      <v-btn @click.stop="viewRaceDetails" size="small" variant="text" color="primary">Visa detaljer</v-btn>
-      <v-btn @click.stop="updateRace" :disabled="loading" class="ml-2" size="small" variant="outlined" color="primary">
-        {{ loading ? 'Uppdaterar…' : 'Uppdatera lopp' }}
-      </v-btn>
-    </v-card-actions>
-
-    <v-alert v-if="errorMessage" type="error" class="ma-2">{{ errorMessage }}</v-alert>
-  </v-card>
+  </article>
 </template>
 
 <script>
@@ -88,12 +106,14 @@ export default {
     const formattedUpdated = computed(() => {
       if (!props.lastUpdatedHorseTimestamp) return ''
       const d = new Date(props.lastUpdatedHorseTimestamp)
-      const y = d.getFullYear()
-      const mo = String(d.getMonth() + 1).padStart(2, '0')
-      const da = String(d.getDate()).padStart(2, '0')
-      const h = String(d.getHours()).padStart(2, '0')
-      const m = String(d.getMinutes()).padStart(2, '0')
-      return `${y}-${mo}-${da} ${h}:${m}`
+      return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short' }).format(d)
+    })
+
+    const horseCount = computed(() => Array.isArray(props.race?.horses) ? props.race.horses.length : 0)
+
+    const raceSummary = computed(() => {
+      const texts = Array.isArray(props.race?.propTexts) ? props.race.propTexts.map(item => item?.text).filter(Boolean) : []
+      return texts.join(' ').trim()
     })
 
     const gameClass = computed(() => {
@@ -101,9 +121,6 @@ export default {
       const code = games.value[0].game
       return majorGames.includes(code) ? `${code.toLowerCase()}-accent` : ''
     })
-
-    const hoverBg = computed(() => hasMajorGame.value ? hexToRgba(accentColor.value, 0.14) : 'rgba(59,130,246,0.08)')
-    const hoverFg = computed(() => hasMajorGame.value ? '#0b1021' : '#0b1021')
 
     const viewRaceDetails = () => {
       store.commit('raceHorses/setCurrentRace', props.race);
@@ -146,9 +163,9 @@ export default {
       errorMessage,
       startTime,
       formattedUpdated,
+      horseCount,
+      raceSummary,
       gameClass,
-      hoverBg,
-      hoverFg,
       hasMajorGame,
       accentColor,
       accentTint
@@ -158,89 +175,133 @@ export default {
 </script>
 
 <style scoped>
-.updated-indication {
-  color: #0e7490;
-  font-weight: 500;
-  margin-top: 6px;
-}
-.clickable-card {
+.race-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent-color) 12%, transparent), transparent 32%),
+    linear-gradient(180deg, rgba(12, 21, 38, 0.98), rgba(15, 26, 46, 0.96));
+  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.24);
   cursor: pointer;
-  transition: background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  border: 1px solid #e5e7eb;
-  border-left-width: 4px; /* accent border via game class */
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
-/* stronger hover/selection to ensure content stays visible */
-.clickable-card:hover,
-.clickable-card:focus-within {
-  background-color: var(--hover-bg) !important;
-  color: var(--hover-fg);
-  box-shadow: 0 2px 12px rgba(2, 6, 23, 0.06);
+
+.race-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: color-mix(in srgb, var(--accent-color) 82%, white 10%);
+  opacity: 0.72;
 }
-/* subtle always-on tint for major games */
-.has-major {
-  background-color: var(--accent-tint);
-  border-left-width: 8px;
+
+.race-card:hover,
+.race-card:focus-within {
+  transform: translateY(-2px);
+  border-color: rgba(125, 211, 252, 0.28);
+  box-shadow: 0 28px 54px rgba(2, 6, 23, 0.34);
 }
-/* ensure nested text maintains readable color on hover */
-.clickable-card:hover .meta,
-.clickable-card:hover .muted,
-.clickable-card:hover .card-body,
-.clickable-card:hover .updated-indication,
-.clickable-card:focus-within .meta,
-.clickable-card:focus-within .muted,
-.clickable-card:focus-within .card-body,
-.clickable-card:focus-within .updated-indication {
-  color: #0b1021;
+
+.race-card-shell {
+  padding: 18px 20px 18px 22px;
+  display: grid;
+  gap: 16px;
 }
-/* keep actions visible on hover */
-.clickable-card:hover .card-actions .v-btn,
-.clickable-card:focus-within .card-actions .v-btn {
-  --v-theme-primary: #2563eb; /* ensure primary is visible */
+
+.race-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
 }
-.card-title {
-  padding-bottom: 4px !important;
+
+.race-heading {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
 }
-.title-line {
+
+.race-eyebrow {
+  color: var(--track-amber);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.race-topline {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
 }
-.race-no { font-weight: 700; }
-.meta { color: #6b7280; font-size: 0.9rem; }
-.card-body { color: #374151; }
-.muted { color: #6b7280; }
-.card-actions { padding-top: 0; }
 
-/* Accent borders per major game */
-.v85-accent { border-left-color: #1e3a8a; }
-.v64-accent { border-left-color: #ed6c15; }
-.v65-accent { border-left-color: #c00a26; }
-.v86-accent { border-left-color: #6b21a8; }
-.gs75-accent { border-left-color: #be123c; }
-
-/* Accessibility: focus outline */
-.clickable-card:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
+.race-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-body);
+  font-size: 0.86rem;
+  font-weight: 600;
 }
 
-/* Dark mode tweaks */
-@media (prefers-color-scheme: dark) {
-  .clickable-card { border-color: rgba(255,255,255,0.08); }
-  .has-major { background-color: color-mix(in srgb, var(--accent-color) 18%, transparent); }
-  .clickable-card:hover, .clickable-card:focus-within {
-    background-color: color-mix(in srgb, var(--accent-color) 26%, transparent) !important;
-    color: #e5e7eb;
+.race-chip-accent {
+  border-color: rgba(245, 201, 121, 0.18);
+  color: #fee5b6;
+  background: rgba(245, 201, 121, 0.12);
+}
+
+.race-summary {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.updated-indication {
+  color: var(--text-soft);
+  font-size: 0.88rem;
+}
+
+.race-side {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.badge-rail {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.race-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.race-error {
+  margin-top: -2px;
+}
+
+.v85-accent::before { background: #4d8fff; }
+.v64-accent::before { background: #ffb35e; }
+.v65-accent::before { background: #ff6c80; }
+.v86-accent::before { background: #8c7dff; }
+.gs75-accent::before { background: #ff8f66; }
+
+@media (max-width: 820px) {
+  .race-head {
+    grid-template-columns: 1fr;
   }
-  .clickable-card:hover .meta,
-  .clickable-card:hover .muted,
-  .clickable-card:hover .card-body,
-  .clickable-card:hover .updated-indication,
-  .clickable-card:focus-within .meta,
-  .clickable-card:focus-within .muted,
-  .clickable-card:focus-within .card-body,
-  .clickable-card:focus-within .updated-indication {
-    color: #e5e7eb;
+
+  .race-side,
+  .badge-rail {
+    justify-content: flex-start;
   }
 }
 </style>

@@ -10,7 +10,24 @@ import * as directives from 'vuetify/directives'
 import store from './stores'
 
 const vuetify = createVuetify({
-  theme: { defaultTheme: 'dark' },
+  theme: {
+    defaultTheme: 'winv75Dark',
+    themes: {
+      winv75Dark: {
+        dark: true,
+        colors: {
+          background: '#08111f',
+          surface: '#0f1a2e',
+          primary: '#7aa8ff',
+          secondary: '#f5c979',
+          success: '#38d39f',
+          warning: '#f5c979',
+          error: '#ff7b8f',
+          info: '#59d4ff'
+        }
+      }
+    }
+  },
   components: {
     ...components,
     ...labsComponents,

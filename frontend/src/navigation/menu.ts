@@ -1,83 +1,55 @@
 export type NavigationTarget = {
   title: string
+  shortTitle?: string
   icon: string
-  to?: { name: string; params?: Record<string, any> }
+  to: { name: string; params?: Record<string, any> }
   description?: string
-  disabled?: boolean
   matchRoutes?: string[]
 }
 
 export type NavigationSection = {
   title: string
-  icon: string
   items: NavigationTarget[]
 }
 
-export const navigationSections: NavigationSection[] = [
+export const primaryNavigation: NavigationTarget[] = [
   {
-    title: 'Start',
-    icon: 'mdi-home-variant',
-    items: [
-      {
-        title: 'Tävlingsdagar',
-        icon: 'mdi-calendar-edit',
-        to: { name: 'RacedayInput' },
-        description: 'Välj och uppdatera tävlingsdagar.'
-      },
-      {
-        title: 'Tävlingsdag',
-        icon: 'mdi-flag-checkered',
-        disabled: true,
-        matchRoutes: ['Raceday']
-      },
-      {
-        title: 'Suggestion analytics',
-        icon: 'mdi-chart-line',
-        to: { name: 'SuggestionAnalytics' },
-        description: 'Folj sparade spel och modellforandringar over tid.'
-      },
-      {
-        title: 'Startlista',
-        icon: 'mdi-clipboard-text-outline',
-        disabled: true,
-        matchRoutes: ['RacedayRace', 'race']
-      }
-    ]
+    title: 'Tävlingsdagar',
+    shortTitle: 'Tävlingsdagar',
+    icon: 'mdi-calendar-blank-outline',
+    to: { name: 'RacedayInput' },
+    description: 'Start, överblick och hämtning av tävlingsdagar.',
+    matchRoutes: ['RacedayInput', 'Raceday', 'RacedayRace', 'race']
   },
   {
-    title: 'Search Horses',
-    icon: 'mdi-horse-variant',
-    items: [
-      {
-        title: 'Search Horses',
-        icon: 'mdi-magnify',
-        to: { name: 'HorseSearch' },
-        description: 'Bläddra bland hästar sorterat på form ELO.'
-      },
-      {
-        title: 'Häst',
-        icon: 'mdi-horse',
-        disabled: true,
-        matchRoutes: ['HorseDetail']
-      }
-    ]
+    title: 'Hästar',
+    shortTitle: 'Hästar',
+    icon: 'mdi-horse-variant-fast',
+    to: { name: 'HorseSearch' },
+    description: 'Sök och jämför hästar.',
+    matchRoutes: ['HorseSearch', 'HorseDetail']
   },
   {
-    title: 'Search Drivers',
-    icon: 'mdi-account-star',
-    items: [
-      {
-        title: 'Search Drivers',
-        icon: 'mdi-account-search',
-        to: { name: 'DriverSearch' },
-        description: 'Topplista för kuskar baserat på form ELO.'
-      },
-      {
-        title: 'Kusk',
-        icon: 'mdi-account-tie',
-        disabled: true,
-        matchRoutes: ['DriverDetail']
-      }
-    ]
+    title: 'Kuskar',
+    shortTitle: 'Kuskar',
+    icon: 'mdi-account-tie-hat',
+    to: { name: 'DriverSearch' },
+    description: 'Sök och jämför kuskar.',
+    matchRoutes: ['DriverSearch', 'DriverDetail']
+  },
+  {
+    title: 'Förslagsanalys',
+    shortTitle: 'Förslag',
+    icon: 'mdi-chart-line',
+    to: { name: 'SuggestionAnalytics' },
+    description: 'Följ sparade spel och modellutveckling.',
+    matchRoutes: ['SuggestionAnalytics', 'SuggestionDetail']
+  }
+]
+
+export const mobileNavigationSections: NavigationSection[] = [
+  {
+    title: 'Huvudspår',
+    items: primaryNavigation
   }
 ]

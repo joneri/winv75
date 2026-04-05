@@ -15,6 +15,7 @@ This file is the top-level inventory of repo features and links to each AIM feat
 - `driver-catalog-and-detail.md`: Search/list drivers and show detailed driver profile with enriched race metadata.
 - `track-metadata-and-stats.md`: Resolve track metadata and maintain seeded/fallback track characteristics.
 - `ratings-and-elo-engine.md`: Horse/driver Elo updates, recomputation, evaluation, and auto-tune orchestration.
+- `elo-prediction-model.md`: Runtime model for career/form/driver/effective Elo, normalized field probabilities, and debug output.
 - `v85-suggestion-engine.md`: Build V85 ticket suggestions with modes, templates, variants, and optional seed horses.
 - `v86-suggestion-engine-and-pairing.md`: Build V86 pairing/game view/suggestions with status fallbacks.
 - `global-search.md`: Multi-entity global search (horses, drivers, upcoming races, racedays, tracks, results).

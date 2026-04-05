@@ -31,6 +31,14 @@ const postJson = async (path, payload) => {
   return { response, body }
 }
 
+const deleteJson = async (path) => {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: 'DELETE'
+  })
+  const body = await response.json()
+  return { response, body }
+}
+
 before(async () => {
   await connectDB()
 
@@ -79,6 +87,16 @@ test('preserved core read endpoints return live data', async () => {
   assert.equal(raceResponse.status, 200)
   assert.equal(Number(race?.raceId), Number(seedRace.raceId))
   assert.ok(Array.isArray(race?.horses) && race.horses.length > 0, 'Expected horses on race detail')
+  const raceHorseWithPrediction = race.horses.find((item) => Number.isFinite(Number(item?.effectiveElo)))
+  assert.ok(raceHorseWithPrediction, 'Expected race detail to expose effective Elo')
+  assert.ok(Number.isFinite(Number(raceHorseWithPrediction?.modelProbability)), 'Expected race detail to expose model probability')
+  assert.ok(raceHorseWithPrediction?.eloDebug?.weights, 'Expected race detail to expose Elo debug')
+
+  const { response: rankingResponse, body: rankings } = await getJson(`/api/horses/rankings/${seedRace.raceId}`)
+  assert.equal(rankingResponse.status, 200)
+  assert.ok(Array.isArray(rankings) && rankings.length > 0, 'Expected horse rankings for race')
+  assert.ok(Number.isFinite(Number(rankings[0]?.effectiveElo)), 'Expected ranking rows to expose effective Elo')
+  assert.ok(Number.isFinite(Number(rankings[0]?.modelProbability)), 'Expected ranking rows to expose model probability')
 
   const seedHorse = race.horses.find((horse) => Number.isFinite(Number(horse?.id)))
   assert.ok(seedHorse?.id, 'Expected a horse id from race detail')
@@ -87,6 +105,10 @@ test('preserved core read endpoints return live data', async () => {
   assert.equal(horseResponse.status, 200)
   assert.equal(Number(horse?.id), Number(seedHorse.id))
   assert.ok(typeof horse?.name === 'string' && horse.name.length > 0, 'Expected horse detail name')
+  assert.ok(Number.isFinite(Number(horse?.careerElo ?? horse?.rating)), 'Expected horse detail career Elo')
+  assert.ok(Number.isFinite(Number(horse?.formElo ?? horse?.formRating)), 'Expected horse detail form Elo')
+  assert.ok(Number.isFinite(Number(horse?.effectiveElo)), 'Expected horse detail effective Elo')
+  assert.ok(horse?.eloDebug?.recentRaces, 'Expected horse detail Elo debug')
 
   const { response: horseListResponse, body: horseList } = await getJson('/api/horses?limit=5')
   assert.equal(horseListResponse.status, 200)
@@ -116,24 +138,57 @@ test('suggestion history endpoints persist and expose saved snapshots', async ()
 
   const { response: generateResponse, body: generateBody } = await postJson(`/api/raceday/${seedRaceday._id}/v85`, {
     multi: true,
-    modes: ['balanced'],
+    modes: ['balanced', 'value'],
     variantCount: 1
   })
   assert.equal(generateResponse.status, 200)
   assert.ok(Array.isArray(generateBody?.suggestions) && generateBody.suggestions.length > 0, 'Expected generated suggestions')
-  assert.ok(generateBody.suggestions[0]?.snapshotId, 'Expected persisted snapshot id on generated suggestion')
+
+  const sourceSuggestions = generateBody.suggestions.slice(0, 2)
+  assert.ok(sourceSuggestions.length > 0, 'Expected at least one suggestion to save')
+
+  const { response: saveResponse, body: saveBody } = await postJson('/api/suggestions/save', {
+    racedayId: seedRaceday._id,
+    items: sourceSuggestions.map((suggestion, index) => ({
+      clientKey: `smoke-${Date.now()}-${index}`,
+      gameType: 'V85',
+      suggestion,
+      requestSnapshot: {
+        multi: true,
+        modes: ['balanced', 'value'],
+        variantCount: 1
+      }
+    }))
+  })
+  assert.equal(saveResponse.status, 201)
+  assert.ok(Array.isArray(saveBody?.items) && saveBody.items.length > 0, 'Expected explicit save to persist suggestion')
+  const savedIds = saveBody.items.map((item) => String(item.id)).filter(Boolean)
 
   const { response: historyResponse, body: historyBody } = await getJson(`/api/raceday/${seedRaceday._id}/suggestions`)
   assert.equal(historyResponse.status, 200)
   assert.ok(Array.isArray(historyBody?.items) && historyBody.items.length > 0, 'Expected saved suggestion history')
 
-  const savedItem = historyBody.items.find((item) => String(item.id) === String(generateBody.suggestions[0].snapshotId)) || historyBody.items[0]
+  const savedItem = historyBody.items.find((item) => String(item.id) === String(saveBody.items[0].id)) || historyBody.items[0]
   assert.ok(savedItem?.id, 'Expected a saved suggestion item')
 
   const { response: detailResponse, body: detailBody } = await getJson(`/api/suggestions/${savedItem.id}`)
   assert.equal(detailResponse.status, 200)
   assert.equal(String(detailBody?.item?.id), String(savedItem.id))
   assert.ok(Array.isArray(detailBody?.item?.ticket?.legs) && detailBody.item.ticket.legs.length > 0, 'Expected stored ticket legs')
+  const linkedLeg = detailBody?.item?.ticket?.legs?.find((leg) => leg?.raceId && leg?.raceDayId)
+  assert.ok(linkedLeg, 'Expected at least one linked ticket leg')
+  assert.equal(String(linkedLeg.raceDayId), String(seedRaceday._id), 'Expected ticket race links to use raceday ObjectId')
+
+  const { response: refreshResponse, body: refreshBody } = await postJson(`/api/suggestions/${savedItem.id}/refresh-results`, {})
+  assert.equal(refreshResponse.status, 200)
+  assert.equal(String(refreshBody?.item?.id), String(savedItem.id))
+
+  const { response: deleteResponse, body: deleteBody } = await deleteJson(`/api/suggestions/${savedItem.id}`)
+  assert.equal(deleteResponse.status, 200)
+  assert.equal(String(deleteBody?.id), String(savedItem.id))
+
+  const { response: missingResponse } = await getJson(`/api/suggestions/${savedItem.id}`)
+  assert.equal(missingResponse.status, 404)
 
   const { response: analyticsResponse, body: analyticsBody } = await getJson('/api/suggestions/analytics')
   assert.equal(analyticsResponse.status, 200)
@@ -148,4 +203,9 @@ test('suggestion history endpoints persist and expose saved snapshots', async ()
   })
   assert.equal(markerResponse.status, 201)
   assert.equal(markerBody?.label, markerLabel)
+
+  for (const suggestionId of savedIds.filter((id) => id !== String(savedItem.id))) {
+    const { response } = await deleteJson(`/api/suggestions/${suggestionId}`)
+    assert.ok([200, 404].includes(response.status))
+  }
 })

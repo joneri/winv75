@@ -1,47 +1,45 @@
 <template>
-  <v-container class="main-content">
+  <v-container class="analytics-page">
     <div v-if="loading" class="loading-wrap">
       <v-skeleton-loader type="heading, text, table, article" />
     </div>
 
-    <div v-else-if="analytics" class="analytics-wrap">
-      <div class="page-header">
-        <div>
-          <div class="eyebrow">Suggestion analytics</div>
+    <div v-else-if="analytics" class="analytics-shell">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <div class="eyebrow">Förslagsanalys</div>
           <h1 class="title">Resultat över tid</h1>
-          <div class="muted">Sparade biljetter, settlement och versionsmarkorer i samma vy.</div>
         </div>
-      </div>
 
-      <div class="summary-grid">
-        <div class="summary-card">
-          <div class="summary-label">Sparade förslag</div>
-          <div class="summary-value">{{ analytics.summary?.totalSuggestions || 0 }}</div>
-          <div class="summary-note">{{ analytics.summary?.settledSuggestions || 0 }} avgjorda</div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">Sparade förslag</div>
+            <div class="summary-value">{{ analytics.summary?.totalSuggestions || 0 }}</div>
+            <div class="summary-note">{{ analytics.summary?.settledSuggestions || 0 }} avgjorda</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Snitt rätt</div>
+            <div class="summary-value">{{ analytics.summary?.avgCorrect ?? '–' }}</div>
+            <div class="summary-note">Över avgjorda förslag</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">8 / 7 / 6 rätt</div>
+            <div class="summary-value">{{ hitTierLabel }}</div>
+            <div class="summary-note">När hela kupongen kan avgöras</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Spikträff</div>
+            <div class="summary-value">{{ percentLabel(analytics.summary?.spikHitRate) }}</div>
+            <div class="summary-note">AI-topp: {{ percentLabel(analytics.summary?.topRankWinRate) }}</div>
+          </div>
         </div>
-        <div class="summary-card">
-          <div class="summary-label">Snitt rätt</div>
-          <div class="summary-value">{{ analytics.summary?.avgCorrect ?? '–' }}</div>
-          <div class="summary-note">Över avgjorda förslag</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-label">8 / 7 / 6 rätt</div>
-          <div class="summary-value">{{ hitTierLabel }}</div>
-          <div class="summary-note">Bara när 8 lopp är avgjorda</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-label">Spikträff</div>
-          <div class="summary-value">{{ percentLabel(analytics.summary?.spikHitRate) }}</div>
-          <div class="summary-note">AI-topp: {{ percentLabel(analytics.summary?.topRankWinRate) }}</div>
-        </div>
-      </div>
+      </section>
 
-      <div class="content-grid">
-        <div class="panel chart-panel">
+      <section class="analytics-layout">
+        <div class="analytics-panel chart-panel">
           <div class="panel-header">
             <div>
               <div class="panel-title">Snitt rätt över tid</div>
-              <div class="muted">Vertikala markorer visar större modellskiften.</div>
             </div>
           </div>
 
@@ -66,32 +64,79 @@
           <div v-else class="muted empty-state">
             Inga avgjorda förslag finns ännu att rita ut.
           </div>
-        </div>
 
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">Lägg till markor</div>
-          </div>
-          <div class="marker-form">
-            <v-text-field v-model="markerForm.label" label="Label" density="comfortable" />
-            <v-select
-              v-model="markerForm.category"
-              :items="markerCategories"
-              label="Kategori"
-              density="comfortable"
-            />
-            <v-text-field v-model="markerForm.occurredAt" label="Datum och tid" type="datetime-local" density="comfortable" />
-            <v-textarea v-model="markerForm.description" label="Beskrivning" rows="3" auto-grow />
-            <v-btn color="primary" variant="elevated" :loading="savingMarker" @click="saveMarker">
-              Spara markor
-            </v-btn>
-            <div v-if="markerMessage" class="muted">{{ markerMessage }}</div>
+          <div v-if="analytics.markers?.length" class="marker-list">
+            <div
+              v-for="marker in analytics.markers"
+              :key="marker._id || marker.id || `${marker.label}-${marker.occurredAt}`"
+              class="marker-row"
+            >
+              <div>
+                <div class="marker-row-label">{{ marker.label }}</div>
+                <div class="marker-row-meta">{{ formatDateTime(marker.occurredAt) }} · {{ marker.category }}</div>
+              </div>
+              <div class="marker-row-note">{{ marker.description || 'Ingen extra beskrivning' }}</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="tables-grid">
-        <div class="panel">
+        <div class="side-stack">
+          <div class="analytics-panel">
+            <div class="panel-header">
+              <div class="panel-title">Lägg till markor</div>
+            </div>
+            <div class="marker-form">
+              <v-text-field v-model="markerForm.label" label="Namn" density="comfortable" variant="outlined" />
+              <v-select
+                v-model="markerForm.category"
+                :items="markerCategories"
+                label="Kategori"
+                density="comfortable"
+                variant="outlined"
+              />
+              <v-text-field
+                v-model="markerForm.occurredAt"
+                label="Datum och tid"
+                type="datetime-local"
+                density="comfortable"
+                variant="outlined"
+              />
+              <v-textarea
+                v-model="markerForm.description"
+                label="Beskrivning"
+                rows="3"
+                auto-grow
+                variant="outlined"
+              />
+              <v-btn color="primary" variant="elevated" :loading="savingMarker" @click="saveMarker">
+                Spara markör
+              </v-btn>
+              <div v-if="markerMessage" class="form-message">{{ markerMessage }}</div>
+            </div>
+          </div>
+
+          <div class="analytics-panel compact-panel">
+            <div class="panel-header">
+              <div class="panel-title">Speltyper</div>
+            </div>
+            <div class="stats-table">
+              <div class="stats-row stats-head">
+                <span>Speltyp</span>
+                <span>Förslag</span>
+                <span>Snitt rätt</span>
+              </div>
+              <div class="stats-row" v-for="row in analytics.gameTypeStats || []" :key="row.label">
+                <span>{{ row.label }}</span>
+                <span>{{ row.totalSuggestions }}</span>
+                <span>{{ row.avgCorrect ?? '–' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tables-grid">
+        <div class="analytics-panel">
           <div class="panel-header">
             <div class="panel-title">Strategier</div>
           </div>
@@ -109,25 +154,25 @@
           </div>
         </div>
 
-        <div class="panel">
+        <div class="analytics-panel">
           <div class="panel-header">
             <div class="panel-title">Versioner</div>
           </div>
-          <div class="stats-table">
+          <div class="stats-table stats-table-version">
             <div class="stats-row stats-head">
               <span>Version</span>
               <span>Förslag</span>
               <span>Snitt rätt</span>
             </div>
             <div class="stats-row" v-for="row in analytics.versionStats || []" :key="row.label">
-              <span>{{ row.label }}</span>
+              <span class="version-label">{{ row.label }}</span>
               <span>{{ row.totalSuggestions }}</span>
               <span>{{ row.avgCorrect ?? '–' }}</span>
             </div>
           </div>
         </div>
 
-        <div class="panel recent-panel">
+        <div class="analytics-panel recent-panel">
           <div class="panel-header">
             <div class="panel-title">Senaste sparade biljetter</div>
           </div>
@@ -143,11 +188,16 @@
                 <span>{{ formatDateTime(item.generatedAt) }}</span>
               </div>
               <div class="recent-title">{{ item.strategy?.modeLabel || item.strategy?.mode || 'Okänd strategi' }}</div>
+              <div class="recent-meta">
+                <span>{{ item.rowCount }} rader</span>
+                <span>{{ item.totalCost }} kr</span>
+                <span>{{ item.settlement?.resultsAvailable ? `${item.settlement?.correctLegs || 0}/${item.settlement?.totalLegs || 0} rätt` : 'Inväntar resultat' }}</span>
+              </div>
               <div class="recent-note">{{ item.settlement?.summary || 'Inväntar resultat' }}</div>
             </router-link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
 
     <div v-else class="error-state">{{ errorMessage }}</div>
@@ -189,7 +239,7 @@ export default {
     }
 
     onMounted(async () => {
-      setBreadcrumbLabel('SuggestionAnalytics', 'Suggestion analytics')
+      setBreadcrumbLabel('SuggestionAnalytics', 'Förslagsanalys')
       await load()
     })
 
@@ -261,7 +311,7 @@ export default {
     const saveMarker = async () => {
       try {
         if (!markerForm.value.label.trim()) {
-          markerMessage.value = 'Label krävs för att spara en markor.'
+          markerMessage.value = 'Namn krävs för att spara en markör.'
           return
         }
         savingMarker.value = true
@@ -303,59 +353,99 @@ export default {
 </script>
 
 <style scoped>
-.main-content { padding-top: 70px; }
-.loading-wrap { padding-top: 24px; }
-.page-header { margin-bottom: 18px; }
+.analytics-page {
+  padding-top: 70px;
+}
+.loading-wrap {
+  padding-top: 24px;
+}
+.analytics-shell {
+  display: grid;
+  gap: 18px;
+}
+.hero-panel,
+.analytics-panel {
+  border-radius: 22px;
+  border: 1px solid rgba(148,163,184,0.14);
+  background:
+    radial-gradient(circle at top right, rgba(14,165,233,0.14), transparent 32%),
+    linear-gradient(180deg, rgba(10,15,28,0.98), rgba(15,23,42,0.98));
+  color: #e5eefc;
+  box-shadow: 0 20px 40px rgba(2,6,23,0.24);
+}
+.hero-panel {
+  padding: 22px;
+}
+.hero-copy {
+  margin-bottom: 16px;
+}
 .eyebrow {
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #0f766e;
+  color: #7dd3fc;
 }
 .title {
-  margin-top: 4px;
-  font-size: 1.8rem;
+  margin-top: 6px;
+  font-size: 2rem;
+  line-height: 1.05;
 }
-.muted { color: #6b7280; }
+.muted {
+  color: #94a3b8;
+}
+.hero-note {
+  max-width: 720px;
+}
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 18px;
 }
-.summary-card,
-.panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(245,247,250,0.96));
-  border: 1px solid rgba(15,23,42,0.08);
-  border-radius: 16px;
+.summary-card {
   padding: 16px;
-  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
+  border-radius: 18px;
+  border: 1px solid rgba(148,163,184,0.14);
+  background: rgba(15,23,42,0.48);
 }
 .summary-label,
 .panel-title {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #6b7280;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
 }
 .summary-value {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  color: #f8fafc;
   margin-top: 8px;
 }
-.summary-note { color: #6b7280; margin-top: 4px; }
-.content-grid {
+.summary-note {
+  color: #cbd5e1;
+  margin-top: 6px;
+}
+.analytics-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.85fr);
   gap: 18px;
-  margin-bottom: 18px;
+}
+.side-stack,
+.tables-grid {
+  display: grid;
+  gap: 18px;
+}
+.tables-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.analytics-panel {
+  padding: 18px;
 }
 .panel-header {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .chart-wrap {
   width: 100%;
@@ -366,35 +456,56 @@ export default {
   min-height: 260px;
 }
 .axis-line {
-  stroke: rgba(15,23,42,0.15);
-  stroke-width: 1.25;
+  stroke: rgba(148,163,184,0.22);
+  stroke-width: 1.2;
 }
 .metric-line {
   fill: none;
-  stroke: #0891b2;
+  stroke: #38bdf8;
   stroke-width: 3;
 }
 .metric-dot {
-  fill: #0f766e;
+  fill: #22d3ee;
 }
 .marker-line {
-  stroke: rgba(124,58,237,0.45);
+  stroke: rgba(168,85,247,0.5);
   stroke-width: 1.5;
   stroke-dasharray: 6 5;
 }
 .marker-label,
 .axis-label {
-  fill: #6b7280;
+  fill: #94a3b8;
   font-size: 12px;
 }
 .marker-form {
   display: grid;
   gap: 12px;
 }
-.tables-grid {
+.form-message {
+  color: #cbd5e1;
+}
+.marker-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 10px;
+  margin-top: 14px;
+}
+.marker-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.14);
+  background: rgba(15,23,42,0.42);
+}
+.marker-row-label {
+  font-weight: 700;
+  color: #f8fafc;
+}
+.marker-row-meta,
+.marker-row-note {
+  color: #94a3b8;
+  font-size: 0.9rem;
 }
 .stats-table {
   display: grid;
@@ -406,10 +517,22 @@ export default {
   gap: 12px;
   align-items: center;
   font-size: 0.95rem;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15,23,42,0.36);
+  color: #e2e8f0;
 }
 .stats-head {
   font-weight: 700;
-  color: #374151;
+  background: rgba(59,130,246,0.12);
+  color: #bfdbfe;
+}
+.stats-table-version .stats-row {
+  grid-template-columns: minmax(0, 1.8fr) 80px 90px;
+}
+.version-label {
+  color: #cbd5e1;
+  word-break: break-word;
 }
 .recent-list {
   display: grid;
@@ -419,28 +542,38 @@ export default {
   display: block;
   text-decoration: none;
   color: inherit;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(15,23,42,0.08);
-  background: #fff;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.14);
+  background: rgba(15,23,42,0.46);
 }
-.recent-top {
+.recent-link:hover {
+  border-color: rgba(56,189,248,0.32);
+  background: rgba(15,23,42,0.62);
+}
+.recent-top,
+.recent-meta {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  color: #6b7280;
-  font-size: 0.85rem;
+  color: #94a3b8;
+  font-size: 0.84rem;
+  flex-wrap: wrap;
 }
 .recent-title {
   margin-top: 6px;
   font-weight: 700;
+  color: #f8fafc;
+}
+.recent-meta {
+  margin-top: 6px;
 }
 .recent-note {
-  margin-top: 4px;
-  color: #6b7280;
+  margin-top: 6px;
+  color: #cbd5e1;
 }
 .error-state {
-  color: #b91c1c;
+  color: #f87171;
   padding-top: 24px;
 }
 .empty-state {
@@ -449,23 +582,38 @@ export default {
   align-items: center;
 }
 
-@media (max-width: 1100px) {
+:deep(.analytics-panel .v-field) {
+  background: rgba(15,23,42,0.48);
+  border-radius: 14px;
+}
+:deep(.analytics-panel .v-field__input),
+:deep(.analytics-panel .v-label),
+:deep(.analytics-panel input),
+:deep(.analytics-panel textarea) {
+  color: #e2e8f0 !important;
+}
+
+@media (max-width: 1180px) {
   .summary-grid,
   .tables-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .content-grid {
+  .analytics-layout {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .summary-grid,
   .tables-grid {
     grid-template-columns: 1fr;
   }
-  .stats-row {
+  .stats-row,
+  .stats-table-version .stats-row {
     grid-template-columns: minmax(0, 1fr) 70px 80px;
+  }
+  .marker-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>

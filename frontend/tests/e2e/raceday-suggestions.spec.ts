@@ -30,7 +30,8 @@ test('V85 suggestions can be generated from the raceday view', async ({ page, re
 
   await expect(dialog.locator('.ticket')).toBeVisible()
   await expect(dialog.getByText(/kr totalt/)).toBeVisible()
-  await expect.poll(async () => page.locator('.saved-suggestions-panel .saved-item').count()).toBeGreaterThan(0)
+  await dialog.getByRole('button', { name: 'Stäng' }).click()
+  await expect(page.locator('.session-panel .compact-row-transient').first()).toBeVisible()
 })
 
 test('V86 suggestions can be generated from the raceday view', async ({ page, request }) => {
@@ -53,25 +54,56 @@ test('Saved suggestions can be reopened from the raceday page', async ({ page, r
   const { dialog, generateButton } = await openSuggestionDialog(page, 'V85-spelförslag')
   await generateButton.click()
   await expect(dialog.locator('.ticket')).toBeVisible()
-  await dialog.locator('.v-card-title button').click()
+  await dialog.getByRole('button', { name: 'Stäng' }).click()
 
-  const savedLink = page.locator('.saved-suggestions-panel .saved-item').first()
+  const sessionRow = page.locator('.session-panel .compact-row-transient').first()
+  await expect(sessionRow).toBeVisible()
+  await sessionRow.click()
+
+  await expect(page.getByText(/Osparat förslag/)).toBeVisible()
+  await page.getByRole('button', { name: 'Spara detta förslag' }).click()
+
+  const savedLink = page.locator('.saved-suggestions-panel .compact-row-saved').first()
   await expect(savedLink).toBeVisible()
   await savedLink.click()
 
   await expect(page.getByText(/Historisk biljett/)).toBeVisible()
   await expect(page.getByText(/Samma tävlingsdag/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Uppdatera resultat' })).toBeVisible()
+
+  const raceLink = page.getByRole('link', { name: 'Öppna lopp' }).first()
+  await expect(raceLink).toBeVisible()
+  await raceLink.click()
+  await expect(page).toHaveURL(new RegExp(`/raceday/${racedayId}/race/`))
 })
 
 test('Suggestion analytics view loads recent performance data', async ({ page, request }) => {
   const racedayId = await findRacedayId(request, 'V85')
-  await request.post(`http://127.0.0.1:3001/api/raceday/${racedayId}/v85`, {
+  const generateResponse = await request.post(`http://127.0.0.1:3001/api/raceday/${racedayId}/v85`, {
     data: {
       multi: true,
       modes: ['balanced'],
       variantCount: 1
     }
   })
+  expect(generateResponse.ok()).toBeTruthy()
+  const generateBody = await generateResponse.json()
+  const saveResponse = await request.post('http://127.0.0.1:3001/api/suggestions/save', {
+    data: {
+      racedayId,
+      items: (generateBody?.suggestions || []).slice(0, 1).map((suggestion: any, index: number) => ({
+        clientKey: `playwright-${Date.now()}-${index}`,
+        gameType: 'V85',
+        suggestion,
+        requestSnapshot: {
+          multi: true,
+          modes: ['balanced'],
+          variantCount: 1
+        }
+      }))
+    }
+  })
+  expect(saveResponse.ok()).toBeTruthy()
 
   await page.goto('/suggestions/analytics')
 

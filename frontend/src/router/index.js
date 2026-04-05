@@ -80,7 +80,7 @@ const routes = [
     meta: {
       parent: 'RacedayInput',
       breadcrumb: {
-        label: 'Suggestion analytics',
+        label: 'Förslagsanalys',
         to: { name: 'SuggestionAnalytics' }
       }
     }

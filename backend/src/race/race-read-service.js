@@ -2,6 +2,10 @@ import raceService from './race-service.js'
 import Horse from '../horse/horse-model.js'
 import HorseRating from '../horse/horse-rating-model.js'
 import Driver from '../driver/driver-model.js'
+import {
+  attachFieldProbabilities,
+  buildHorseEloPrediction
+} from '../rating/horse-elo-prediction.js'
 
 export async function getRaceWithRatings(raceId) {
   const race = await raceService.getRaceById(raceId)
@@ -9,9 +13,16 @@ export async function getRaceWithRatings(raceId) {
     return null
   }
 
+  let enrichedHorses = null
+
   try {
     const horseIds = (race.horses || []).map(horse => horse.id)
     if (horseIds.length) {
+      const horseDocs = await Horse.find(
+        { id: { $in: horseIds } },
+        { id: 1, results: 1, rating: 1, formRating: 1 }
+      ).lean()
+      const horseMap = new Map(horseDocs.map(horse => [horse.id, horse]))
       const ratingDocs = await HorseRating.find({ horseId: { $in: horseIds } }).lean()
       const ratingMap = new Map(ratingDocs.map(rating => [rating.horseId, rating]))
 
@@ -28,19 +39,65 @@ export async function getRaceWithRatings(raceId) {
         : []
       const driverMap = new Map(driverDocs.map(driver => [Number(driver._id), driver]))
 
-      race.horses = (race.horses || []).map(horse => {
+      const raceContext = {
+        raceDate: race.startDateTime ?? null,
+        startMethod: race.startMethod ?? race.raceType?.text ?? null,
+        distance: race.distance ?? null,
+        trackName: race.trackName ?? null
+      }
+
+      const enriched = (race.horses || []).map(horse => {
         const base = typeof horse?.toObject === 'function' ? horse.toObject() : horse
+        const horseDoc = horseMap.get(base.id) || {}
         const rating = ratingMap.get(base.id)
         const driverId = Number(base?.driver?.licenseId ?? base?.driver?.id)
         const driver = Number.isFinite(driverId) ? driverMap.get(driverId) : null
+        const prediction = buildHorseEloPrediction({
+          horse: {
+            ...base,
+            results: horseDoc?.results || []
+          },
+          ratingDoc: rating,
+          driver,
+          raceContext
+        })
 
         return {
           ...base,
-          rating: rating?.rating ?? base.rating,
-          eloRating: rating?.rating ?? base.eloRating,
-          formRating: rating?.formRating ?? rating?.rating ?? base.formRating,
-          ...(driver ? { driver: { ...base.driver, elo: driver.elo ?? null, careerElo: driver.careerElo ?? null } } : {})
+          rating: prediction.careerElo,
+          careerElo: prediction.careerElo,
+          eloRating: prediction.careerElo,
+          rawFormRating: prediction.storedFormElo,
+          formRating: prediction.formElo,
+          formElo: prediction.formElo,
+          effectiveElo: prediction.effectiveElo,
+          modelProbability: null,
+          winProbability: null,
+          winScore: prediction.effectiveElo,
+          formDelta: prediction.debug.formDelta,
+          formGapMetric: prediction.debug.daysSinceLast,
+          formModelVersion: prediction.version,
+          eloVersion: prediction.version,
+          eloWeights: prediction.weights,
+          formComponents: prediction.debug,
+          eloDebug: prediction.debug,
+          prediction,
+          ...(driver ? {
+            driver: {
+              ...(base.driver || {}),
+              elo: driver.elo ?? null,
+              formElo: driver.elo ?? null,
+              careerElo: driver.careerElo ?? null
+            }
+          } : {})
         }
+      })
+
+      const probabilities = attachFieldProbabilities(enriched)
+      const byHorseId = new Map(probabilities.map(horse => [horse.id, horse]))
+      enrichedHorses = (race.horses || []).map(horse => {
+        const base = typeof horse?.toObject === 'function' ? horse.toObject() : horse
+        return byHorseId.get(base.id) || base
       })
     }
   } catch (error) {
@@ -48,7 +105,9 @@ export async function getRaceWithRatings(raceId) {
   }
 
   const payload = typeof race?.toObject === 'function' ? race.toObject() : JSON.parse(JSON.stringify(race))
-  if (race?.horses) {
+  if (enrichedHorses) {
+    payload.horses = enrichedHorses
+  } else if (race?.horses) {
     payload.horses = race.horses
   }
   return payload

@@ -1,76 +1,132 @@
 <template>
-  <v-container fluid class="main-content">
-    <v-progress-circular v-if="loading && raceDays.length === 0" indeterminate color="primary"></v-progress-circular>
+  <div class="start-page">
+    <section class="page-hero start-hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="page-kicker">Tävlingsöversikt</div>
+          <h1 class="page-title">Välj tävlingsdag</h1>
+          <div class="page-chip-row">
+            <div class="shell-chip is-track">{{ raceDays.length }} tävlingsdagar i listan</div>
+            <div class="shell-chip is-focus">{{ raceDaysWithResults }} med resultat klara</div>
+            <div class="shell-chip">{{ uniqueTracks }} banor i aktuellt urval</div>
+          </div>
+        </div>
 
-    <!-- Fetch Raceday by Date Section -->
-    <v-row class="mt-4">
-      <v-col>
-        <v-text-field v-model="fetchDate" type="date" label="Fetch Racedays by Date"></v-text-field>
-        <v-btn @click="fetchRacedays" color="primary" :loading="loading">Fetch</v-btn>
-        <v-alert v-if="error" type="error" class="mt-2">{{ error }}</v-alert>
-      </v-col>
-    </v-row>
-
-    <!-- List of Racedays -->
-    <v-list v-show="raceDays.length > 0" ref="listContainer" class="raceday-list">
-      <div class="list-loading-indicator" v-if="loading">
-        <v-progress-circular indeterminate color="primary" size="18" width="2" />
+        <div class="page-panel-soft fetch-panel">
+          <div class="panel-title">Hämta ny tävlingsdag</div>
+          <div class="fetch-panel-copy">
+            Importera tävlingsdagar för valt datum.
+          </div>
+          <div class="fetch-form">
+            <v-text-field
+              v-model="fetchDate"
+              type="date"
+              label="Datum"
+              variant="outlined"
+              hide-details
+            />
+            <v-btn @click="fetchRacedays" color="secondary" variant="elevated" :loading="loading">
+              Hämta tävlingsdagar
+            </v-btn>
+          </div>
+          <v-alert v-if="error" type="error" variant="tonal" class="mt-3">{{ error }}</v-alert>
+        </div>
       </div>
-      <template v-for="raceDay in raceDays" :key="raceDay._id">
-          <v-list-item
-            class="clickable-row compact-row"
+    </section>
+
+    <section class="start-layout">
+      <div class="page-panel day-list-panel">
+        <div class="list-head">
+          <div>
+            <div class="panel-title">Aktuella tävlingsdagar</div>
+            <h2 class="list-title">Senaste tävlingsdagar</h2>
+          </div>
+          <div class="list-summary">
+            <span v-if="nextRaceday" class="summary-label">Nästa start</span>
+            <strong v-if="nextRaceday">{{ nextRaceday.trackName }}</strong>
+            <span v-if="nextRaceday">{{ formatDayLabel(nextRaceday.firstStart) }} kl {{ formatTime(nextRaceday.firstStart) }}</span>
+          </div>
+        </div>
+
+        <div v-if="loading && raceDays.length === 0" class="loading-empty">
+          <v-progress-circular indeterminate color="primary" />
+          <span>Laddar tävlingsdagar…</span>
+        </div>
+
+        <div v-else-if="raceDays.length > 0" ref="listContainer" class="raceday-list">
+          <div class="list-loading-indicator" v-if="loading">
+            <v-progress-circular indeterminate color="primary" size="18" width="2" />
+          </div>
+
+          <button
+            v-for="raceDay in raceDays"
+            :key="raceDay._id"
+            class="raceday-row"
+            type="button"
             @click="navigateToRaceDay(raceDay._id)"
-            :style="{ '--hover-bg': hoverBg, '--hover-text': hoverText }"
           >
-              <div class="row-grid">
-                  <div class="date">
-                    <span class="dot" v-if="raceDay.hasResults" title="Resultat klara"></span>
-                    {{ formatDate(raceDay.firstStart) }}
-                  </div>
-                  <div class="track">{{ raceDay.trackName }}</div>
-                  <div class="time">{{ formatTime(raceDay.firstStart) }}</div>
-                  <div class="count" v-if="typeof raceDay.raceCount === 'number'">{{ raceDay.raceCount }} lopp</div>
+            <div class="raceday-row-main">
+              <div class="raceday-row-top">
+                <span class="raceday-date">
+                  <span class="dot" v-if="raceDay.hasResults" title="Resultat klara"></span>
+                  {{ formatDayLabel(raceDay.firstStart) }}
+                </span>
+                <span class="raceday-time">{{ formatTime(raceDay.firstStart) }}</span>
               </div>
-          </v-list-item>
-          <v-divider></v-divider>
-      </template>
+              <div class="raceday-track">{{ raceDay.trackName }}</div>
+            </div>
+            <div class="raceday-row-meta">
+              <span>{{ typeof raceDay.raceCount === 'number' ? `${raceDay.raceCount} lopp` : 'Tävlingsdag' }}</span>
+              <span class="row-link">Öppna</span>
+            </div>
+          </button>
 
-      <!-- Infinite scroll sentinel -->
-      <div ref="sentinel" class="sentinel">
-        <v-progress-circular v-if="loading && hasMore" indeterminate color="primary" size="24" />
-        <div v-else-if="!hasMore" class="end-marker">Inga fler dagar</div>
+          <div ref="sentinel" class="sentinel">
+            <v-progress-circular v-if="loading && hasMore" indeterminate color="primary" size="24" />
+            <div v-else-if="!hasMore" class="end-marker">Alla inlästa dagar visas nu</div>
+          </div>
+        </div>
+
+        <v-alert v-else type="info" variant="tonal" class="empty-alert">
+          Inga tävlingsdagar hittades i den aktuella listan.
+        </v-alert>
       </div>
-    </v-list>
-    <v-alert v-if="raceDays.length === 0 && !loading" type="info" class="mt-4">No racedays found.</v-alert>
-    <v-progress-linear
-      v-if="loading && raceDays.length > 0"
-      indeterminate
-      color="primary"
-      height="3"
-      class="mt-2"
-    />
-  </v-container>
+
+    </section>
+  </div>
 
   <v-snackbar v-model="showSnackbar" top color="success">
     {{ successMessage }}
-    <v-btn dark text @click="showSnackbar = false">
-      Close
+    <v-btn variant="text" @click="showSnackbar = false">
+      Stäng
     </v-btn>
   </v-snackbar>
 </template>
 
 <script>
-import { ref, computed, onMounted, watchEffect, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useDateFormat } from '@/composables/useDateFormat.js';
-import { getContrastColor } from '@/utils/colors';
 
 export default {
   setup() {
     const store = useStore();
     const router = useRouter();
     const { formatDate } = useDateFormat();
+
+    const formatDayLabel = (dateString) => {
+      try {
+        return new Intl.DateTimeFormat('sv-SE', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }).format(new Date(dateString)).toUpperCase()
+      } catch {
+        return formatDate(dateString)
+      }
+    }
 
     const formatTime = (dateString) => {
       const d = new Date(dateString)
@@ -82,9 +138,6 @@ export default {
     const fetchDate = ref('');
     const showSnackbar = ref(false);
 
-    const hoverBg = '#f5f5f5';
-    const hoverText = getContrastColor(hoverBg);
-
     const error = computed(() => store.state.racedayInput.error);
     const raceDays = computed(() => store.state.racedayInput.raceDays);
     const raceDaysPage = computed(() => store.state.racedayInput.raceDaysPage);
@@ -93,6 +146,9 @@ export default {
     const hasMore = computed(() => store.state.racedayInput.raceDaysHasMore);
     const loading = computed(() => store.state.racedayInput.loading);
     const successMessage = computed(() => store.state.racedayInput.successMessage);
+    const raceDaysWithResults = computed(() => raceDays.value.filter(day => day?.hasResults).length);
+    const uniqueTracks = computed(() => new Set(raceDays.value.map(day => day?.trackName).filter(Boolean)).size);
+    const nextRaceday = computed(() => raceDays.value[0] || null);
 
     const listContainer = ref(null);
     const sentinel = ref(null);
@@ -170,6 +226,7 @@ export default {
 
     return {
       formatDate,
+      formatDayLabel,
       formatTime,
       fetchDate,
       showSnackbar,
@@ -181,10 +238,11 @@ export default {
       hasMore,
       loading,
       successMessage,
+      raceDaysWithResults,
+      uniqueTracks,
+      nextRaceday,
       fetchRacedays,
       navigateToRaceDay,
-      hoverBg,
-      hoverText,
       listContainer,
       sentinel,
     };
@@ -193,49 +251,226 @@ export default {
 </script>
 
 <style scoped>
-  .track-name {
-    font-size: 0.9em;
+.start-page {
+  padding: 0;
+}
+
+.start-hero {
+  padding: 28px;
+  margin-bottom: 18px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.fetch-panel {
+  padding: 20px;
+}
+
+.fetch-panel-copy {
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.fetch-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.start-layout {
+  display: block;
+}
+
+.day-list-panel {
+  padding: 22px;
+}
+
+.list-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.list-title,
+.guide-title {
+  margin: 6px 0 0;
+  font-size: 1.5rem;
+}
+
+.list-summary {
+  display: grid;
+  gap: 4px;
+  min-width: 220px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-body);
+}
+
+.summary-label {
+  color: var(--track-amber);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.loading-empty {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+}
+
+.raceday-list {
+  max-height: 72vh;
+  overflow-y: auto;
+  position: relative;
+  display: grid;
+  gap: 10px;
+}
+
+.list-loading-indicator {
+  position: sticky;
+  top: 0;
+  justify-self: end;
+  z-index: 2;
+}
+
+.raceday-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-body);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.raceday-row:hover {
+  transform: translateY(-1px);
+  border-color: rgba(89, 212, 255, 0.24);
+  background: rgba(89, 212, 255, 0.06);
+}
+
+.raceday-row-main {
+  min-width: 0;
+}
+
+.raceday-row-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.raceday-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.raceday-time {
+  color: var(--track-amber);
+  font-weight: 600;
+}
+
+.raceday-track {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 1.02rem;
+}
+
+.raceday-row-meta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.row-link {
+  color: var(--focus-cyan);
+  font-weight: 700;
+}
+
+.empty-alert {
+  margin-top: 8px;
+}
+
+.sentinel {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.end-marker {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--success-emerald);
+  display: inline-block;
+}
+
+:deep(.fetch-form .v-field) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:deep(.fetch-form .v-field__input),
+:deep(.fetch-form .v-label),
+:deep(.fetch-form input) {
+  color: var(--text-body) !important;
+}
+
+@media (max-width: 1080px) {
+  .hero-grid,
+  .start-layout {
+    grid-template-columns: 1fr;
   }
-  .main-content {
-    padding-top: 70px;
+}
+
+@media (max-width: 720px) {
+  .start-hero,
+  .day-list-panel {
+    padding: 18px;
   }
-  .raceday-list {
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
+
+  .raceday-row {
+    grid-template-columns: 1fr;
   }
-  .list-loading-indicator {
-    position: absolute;
-    top: 6px;
-    right: 10px;
-    z-index: 2;
+
+  .raceday-row-meta {
+    justify-items: start;
   }
-  .clickable-row {
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-  }
-  .clickable-row:hover {
-    background-color: var(--hover-bg);
-    color: var(--hover-text);
-  }
-  .compact-row .row-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 0.6fr 0.6fr;
-    gap: 8px;
-    align-items: center;
-    width: 100%;
-  }
-  .compact-row .date { font-weight: 600; display: flex; align-items: center; gap: 6px; }
-  .compact-row .track { color: #555; }
-  .compact-row .time { color: #777; }
-  .compact-row .count { color: #777; text-align: right; }
-  .sentinel { display: flex; justify-content: center; padding: 16px; }
-  .end-marker { color: #777; font-size: 0.9em; }
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #10b981; /* emerald */
-    display: inline-block;
-  }
+}
 </style>

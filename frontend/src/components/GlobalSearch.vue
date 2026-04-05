@@ -2,14 +2,16 @@
   <div class="global-search">
     <v-text-field
       v-model="query"
-      label="Sök"
+      placeholder="Sök häst, kusk, bana eller lopp"
+      prepend-inner-icon="mdi-magnify"
       density="compact"
       hide-details
       clearable
+      variant="solo-filled"
     />
     <v-menu v-model="menu" activator="parent" transition="fade-transition" :close-on-content-click="false">
-      <v-card min-width="360">
-        <v-list>
+      <v-card min-width="380" class="search-results-card">
+        <v-list class="search-results-list">
           <template v-if="errorMessage">
             <v-list-item>
               <v-list-item-title>Inget svar från servern</v-list-item-title>
@@ -65,13 +67,13 @@
                 </template>
                 <template v-if="racedays.length">
                   <v-subheader>Kommande tävlingsdagar</v-subheader>
-                  <v-list-item v-for="day in racedays" :key="`d-${day.raceDayId}`" :to="`/raceday/${day.raceDayId}`" @click="close">
+                  <v-list-item v-for="day in racedays" :key="`d-${day._id ?? day.raceDayId}`" :to="day._id ? `/raceday/${day._id}` : undefined" :disabled="!day._id" @click="close">
                     <v-list-item-title>{{ day.trackName }} {{ day.raceDayDate }}</v-list-item-title>
                   </v-list-item>
                 </template>
                 <template v-if="pastResults.length">
                   <v-subheader>Resultat</v-subheader>
-                  <v-list-item v-for="res in pastResults" :key="`r-${res.raceDayId}`" :to="`/raceday/${res.raceDayId}`" @click="close">
+                  <v-list-item v-for="res in pastResults" :key="`r-${res._id ?? res.raceDayId}`" :to="res._id ? `/raceday/${res._id}` : undefined" :disabled="!res._id" @click="close">
                     <v-list-item-title>{{ res.trackName }} {{ res.raceDayDate }}</v-list-item-title>
                   </v-list-item>
                 </template>
@@ -271,3 +273,47 @@ onBeforeUnmount(() => {
   if (controller) controller.abort()
 })
 </script>
+
+<style scoped>
+.global-search {
+  width: 100%;
+}
+
+.global-search :deep(.v-field) {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: none;
+}
+
+.global-search :deep(.v-field__input),
+.global-search :deep(.v-label),
+.global-search :deep(input) {
+  color: var(--text-body) !important;
+}
+
+.global-search :deep(.v-field__prepend-inner i) {
+  color: var(--text-soft);
+}
+
+.search-results-card {
+  background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
+  border: 1px solid var(--border-subtle);
+}
+
+.search-results-list :deep(.v-subheader) {
+  color: var(--track-amber);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.search-results-list :deep(.v-list-item-title) {
+  color: var(--text-strong);
+}
+
+.search-results-list :deep(.v-list-item-subtitle) {
+  color: var(--text-soft);
+}
+</style>

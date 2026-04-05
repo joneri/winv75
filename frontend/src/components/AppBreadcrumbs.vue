@@ -1,6 +1,6 @@
 <template>
   <v-sheet v-if="crumbs.length" class="breadcrumbs" color="transparent" elevation="0">
-    <v-breadcrumbs :items="crumbs" density="compact" />
+    <v-breadcrumbs :items="crumbs" density="compact" divider="/" />
   </v-sheet>
 </template>
 
@@ -92,12 +92,26 @@ const crumbs = computed(() => {
 
 <style scoped>
 .breadcrumbs {
-  padding: 12px 24px 0;
+  padding: 2px 0 18px;
+  color: var(--text-soft);
+}
+
+.breadcrumbs :deep(.v-breadcrumbs-item) {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.breadcrumbs :deep(.v-breadcrumbs-item--disabled) {
+  color: var(--text-muted);
+}
+
+.breadcrumbs :deep(.v-breadcrumbs-divider) {
+  color: rgba(148, 163, 184, 0.44);
 }
 
 @media (max-width: 960px) {
   .breadcrumbs {
-    padding: 8px 16px 0;
+    padding: 0 0 14px;
   }
 }
 </style>

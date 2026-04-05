@@ -1,149 +1,441 @@
 <template>
-  <v-container class="main-content">
-    <v-row>
-      <v-col>
-        <!-- Loading state -->
-        <div v-if="loading" class="loading-wrap">
-          <v-skeleton-loader type="heading, text" class="mb-4" />
-          <v-skeleton-loader v-for="i in 3" :key="i" type="image, text" class="mb-3" />
+  <div class="raceday-page">
+    <div v-if="loading" class="loading-wrap page-panel-soft loading-panel">
+      <v-skeleton-loader type="heading, text" class="mb-4" />
+      <v-skeleton-loader v-for="i in 3" :key="i" type="image, text" class="mb-3" />
+    </div>
+
+    <template v-else-if="racedayDetails">
+      <section class="page-hero raceday-hero">
+        <div class="hero-copy">
+          <div class="page-kicker">Tävlingsdag · {{ racedayDateLabel }}</div>
+          <h1 class="page-title">{{ racedayDetails.trackName }}</h1>
+          <div class="page-chip-row">
+            <div class="shell-chip is-track">{{ totalRaces }} lopp i dagens kort</div>
+            <div class="shell-chip" v-if="formattedFirstStart">{{ formattedFirstStart }}</div>
+            <div class="shell-chip is-focus" v-if="racedayGames.length">{{ racedayGames.join(' · ') }}</div>
+            <div class="shell-chip">{{ savedSuggestions.length }} sparade förslag</div>
+          </div>
         </div>
 
-        <!-- Display Raceday details if available, else show error message -->
-        <div v-else-if="racedayDetails">
-          <div class="raceday-header">
-            <div class="titles">
-              <div class="title">{{ racedayDetails.trackName }}</div>
-              <div class="meta">
-                <span class="muted">{{ formattedFirstStart }}</span>
-                <span class="dot" aria-hidden="true">•</span>
-                <span class="muted">{{ totalRaces }} lopp</span>
-              </div>
-            </div>
-            <div class="header-actions">
-              <div class="games" v-if="racedayGames.length">
-                <SpelformBadge v-for="g in racedayGames" :key="g" :game="g" :leg="1" />
-              </div>
-              <div class="game-actions" v-if="hasV85">
-                <div class="game-actions-title">V85</div>
-                <div class="buttons">
-                  <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV85Modal = true">V85-spelförslag</v-btn>
-                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV85" :loading="updatingV85" :disabled="updatingV85">Uppdatera V85%</v-btn>
-                </div>
-                <div class="v85-status" v-if="v85UpdatedLabel">
-                  {{ v85UpdatedLabel }}
-                </div>
-                <div class="v85-status muted" v-else>
-                  V85% ej hämtad ännu
-                </div>
-                <div v-if="v85UpdateMessage" class="v85-message">{{ v85UpdateMessage }}</div>
-              </div>
-              <div class="game-actions" v-if="hasV86">
-                <div class="game-actions-title">V86</div>
-                <div class="buttons">
-                  <v-btn density="compact" class="ml-2" color="warning" variant="elevated" @click="showV86Modal = true">V86-spelförslag</v-btn>
-                  <v-btn density="compact" class="ml-2" color="info" variant="tonal" @click="updateV86" :loading="updatingV86" :disabled="updatingV86">Uppdatera V86%</v-btn>
-                </div>
-                <div class="v86-status" v-if="v86UpdatedLabel">
-                  {{ v86UpdatedLabel }}
-                </div>
-                <div class="v86-status muted" v-else>
-                  V86% ej hämtad ännu
-                </div>
-                <div v-if="v86UpdateMessage" class="v86-message">{{ v86UpdateMessage }}</div>
-              </div>
-            </div>
+        <div class="hero-metrics">
+          <div class="hero-metric-card">
+            <div class="panel-title">Osparade</div>
+            <div class="hero-metric-value">{{ sessionUnsavedSuggestions.length }}</div>
+            <div class="hero-metric-label">förslag i sessionen</div>
           </div>
+          <div class="hero-metric-card">
+            <div class="panel-title">Avgjorda</div>
+            <div class="hero-metric-value">{{ settledSuggestionCount }}</div>
+            <div class="hero-metric-label">sparade förslag</div>
+          </div>
+        </div>
+      </section>
 
-          <div class="saved-suggestions-panel">
+      <section class="raceday-layout">
+        <div class="raceday-main">
+          <section class="page-panel race-stage">
+            <div class="section-head">
+              <div>
+                <div class="panel-title">Loppöversikt</div>
+                <h2 class="section-title">Dagens lopp och spelkopplingar</h2>
+              </div>
+              <div class="section-meta">
+                <span>{{ totalRaces }} lopp</span>
+                <span v-if="racedayGames.length">{{ racedayGames.join(' · ') }}</span>
+              </div>
+            </div>
+
+            <div class="race-list">
+              <RaceCardComponent
+                v-for="race in sortedRaceList"
+                :key="race.raceId || race.id"
+                :race="race"
+                :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp"
+                :racedayId="reactiveRouteParams.racedayId"
+                :games="getRaceGames(race.raceId)"
+                @race-updated="refreshRaceday"
+              />
+            </div>
+          </section>
+        </div>
+
+        <aside class="raceday-rail">
+          <section class="page-panel-soft game-panel">
+            <div class="section-head compact">
+              <div>
+                <div class="panel-title">Dagens spel</div>
+                <h2 class="section-title">Förslag och procent</h2>
+              </div>
+            </div>
+
+            <div class="game-stack">
+              <article v-if="hasV85" class="game-card">
+                <div class="game-card-top">
+                  <div>
+                    <div class="game-card-title">V85</div>
+                    <div class="game-card-status">
+                      {{ v85UpdatedLabel || 'V85-procent är inte uppdaterad ännu' }}
+                    </div>
+                  </div>
+                  <div class="games" v-if="racedayGames.includes('V85')">
+                    <SpelformBadge game="V85" :leg="1" />
+                  </div>
+                </div>
+                <div class="game-card-actions">
+                  <v-btn color="secondary" variant="elevated" @click="showV85Modal = true">
+                    Öppna V85-förslag
+                  </v-btn>
+                  <v-btn color="info" variant="tonal" :loading="updatingV85" :disabled="updatingV85" @click="updateV85">
+                    Uppdatera V85%
+                  </v-btn>
+                </div>
+                <div v-if="v85UpdateMessage" class="game-card-message">
+                  {{ v85UpdateMessage }}
+                </div>
+              </article>
+
+              <article v-if="hasV86" class="game-card">
+                <div class="game-card-top">
+                  <div>
+                    <div class="game-card-title">V86</div>
+                    <div class="game-card-status">
+                      {{ v86UpdatedLabel || 'V86-procent är inte uppdaterad ännu' }}
+                    </div>
+                  </div>
+                  <div class="games" v-if="racedayGames.includes('V86')">
+                    <SpelformBadge game="V86" :leg="1" />
+                  </div>
+                </div>
+                <div class="game-card-actions">
+                  <v-btn color="secondary" variant="elevated" @click="showV86Modal = true">
+                    Öppna V86-förslag
+                  </v-btn>
+                  <v-btn color="info" variant="tonal" :loading="updatingV86" :disabled="updatingV86" @click="updateV86">
+                    Uppdatera V86%
+                  </v-btn>
+                </div>
+                <div v-if="v86UpdateMessage" class="game-card-message">
+                  {{ v86UpdateMessage }}
+                </div>
+              </article>
+
+              <div v-if="!hasV85 && !hasV86" class="empty-rail-message">
+                Inga V85- eller V86-spel hittades för den här tävlingsdagen.
+              </div>
+            </div>
+          </section>
+
+          <section class="page-panel-soft session-panel">
             <div class="saved-header">
               <div>
-                <div class="saved-title">Sparade spelförslag</div>
-                <div class="muted">Öppna tidigare biljetter för dagen och jämför hur de gick.</div>
+                <div class="saved-title">Genererat i denna session</div>
               </div>
-              <v-btn
-                variant="text"
-                color="secondary"
-                :to="{ name: 'SuggestionAnalytics' }"
-              >
-                Analytics
-              </v-btn>
+              <div class="session-actions">
+                <v-btn
+                  variant="tonal"
+                  color="info"
+                  size="small"
+                  :disabled="!sessionUnsavedSuggestions.length"
+                  :loading="savingSessionSuggestions"
+                  @click="saveSessionSuggestions()"
+                >
+                  Spara synliga
+                </v-btn>
+                <v-btn
+                  variant="text"
+                  size="small"
+                  color="secondary"
+                  :disabled="!sessionUnsavedSuggestions.length"
+                  @click="clearSessionSuggestions()"
+                >
+                  Rensa osparade
+                </v-btn>
+              </div>
             </div>
+
+            <div v-if="sessionSuggestionsMessage" class="session-message">{{ sessionSuggestionsMessage }}</div>
+            <div v-if="sessionUnsavedSuggestions.length" class="compact-list">
+              <div
+                v-for="entry in sessionUnsavedSuggestions"
+                :key="entry.clientKey"
+                class="compact-row compact-row-transient"
+                role="button"
+                tabindex="0"
+                @click="openSessionSuggestion(entry)"
+                @keydown.enter.prevent="openSessionSuggestion(entry)"
+                @keydown.space.prevent="openSessionSuggestion(entry)"
+              >
+                <div class="compact-main">
+                  <div class="compact-topline">
+                    <span class="compact-game">{{ entry.gameType }}</span>
+                    <span class="compact-strategy">{{ formatSessionStrategy(entry) }}</span>
+                  </div>
+                  <div class="compact-meta">
+                    <span>{{ formatSavedDateTime(entry.suggestion.generatedAt) }}</span>
+                    <span>{{ entry.suggestion.rows }} rader</span>
+                    <span>{{ formatCurrency(entry.suggestion.totalCost) }} kr</span>
+                  </div>
+                </div>
+                <div class="compact-actions">
+                  <v-btn
+                    variant="text"
+                    size="small"
+                    color="info"
+                    :loading="savingSessionSuggestions"
+                    @click.stop="saveSessionSuggestions([entry.clientKey])"
+                  >
+                    Spara
+                  </v-btn>
+                </div>
+              </div>
+            </div>
+            <div v-else class="muted">
+              Inga osparade förslag ligger kvar i vyn just nu.
+            </div>
+          </section>
+
+          <section class="page-panel history-panel">
+              <div class="saved-header">
+                <div>
+                  <div class="saved-title">Historik för tävlingsdagen</div>
+                </div>
+                <div class="history-actions">
+                  <v-btn
+                    variant="text"
+                    color="error"
+                    :disabled="!savedSuggestions.length || deletingSavedSuggestions"
+                    :loading="deletingSavedSuggestions"
+                    @click="deleteAllSavedSuggestions"
+                  >
+                    Rensa sparade
+                  </v-btn>
+                  <v-btn variant="text" color="secondary" :to="{ name: 'SuggestionAnalytics' }">
+                    Analysöversikt
+                  </v-btn>
+                </div>
+              </div>
 
             <div v-if="savedSuggestionsLoading" class="saved-loading">
               <v-skeleton-loader type="list-item-three-line" />
             </div>
-            <div v-else-if="savedSuggestions.length">
-              <div class="saved-summary-grid">
+            <template v-else>
+              <div class="summary-strip">
+                <div class="summary-pill summary-pill-total">
+                  <span class="summary-pill-label">Totalt</span>
+                  <strong>{{ savedSuggestions.length }}</strong>
+                </div>
                 <div
-                  v-for="summary in savedSuggestionSummary"
-                  :key="summary.gameType"
-                  class="saved-summary-card"
+                  v-for="summary in strategySummaryStrip"
+                  :key="summary.key"
+                  class="summary-pill"
                 >
-                  <div class="saved-summary-top">
-                    <span class="saved-summary-game">{{ summary.gameType }}</span>
-                    <span class="saved-summary-count">{{ summary.count }} st</span>
-                  </div>
-                  <div class="saved-summary-note">{{ summary.strategies.join(', ') || 'Inga strategier ännu' }}</div>
+                  <span class="summary-pill-label">{{ summary.label }}</span>
+                  <strong>{{ summary.count }}</strong>
+                </div>
+                <div class="summary-pill summary-pill-best" v-if="bestSavedSuggestion">
+                  <span class="summary-pill-label">Bäst hittills</span>
+                  <strong>{{ formatSavedSettlement(bestSavedSuggestion) }}</strong>
                 </div>
               </div>
 
-              <div class="saved-list">
-                <router-link
-                  v-for="item in savedSuggestions"
-                  :key="item.id"
-                  class="saved-item"
-                  :to="{ name: 'SuggestionDetail', params: { racedayId: route.params.racedayId, suggestionId: item.id } }"
-                >
-                  <div class="saved-item-top">
-                    <span class="saved-game">{{ item.gameType }}</span>
-                    <span class="saved-time">{{ formatSavedDateTime(item.generatedAt) }}</span>
-                  </div>
-                  <div class="saved-item-title">{{ formatSavedStrategy(item) }}</div>
-                  <div class="saved-item-meta">
-                    <span>{{ item.rowCount }} rader</span>
-                    <span>{{ formatCurrency(item.totalCost) }} kr</span>
-                    <span>{{ formatSavedSettlement(item) }}</span>
-                  </div>
-                  <div class="saved-item-note">{{ item.settlement?.summary || 'Inväntar resultat' }}</div>
-                </router-link>
+              <div class="browse-controls">
+                <v-select
+                  v-model="savedStrategyFilter"
+                  :items="strategyFilterOptions"
+                  item-title="label"
+                  item-value="value"
+                  label="Strategi"
+                  density="comfortable"
+                  hide-details
+                  variant="underlined"
+                />
+                <v-select
+                  v-model="savedResultFilter"
+                  :items="resultFilterOptions"
+                  item-title="label"
+                  item-value="value"
+                  label="Resultat"
+                  density="comfortable"
+                  hide-details
+                  variant="underlined"
+                />
+                <v-select
+                  v-model="savedSort"
+                  :items="sortOptions"
+                  item-title="label"
+                  item-value="value"
+                  label="Sortera"
+                  density="comfortable"
+                  hide-details
+                  variant="underlined"
+                />
+                <v-text-field
+                  v-model="savedSearch"
+                  label="Sök variant eller mall"
+                  density="comfortable"
+                  hide-details
+                  clearable
+                  variant="underlined"
+                />
               </div>
-            </div>
-            <div v-else class="muted">
-              Inga sparade spelförslag för den här tävlingsdagen ännu.
+
+              <div v-if="groupedSavedSuggestions.length" class="strategy-groups">
+                <section
+                  v-for="group in groupedSavedSuggestions"
+                  :key="group.key"
+                  class="strategy-group"
+                >
+                  <div class="strategy-group-header">
+                    <div>
+                      <div class="strategy-group-title">{{ group.label }}</div>
+                      <div class="muted">{{ group.items.length }} sparade förslag</div>
+                    </div>
+                  </div>
+                  <div class="compact-list">
+                    <router-link
+                      v-for="item in group.items"
+                      :key="item.id"
+                      class="compact-row compact-row-saved"
+                      :to="{ name: 'SuggestionDetail', params: { racedayId: route.params.racedayId, suggestionId: item.id } }"
+                    >
+                      <div class="compact-main">
+                        <div class="compact-topline">
+                          <span class="compact-game">{{ item.gameType }}</span>
+                          <span class="compact-strategy">{{ formatSavedStrategy(item) }}</span>
+                        </div>
+                        <div class="compact-meta">
+                          <span>{{ formatSavedDateTime(item.generatedAt) }}</span>
+                          <span>{{ item.rowCount }} rader</span>
+                          <span>{{ formatCurrency(item.totalCost) }} kr</span>
+                          <span>{{ formatSavedSettlement(item) }}</span>
+                        </div>
+                      </div>
+                      <div class="compact-side">
+                        <div class="compact-note">
+                          {{ item.settlement?.summary || 'Inväntar resultat' }}
+                        </div>
+                        <v-btn
+                          variant="text"
+                          size="small"
+                          color="error"
+                          :loading="deletingSuggestionId === item.id"
+                          @click.prevent.stop="deleteSavedSuggestion(item)"
+                        >
+                          Ta bort
+                        </v-btn>
+                      </div>
+                    </router-link>
+                  </div>
+                </section>
+              </div>
+              <div v-else class="muted">
+                Inga sparade förslag matchar filtret just nu.
+              </div>
+            </template>
+
+            <div v-if="savedSuggestionsMessage" class="history-message">
+              {{ savedSuggestionsMessage }}
             </div>
             <div v-if="savedSuggestionsError" class="error-message">
               {{ savedSuggestionsError }}
             </div>
-          </div>
+          </section>
+        </aside>
+      </section>
+    </template>
 
-          <div v-for="race in sortedRaceList" :key="race.id" class="race-row">
-            <RaceCardComponent
-              :race="race"
-              :lastUpdatedHorseTimestamp="race.earliestUpdatedHorseTimestamp"
-              :racedayId="reactiveRouteParams.racedayId"
-              :games="getRaceGames(race.raceId)"
-              @race-updated="refreshRaceday"
-            />
-          </div>
-        </div>
-        <div v-else-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-      </v-col>
-    </v-row>
-  </v-container>
+    <div v-else-if="errorMessage" class="page-panel-soft error-panel">
+      {{ errorMessage }}
+    </div>
+  </div>
   <V85SuggestionModal
     :model-value="showV85Modal"
     @update:modelValue="showV85Modal = $event"
-    @generated="refreshSavedSuggestions"
+    @generated="handleGeneratedSuggestions"
     :raceday-id="route.params.racedayId"
   />
   <V86SuggestionModal
     :model-value="showV86Modal"
     @update:modelValue="showV86Modal = $event"
-    @generated="refreshSavedSuggestions"
+    @generated="handleGeneratedSuggestions"
     :raceday-id="route.params.racedayId"
   />
+  <v-dialog
+    :model-value="sessionPreviewOpen"
+    max-width="960"
+    @update:model-value="sessionPreviewOpen = $event"
+  >
+    <v-card class="session-preview-card" v-if="sessionPreviewEntry">
+      <div class="session-preview-hero">
+        <div>
+          <div class="preview-eyebrow">{{ sessionPreviewEntry.gameType }} · Osparat förslag</div>
+          <div class="preview-title">{{ formatSessionStrategy(sessionPreviewEntry) }}</div>
+          <div class="preview-meta">
+            <span>{{ formatSavedDateTime(sessionPreviewEntry.suggestion.generatedAt) }}</span>
+            <span>{{ sessionPreviewEntry.suggestion.rows }} rader</span>
+            <span>{{ formatCurrency(sessionPreviewEntry.suggestion.totalCost) }} kr</span>
+          </div>
+        </div>
+        <div class="preview-actions">
+          <v-btn
+            variant="elevated"
+            color="primary"
+            :loading="savingSessionSuggestions"
+            @click="savePreviewSuggestion"
+          >
+            Spara detta förslag
+          </v-btn>
+          <v-btn variant="text" color="secondary" @click="sessionPreviewOpen = false">Stäng</v-btn>
+        </div>
+      </div>
+
+      <div class="preview-shell">
+        <div class="preview-summary">
+          <div class="preview-pill">
+            <span>Variant</span>
+            <strong>{{ sessionPreviewEntry.suggestion.variant?.label || sessionPreviewEntry.suggestion.variant?.strategyLabel || 'Ingen variantetikett' }}</strong>
+          </div>
+          <div class="preview-pill">
+            <span>Insats per rad</span>
+            <strong>{{ formatCurrency(sessionPreviewEntry.suggestion.stakePerRow) }} kr</strong>
+          </div>
+          <div class="preview-pill">
+            <span>Budget</span>
+            <strong>{{ sessionPreviewBudgetLabel }}</strong>
+          </div>
+        </div>
+
+        <div class="preview-legs">
+          <article
+            v-for="leg in sessionPreviewEntry.suggestion.legs"
+            :key="`${sessionPreviewEntry.clientKey}-${leg.leg}`"
+            class="preview-leg"
+          >
+            <div class="preview-leg-top">
+              <div class="preview-leg-number">Avd {{ leg.leg }}</div>
+              <div class="preview-leg-type" :class="previewTypeClass(leg.type)">{{ leg.type || 'Val' }}</div>
+            </div>
+            <div class="preview-leg-meta">
+              <span>Lopp {{ leg.raceNumber }}</span>
+              <span v-if="leg.trackName">{{ leg.trackName }}</span>
+            </div>
+            <div class="preview-selections">
+              <span
+                v-for="selection in leg.selections"
+                :key="`${leg.leg}-${selection.id}`"
+                class="preview-selection"
+                :class="{ 'preview-selection-user': selection.isUserPick }"
+              >
+                <span class="preview-selection-number">{{ selection.programNumber || '–' }}</span>
+                <span>{{ selection.name }}</span>
+              </span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
@@ -151,7 +443,6 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import RaceCardComponent from './components/RaceCardComponent.vue'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
 import SuggestionService from '@/views/suggestion/services/SuggestionService.js'
-import { useDateFormat } from '@/composables/useDateFormat.js'
 import { useRoute } from 'vue-router'
 import SpelformBadge from '@/components/SpelformBadge.vue'
 import V85SuggestionModal from './components/V85SuggestionModal.vue'
@@ -171,10 +462,8 @@ export default {
       default: null
     }
   },
-  setup(props, { root }) {
+  setup(props) {
     const route = useRoute()
-    console.log('RacedayView Props:', props);
-    console.log('RacedayView Route Params:', route.params);
 
     const applyPlaceholderBreadcrumb = () => {
       const id = route.params.racedayId
@@ -192,22 +481,25 @@ export default {
     const showV86Modal = ref(false)
     const v86GameView = ref(null)
     const loading = ref(true)
+    const sessionSuggestions = ref([])
+    const savingSessionSuggestions = ref(false)
+    const sessionSuggestionsMessage = ref('')
+    const sessionPreviewOpen = ref(false)
+    const sessionPreviewEntry = ref(null)
     const savedSuggestions = ref([])
-    const savedSuggestionSummary = ref([])
     const savedSuggestionsLoading = ref(false)
     const savedSuggestionsError = ref('')
-    const { formatDate } = useDateFormat()
+    const savedSuggestionsMessage = ref('')
+    const savedStrategyFilter = ref('all')
+    const savedResultFilter = ref('all')
+    const savedSort = ref('latest')
+    const savedSearch = ref('')
+    const deletingSavedSuggestions = ref(false)
+    const deletingSuggestionId = ref('')
     const reactiveRouteParams = computed(() => route.params)
     const spelformer = ref({})
     const v85UpdateMessage = ref('')
     const v86UpdateMessage = ref('')
-    const isRecentlyUpdated = (timestamp) => {
-      const sixDaysAgo = new Date()
-      sixDaysAgo.setDate(sixDaysAgo.getDate() - 6)
-      const raceUpdateTime = new Date(timestamp)
-      return raceUpdateTime >= sixDaysAgo
-    }
-
     const formatTimeShort = (dateString) => {
       try {
         const d = new Date(dateString)
@@ -235,7 +527,7 @@ export default {
         await refreshSavedSuggestions()
       } catch (error) {
         console.error('Error fetching raceday details:', error)
-        errorMessage.value = 'Error fetching raceday details. Please try again later.'
+        errorMessage.value = 'Kunde inte hämta tävlingsdagen just nu. Försök igen om en stund.'
         return
       } finally {
         loading.value = false
@@ -286,15 +578,154 @@ export default {
       try {
         savedSuggestionsLoading.value = true
         savedSuggestionsError.value = ''
+        savedSuggestionsMessage.value = ''
         const result = await SuggestionService.fetchRacedaySuggestions(route.params.racedayId)
         savedSuggestions.value = Array.isArray(result?.items) ? result.items : []
-        savedSuggestionSummary.value = Array.isArray(result?.summary) ? result.summary : []
       } catch (error) {
         console.error('Failed to load saved suggestions', error)
         savedSuggestionsError.value = error?.response?.data?.error || 'Kunde inte hämta sparade spelförslag.'
       } finally {
         savedSuggestionsLoading.value = false
       }
+    }
+
+    const strategyKeyOf = (mode) => {
+      const lower = String(mode || '').toLowerCase()
+      if (lower === 'balanced') return 'balanced'
+      if (lower === 'value') return 'value'
+      if (lower === 'public') return 'public'
+      if (lower === 'mix') return 'mix'
+      return lower || 'other'
+    }
+
+    const strategyLabelOf = (mode) => {
+      const key = strategyKeyOf(mode)
+      if (key === 'balanced') return 'Balanced'
+      if (key === 'value') return 'Value'
+      if (key === 'public') return 'Public'
+      if (key === 'mix') return 'MIX'
+      return mode || 'Övrigt'
+    }
+
+    const handleGeneratedSuggestions = (payload) => {
+      const gameType = String(payload?.gameType || '')
+      const requestSnapshot = payload?.requestSnapshot || {}
+      const items = Array.isArray(payload?.suggestions) ? payload.suggestions : []
+
+      sessionSuggestions.value = [
+        ...sessionSuggestions.value.filter(entry => entry.gameType !== gameType),
+        ...items.map(item => ({
+          clientKey: item.clientKey,
+          gameType,
+          requestSnapshot,
+          suggestion: item,
+          isSaved: Boolean(item?.isSaved)
+        }))
+      ]
+    }
+
+    const sessionUnsavedSuggestions = computed(() => sessionSuggestions.value.filter(entry => !entry?.isSaved))
+
+    const saveSessionSuggestions = async (clientKeys = null) => {
+      const targets = sessionUnsavedSuggestions.value.filter(entry => !Array.isArray(clientKeys) || clientKeys.includes(entry.clientKey))
+      if (!targets.length) return
+
+      try {
+        savingSessionSuggestions.value = true
+        sessionSuggestionsMessage.value = ''
+        await SuggestionService.saveSuggestionSelections(route.params.racedayId, targets.map(entry => ({
+          clientKey: entry.clientKey,
+          gameType: entry.gameType,
+          suggestion: entry.suggestion,
+          requestSnapshot: entry.requestSnapshot
+        })))
+        sessionSuggestions.value = sessionSuggestions.value.filter(entry => !targets.some(target => target.clientKey === entry.clientKey))
+        if (sessionPreviewEntry.value && targets.some(target => target.clientKey === sessionPreviewEntry.value?.clientKey)) {
+          sessionPreviewOpen.value = false
+          sessionPreviewEntry.value = null
+        }
+        sessionSuggestionsMessage.value = targets.length === 1 ? 'Förslaget sparades till historiken.' : `${targets.length} förslag sparades till historiken.`
+        await refreshSavedSuggestions()
+      } catch (error) {
+        console.error('Failed to save session suggestions', error)
+        sessionSuggestionsMessage.value = error?.response?.data?.error || 'Kunde inte spara de valda förslagen.'
+      } finally {
+        savingSessionSuggestions.value = false
+      }
+    }
+
+    const clearSessionSuggestions = (gameType = null) => {
+      sessionSuggestions.value = sessionSuggestions.value.filter(entry => entry.isSaved || (gameType && entry.gameType !== gameType))
+      if (sessionPreviewEntry.value && !sessionSuggestions.value.some(entry => entry.clientKey === sessionPreviewEntry.value?.clientKey)) {
+        sessionPreviewOpen.value = false
+        sessionPreviewEntry.value = null
+      }
+      sessionSuggestionsMessage.value = 'Osparade förslag togs bort från sessionvyn.'
+    }
+
+    const openSessionSuggestion = (entry) => {
+      if (!entry?.suggestion) return
+      sessionPreviewEntry.value = entry
+      sessionPreviewOpen.value = true
+    }
+
+    const savePreviewSuggestion = async () => {
+      if (!sessionPreviewEntry.value?.clientKey) return
+      await saveSessionSuggestions([sessionPreviewEntry.value.clientKey])
+    }
+
+    const confirmDelete = (message) => {
+      if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+        return window.confirm(message)
+      }
+      return true
+    }
+
+    const deleteSavedSuggestion = async (item) => {
+      if (!item?.id) return
+      if (!confirmDelete('Ta bort det sparade förslaget från historiken?')) return
+
+      try {
+        deletingSuggestionId.value = item.id
+        savedSuggestionsError.value = ''
+        savedSuggestionsMessage.value = ''
+        await SuggestionService.deleteSuggestion(item.id)
+        savedSuggestions.value = savedSuggestions.value.filter(entry => entry.id !== item.id)
+        savedSuggestionsMessage.value = 'Förslaget togs bort från historiken.'
+      } catch (error) {
+        console.error('Failed to delete saved suggestion', error)
+        savedSuggestionsError.value = error?.response?.data?.error || 'Kunde inte ta bort spelförslaget.'
+      } finally {
+        deletingSuggestionId.value = ''
+      }
+    }
+
+    const deleteAllSavedSuggestions = async () => {
+      if (!savedSuggestions.value.length) return
+      if (!confirmDelete('Ta bort alla sparade förslag för den här tävlingsdagen?')) return
+
+      try {
+        deletingSavedSuggestions.value = true
+        savedSuggestionsError.value = ''
+        savedSuggestionsMessage.value = ''
+        const result = await SuggestionService.deleteRacedaySuggestions(route.params.racedayId)
+        savedSuggestions.value = []
+        const deletedCount = Number(result?.deletedCount || 0)
+        savedSuggestionsMessage.value = deletedCount > 0
+          ? `${deletedCount} sparade förslag togs bort.`
+          : 'Det fanns inga sparade förslag att ta bort.'
+      } catch (error) {
+        console.error('Failed to delete raceday suggestions', error)
+        savedSuggestionsError.value = error?.response?.data?.error || 'Kunde inte rensa sparade spelförslag.'
+      } finally {
+        deletingSavedSuggestions.value = false
+      }
+    }
+
+    const formatSessionStrategy = (entry) => {
+      const strategy = entry?.suggestion?.modeLabel || entry?.suggestion?.mode || ''
+      const variant = entry?.suggestion?.variant?.label || entry?.suggestion?.variant?.strategyLabel || ''
+      return [strategyLabelOf(strategy), variant].filter(Boolean).join(' · ')
     }
 
     const loadV86GameView = async () => {
@@ -344,22 +775,21 @@ export default {
       return map
     })
 
-    const capabilities = computed(() => ({
-      hasV85: hasV85.value,
-      hasV86: hasV86.value,
-      v85GameId: racedayDetails.value?.v85Info?.gameId || racedayDetails.value?.atgCalendarGamesRaw?.V85?.[0]?.id || null,
-      v86GameId: v86GameView.value?.gameId || racedayDetails.value?.atgCalendarGamesRaw?.V86?.[0]?.id || null
-    }))
-
     const sortedRaceList = computed(() => {
-      return racedayDetails.value?.raceList.sort((a, b) => a.raceNumber - b.raceNumber) || []
+      const races = Array.isArray(racedayDetails.value?.raceList) ? [...racedayDetails.value.raceList] : []
+      return races.sort((a, b) => a.raceNumber - b.raceNumber)
     })
 
     const totalRaces = computed(() => sortedRaceList.value.length)
+    const racedayDateLabel = computed(() => {
+      const value = racedayDetails.value?.raceDayDate || racedayDetails.value?.firstStart
+      return value ? formatBreadcrumbDate(value) : 'Okänt datum'
+    })
     const formattedFirstStart = computed(() => {
       const ts = racedayDetails.value?.firstStart
       return ts ? `Start ${formatTimeShort(ts)}` : ''
     })
+    const settledSuggestionCount = computed(() => savedSuggestions.value.filter(item => item?.settlement?.resultsAvailable).length)
 
     const getRaceGames = raceId => {
       const res = []
@@ -431,7 +861,7 @@ export default {
 
     const formatSavedStrategy = (item) => {
       const parts = [
-        item?.strategy?.modeLabel || item?.strategy?.mode,
+        strategyLabelOf(item?.strategy?.modeLabel || item?.strategy?.mode),
         item?.strategy?.variantLabel || item?.strategy?.variantStrategyLabel
       ].filter(Boolean)
       return parts.join(' · ') || 'Okänd strategi'
@@ -444,15 +874,134 @@ export default {
       return `${correctLegs}/${totalLegs} rätt`
     }
 
+    const strategyFilterOptions = computed(() => ([
+      { label: 'Alla strategier', value: 'all' },
+      { label: 'Balanced', value: 'balanced' },
+      { label: 'Value', value: 'value' },
+      { label: 'Public', value: 'public' },
+      { label: 'MIX', value: 'mix' }
+    ]))
+
+    const resultFilterOptions = [
+      { label: 'Alla resultat', value: 'all' },
+      { label: 'Inväntar', value: 'waiting' },
+      { label: 'Avgjorda', value: 'settled' }
+    ]
+
+    const sortOptions = [
+      { label: 'Senaste först', value: 'latest' },
+      { label: 'Bästa resultat först', value: 'best' },
+      { label: 'Lägst kostnad', value: 'lowestCost' },
+      { label: 'Högst kostnad', value: 'highestCost' }
+    ]
+
+    const strategySummaryStrip = computed(() => {
+      const counts = new Map([['balanced', 0], ['value', 0], ['public', 0], ['mix', 0]])
+      for (const item of savedSuggestions.value) {
+        const key = strategyKeyOf(item?.strategy?.mode || item?.strategy?.modeLabel)
+        if (counts.has(key)) {
+          counts.set(key, Number(counts.get(key)) + 1)
+        }
+      }
+      return [...counts.entries()].map(([key, count]) => ({
+        key,
+        label: strategyLabelOf(key),
+        count
+      }))
+    })
+
+    const bestSavedSuggestion = computed(() => {
+      const settled = savedSuggestions.value.filter(item => item?.settlement?.resultsAvailable)
+      return [...settled].sort((a, b) => {
+        const diff = Number(b?.settlement?.correctLegs || 0) - Number(a?.settlement?.correctLegs || 0)
+        if (diff !== 0) return diff
+        return Number(a?.totalCost || 0) - Number(b?.totalCost || 0)
+      })[0] || null
+    })
+
+    const filteredSavedSuggestions = computed(() => {
+      const query = String(savedSearch.value || '').trim().toLowerCase()
+      const items = savedSuggestions.value.filter((item) => {
+        const strategyKey = strategyKeyOf(item?.strategy?.mode || item?.strategy?.modeLabel)
+        if (savedStrategyFilter.value !== 'all' && strategyKey !== savedStrategyFilter.value) {
+          return false
+        }
+        if (savedResultFilter.value === 'waiting' && item?.settlement?.resultsAvailable) {
+          return false
+        }
+        if (savedResultFilter.value === 'settled' && !item?.settlement?.resultsAvailable) {
+          return false
+        }
+        if (!query) return true
+        const haystack = [
+          item?.strategy?.variantLabel,
+          item?.strategy?.variantStrategyLabel,
+          item?.template?.label,
+          item?.template?.key,
+          item?.strategy?.modeLabel,
+          item?.strategy?.mode
+        ].filter(Boolean).join(' ').toLowerCase()
+        return haystack.includes(query)
+      })
+
+      const sorted = [...items]
+      if (savedSort.value === 'best') {
+        sorted.sort((a, b) => {
+          const aResolved = Boolean(a?.settlement?.resultsAvailable)
+          const bResolved = Boolean(b?.settlement?.resultsAvailable)
+          if (aResolved !== bResolved) return Number(bResolved) - Number(aResolved)
+          const diff = Number(b?.settlement?.correctLegs || 0) - Number(a?.settlement?.correctLegs || 0)
+          if (diff !== 0) return diff
+          return new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime()
+        })
+      } else if (savedSort.value === 'lowestCost') {
+        sorted.sort((a, b) => Number(a?.totalCost || 0) - Number(b?.totalCost || 0))
+      } else if (savedSort.value === 'highestCost') {
+        sorted.sort((a, b) => Number(b?.totalCost || 0) - Number(a?.totalCost || 0))
+      } else {
+        sorted.sort((a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime())
+      }
+      return sorted
+    })
+
+    const groupedSavedSuggestions = computed(() => {
+      const groups = new Map()
+      for (const item of filteredSavedSuggestions.value) {
+        const key = strategyKeyOf(item?.strategy?.mode || item?.strategy?.modeLabel)
+        if (!groups.has(key)) {
+          groups.set(key, {
+            key,
+            label: strategyLabelOf(item?.strategy?.modeLabel || item?.strategy?.mode),
+            items: []
+          })
+        }
+        groups.get(key).items.push(item)
+      }
+      return [...groups.values()]
+    })
+
+    const sessionPreviewBudgetLabel = computed(() => {
+      const budget = sessionPreviewEntry.value?.suggestion?.budget || {}
+      if (budget?.maxCost != null) {
+        return `${formatCurrency(budget.maxCost)} kr max`
+      }
+      return 'Ingen gräns'
+    })
+
+    const previewTypeClass = (value) => {
+      const lower = String(value || '').toLowerCase()
+      if (lower.includes('spik')) return 'preview-leg-type-spik'
+      if (lower.includes('lås') || lower.includes('las')) return 'preview-leg-type-lock'
+      return 'preview-leg-type-guard'
+    }
+
     return {
       racedayDetails,
       errorMessage,
-      formatDate,
       sortedRaceList,
       reactiveRouteParams,
       spelformer,
       getRaceGames,
-      isRecentlyUpdated,
       refreshRaceday,
       hasV85,
       hasV86,
@@ -461,7 +1010,9 @@ export default {
       racedayGames,
       loading,
       totalRaces,
+      racedayDateLabel,
       formattedFirstStart,
+      settledSuggestionCount,
       showV85Modal,
       showV86Modal,
       route,
@@ -471,166 +1022,547 @@ export default {
       v85UpdateMessage,
       v86UpdatedLabel,
       v86UpdateMessage,
-      capabilities,
+      handleGeneratedSuggestions,
+      sessionUnsavedSuggestions,
+      sessionPreviewOpen,
+      sessionPreviewEntry,
+      saveSessionSuggestions,
+      savingSessionSuggestions,
+      clearSessionSuggestions,
+      openSessionSuggestion,
+      savePreviewSuggestion,
+      sessionPreviewBudgetLabel,
+      previewTypeClass,
+      sessionSuggestionsMessage,
+      formatSessionStrategy,
       savedSuggestions,
-      savedSuggestionSummary,
       savedSuggestionsLoading,
       savedSuggestionsError,
+      savedSuggestionsMessage,
       refreshSavedSuggestions,
+      deleteSavedSuggestion,
+      deleteAllSavedSuggestions,
+      deletingSavedSuggestions,
+      deletingSuggestionId,
       formatSavedDateTime,
       formatCurrency,
       formatSavedStrategy,
-      formatSavedSettlement
+      formatSavedSettlement,
+      savedStrategyFilter,
+      savedResultFilter,
+      savedSort,
+      savedSearch,
+      strategyFilterOptions,
+      resultFilterOptions,
+      sortOptions,
+      strategySummaryStrip,
+      bestSavedSuggestion,
+      groupedSavedSuggestions
     }
   }
 }
 </script>
 
 <style scoped>
-  .main-content { padding-top: 70px; }
-  .raceday-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    padding-bottom: 8px;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .titles .title { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
-  .titles .meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
-  .muted { color: #6b7280; font-size: 0.92rem; }
-  .dot { color: #9ca3af; }
-  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .games { display: flex; gap: 6px; }
-  .buttons { display: flex; gap: 8px; }
-  .game-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-top: 6px;
-    border-top: 1px dashed rgba(0,0,0,0.12);
-  }
-  .game-actions-title {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #4b5563;
-  }
-  .v85-status, .v86-status { font-size: 0.85rem; color: #1f2933; }
-  .v85-status.muted, .v86-status.muted { color: #6b7280; }
-  .v85-message, .v86-message { font-size: 0.82rem; color: #2563eb; }
-  .race-row { margin-bottom: 10px; }
-  .saved-suggestions-panel {
-    margin-bottom: 16px;
-    padding: 16px;
-    border-radius: 16px;
-    border: 1px solid rgba(15,23,42,0.08);
-    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-    box-shadow: 0 10px 24px rgba(15,23,42,0.05);
-  }
-  .saved-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
-  .saved-title {
-    font-size: 1rem;
-    font-weight: 700;
-  }
-  .saved-loading { padding-top: 6px; }
-  .saved-summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .saved-summary-card {
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.92);
-    border: 1px solid rgba(15,23,42,0.08);
-  }
-  .saved-summary-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 0.92rem;
-  }
-  .saved-summary-game {
-    font-weight: 700;
-  }
-  .saved-summary-count {
-    color: #6b7280;
-  }
-  .saved-summary-note {
-    margin-top: 6px;
-    font-size: 0.88rem;
-    color: #6b7280;
-  }
-  .saved-list {
-    display: grid;
-    gap: 10px;
-  }
-  .saved-item {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    padding: 14px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.94);
-    border: 1px solid rgba(15,23,42,0.08);
-  }
-  .saved-item-top,
-  .saved-item-meta {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
-    font-size: 0.9rem;
-  }
-  .saved-game {
-    font-weight: 700;
-  }
-  .saved-time,
-  .saved-item-meta,
-  .saved-item-note {
-    color: #6b7280;
-  }
-  .saved-item-title {
-    margin-top: 6px;
-    font-weight: 700;
-  }
-  .saved-item-meta {
-    margin-top: 6px;
-  }
-  .saved-item-note {
-    margin-top: 6px;
-    font-size: 0.9rem;
-  }
-  .error-message { color: #ef4444; font-size: 0.95rem; margin-top: 1rem; }
-  .loading-wrap { padding-top: 24px; }
+.raceday-page {
+  display: grid;
+  gap: 20px;
+}
 
-  @media (prefers-color-scheme: dark) {
-    .raceday-header { border-bottom-color: rgba(255,255,255,0.08); }
-    .muted { color: #9ca3af; }
-    .dot { color: #6b7280; }
-    .error-message { color: #f87171; }
-    .game-actions { border-top-color: rgba(255,255,255,0.2); }
-    .game-actions-title { color: #9ca3af; }
-    .v85-status, .v86-status { color: #d1d5db; }
-    .v85-status.muted, .v86-status.muted { color: #9ca3af; }
-    .v85-message, .v86-message { color: #93c5fd; }
-    .saved-suggestions-panel,
-    .saved-summary-card,
-    .saved-item {
-      background: rgba(17,24,39,0.82);
-      border-color: rgba(255,255,255,0.08);
-    }
+.loading-wrap,
+.error-panel {
+  padding: 24px;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.raceday-hero {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.95fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.hero-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hero-metric-card {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  gap: 8px;
+}
+
+.hero-metric-card-wide {
+  grid-column: 1 / -1;
+  background:
+    radial-gradient(circle at top right, rgba(245, 201, 121, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.hero-metric-value {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+  line-height: 1;
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
+.hero-metric-label,
+.hero-metric-text {
+  color: var(--text-muted);
+}
+
+.raceday-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.38fr) minmax(320px, 0.82fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.raceday-main,
+.raceday-rail {
+  min-width: 0;
+}
+
+.raceday-rail {
+  display: grid;
+  gap: 16px;
+}
+
+.race-stage,
+.game-panel,
+.session-panel,
+.history-panel {
+  padding: 22px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.section-head.compact {
+  margin-bottom: 14px;
+}
+
+.section-title {
+  margin: 6px 0 0;
+  font-size: 1.42rem;
+}
+
+.section-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.race-list {
+  display: grid;
+  gap: 14px;
+}
+
+.game-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.game-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background:
+    radial-gradient(circle at top right, rgba(89, 212, 255, 0.12), transparent 34%),
+    rgba(255, 255, 255, 0.04);
+  display: grid;
+  gap: 14px;
+}
+
+.game-card-top,
+.saved-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.game-card-title,
+.saved-title {
+  color: var(--text-strong);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.game-card-status,
+.game-card-message,
+.session-message,
+.history-message,
+.error-message,
+.empty-rail-message {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.history-actions,
+.games,
+.session-actions,
+.game-card-actions,
+.compact-actions,
+.preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.summary-pill {
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.summary-pill-label {
+  color: var(--text-soft);
+  font-size: 0.83rem;
+}
+
+.summary-pill strong {
+  color: var(--text-strong);
+}
+
+.summary-pill-best {
+  background: rgba(56, 211, 159, 0.14);
+  border-color: rgba(56, 211, 159, 0.22);
+}
+
+.browse-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.strategy-groups,
+.compact-list {
+  display: grid;
+  gap: 10px;
+}
+
+.strategy-group {
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.strategy-group-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.strategy-group-title {
+  color: var(--text-strong);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.compact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.035);
+  color: inherit;
+  text-decoration: none;
+}
+
+.compact-row-transient {
+  cursor: pointer;
+}
+
+.compact-row:hover,
+.compact-row:focus-within {
+  border-color: rgba(125, 211, 252, 0.26);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.compact-main {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.compact-topline,
+.compact-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.compact-game {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--focus-cyan);
+}
+
+.compact-strategy {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.compact-meta,
+.compact-note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.compact-note {
+  max-width: 260px;
+  text-align: right;
+}
+
+.compact-side {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.session-preview-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(89, 212, 255, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(10, 15, 28, 0.99), rgba(15, 23, 42, 0.99));
+  color: var(--text-body);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.session-preview-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 12px;
+  flex-wrap: wrap;
+}
+
+.preview-eyebrow {
+  color: var(--focus-cyan);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preview-title {
+  margin-top: 6px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.preview-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.preview-shell {
+  padding: 0 22px 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.preview-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.preview-pill {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.preview-pill span {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-soft);
+}
+
+.preview-pill strong,
+.preview-leg-number {
+  color: var(--text-strong);
+}
+
+.preview-legs {
+  display: grid;
+  gap: 10px;
+}
+
+.preview-leg {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.preview-leg-top,
+.preview-leg-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.preview-leg-type {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.preview-leg-type-spik {
+  background: rgba(89, 212, 255, 0.16);
+  color: #aeefff;
+}
+
+.preview-leg-type-lock {
+  background: rgba(245, 201, 121, 0.16);
+  color: #fee5b6;
+}
+
+.preview-leg-type-guard {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-body);
+}
+
+.preview-leg-meta {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.preview-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.preview-selection {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-body);
+}
+
+.preview-selection-user {
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  background: rgba(89, 212, 255, 0.14);
+}
+
+.preview-selection-number {
+  font-weight: 700;
+}
+
+:deep(.browse-controls .v-field) {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px 12px 0 0;
+}
+
+:deep(.browse-controls .v-field__input),
+:deep(.browse-controls .v-label),
+:deep(.browse-controls input) {
+  color: var(--text-body) !important;
+}
+
+@media (max-width: 1180px) {
+  .raceday-hero,
+  .raceday-layout {
+    grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 900px) {
+  .hero-metrics,
+  .preview-summary,
+  .compact-row {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-note {
+    text-align: left;
+    max-width: none;
+  }
+
+  .compact-side {
+    justify-items: start;
+  }
+}
+
+@media (max-width: 720px) {
+  .raceday-hero,
+  .race-stage,
+  .game-panel,
+  .session-panel,
+  .history-panel,
+  .loading-wrap,
+  .error-panel {
+    padding: 18px;
+  }
+
+  .section-title {
+    font-size: 1.22rem;
+  }
+}
 </style>
