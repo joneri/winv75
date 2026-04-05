@@ -228,6 +228,223 @@ test('track affinity adds a positive delta when the horse consistently outperfor
   )
 })
 
+test('start-method affinity activates when the horse clearly outperforms its baseline in the active start method', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 3.5,
+      results: [
+        {
+          raceInformation: { raceId: 36, date: daysAgo(5) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Voltstart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 37, date: daysAgo(16) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Voltstart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        },
+        {
+          raceInformation: { raceId: 38, date: daysAgo(29) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Voltstart',
+          distance: { sortValue: 2140 },
+          trackCode: 'J'
+        },
+        {
+          raceInformation: { raceId: 39, date: daysAgo(43) },
+          placement: { sortValue: 7, displayValue: '7' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 40, date: daysAgo(58) },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1010
+    },
+    raceContext: {
+      startMethod: 'Voltstart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.startMethodAffinity.startMethod, 'volt')
+  assert.equal(prediction.debug.contextAdjustments.startMethodAffinity.sampleSize, 3)
+  assert.ok(prediction.debug.contextAdjustments.startMethodAffinity.rawMeasurement > 0, 'Expected positive start-method measurement')
+  assert.ok(prediction.debug.contextAdjustments.startMethodAffinity.deltaElo > 0, 'Expected start-method affinity to lift effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.startMethodDelta,
+    prediction.debug.contextAdjustments.startMethodAffinity.deltaElo
+  )
+})
+
+test('start-method affinity stays inactive below the minimum sample threshold', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 3.6,
+      results: [
+        {
+          raceInformation: { raceId: 40.1, date: daysAgo(10) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 40.2, date: daysAgo(25) },
+          placement: { sortValue: 5, displayValue: '5' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Voltstart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.startMethodAffinity.startMethod, 'volt')
+  assert.equal(prediction.debug.contextAdjustments.startMethodAffinity.sampleSize, 0)
+  assert.equal(prediction.debug.contextAdjustments.startMethodAffinity.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.startMethodAffinity.reason, 'insufficient_sample')
+})
+
+test('start-position affinity activates when the horse clearly outperforms its baseline from the active start position', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 3.7,
+      startPosition: 1,
+      results: [
+        {
+          raceInformation: { raceId: 40.3, date: daysAgo(5) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          startPosition: { sortValue: 1 },
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 40.4, date: daysAgo(18) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Autostart',
+          startPosition: { sortValue: 1 },
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        },
+        {
+          raceInformation: { raceId: 40.5, date: daysAgo(30) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          startPosition: { sortValue: 1 },
+          distance: { sortValue: 1640 },
+          trackCode: 'J'
+        },
+        {
+          raceInformation: { raceId: 40.6, date: daysAgo(43) },
+          placement: { sortValue: 7, displayValue: '7' },
+          startMethod: 'Autostart',
+          startPosition: { sortValue: 8 },
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 40.7, date: daysAgo(58) },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'Voltstart',
+          startPosition: { sortValue: 1 },
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1008
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.startMethod, 'auto')
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.startPosition, 1)
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.sampleSize, 3)
+  assert.ok(prediction.debug.contextAdjustments.startPositionAffinity.rawMeasurement > 0, 'Expected positive start-position measurement')
+  assert.ok(prediction.debug.contextAdjustments.startPositionAffinity.deltaElo > 0, 'Expected start-position affinity to lift effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.startPositionDelta,
+    prediction.debug.contextAdjustments.startPositionAffinity.deltaElo
+  )
+})
+
+test('start-position affinity stays inactive below the minimum sample threshold', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 3.8,
+      startPosition: 2,
+      results: [
+        {
+          raceInformation: { raceId: 40.8, date: daysAgo(10) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          startPosition: { sortValue: 2 },
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 40.9, date: daysAgo(25) },
+          placement: { sortValue: 5, displayValue: '5' },
+          startMethod: 'Autostart',
+          startPosition: { sortValue: 6 },
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.startMethod, 'auto')
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.startPosition, 2)
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.sampleSize, 1)
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.startPositionAffinity.reason, 'insufficient_sample')
+})
+
 test('track affinity stays inactive below the minimum sample threshold', () => {
   const prediction = buildHorseEloPrediction({
     horse: {
@@ -265,6 +482,225 @@ test('track affinity stays inactive below the minimum sample threshold', () => {
   assert.equal(prediction.debug.contextAdjustments.trackAffinity.confidence, 0)
   assert.equal(prediction.debug.contextAdjustments.trackAffinity.deltaElo, 0)
   assert.equal(prediction.debug.contextAdjustments.trackAffinity.reason, 'insufficient_sample')
+})
+
+test('distance affinity activates when the horse clearly outperforms its baseline in the current bucket', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 4.5,
+      results: [
+        {
+          raceInformation: { raceId: 43, date: daysAgo(6) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 44, date: daysAgo(18) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        },
+        {
+          raceInformation: { raceId: 45, date: daysAgo(31) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'J'
+        },
+        {
+          raceInformation: { raceId: 46, date: daysAgo(44) },
+          placement: { sortValue: 7, displayValue: '7' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 1640 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 47, date: daysAgo(58) },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2640 },
+          trackCode: 'S'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1010
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.distanceAffinity.distanceBucket, 'medium')
+  assert.equal(prediction.debug.contextAdjustments.distanceAffinity.sampleSize, 3)
+  assert.ok(prediction.debug.contextAdjustments.distanceAffinity.rawMeasurement > 0, 'Expected positive distance measurement')
+  assert.ok(prediction.debug.contextAdjustments.distanceAffinity.deltaElo > 0, 'Expected distance affinity to lift effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.distanceDelta,
+    prediction.debug.contextAdjustments.distanceAffinity.deltaElo
+  )
+})
+
+test('distance affinity stays inactive below the minimum sample threshold', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 4.6,
+      results: [
+        {
+          raceInformation: { raceId: 48, date: daysAgo(8) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 1640 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 49, date: daysAgo(22) },
+          placement: { sortValue: 5, displayValue: '5' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2640,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.distanceAffinity.distanceBucket, 'long')
+  assert.equal(prediction.debug.contextAdjustments.distanceAffinity.sampleSize, 0)
+  assert.equal(prediction.debug.contextAdjustments.distanceAffinity.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.distanceAffinity.reason, 'insufficient_sample')
+})
+
+test('track x distance affinity activates when the horse clearly outperforms its baseline in the active track-distance bucket', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 4.7,
+      results: [
+        {
+          raceInformation: { raceId: 49.1, date: daysAgo(6) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 49.2, date: daysAgo(18) },
+          placement: { sortValue: 2, displayValue: '2' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 49.3, date: daysAgo(30) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Voltstart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 49.4, date: daysAgo(41) },
+          placement: { sortValue: 7, displayValue: '7' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 1640 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 49.5, date: daysAgo(54) },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        },
+        {
+          raceInformation: { raceId: 49.6, date: daysAgo(67) },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2640 },
+          trackCode: 'J'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1008
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.track, 'S')
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.distanceBucket, 'medium')
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.sampleSize, 3)
+  assert.ok(prediction.debug.contextAdjustments.trackDistanceAffinity.rawMeasurement > 0, 'Expected positive track-distance measurement')
+  assert.ok(prediction.debug.contextAdjustments.trackDistanceAffinity.deltaElo > 0, 'Expected track-distance affinity to lift effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.trackDistanceDelta,
+    prediction.debug.contextAdjustments.trackDistanceAffinity.deltaElo
+  )
+})
+
+test('track x distance affinity stays inactive below the minimum sample threshold', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 4.8,
+      results: [
+        {
+          raceInformation: { raceId: 49.7, date: daysAgo(8) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 49.8, date: daysAgo(22) },
+          placement: { sortValue: 5, displayValue: '5' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Autostart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.track, 'S')
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.distanceBucket, 'medium')
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.sampleSize, 1)
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.deltaElo, 0)
+  assert.equal(prediction.debug.contextAdjustments.trackDistanceAffinity.reason, 'insufficient_sample')
 })
 
 test('shoe signal activates from horse-relative repeated shoe-change history and is exposed in the effective elo breakdown', () => {

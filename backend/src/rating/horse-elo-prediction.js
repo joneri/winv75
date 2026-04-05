@@ -40,8 +40,22 @@ const INACTIVITY_START_DAYS = Number(process.env.ELO_INACTIVITY_START_DAYS || 45
 const INACTIVITY_SPAN_DAYS = Number(process.env.ELO_INACTIVITY_SPAN_DAYS || 110)
 const INACTIVITY_CAP = Number(process.env.ELO_INACTIVITY_CAP || 58)
 
-const CONTEXT_START_METHOD_WEIGHT = Number(process.env.ELO_CONTEXT_START_METHOD_WEIGHT || 18)
-const CONTEXT_DISTANCE_WEIGHT = Number(process.env.ELO_CONTEXT_DISTANCE_WEIGHT || 24)
+const START_METHOD_AFFINITY_WEIGHT = Number(process.env.ELO_START_METHOD_AFFINITY_WEIGHT || 18)
+const START_METHOD_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_START_METHOD_AFFINITY_MIN_SAMPLE || 3)
+const START_METHOD_AFFINITY_SHRINK_K = Number(process.env.ELO_START_METHOD_AFFINITY_SHRINK_K || 6)
+const START_METHOD_AFFINITY_CAP = Number(process.env.ELO_START_METHOD_AFFINITY_CAP || 14)
+const START_POSITION_AFFINITY_WEIGHT = Number(process.env.ELO_START_POSITION_AFFINITY_WEIGHT || 16)
+const START_POSITION_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_START_POSITION_AFFINITY_MIN_SAMPLE || 3)
+const START_POSITION_AFFINITY_SHRINK_K = Number(process.env.ELO_START_POSITION_AFFINITY_SHRINK_K || 6)
+const START_POSITION_AFFINITY_CAP = Number(process.env.ELO_START_POSITION_AFFINITY_CAP || 12)
+const DISTANCE_AFFINITY_WEIGHT = Number(process.env.ELO_DISTANCE_AFFINITY_WEIGHT || 20)
+const DISTANCE_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_DISTANCE_AFFINITY_MIN_SAMPLE || 3)
+const DISTANCE_AFFINITY_SHRINK_K = Number(process.env.ELO_DISTANCE_AFFINITY_SHRINK_K || 6)
+const DISTANCE_AFFINITY_CAP = Number(process.env.ELO_DISTANCE_AFFINITY_CAP || 16)
+const TRACK_DISTANCE_AFFINITY_WEIGHT = Number(process.env.ELO_TRACK_DISTANCE_AFFINITY_WEIGHT || 18)
+const TRACK_DISTANCE_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_TRACK_DISTANCE_AFFINITY_MIN_SAMPLE || 3)
+const TRACK_DISTANCE_AFFINITY_SHRINK_K = Number(process.env.ELO_TRACK_DISTANCE_AFFINITY_SHRINK_K || 5)
+const TRACK_DISTANCE_AFFINITY_CAP = Number(process.env.ELO_TRACK_DISTANCE_AFFINITY_CAP || 14)
 const TRACK_AFFINITY_WEIGHT = Number(process.env.ELO_TRACK_AFFINITY_WEIGHT || 28)
 const TRACK_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_TRACK_AFFINITY_MIN_SAMPLE || 3)
 const TRACK_AFFINITY_SHRINK_K = Number(process.env.ELO_TRACK_AFFINITY_SHRINK_K || 4)
@@ -291,6 +305,7 @@ const listRelevantResults = (results = [], targetRaceDate = new Date()) => {
         recencyWeight,
         driverId: safeNumber(result?.driver?.id ?? result?.driverId ?? result?.driver?.licenseId, null),
         startMethod: normalizeStartMethod(result?.startMethod),
+        startPosition: safeNumber(result?.startPosition?.sortValue ?? result?.startPosition, NaN),
         distanceBucket: getDistanceBucket(result?.distance),
         track: normalizeTrack(result?.trackCode),
         shoeState: normalizeShoeState(result?.equipmentOptions?.shoeOptions?.code)
@@ -424,6 +439,270 @@ const computeTrackAffinity = ({
     weightSum: weightedTrack.weightSum,
     minSample: TRACK_AFFINITY_MIN_SAMPLE,
     cappedBy: TRACK_AFFINITY_CAP,
+    reason: 'active'
+  }
+}
+
+const computeStartMethodAffinity = ({
+  relevantResults,
+  raceContext,
+  baselineOutcome
+}) => {
+  if (!['auto', 'volt'].includes(raceContext.startMethod)) {
+    return buildInactiveContextFeature({
+      startMethod: raceContext.startMethod,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: 0,
+      minSample: START_METHOD_AFFINITY_MIN_SAMPLE,
+      cappedBy: START_METHOD_AFFINITY_CAP,
+      reason: 'unsupported_start_method'
+    })
+  }
+
+  const matched = relevantResults.filter((result) => result.startMethod === raceContext.startMethod)
+  if (matched.length < START_METHOD_AFFINITY_MIN_SAMPLE) {
+    return buildInactiveContextFeature({
+      startMethod: raceContext.startMethod,
+      sampleSize: matched.length,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: Number(matched.reduce((sum, result) => sum + result.recencyWeight, 0).toFixed(4)),
+      minSample: START_METHOD_AFFINITY_MIN_SAMPLE,
+      cappedBy: START_METHOD_AFFINITY_CAP,
+      reason: 'insufficient_sample'
+    })
+  }
+
+  const weightedMatch = computeWeightedOutcome(matched)
+  const rawMeasurement = Number((weightedMatch.outcome - baselineOutcome).toFixed(4))
+  const confidence = Number(clamp(
+    matched.length / (matched.length + START_METHOD_AFFINITY_SHRINK_K),
+    0,
+    1
+  ).toFixed(4))
+  const deltaElo = Number(clamp(
+    rawMeasurement * START_METHOD_AFFINITY_WEIGHT * confidence,
+    -START_METHOD_AFFINITY_CAP,
+    START_METHOD_AFFINITY_CAP
+  ).toFixed(2))
+
+  return {
+    startMethod: raceContext.startMethod,
+    sampleSize: matched.length,
+    rawMeasurement,
+    confidence,
+    deltaElo,
+    baselineOutcome: Number(baselineOutcome.toFixed(4)),
+    matchedOutcome: weightedMatch.outcome,
+    weightSum: weightedMatch.weightSum,
+    minSample: START_METHOD_AFFINITY_MIN_SAMPLE,
+    cappedBy: START_METHOD_AFFINITY_CAP,
+    reason: 'active'
+  }
+}
+
+const computeStartPositionAffinity = ({
+  relevantResults,
+  raceContext,
+  horse,
+  baselineOutcome
+}) => {
+  const currentStartPosition = safeNumber(horse?.startPosition, NaN)
+
+  if (!['auto', 'volt'].includes(raceContext.startMethod)) {
+    return buildInactiveContextFeature({
+      startMethod: raceContext.startMethod,
+      startPosition: Number.isFinite(currentStartPosition) ? currentStartPosition : null,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: 0,
+      minSample: START_POSITION_AFFINITY_MIN_SAMPLE,
+      cappedBy: START_POSITION_AFFINITY_CAP,
+      reason: 'unsupported_start_method'
+    })
+  }
+
+  if (!Number.isInteger(currentStartPosition) || currentStartPosition < 1 || currentStartPosition > 20) {
+    return buildInactiveContextFeature({
+      startMethod: raceContext.startMethod,
+      startPosition: null,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: 0,
+      minSample: START_POSITION_AFFINITY_MIN_SAMPLE,
+      cappedBy: START_POSITION_AFFINITY_CAP,
+      reason: 'missing_start_position'
+    })
+  }
+
+  const matched = relevantResults.filter(
+    (result) => result.startMethod === raceContext.startMethod && Number(result.startPosition) === currentStartPosition
+  )
+  if (matched.length < START_POSITION_AFFINITY_MIN_SAMPLE) {
+    return buildInactiveContextFeature({
+      startMethod: raceContext.startMethod,
+      startPosition: currentStartPosition,
+      sampleSize: matched.length,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: Number(matched.reduce((sum, result) => sum + result.recencyWeight, 0).toFixed(4)),
+      minSample: START_POSITION_AFFINITY_MIN_SAMPLE,
+      cappedBy: START_POSITION_AFFINITY_CAP,
+      reason: 'insufficient_sample'
+    })
+  }
+
+  const weightedMatch = computeWeightedOutcome(matched)
+  const rawMeasurement = Number((weightedMatch.outcome - baselineOutcome).toFixed(4))
+  const confidence = Number(clamp(
+    matched.length / (matched.length + START_POSITION_AFFINITY_SHRINK_K),
+    0,
+    1
+  ).toFixed(4))
+  const deltaElo = Number(clamp(
+    rawMeasurement * START_POSITION_AFFINITY_WEIGHT * confidence,
+    -START_POSITION_AFFINITY_CAP,
+    START_POSITION_AFFINITY_CAP
+  ).toFixed(2))
+
+  return {
+    startMethod: raceContext.startMethod,
+    startPosition: currentStartPosition,
+    sampleSize: matched.length,
+    rawMeasurement,
+    confidence,
+    deltaElo,
+    baselineOutcome: Number(baselineOutcome.toFixed(4)),
+    matchedOutcome: weightedMatch.outcome,
+    weightSum: weightedMatch.weightSum,
+    minSample: START_POSITION_AFFINITY_MIN_SAMPLE,
+    cappedBy: START_POSITION_AFFINITY_CAP,
+    reason: 'active'
+  }
+}
+
+const computeDistanceAffinity = ({
+  relevantResults,
+  raceContext,
+  baselineOutcome
+}) => {
+  if (raceContext.distanceBucket === 'unknown') {
+    return buildInactiveContextFeature({
+      distanceBucket: 'unknown',
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: 0,
+      minSample: DISTANCE_AFFINITY_MIN_SAMPLE,
+      cappedBy: DISTANCE_AFFINITY_CAP,
+      reason: 'missing_distance_context'
+    })
+  }
+
+  const matched = relevantResults.filter((result) => result.distanceBucket === raceContext.distanceBucket)
+  if (matched.length < DISTANCE_AFFINITY_MIN_SAMPLE) {
+    return buildInactiveContextFeature({
+      distanceBucket: raceContext.distanceBucket,
+      sampleSize: matched.length,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: Number(matched.reduce((sum, result) => sum + result.recencyWeight, 0).toFixed(4)),
+      minSample: DISTANCE_AFFINITY_MIN_SAMPLE,
+      cappedBy: DISTANCE_AFFINITY_CAP,
+      reason: 'insufficient_sample'
+    })
+  }
+
+  const weightedMatch = computeWeightedOutcome(matched)
+  const rawMeasurement = Number((weightedMatch.outcome - baselineOutcome).toFixed(4))
+  const confidence = Number(clamp(
+    matched.length / (matched.length + DISTANCE_AFFINITY_SHRINK_K),
+    0,
+    1
+  ).toFixed(4))
+  const deltaElo = Number(clamp(
+    rawMeasurement * DISTANCE_AFFINITY_WEIGHT * confidence,
+    -DISTANCE_AFFINITY_CAP,
+    DISTANCE_AFFINITY_CAP
+  ).toFixed(2))
+
+  return {
+    distanceBucket: raceContext.distanceBucket,
+    sampleSize: matched.length,
+    rawMeasurement,
+    confidence,
+    deltaElo,
+    baselineOutcome: Number(baselineOutcome.toFixed(4)),
+    matchedOutcome: weightedMatch.outcome,
+    weightSum: weightedMatch.weightSum,
+    minSample: DISTANCE_AFFINITY_MIN_SAMPLE,
+    cappedBy: DISTANCE_AFFINITY_CAP,
+    reason: 'active'
+  }
+}
+
+const computeTrackDistanceAffinity = ({
+  relevantResults,
+  raceContext,
+  baselineOutcome
+}) => {
+  if (raceContext.track === 'unknown' || raceContext.distanceBucket === 'unknown') {
+    return buildInactiveContextFeature({
+      track: raceContext.track,
+      distanceBucket: raceContext.distanceBucket,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: 0,
+      minSample: TRACK_DISTANCE_AFFINITY_MIN_SAMPLE,
+      cappedBy: TRACK_DISTANCE_AFFINITY_CAP,
+      reason: raceContext.track === 'unknown'
+        ? 'missing_track_context'
+        : 'missing_distance_context'
+    })
+  }
+
+  const matched = relevantResults.filter(
+    (result) => result.track === raceContext.track && result.distanceBucket === raceContext.distanceBucket
+  )
+  if (matched.length < TRACK_DISTANCE_AFFINITY_MIN_SAMPLE) {
+    return buildInactiveContextFeature({
+      track: raceContext.track,
+      distanceBucket: raceContext.distanceBucket,
+      sampleSize: matched.length,
+      baselineOutcome: Number(baselineOutcome.toFixed(4)),
+      matchedOutcome: null,
+      weightSum: Number(matched.reduce((sum, result) => sum + result.recencyWeight, 0).toFixed(4)),
+      minSample: TRACK_DISTANCE_AFFINITY_MIN_SAMPLE,
+      cappedBy: TRACK_DISTANCE_AFFINITY_CAP,
+      reason: 'insufficient_sample'
+    })
+  }
+
+  const weightedMatch = computeWeightedOutcome(matched)
+  const rawMeasurement = Number((weightedMatch.outcome - baselineOutcome).toFixed(4))
+  const confidence = Number(clamp(
+    matched.length / (matched.length + TRACK_DISTANCE_AFFINITY_SHRINK_K),
+    0,
+    1
+  ).toFixed(4))
+  const deltaElo = Number(clamp(
+    rawMeasurement * TRACK_DISTANCE_AFFINITY_WEIGHT * confidence,
+    -TRACK_DISTANCE_AFFINITY_CAP,
+    TRACK_DISTANCE_AFFINITY_CAP
+  ).toFixed(2))
+
+  return {
+    track: raceContext.track,
+    distanceBucket: raceContext.distanceBucket,
+    sampleSize: matched.length,
+    rawMeasurement,
+    confidence,
+    deltaElo,
+    baselineOutcome: Number(baselineOutcome.toFixed(4)),
+    matchedOutcome: weightedMatch.outcome,
+    weightSum: weightedMatch.weightSum,
+    minSample: TRACK_DISTANCE_AFFINITY_MIN_SAMPLE,
+    cappedBy: TRACK_DISTANCE_AFFINITY_CAP,
     reason: 'active'
   }
 }
@@ -741,38 +1020,20 @@ const computeLaneBias = ({
 const computeContextAdjustments = ({
   relevantResults,
   raceContext,
+  startMethodAffinity,
+  startPositionAffinity,
+  distanceAffinity,
+  trackDistanceAffinity,
   trackAffinity,
   shoeSignal,
   driverHorseAffinity,
   laneBias
 }) => {
-  const makeAdjustment = (matchFn, weightCap) => {
-    const matched = relevantResults.filter(matchFn)
-    if (!matched.length) {
-      return { adjustment: 0, matches: 0 }
-    }
-    const weightSum = matched.reduce((sum, result) => sum + result.recencyWeight, 0)
-    if (weightSum <= 0) {
-      return { adjustment: 0, matches: matched.length }
-    }
-    const normalizedOutcome = matched.reduce((sum, result) => sum + result.outcomeScore * result.recencyWeight, 0) / weightSum
-    return {
-      adjustment: Number(clamp(normalizedOutcome * weightCap, -weightCap, weightCap).toFixed(2)),
-      matches: matched.length
-    }
-  }
-
-  const startMethod = raceContext.startMethod !== 'unknown'
-    ? makeAdjustment((result) => result.startMethod === raceContext.startMethod, CONTEXT_START_METHOD_WEIGHT)
-    : { adjustment: 0, matches: 0 }
-
-  const distance = raceContext.distanceBucket !== 'unknown'
-    ? makeAdjustment((result) => result.distanceBucket === raceContext.distanceBucket, CONTEXT_DISTANCE_WEIGHT)
-    : { adjustment: 0, matches: 0 }
-
   const total = Number((
-    startMethod.adjustment +
-    distance.adjustment +
+    startMethodAffinity.deltaElo +
+    startPositionAffinity.deltaElo +
+    distanceAffinity.deltaElo +
+    trackDistanceAffinity.deltaElo +
     trackAffinity.deltaElo +
     shoeSignal.deltaElo +
     driverHorseAffinity.deltaElo +
@@ -781,8 +1042,10 @@ const computeContextAdjustments = ({
 
   return {
     total,
-    startMethod,
-    distance,
+    startMethodAffinity,
+    startPositionAffinity,
+    distanceAffinity,
+    trackDistanceAffinity,
     trackAffinity,
     shoeSignal,
     driverHorseAffinity,
@@ -840,6 +1103,31 @@ export const buildHorseEloPrediction = ({
     baselineOutcome: form.weightedOutcome
   })
 
+  const startMethodAffinity = computeStartMethodAffinity({
+    relevantResults,
+    raceContext: targetContext,
+    baselineOutcome: form.weightedOutcome
+  })
+
+  const startPositionAffinity = computeStartPositionAffinity({
+    relevantResults,
+    raceContext: targetContext,
+    horse,
+    baselineOutcome: form.weightedOutcome
+  })
+
+  const distanceAffinity = computeDistanceAffinity({
+    relevantResults,
+    raceContext: targetContext,
+    baselineOutcome: form.weightedOutcome
+  })
+
+  const trackDistanceAffinity = computeTrackDistanceAffinity({
+    relevantResults,
+    raceContext: targetContext,
+    baselineOutcome: form.weightedOutcome
+  })
+
   const shoeSignal = computeShoeSignal({
     relevantResults,
     horse,
@@ -862,6 +1150,10 @@ export const buildHorseEloPrediction = ({
   const contextAdjustments = computeContextAdjustments({
     relevantResults,
     raceContext: targetContext,
+    startMethodAffinity,
+    startPositionAffinity,
+    distanceAffinity,
+    trackDistanceAffinity,
     trackAffinity,
     shoeSignal,
     driverHorseAffinity,
@@ -881,8 +1173,10 @@ export const buildHorseEloPrediction = ({
     formComponent: Number((form.formElo * FORM_WEIGHT).toFixed(2)),
     weightedBase: Number(weightedBase.toFixed(2)),
     driverDelta: driverSupport.supportDelta,
-    startMethodDelta: contextAdjustments.startMethod.adjustment,
-    distanceDelta: contextAdjustments.distance.adjustment,
+    startMethodDelta: startMethodAffinity.deltaElo,
+    startPositionDelta: startPositionAffinity.deltaElo,
+    distanceDelta: distanceAffinity.deltaElo,
+    trackDistanceDelta: trackDistanceAffinity.deltaElo,
     trackAffinityDelta: trackAffinity.deltaElo,
     shoeSignalDelta: shoeSignal.deltaElo,
     driverHorseAffinityDelta: driverHorseAffinity.deltaElo,
@@ -903,6 +1197,10 @@ export const buildHorseEloPrediction = ({
       career: CAREER_WEIGHT,
       form: FORM_WEIGHT,
       driver: DRIVER_SUPPORT_WEIGHT,
+      startMethodAffinity: START_METHOD_AFFINITY_WEIGHT,
+      startPositionAffinity: START_POSITION_AFFINITY_WEIGHT,
+      distanceAffinity: DISTANCE_AFFINITY_WEIGHT,
+      trackDistanceAffinity: TRACK_DISTANCE_AFFINITY_WEIGHT,
       trackAffinity: TRACK_AFFINITY_WEIGHT,
       shoeSignal: SHOE_SIGNAL_WEIGHT,
       driverHorseAffinity: DRIVER_HORSE_AFFINITY_WEIGHT,
@@ -954,6 +1252,7 @@ export const buildHorseEloPrediction = ({
         outcomeScore: result.outcomeScore,
         recencyWeight: Number(result.recencyWeight.toFixed(4)),
         startMethod: result.startMethod,
+        startPosition: Number.isFinite(result.startPosition) ? result.startPosition : null,
         distanceBucket: result.distanceBucket,
         track: result.track,
         driverId: result.driverId,
@@ -966,6 +1265,10 @@ export const buildHorseEloPrediction = ({
         career: CAREER_WEIGHT,
         form: FORM_WEIGHT,
         driver: DRIVER_SUPPORT_WEIGHT,
+        startMethodAffinity: START_METHOD_AFFINITY_WEIGHT,
+        startPositionAffinity: START_POSITION_AFFINITY_WEIGHT,
+        distanceAffinity: DISTANCE_AFFINITY_WEIGHT,
+        trackDistanceAffinity: TRACK_DISTANCE_AFFINITY_WEIGHT,
         trackAffinity: TRACK_AFFINITY_WEIGHT,
         shoeSignal: SHOE_SIGNAL_WEIGHT,
         driverHorseAffinity: DRIVER_HORSE_AFFINITY_WEIGHT,

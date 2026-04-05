@@ -17,8 +17,12 @@ Turn winv75 Elo into an explainable race prediction model with explicit career, 
   - a controlled anchor back toward the persisted form Elo
 - Driver Elo is used as a support delta, not as a dominant score.
 - Race context adds structured adjustments for:
+  - start-method affinity when the horse has enough history in auto or volt
   - start method
+  - start-position affinity when the horse has enough history from the active start position within the active start method
+  - distance affinity when the horse has enough history in the active distance bucket
   - distance bucket
+  - track x distance affinity when the horse has enough history in the active track-distance bucket
   - track affinity when the horse has enough same-track history
   - shoe signal when the current shoe setup can be matched safely against horse-relative history
   - driver-horse affinity when the current driver has enough shared history with this horse
@@ -56,6 +60,30 @@ Driver-horse affinity is calculated as a horse-relative shared-driver signal:
 - require a minimum shared-history sample
 - shrink the effect before converting it into `deltaElo`
 - cap the final impact so it remains a context nudge rather than a duplicate of driver Elo
+
+Distance affinity is calculated as a horse-relative distance-bucket signal:
+- current race distance is normalized to `short`, `medium` or `long`
+- the horse's weighted outcome in that bucket is compared against the horse's overall baseline
+- the feature only activates when the horse has enough history in that distance bucket
+- the final `distanceDelta` is confidence-weighted and capped before it enters `effectiveElo`
+
+Track x distance affinity is calculated as a horse-relative joint context signal:
+- current race context is normalized to `track + distanceBucket`
+- the horse's weighted outcome in that exact track-distance bucket is compared against the horse's overall baseline
+- the feature only activates when the horse has enough history in that exact joint bucket
+- the final `trackDistanceDelta` is confidence-weighted and capped before it enters `effectiveElo`
+
+Start-method affinity is calculated as a horse-relative start-method signal:
+- current race start method is normalized to `auto` or `volt`
+- the horse's weighted outcome in that start method is compared against the horse's overall baseline
+- the feature only activates when the horse has enough history in that start method
+- the final `startMethodDelta` is confidence-weighted and capped before it enters `effectiveElo`
+
+Start-position affinity is calculated as a horse-relative gate-position signal:
+- current race start position is evaluated inside the active start method
+- the horse's weighted outcome from that same start position is compared against the horse's overall baseline
+- the feature only activates when the horse has enough history from that same start position in the same start method
+- the final `startPositionDelta` is confidence-weighted and capped before it enters `effectiveElo`
 
 Lane bias is now context feature #3:
 - key = `trackCode + startMethod + distanceBucket + startPosition`
@@ -103,6 +131,10 @@ Inspect `eloDebug` for:
 - inactivity penalty
 - context adjustments
 - track affinity raw measurement, sample size, confidence and `deltaElo`
+- start method, sample size, confidence and `startMethodDelta`
+- start method plus start position, sample size, confidence and `startPositionDelta`
+- distance bucket, sample size, confidence and `distanceDelta`
+- track plus distance bucket, sample size, confidence and `trackDistanceDelta`
 - shoe raw codes, normalized states, change classification, sample sizes, confidence and `deltaElo`
 - current driver id, shared-history sample size, confidence and `driverHorseAffinityDelta`
 - lane bias keys, hierarchy sample sizes, shrunk baselines, confidence and `deltaElo`
@@ -129,5 +161,9 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 - 2026-04-05: Unified rebuild, direct update, and runtime prediction around shared Elo result and recency policies.
 - 2026-04-05: Added track affinity as the first explicit contextual prediction signal with min-sample protection, shrinkage and detailed debug breakdown.
 - 2026-04-05: Added normalized shoe taxonomy and shoe signal as context feature #2 with strict handling of unreliable shoe codes.
+- 2026-04-05: Added distance affinity as a capped horse-relative bucket signal over short, medium and long distance.
+- 2026-04-05: Added track x distance affinity as a capped horse-relative joint context signal over exact track and distance bucket.
+- 2026-04-05: Added start-method affinity as a capped horse-relative signal over auto and volt.
+- 2026-04-05: Added start-position affinity as a capped horse-relative signal over the active start position within the active start method.
 - 2026-04-05: Added driver-horse affinity as a capped horse-relative shared-driver signal.
 - 2026-04-05: Added lane bias as context feature #3 with hierarchical shrinkage over exact, distance, track-method and global context.
