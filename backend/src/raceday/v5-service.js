@@ -39,25 +39,49 @@ export const V5_TEMPLATES = cloneSuggestionTemplates([
     key: 'one-spike-one-lock',
     label: '1 spik 1 lås',
     counts: [1, 2, 4, 5, 6],
-    assignment: 'bestToWorst'
+    assignment: 'bestToWorst',
+    maxSpikes: 1,
+    maxLocks: 1
   },
   {
     key: 'one-spike-wide',
     label: '1 spik bred gardering',
     counts: [1, 3, 4, 5, 6],
-    assignment: 'bestToWorst'
+    assignment: 'bestToWorst',
+    maxSpikes: 1,
+    maxLocks: 0
+  },
+  {
+    key: 'two-spikes',
+    label: '2 spikar',
+    counts: [1, 1, 4, 5, 6],
+    assignment: 'bestToWorst',
+    maxSpikes: 2,
+    maxLocks: 0
+  },
+  {
+    key: 'two-spikes-one-lock',
+    label: '2 spikar 1 lås',
+    counts: [1, 1, 2, 4, 5],
+    assignment: 'bestToWorst',
+    maxSpikes: 2,
+    maxLocks: 1
   },
   {
     key: 'no-spike-balanced',
     label: 'Ingen spik',
     counts: [2, 3, 4, 5, 6],
-    assignment: 'bestToWorst'
+    assignment: 'bestToWorst',
+    maxSpikes: 0,
+    maxLocks: 1
   },
   {
     key: 'late-chaos',
     label: 'Sista loppen brett',
     counts: [1, 2, 4, 6, 7],
-    assignment: 'sequential'
+    assignment: 'sequential',
+    maxSpikes: 1,
+    maxLocks: 1
   }
 ])
 
@@ -86,6 +110,27 @@ const classifyLegType = (count) => {
   if (count === 2) return 'lås'
   if (count >= 5) return 'bred gardering'
   return 'gardering'
+}
+
+const countLegsWithSelections = (legs, count) => legs.filter(leg => leg.count === count)
+
+const enforceTemplateStructure = (legs, template) => {
+  const maxSpikes = Number.isFinite(Number(template?.maxSpikes))
+    ? Math.max(0, Number(template.maxSpikes))
+    : countLegsWithSelections(legs, 1).length
+  const maxLocks = Number.isFinite(Number(template?.maxLocks))
+    ? Math.max(0, Number(template.maxLocks))
+    : countLegsWithSelections(legs, 2).length
+
+  const extraSpikeLegs = countLegsWithSelections(legs, 1).slice(maxSpikes)
+  for (const leg of extraSpikeLegs) {
+    leg.count = 2
+  }
+
+  const extraLockLegs = countLegsWithSelections(legs, 2).slice(maxLocks)
+  for (const leg of extraLockLegs) {
+    leg.count = 3
+  }
 }
 
 const fetchGameDetails = async (gameId) => {
@@ -547,21 +592,8 @@ export const buildV5Suggestion = async (racedayId, options = {}, sharedContext =
       }
     }
 
-    if (reducedLegs.filter(leg => leg.count === 1).length > 1) {
-      const extraSpikeLegs = reducedLegs.filter(leg => leg.count === 1).slice(1)
-      for (const leg of extraSpikeLegs) {
-        leg.count = 2
-      }
-      rows = product(reducedLegs)
-    }
-
-    if (reducedLegs.filter(leg => leg.count === 2).length > 1) {
-      const extraLocks = reducedLegs.filter(leg => leg.count === 2).slice(1)
-      for (const leg of extraLocks) {
-        leg.count = 3
-      }
-      rows = product(reducedLegs)
-    }
+    enforceTemplateStructure(reducedLegs, template)
+    rows = product(reducedLegs)
 
     const pickWeightsSource = modeCfg.pickWeights || {}
     const chaosFactor = Number(modeCfg.chaosFactor || 0)
@@ -636,8 +668,8 @@ export const buildV5Suggestion = async (racedayId, options = {}, sharedContext =
         templateCounts: [...template.counts],
         variantStrategy: resolvedVariantStrategy || 'default',
         rules: {
-          maxSpikes: 1,
-          maxLocks: 1,
+          maxSpikes: Number.isFinite(Number(template?.maxSpikes)) ? Number(template.maxSpikes) : null,
+          maxLocks: Number.isFinite(Number(template?.maxLocks)) ? Number(template.maxLocks) : null,
           rowCost: V5_ROW_COST
         }
       }

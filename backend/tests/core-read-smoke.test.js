@@ -239,6 +239,27 @@ test('V5 and DD suggestion endpoints return playable live suggestions', async ()
   assert.ok(v5Spikes.length <= 1, 'Expected at most one V5 spik')
   assert.ok(v5Locks.length <= 1, 'Expected at most one V5 lås')
 
+  const { response: v5TwoSpikesResponse, body: v5TwoSpikesBody } = await postJson(`/api/raceday/${v5Raceday._id}/v5`, {
+    templateKey: 'two-spikes',
+    mode: 'balanced',
+    maxCost: 960
+  })
+  assert.equal(v5TwoSpikesResponse.status, 200)
+  const v5TwoSpikes = v5TwoSpikesBody?.suggestion || v5TwoSpikesBody
+  assert.equal(v5TwoSpikes?.template?.key, 'two-spikes')
+  assert.equal((v5TwoSpikes?.legs || []).filter((leg) => String(leg?.type || '').toLowerCase().includes('spik')).length, 2)
+
+  const { response: v5TwoSpikesLockResponse, body: v5TwoSpikesLockBody } = await postJson(`/api/raceday/${v5Raceday._id}/v5`, {
+    templateKey: 'two-spikes-one-lock',
+    mode: 'balanced',
+    maxCost: 960
+  })
+  assert.equal(v5TwoSpikesLockResponse.status, 200)
+  const v5TwoSpikesLock = v5TwoSpikesLockBody?.suggestion || v5TwoSpikesLockBody
+  assert.equal(v5TwoSpikesLock?.template?.key, 'two-spikes-one-lock')
+  assert.equal((v5TwoSpikesLock?.legs || []).filter((leg) => String(leg?.type || '').toLowerCase().includes('spik')).length, 2)
+  assert.equal((v5TwoSpikesLock?.legs || []).filter((leg) => String(leg?.type || '').toLowerCase().includes('lås') || String(leg?.type || '').toLowerCase().includes('las')).length, 1)
+
   const ddRaceday = racedays.find((item) => Array.isArray(item?.gameTypes?.dd) && item.gameTypes.dd.length > 0)
   assert.ok(ddRaceday?._id, 'Expected a raceday with DD support')
 
