@@ -1,7 +1,15 @@
 import HorseRating from '../horse/horse-rating-model.js'
 import RatingHistory from './rating-history-model.js'
 import Horse from '../horse/horse-model.js'
-import { processRace, DEFAULT_K, DEFAULT_DECAY_DAYS, DEFAULT_RATING, K_CLASS_MULTIPLIER } from './elo-engine.js'
+import {
+  processRace,
+  DEFAULT_K,
+  DEFAULT_DECAY_DAYS,
+  DEFAULT_RATING,
+  K_CLASS_MULTIPLIER,
+  ELO_ENGINE_VERSION,
+  ELO_PROFILES
+} from './elo-engine.js'
 import { seedFromHorseDoc } from './rating-seed.js'
 import { classFactorFromPurse } from './class-factor.js'
 
@@ -14,14 +22,29 @@ const updateRatingsForRace = async (raceId, raceData) => {
   const placements = {}
   const horseIds = []
   for (const h of raceData.horses) {
-    placements[h.id] = h.placement
+    placements[h.id] = {
+      ...h,
+      placement: h?.placement,
+      withdrawn: h?.withdrawn ?? false,
+      date: raceData?.raceDate ?? raceData?.startDateTime ?? null
+    }
     horseIds.push(h.id)
   }
 
   // Fetch existing ratings
   const existing = await HorseRating.find({ horseId: { $in: horseIds } })
-  const ratings = new Map(existing.map(r => [String(r.horseId), { rating: r.rating, numberOfRaces: r.numberOfRaces }]))
-  const formRatings = new Map(existing.map(r => [String(r.horseId), { rating: r.formRating ?? r.rating, numberOfRaces: r.formNumberOfRaces ?? r.numberOfRaces }]))
+  const ratings = new Map(existing.map(r => [String(r.horseId), {
+    rating: r.rating,
+    numberOfRaces: r.numberOfRaces,
+    seedRating: r.seedRating ?? r.rating ?? DEFAULT_RATING,
+    lastRaceDate: r.lastRaceDate ?? null
+  }]))
+  const formRatings = new Map(existing.map(r => [String(r.horseId), {
+    rating: r.formRating ?? r.rating,
+    numberOfRaces: r.formNumberOfRaces ?? r.numberOfRaces,
+    seedRating: r.seedRating ?? r.rating ?? DEFAULT_RATING,
+    lastRaceDate: r.formLastRaceDate ?? r.lastRaceDate ?? null
+  }]))
 
   // Seed any missing horses from ST points
   const missingIds = horseIds.filter(id => !ratings.has(String(id)))
@@ -29,8 +52,8 @@ const updateRatingsForRace = async (raceId, raceData) => {
     const horseDocs = await Horse.find({ id: { $in: missingIds } }, { id: 1, points: 1 }).lean()
     for (const h of horseDocs) {
       const seed = seedFromHorseDoc(h)
-      ratings.set(String(h.id), { rating: seed, numberOfRaces: 0, seedRating: seed })
-      formRatings.set(String(h.id), { rating: seed, numberOfRaces: 0, seedRating: seed })
+      ratings.set(String(h.id), { rating: seed, numberOfRaces: 0, seedRating: seed, lastRaceDate: null })
+      formRatings.set(String(h.id), { rating: seed, numberOfRaces: 0, seedRating: seed, lastRaceDate: null })
     }
   }
 
@@ -64,11 +87,31 @@ const updateRatingsForRace = async (raceId, raceData) => {
   // Run Elo update
   const k = process.env.ELO_K ? Number(process.env.ELO_K) : DEFAULT_K
   const decayDays = process.env.RATING_DECAY_DAYS ? Number(process.env.RATING_DECAY_DAYS) : DEFAULT_DECAY_DAYS
-  const formDecayDays = process.env.FORM_RATING_DECAY_DAYS ? Number(process.env.FORM_RATING_DECAY_DAYS) : 90
-  // Classic Elo
-  processRace(placements, ratings, { k, raceDate, decayDays, classFactor, kClassMultiplier: K_CLASS_MULTIPLIER })
-  // Form Elo (short horizon)
-  processRace(placements, formRatings, { k, raceDate, decayDays: formDecayDays, classFactor, kClassMultiplier: K_CLASS_MULTIPLIER })
+  const careerSnapshot = new Map(
+    horseIds.map((id) => {
+      const state = ratings.get(String(id)) || { rating: DEFAULT_RATING }
+      return [String(id), { ...state }]
+    })
+  )
+  processRace(placements, ratings, {
+    k,
+    raceDate,
+    referenceDate: raceDate,
+    decayDays,
+    classFactor,
+    kClassMultiplier: K_CLASS_MULTIPLIER,
+    profile: ELO_PROFILES.career
+  })
+  processRace(placements, formRatings, {
+    k,
+    raceDate,
+    referenceDate: raceDate,
+    decayDays,
+    classFactor,
+    kClassMultiplier: K_CLASS_MULTIPLIER,
+    profile: ELO_PROFILES.form,
+    anchorRatings: careerSnapshot
+  })
 
   // Persist ratings and history
   const now = new Date()
@@ -85,10 +128,13 @@ const updateRatingsForRace = async (raceId, raceData) => {
         rating: Math.round(info.rating),
         numberOfRaces: info.numberOfRaces,
         lastUpdated: now,
+        lastRaceDate: info.lastRaceDate ?? raceDate,
         ...(info.seedRating ? { seedRating: info.seedRating } : {}),
+        eloVersion: ELO_ENGINE_VERSION,
         formRating: Math.round(fInfo.rating),
         formNumberOfRaces: fInfo.numberOfRaces,
-        formLastUpdated: now
+        formLastUpdated: now,
+        formLastRaceDate: fInfo.lastRaceDate ?? raceDate
       }
     })
     history.push({

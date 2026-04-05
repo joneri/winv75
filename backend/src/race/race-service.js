@@ -123,7 +123,15 @@ const getRaceById = async (id) => {
         // Ingen applyExtendedData längre, vi sparar bara atgExtendedRaw
         // Om du vill rensa gamla kommentarer på horse-objekt kan du göra det här
 
-        return race
+        const payload = typeof race?.toObject === 'function'
+            ? race.toObject()
+            : JSON.parse(JSON.stringify(race))
+
+        payload.trackName = raceDay.trackName ?? payload.trackName ?? null
+        payload.raceDayDate = raceDay.raceDayDate ?? payload.raceDayDate ?? null
+        payload.raceDayId = raceDay.raceDayId ?? payload.raceDayId ?? null
+
+        return payload
     } catch (err) {
         console.error(`Error fetching race with ID ${id}: ${err.message}`)
         throw new Error('Failed to retrieve race')

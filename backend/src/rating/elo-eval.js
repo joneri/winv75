@@ -1,5 +1,5 @@
 import Horse from '../horse/horse-model.js'
-import { processRace, DEFAULT_K, DEFAULT_DECAY_DAYS } from './elo-engine.js'
+import { processRace, DEFAULT_K, DEFAULT_DECAY_DAYS, ELO_PROFILES } from './elo-engine.js'
 import { seedFromHorseDoc } from './rating-seed.js'
 import { classFactorFromPurse } from './class-factor.js'
 import { rmse } from './elo-utils.js'
@@ -33,7 +33,7 @@ const getHorseState = (state, pointsMap, horseId) => {
   let entry = state.get(key)
   if (!entry) {
     const seed = seedFromHorseDoc({ id: key, points: pointsMap.get(key) || 0 })
-    entry = { rating: seed, numberOfRaces: 0, seedRating: seed }
+    entry = { rating: seed, numberOfRaces: 0, seedRating: seed, lastRaceDate: null }
     state.set(key, entry)
   }
   return entry
@@ -208,7 +208,11 @@ export async function evaluateElo({
     const placements = {}
     const driverPlacements = {}
     for (const horse of list) {
-      placements[horse.horseId] = horse.placement
+      placements[horse.horseId] = {
+        placement: horse.placement,
+        withdrawn: false,
+        date: raceDate
+      }
       const driverId = Number(horse?.driverId)
       if (Number.isFinite(driverId)) {
         driverPlacements[driverId] = horse.placement
@@ -218,20 +222,32 @@ export async function evaluateElo({
     const classFactor = classFactorFromPurse(race.topPrize, { min: classMin, max: classMax, ref: classRef })
     if (race.topPrize > 0) prizeKnown++
 
+    const careerSnapshot = new Map(
+      list.map((horse) => {
+        const state = getHorseState(careerRatings, pointsMap, horse.horseId)
+        return [String(horse.horseId), { ...state }]
+      })
+    )
+
     processRace(placements, careerRatings, {
       k,
       raceDate,
+      referenceDate: raceDate,
       decayDays,
       classFactor,
-      kClassMultiplier
+      kClassMultiplier,
+      profile: ELO_PROFILES.career
     })
 
     processRace(placements, formRatings, {
       k,
       raceDate,
+      referenceDate: raceDate,
       decayDays: DEFAULT_FORM_DECAY_DAYS,
       classFactor,
-      kClassMultiplier
+      kClassMultiplier,
+      profile: ELO_PROFILES.form,
+      anchorRatings: careerSnapshot
     })
 
     processDriverRace(driverPlacements, driverCareerRatings, driverFormRatings, {

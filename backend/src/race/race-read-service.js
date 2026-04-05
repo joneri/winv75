@@ -2,6 +2,7 @@ import raceService from './race-service.js'
 import Horse from '../horse/horse-model.js'
 import HorseRating from '../horse/horse-rating-model.js'
 import Driver from '../driver/driver-model.js'
+import trackService from '../track/track-service.js'
 import {
   attachFieldProbabilities,
   buildHorseEloPrediction
@@ -16,6 +17,10 @@ export async function getRaceWithRatings(raceId) {
   let enrichedHorses = null
 
   try {
+    const track = race?.trackCode
+      ? { trackCode: race.trackCode }
+      : await trackService.getTrackByName(race?.trackName ?? null)
+
     const horseIds = (race.horses || []).map(horse => horse.id)
     if (horseIds.length) {
       const horseDocs = await Horse.find(
@@ -43,7 +48,8 @@ export async function getRaceWithRatings(raceId) {
         raceDate: race.startDateTime ?? null,
         startMethod: race.startMethod ?? race.raceType?.text ?? null,
         distance: race.distance ?? null,
-        trackName: race.trackName ?? null
+        trackName: race.trackName ?? null,
+        trackCode: track?.trackCode ?? null
       }
 
       const enriched = (race.horses || []).map(horse => {
@@ -68,6 +74,7 @@ export async function getRaceWithRatings(raceId) {
           careerElo: prediction.careerElo,
           eloRating: prediction.careerElo,
           rawFormRating: prediction.storedFormElo,
+          storedFormElo: prediction.storedFormElo,
           formRating: prediction.formElo,
           formElo: prediction.formElo,
           effectiveElo: prediction.effectiveElo,

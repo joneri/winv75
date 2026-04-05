@@ -7,13 +7,13 @@ Maintain and evaluate horse and driver Elo ratings, plus expose the race-time pr
 These are maintenance-oriented backend flows used for controlled rating updates, evaluation, and driver Elo recomputation.
 
 ## How it works
-Horse and driver Elo services process historical race placements with configurable K and decay parameters. That persistent layer stores:
+Horse and driver Elo services process historical race placements with configurable K and explicit profile policies. That persistent layer stores:
 - horse `rating` as career Elo
 - horse `formRating` as persisted short-horizon Elo
 - driver `careerElo`
 - driver `elo` as driver form Elo
 
-At read time, the prediction layer rebuilds a race-time `formElo`, adds controlled driver support, applies race context and produces `effectiveElo` plus field-normalized `modelProbability`.
+Horse rebuild, direct race update, and runtime prediction now share the same result-code and recency policy layer. At read time, the prediction layer rebuilds a race-time `formElo`, adds controlled driver support, applies race context, applies same-track affinity when the sample is strong enough, and produces `effectiveElo` plus field-normalized `modelProbability`.
 
 ## Inputs and outputs
 - Inputs:
@@ -31,6 +31,7 @@ At read time, the prediction layer rebuilds a race-time `formElo`, adds controll
 
 ## Key decisions
 - Keep separate form and career horizons (different decay/race-count behavior).
+- Make between-race recency explicit through stored `lastRaceDate` and `formLastRaceDate` on horse ratings.
 - Keep runtime prediction explainable instead of hiding the final score in ad hoc horse helpers.
 - Persist rating history snapshots for horse Elo updates.
 - Allow driver manual override and full recompute path.
@@ -42,17 +43,18 @@ At read time, the prediction layer rebuilds a race-time `formElo`, adds controll
 ## Edge cases
 - Missing horses/drivers are seeded with default/derived starting ratings.
 - Invalid or incomplete race placements are filtered out.
-- Withdrawn results are ignored by the prediction layer.
-- Gallop and disqualification are handled as explicit negative outcomes in runtime form rebuilding.
+- Withdrawn and pending results are ignored.
+- Gallop and disqualification are handled as explicit negative outcomes in both rating updates and runtime form rebuilding.
 
 ## Data correctness and trust
 - Elo updates are placement-driven and deterministic for same input parameters.
+- Rating updates no longer depend on `Date.now()` for historical race weighting.
 - Evaluation endpoints perform read-only computation and now report baseline vs upgraded model quality.
-- Race and horse payloads expose `eloDebug` so suspicious rankings can be traced to specific recent results and weights.
+- Race and horse payloads expose `eloDebug` so suspicious rankings can be traced to specific recent results, context signals, shrink values and weights.
 
 ## Debugging
 - Primary log: route-level failures (`Manual rating update failed`, `Elo evaluation failed`, `Failed to start auto-tune`).
-- What "good" looks like: race and horse payloads include `effectiveElo`, `eloVersion`, `eloWeights`, and `eloDebug`; evaluation returns baseline and upgraded RMSE.
+- What "good" looks like: race and horse payloads include `effectiveElo`, `eloVersion`, `eloWeights`, `eloDebug.contextAdjustments.trackAffinity`, and `eloDebug.effectiveEloBreakdown`; evaluation returns baseline and upgraded RMSE.
 - What "bad" looks like: auto-tune stuck with no processed combinations.
 
 ## Related files
@@ -70,3 +72,5 @@ At read time, the prediction layer rebuilds a race-time `formElo`, adds controll
 - 2026-02-27: Initial feature documentation.
 - 2026-04-04: Removed references to the deleted admin frontend surface.
 - 2026-04-05: Added explicit runtime prediction model with effective Elo, normalized probabilities, debug and comparative evaluation.
+- 2026-04-05: Unified stored Elo update paths with the runtime result and recency policy layer.
+- 2026-04-05: Added min-sample-protected track affinity in the runtime prediction layer and exposed its delta in debug.

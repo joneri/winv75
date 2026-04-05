@@ -8,7 +8,9 @@ import {
   processRace,
   DEFAULT_K,
   DEFAULT_DECAY_DAYS,
-  K_CLASS_MULTIPLIER
+  K_CLASS_MULTIPLIER,
+  ELO_ENGINE_VERSION,
+  ELO_PROFILES
 } from '../rating/elo-engine.js'
 import { seedFromHorseDoc } from '../rating/rating-seed.js'
 import { classFactorFromPurse } from '../rating/class-factor.js'
@@ -63,8 +65,18 @@ const updateRatings = async (
   const formRatings = new Map()
   const existing = await HorseRating.find().lean()
   for (const doc of existing) {
-    ratings.set(String(doc.horseId), { rating: doc.rating, numberOfRaces: doc.numberOfRaces })
-    formRatings.set(String(doc.horseId), { rating: doc.formRating ?? doc.rating, numberOfRaces: doc.formNumberOfRaces ?? doc.numberOfRaces })
+    ratings.set(String(doc.horseId), {
+      rating: doc.rating,
+      numberOfRaces: doc.numberOfRaces,
+      seedRating: doc.seedRating ?? doc.rating ?? 1000,
+      lastRaceDate: doc.lastRaceDate ?? null
+    })
+    formRatings.set(String(doc.horseId), {
+      rating: doc.formRating ?? doc.rating,
+      numberOfRaces: doc.formNumberOfRaces ?? doc.numberOfRaces,
+      seedRating: doc.seedRating ?? doc.rating ?? 1000,
+      lastRaceDate: doc.formLastRaceDate ?? doc.lastRaceDate ?? null
+    })
   }
   // Seed any horses missing ratings using ST points
   const allHorses = await Horse.find({}, { id: 1, points: 1 }).lean()
@@ -73,8 +85,8 @@ const updateRatings = async (
     const key = String(h.id)
     if (!ratings.has(key)) {
       const seed = seedFromHorseDoc(h)
-      ratings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed })
-      formRatings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed })
+      ratings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed, lastRaceDate: null })
+      formRatings.set(key, { rating: seed, numberOfRaces: 0, seedRating: seed, lastRaceDate: null })
       seededCount++
     }
   }
@@ -89,26 +101,40 @@ const updateRatings = async (
   for (const race of races) {
     const placements = {}
     for (const h of race.horses) {
-      placements[h.horseId] = h.placement
+      placements[h.horseId] = {
+        placement: h.placement,
+        withdrawn: false,
+        date: race.raceDate
+      }
       if (typeof h.placement === 'number' && h.placement > 0) {
         touchedHorses.add(String(h.horseId))
       }
     }
     const classFactor = classFactorFromPurse(race.topPrize)
+    const careerSnapshot = new Map(
+      Object.keys(placements).map((horseId) => {
+        const state = ratings.get(String(horseId)) || { rating: 1000 }
+        return [String(horseId), { ...state }]
+      })
+    )
     processRace(placements, ratings, {
       k,
       raceDate: race.raceDate,
+      referenceDate: race.raceDate,
       decayDays,
       classFactor,
-      kClassMultiplier: K_CLASS_MULTIPLIER
+      kClassMultiplier: K_CLASS_MULTIPLIER,
+      profile: ELO_PROFILES.career
     })
-    const formDecayDays = process.env.FORM_RATING_DECAY_DAYS ? Number(process.env.FORM_RATING_DECAY_DAYS) : 90
     processRace(placements, formRatings, {
       k,
       raceDate: race.raceDate,
-      decayDays: formDecayDays,
+      referenceDate: race.raceDate,
+      decayDays,
       classFactor,
-      kClassMultiplier: K_CLASS_MULTIPLIER
+      kClassMultiplier: K_CLASS_MULTIPLIER,
+      profile: ELO_PROFILES.form,
+      anchorRatings: careerSnapshot
     })
     raceCount++
 
@@ -128,10 +154,13 @@ const updateRatings = async (
         rating: info.rating,
         numberOfRaces: info.numberOfRaces,
         lastUpdated: new Date(),
+        lastRaceDate: info.lastRaceDate ?? null,
         ...(info.seedRating ? { seedRating: info.seedRating } : {}),
+        eloVersion: ELO_ENGINE_VERSION,
         formRating: fInfo.rating,
         formNumberOfRaces: fInfo.numberOfRaces,
-        formLastUpdated: new Date()
+        formLastUpdated: new Date(),
+        formLastRaceDate: fInfo.lastRaceDate ?? null
       }
     })
     if (syncHorses) {

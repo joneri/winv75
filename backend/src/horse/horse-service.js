@@ -108,11 +108,16 @@ const loadRaceContext = async (raceId) => {
         return {}
     }
 
+    const track = raceday?.trackName
+        ? await trackService.getTrackByName(raceday.trackName)
+        : null
+
     return {
         raceDate: race.startDateTime ?? raceday?.raceDayDate ?? null,
         startMethod: race.startMethod ?? race.raceType?.text ?? null,
         distance: race.distance ?? null,
-        trackName: raceday?.trackName ?? null
+        trackName: raceday?.trackName ?? null,
+        trackCode: track?.trackCode ?? null
     }
 }
 

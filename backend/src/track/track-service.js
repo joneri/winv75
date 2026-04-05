@@ -86,6 +86,12 @@ const getTrackByCode = async (trackCode) => {
   }
 }
 
+const getTrackByName = async (trackName) => {
+  const normalizedName = String(trackName || '').trim()
+  if (!normalizedName) return null
+  return Track.findOne({ trackName: normalizedName }).lean()
+}
+
 const updateTrackStats = async (trackCode) => {
   const stats = await computeStatsForTrack(trackCode)
   if (!stats.trackRecord && stats.favouriteStartingPosition == null) return
@@ -108,6 +114,7 @@ const updateAllTrackStats = async () => {
 
 export default {
   getTrackByCode,
+  getTrackByName,
   updateTrackStats,
   updateAllTrackStats
 }
