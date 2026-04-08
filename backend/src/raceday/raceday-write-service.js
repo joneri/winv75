@@ -44,6 +44,8 @@ async function persistAtgPastComments(racedayJSON) {
 
 export async function upsertStartlistData(racedayJSON, options = {}) {
   const raceDayId = racedayJSON.raceDayId
+  const refreshHorses = options.refreshHorses !== false
+  const awaitHorseRefresh = options.awaitHorseRefresh === true
   let raceDay
 
   try {
@@ -58,8 +60,12 @@ export async function upsertStartlistData(racedayJSON, options = {}) {
   }
 
   await persistAtgPastComments(racedayJSON)
-  if (options.refreshHorses !== false) {
-    refreshRacedayHorses(raceDay).catch(error => console.error('Failed updating horses for raceday', error))
+  if (refreshHorses) {
+    if (awaitHorseRefresh) {
+      await refreshRacedayHorses(raceDay)
+    } else {
+      refreshRacedayHorses(raceDay).catch(error => console.error('Failed updating horses for raceday', error))
+    }
   }
 
   return raceDay

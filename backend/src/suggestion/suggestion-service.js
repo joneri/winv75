@@ -373,7 +373,10 @@ export async function refreshSuggestionResults(id) {
   const raceDayId = Number(doc.raceDayId)
   if (Number.isFinite(raceDayId)) {
     const startlist = await fetchStartlistById(raceDayId)
-    await upsertStartlistData(startlist, { refreshHorses: false })
+    await upsertStartlistData(startlist, {
+      refreshHorses: true,
+      awaitHorseRefresh: true
+    })
   }
 
   return getSuggestionById(id)

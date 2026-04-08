@@ -152,11 +152,10 @@ const router = createRouter({
     routes,
 });
 
-// Debugging guard
-router.beforeEach((to, from, next) => {
-  console.log('Routing from:', from.fullPath);
-  console.log('Routing to:', to.fullPath);
-  next();
-});
+router.beforeEach((to, from) => {
+  console.log('Routing from:', from.fullPath)
+  console.log('Routing to:', to.fullPath)
+  return true
+})
 
 export default router

@@ -26,7 +26,7 @@
             <template v-else>
               <template v-if="hasAnyResults">
                 <template v-if="horseItems.length">
-                  <v-subheader>Hästar</v-subheader>
+                  <v-list-subheader>Hästar</v-list-subheader>
                   <v-list-item
                     v-for="horse in horseItems"
                     :key="`h-${horse.id ?? horse._id ?? horse.name}`"
@@ -38,7 +38,7 @@
                   </v-list-item>
                 </template>
                 <template v-if="driverItems.length">
-                  <v-subheader>Kuskar</v-subheader>
+                  <v-list-subheader>Kuskar</v-list-subheader>
                   <v-list-item
                     v-for="driver in driverItems"
                     :key="`dvr-${driver._id ?? driver.name}`"
@@ -50,7 +50,7 @@
                   </v-list-item>
                 </template>
                 <template v-if="upcomingRaces.length">
-                  <v-subheader>Kommande lopp</v-subheader>
+                  <v-list-subheader>Kommande lopp</v-list-subheader>
                   <v-list-item
                     v-for="up in upcomingRaces"
                     :key="`u-${up.racedayId}-${up.id}-${up.horseId ?? 'x'}`"
@@ -66,19 +66,19 @@
                   </v-list-item>
                 </template>
                 <template v-if="racedays.length">
-                  <v-subheader>Kommande tävlingsdagar</v-subheader>
+                  <v-list-subheader>Kommande tävlingsdagar</v-list-subheader>
                   <v-list-item v-for="day in racedays" :key="`d-${day._id ?? day.raceDayId}`" :to="day._id ? `/raceday/${day._id}` : undefined" :disabled="!day._id" @click="close">
                     <v-list-item-title>{{ day.trackName }} {{ day.raceDayDate }}</v-list-item-title>
                   </v-list-item>
                 </template>
                 <template v-if="pastResults.length">
-                  <v-subheader>Resultat</v-subheader>
+                  <v-list-subheader>Resultat</v-list-subheader>
                   <v-list-item v-for="res in pastResults" :key="`r-${res._id ?? res.raceDayId}`" :to="res._id ? `/raceday/${res._id}` : undefined" :disabled="!res._id" @click="close">
                     <v-list-item-title>{{ res.trackName }} {{ res.raceDayDate }}</v-list-item-title>
                   </v-list-item>
                 </template>
                 <template v-if="tracks.length">
-                  <v-subheader>Banor</v-subheader>
+                  <v-list-subheader>Banor</v-list-subheader>
                   <v-list-item v-for="track in tracks" :key="`t-${track.trackCode}`">
                     <v-list-item-title>{{ track.trackName }}</v-list-item-title>
                   </v-list-item>
@@ -301,7 +301,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--border-subtle);
 }
 
-.search-results-list :deep(.v-subheader) {
+.search-results-list :deep(.v-list-subheader) {
   color: var(--track-amber);
   letter-spacing: 0.08em;
   text-transform: uppercase;

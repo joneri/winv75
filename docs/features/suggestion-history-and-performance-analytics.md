@@ -17,7 +17,7 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - `POST /api/suggestions/save` persists only the tickets the user selected.
 - The snapshot stores the full ticket payload plus a selected-state snapshot, request snapshot and version markers when available.
 - Settlement is derived from stored horse results by `raceId`, so old suggestions stay frozen while result overlays can be refreshed later.
-- `POST /api/suggestions/:id/refresh-results` refreshes the saved ticket's raceday data from the upstream source and then re-runs settlement.
+- `POST /api/suggestions/:id/refresh-results` refreshes the saved ticket's raceday data from the upstream source, waits for the raceday horses to refresh their stored result history, and then re-runs settlement.
 - `DELETE /api/suggestions/:id` removes one saved snapshot.
 - `DELETE /api/raceday/:id/suggestions` removes all saved snapshots for one raceday.
 - Raceday history, detail and analytics endpoints opportunistically settle snapshots before returning data.
@@ -62,6 +62,7 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 ## Data correctness and trust
 - The snapshot is immutable historical input.
 - Settlement is stored on the snapshot and can be refreshed when more result data exists.
+- Manual result refresh now waits for horse-result storage to catch up before re-reading settlement, so the button updates the same source of truth that settlement uses.
 - Analytics are based on saved snapshots, not on current generator output.
 
 ## Debugging
@@ -97,3 +98,4 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - 2026-04-05: Added frozen suggestion snapshots, settlement, raceday history access and analytics plus timeline markers.
 - 2026-04-05: Changed save behavior to explicit user-controlled persistence, added transient raceday preview flow and added manual result refresh for saved tickets.
 - 2026-04-05: Added deletion of saved suggestion snapshots from raceday history and ticket detail so test-created archives can be cleaned from the app.
+- 2026-04-05: Changed manual result refresh to wait for horse-result storage refresh before settlement is re-read, so the button updates real stored winners rather than only the raceday shell.
