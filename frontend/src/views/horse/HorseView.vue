@@ -68,6 +68,19 @@
             <div>{{ nextStart.date }}</div>
             <div v-if="nextStart.race">Lopp {{ nextStart.race }}</div>
           </v-alert>
+
+          <v-alert
+            v-if="horse.ratingLastUpdated || horse.formRatingLastUpdated || horse.storedEloVersion"
+            type="info"
+            variant="tonal"
+            class="mt-3"
+          >
+            <div class="text-caption text-uppercase mb-1">Elo-status</div>
+            <div v-if="horse.storedEloVersion">Lagrad version: {{ horse.storedEloVersion }}</div>
+            <div v-if="horse.ratingLastUpdated">Class Elo uppdaterad: {{ formatDateTime(horse.ratingLastUpdated) }}</div>
+            <div v-if="horse.formRatingLastUpdated">Form Elo uppdaterad: {{ formatDateTime(horse.formRatingLastUpdated) }}</div>
+            <div v-if="horse.ratingLastRaceDate">Senast bearbetade loppdatum: {{ formatDate(horse.ratingLastRaceDate) }}</div>
+          </v-alert>
         </v-col>
       </v-row>
 
@@ -580,6 +593,16 @@ function formatDate(value: string | undefined | null) {
   const dt = new Date(value)
   if (Number.isNaN(dt.getTime())) return '–'
   return dt.toLocaleDateString('sv-SE')
+}
+
+function formatDateTime(value: string | undefined | null) {
+  if (!value) return '–'
+  const dt = new Date(value)
+  if (Number.isNaN(dt.getTime())) return '–'
+  return new Intl.DateTimeFormat('sv-SE', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(dt)
 }
 
 function placementClass(value: number | null) {

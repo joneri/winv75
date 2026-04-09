@@ -8,6 +8,7 @@ import HorseSearchView from '@/views/horses/HorseSearchView.vue'
 import DriverSearchView from '@/views/drivers/DriverSearchView.vue'
 import SuggestionDetailView from '@/views/suggestion/SuggestionDetailView.vue'
 import SuggestionAnalyticsView from '@/views/suggestion/SuggestionAnalyticsView.vue'
+import SpelforslagGuideView from '@/views/guide/SpelforslagGuideView.vue'
 
 const routes = [
   {
@@ -82,6 +83,18 @@ const routes = [
       breadcrumb: {
         label: 'Förslagsanalys',
         to: { name: 'SuggestionAnalytics' }
+      }
+    }
+  },
+  {
+    path: '/guide/spelforslag',
+    name: 'SpelforslagGuide',
+    component: SpelforslagGuideView,
+    meta: {
+      parent: 'RacedayInput',
+      breadcrumb: {
+        label: 'Spelförslag guide',
+        to: { name: 'SpelforslagGuide' }
       }
     }
   },

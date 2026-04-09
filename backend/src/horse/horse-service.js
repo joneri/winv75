@@ -143,10 +143,14 @@ const applyPredictionFields = (entity, prediction) => ({
     ...entity,
     rating: prediction.careerElo,
     careerElo: prediction.careerElo,
+    ratingLastUpdated: entity?.lastUpdated ?? null,
+    ratingLastRaceDate: entity?.lastRaceDate ?? null,
     rawFormRating: prediction.storedFormElo,
     storedFormElo: prediction.storedFormElo,
     formRating: prediction.formElo,
     formElo: prediction.formElo,
+    formRatingLastUpdated: entity?.formLastUpdated ?? null,
+    formRatingLastRaceDate: entity?.formLastRaceDate ?? null,
     formDelta: prediction.debug.formDelta,
     effectiveElo: prediction.effectiveElo,
     modelProbability: prediction.modelProbability ?? null,
@@ -155,6 +159,7 @@ const applyPredictionFields = (entity, prediction) => ({
     formGapMetric: prediction.debug.daysSinceLast,
     formModelVersion: prediction.version,
     eloVersion: prediction.version,
+    storedEloVersion: entity?.eloVersion ?? null,
     eloWeights: prediction.weights,
     formComponents: prediction.debug,
     eloDebug: prediction.debug,
@@ -169,6 +174,13 @@ const getHorseData = async (horseId) => {
         const obj = horse.toObject()
         obj.score = calculateHorseScore(obj)
         const ratingDoc = await HorseRating.findOne({ horseId })
+        if (ratingDoc) {
+            obj.lastUpdated = ratingDoc.lastUpdated ?? null
+            obj.lastRaceDate = ratingDoc.lastRaceDate ?? null
+            obj.eloVersion = ratingDoc.eloVersion ?? null
+            obj.formLastUpdated = ratingDoc.formLastUpdated ?? null
+            obj.formLastRaceDate = ratingDoc.formLastRaceDate ?? null
+        }
         const laneBiasStore = await getLaneBiasStore()
         const prediction = buildHorseEloPrediction({
             horse: obj,

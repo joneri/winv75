@@ -4,10 +4,10 @@
 Resolve V86 paired game context and generate V86 ticket suggestions with robust status/fallback handling.
 
 ## User experience
-Users can open V86 modal, inspect pairing/game readiness, run suggestion generation with modes/variants/seeds, and adjust spikes toward public favorites.
+Users can open V86 modal, inspect pairing and game readiness, run suggestion generation with modes, variants and seeds, and then choose which generated tickets should actually be saved.
 
 ## How it works
-Backend resolves V86 pairing and game view across raceday context, computes V86 distributions/AI list, generates suggestions similarly to V85 engine with V86-specific status model, and saves each generated ticket as a frozen snapshot for later settlement and analytics.
+Backend resolves V86 pairing and game view across raceday context, computes V86 distributions and AI list, generates suggestions similarly to the V85 engine with V86-specific status handling, and returns those tickets to the raceday session. Only explicitly saved tickets become frozen snapshots for later settlement and analytics.
 
 ## Inputs and outputs
 - Inputs:
@@ -50,7 +50,8 @@ Backend resolves V86 pairing and game view across raceday context, computes V86 
 - `frontend/src/views/raceday/services/RacedayService.js`
 - `frontend/src/views/raceday/RacedayView.vue`
 - `frontend/src/views/race/RaceHorsesView.vue`
+- `docs/features/spelforslag-guide.md`
 
 ## Change log
 - 2026-02-27: Initial feature documentation.
-- 2026-04-05: Added automatic snapshot persistence and analytics-facing history for V86 tickets.
+- 2026-04-05: Changed V86 generation to raceday-session-first flow with explicit save into suggestion history.

@@ -206,6 +206,8 @@ test('suggestion history endpoints persist and expose saved snapshots', async ()
   const { response: refreshResponse, body: refreshBody } = await postJson(`/api/suggestions/${savedItem.id}/refresh-results`, {})
   assert.equal(refreshResponse.status, 200)
   assert.equal(String(refreshBody?.item?.id), String(savedItem.id))
+  assert.ok(refreshBody?.refreshSummary, 'Expected result refresh summary')
+  assert.ok(Number.isFinite(Number(refreshBody?.refreshSummary?.targetedRefresh?.requestedHorseCount || 0)), 'Expected targeted refresh horse count')
 
   const { response: deleteResponse, body: deleteBody } = await deleteJson(`/api/suggestions/${savedItem.id}`)
   assert.equal(deleteResponse.status, 200)

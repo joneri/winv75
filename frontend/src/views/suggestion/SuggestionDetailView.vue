@@ -269,9 +269,31 @@ export default {
         refreshMessage.value = ''
         const detail = await SuggestionService.refreshSuggestionResults(route.params.suggestionId)
         applyDetailPayload(detail)
-        refreshMessage.value = item.value?.settlement?.resultsAvailable
-          ? 'Resultatet uppdaterades från källorna och settlement kördes om.'
-          : 'Källorna uppdaterades, men hela resultatet är ännu inte tillgängligt.'
+        const summary = detail?.refreshSummary || {}
+        const skippedRaces = Array.isArray(summary?.refreshPlan?.skippedRaces) ? summary.refreshPlan.skippedRaces : []
+        const skippedReasons = new Set(skippedRaces.map((race) => race?.reason).filter(Boolean))
+        const eligibleRaceCount = Number(summary?.refreshPlan?.eligibleRaceIds?.length || 0)
+        if (summary?.eloFollowUp?.action === 'incremental_update_ran') {
+          refreshMessage.value = `Resultat uppdaterade för ${summary?.targetedRefresh?.updatedHorseCount || 0} hästar. Settlement kördes om och Elo uppdaterades.`
+        } else if (summary?.eloFollowUp?.action === 'manual_global_update_recommended') {
+          refreshMessage.value = `Resultat uppdaterade för ${summary?.targetedRefresh?.updatedHorseCount || 0} hästar. Settlement kördes om. Kör Uppdatera Elo för att skriva om lagrad Elo.`
+        } else if (summary?.eloFollowUp?.reason === 'no_eligible_races') {
+          if (skippedReasons.size === 1 && skippedReasons.has('already_has_winner')) {
+            refreshMessage.value = 'Alla lopp i biljetten har redan lagrade vinnare. Settlement är redan uppdaterat mot kända resultat.'
+          } else if (skippedReasons.has('not_expected_finished_yet')) {
+            refreshMessage.value = 'Inget av biljettens lopp borde vara klart ännu. Resultat hämtas först när loppet rimligen ska vara avgjort.'
+          } else if (skippedReasons.has('missing_start_time')) {
+            refreshMessage.value = 'Tävlingsdagen saknar ännu tillräcklig starttidsdata för en smart resultatrefresh.'
+          } else {
+            refreshMessage.value = 'Det finns inga lopp i biljetten som behöver eller bör uppdateras just nu.'
+          }
+        } else if (!eligibleRaceCount && skippedReasons.has('already_has_winner')) {
+          refreshMessage.value = 'Resultaten finns redan lagrade för biljettens lopp.'
+        } else {
+          refreshMessage.value = item.value?.settlement?.resultsAvailable
+            ? 'Resultatet uppdaterades från källorna och settlement kördes om.'
+            : 'Källorna uppdaterades, men hela resultatet är ännu inte tillgängligt.'
+        }
       } catch (error) {
         console.error('Failed to refresh suggestion results', error)
         refreshMessage.value = error?.response?.data?.error || error?.message || 'Kunde inte uppdatera resultatet från källorna.'

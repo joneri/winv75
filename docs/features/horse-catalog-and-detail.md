@@ -4,10 +4,10 @@
 Expose searchable horse catalog and detailed horse profile with metrics, ratings, and result history.
 
 ## User experience
-Users can search and paginate horses by form-oriented ranking, then open horse detail with explicit career Elo, form Elo, effective Elo debug and result history.
+Users can search and paginate horses by form-oriented ranking, then open horse detail with explicit career Elo, form Elo, effective Elo debug, Elo freshness metadata and result history.
 
 ## How it works
-Backend list endpoint supports query and cursor pagination. Detail endpoint merges stored horse ratings with the runtime Elo prediction layer, which rebuilds form from recent results and exposes debug metadata. Frontend uses abortable requests and infinite-scroll observers.
+Backend list endpoint supports query and cursor pagination. Detail endpoint merges stored horse ratings with the runtime Elo prediction layer, which rebuilds form from recent results and exposes debug metadata. The same detail payload now also exposes stored Elo freshness fields such as last update timestamps and stored Elo version. Frontend uses abortable requests and infinite-scroll observers.
 
 ## Inputs and outputs
 - Inputs:
@@ -22,6 +22,7 @@ Backend list endpoint supports query and cursor pagination. Detail endpoint merg
 - Cursor uses form rating sort tuple to keep stable pagination.
 - Detail view separates completed vs upcoming results with local normalization.
 - Legacy fields stay available for compatibility, but `careerElo`, `formElo`, `effectiveElo` and `eloDebug` are the canonical runtime prediction fields.
+- Stored Elo freshness is shown separately from runtime prediction so users can distinguish persisted rating age from read-time prediction recomputation.
 
 ## Defaults and fallbacks
 - Invalid cursor returns `400`.
@@ -36,6 +37,7 @@ Backend list endpoint supports query and cursor pagination. Detail endpoint merg
 - Elo outputs come from backend prediction logic, not frontend approximation.
 - Horse detail uses the same runtime prediction chain as race ranking so the model is explainable across views.
 - External refresh is explicit via `PUT` endpoint.
+- Horse detail also shows stored Elo freshness from backend rating rows, not guessed frontend timestamps.
 
 ## Debugging
 - Primary log: `Error listing horses` / `Error fetching horse data` in horse routes/service.
@@ -53,3 +55,4 @@ Backend list endpoint supports query and cursor pagination. Detail endpoint merg
 ## Change log
 - 2026-02-27: Initial feature documentation.
 - 2026-04-05: Switched horse detail from legacy form metrics to explicit Elo prediction fields and debug.
+- 2026-04-08: Added stored Elo freshness fields to horse detail.

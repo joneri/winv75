@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
+
 export async function fetchRacedaysByDate(date) {
   const url = `https://api.travsport.se/webapi/raceinfo/organisation/TROT/sourceofdata/BOTH?fromracedate=${date}&toracedate=${date}&tosubmissiondate=${date}&typeOfRacesCodes=`
 
@@ -24,7 +26,20 @@ export async function fetchStartlistById(racedayId) {
   }
 }
 
+export async function fetchAtgGameById(gameId) {
+  const url = `${ATG_BASE_URL}/games/${gameId}`
+
+  try {
+    const response = await axios.get(url, { timeout: 15000 })
+    return response.data
+  } catch (error) {
+    console.error(`Error fetching ATG game ${gameId}:`, error.message)
+    throw error
+  }
+}
+
 export default {
   fetchRacedaysByDate,
-  fetchStartlistById
+  fetchStartlistById,
+  fetchAtgGameById
 }

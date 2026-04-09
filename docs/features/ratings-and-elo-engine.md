@@ -18,6 +18,7 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 ## Inputs and outputs
 - Inputs:
   - `POST /api/rating/update`
+  - `GET /api/rating/status`
   - `POST /api/rating/race/:raceId`
   - `GET /api/rating/eval`
   - `POST /api/rating/auto-tune/start`
@@ -28,6 +29,20 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 - Outputs:
   - Updated rating rows and history.
   - Evaluation payloads that compare baseline career Elo against the upgraded effective Elo blend.
+
+## When Elo updates
+There are two separate update moments:
+
+- Stored Elo updates when the backend runs a real rating write path:
+  - full rebuild through `backend/src/horse/update-elo-ratings.js`
+  - direct race update through `backend/src/rating/elo-service.js`
+- Runtime prediction updates when horse or race payloads are read:
+  - rebuild race-time `formElo`
+  - apply context features
+  - produce `effectiveElo` and `modelProbability`
+- Saved-ticket result refresh may also trigger an incremental global Elo update when refreshed race results are newer than the stored Elo checkpoint.
+
+That means stored rating freshness and runtime prediction freshness are related, but they are not exactly the same thing.
 
 ## Key decisions
 - Keep separate form and career horizons (different decay/race-count behavior).
@@ -54,10 +69,13 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 - Rating updates no longer depend on `Date.now()` for historical race weighting.
 - Evaluation endpoints perform read-only computation and now report baseline vs upgraded model quality.
 - Race and horse payloads expose `eloDebug` so suspicious rankings can be traced to specific recent results, context signals, shrink values and weights.
+- Stored horse ratings keep `lastUpdated`, `formLastUpdated`, `lastRaceDate`, `formLastRaceDate` and `eloVersion`.
+- The app now exposes a simple Elo status surface through `GET /api/rating/status`, a start-page update action, and horse-detail freshness fields.
 
 ## Debugging
 - Primary log: route-level failures (`Manual rating update failed`, `Elo evaluation failed`, `Failed to start auto-tune`).
 - What "good" looks like: race and horse payloads include `effectiveElo`, `eloVersion`, `eloWeights`, `eloDebug.contextAdjustments.startMethodAffinity`, `eloDebug.contextAdjustments.startPositionAffinity`, `eloDebug.contextAdjustments.distanceAffinity`, `eloDebug.contextAdjustments.trackDistanceAffinity`, `eloDebug.contextAdjustments.trackAffinity`, `eloDebug.contextAdjustments.shoeSignal`, `eloDebug.contextAdjustments.driverHorseAffinity`, `eloDebug.contextAdjustments.laneBias`, and `eloDebug.effectiveEloBreakdown`; context features show sample sizes plus capped deltas; evaluation returns baseline and upgraded RMSE.
+- What "good" looks like for freshness: `GET /api/rating/status` returns `lastProcessedRaceDate`, latest rating timestamps, stored Elo version and rated horse count; horse detail shows stored Elo freshness alongside runtime prediction data.
 - What "bad" looks like: auto-tune stuck with no processed combinations.
 
 ## Related files
@@ -84,3 +102,4 @@ Horse rebuild, direct race update, and runtime prediction now share the same res
 - 2026-04-05: Added capped start-position affinity based on horse-relative history from the active start position within the active start method.
 - 2026-04-05: Added capped driver-horse affinity based on horse-relative shared-driver history.
 - 2026-04-05: Added lane bias as context feature #3 with hierarchical shrinkage and capped runtime impact.
+- 2026-04-08: Added Elo status endpoint, start-page Elo update action and horse-detail Elo freshness fields.

@@ -17,7 +17,11 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - `POST /api/suggestions/save` persists only the tickets the user selected.
 - The snapshot stores the full ticket payload plus a selected-state snapshot, request snapshot and version markers when available.
 - Settlement is derived from stored horse results by `raceId`, so old suggestions stay frozen while result overlays can be refreshed later.
-- `POST /api/suggestions/:id/refresh-results` refreshes the saved ticket's raceday data from the upstream source, waits for the raceday horses to refresh their stored result history, and then re-runs settlement.
+- When stored horse results still lag behind but a supported ATG game already exposes official placings, settlement can use that game result as a fallback for the unresolved leg.
+- `POST /api/suggestions/:id/refresh-results` refreshes the saved ticket's raceday data from the upstream source, but only for races that actually need attention right now.
+- The refresh path skips races that already have a stored winner, skips races that should not be finished yet, and only refreshes horses in ticket races that are old enough or explicitly marked ready.
+- For multi-track games such as V86, the refresh path follows each ticket leg's own `raceDayId` and can therefore refresh both paired raceday documents in one run.
+- The response reports both the refresh plan and whether a global Elo follow-up was run or is still recommended.
 - `DELETE /api/suggestions/:id` removes one saved snapshot.
 - `DELETE /api/raceday/:id/suggestions` removes all saved snapshots for one raceday.
 - Raceday history, detail and analytics endpoints opportunistically settle snapshots before returning data.
@@ -50,19 +54,27 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - Missing results keep the snapshot in `pending_results` or `partial_results`.
 - Missing version markers are allowed and surfaced as unknown instead of blocking snapshot creation.
 - Timeline markers are optional metadata and do not affect settlement or analytics math.
+- Result refresh uses a grace window after planned start time before it assumes a race should be finished. `resultsReady` from the source can still activate a race earlier.
 
 ## Edge cases
 - Old V85 tickets are enriched with race references from the raceday before saving so they can still be settled and reopened with race links.
 - Race links in saved tickets must use the repository raceday `ObjectId`, because the race view and its return path are keyed by `/raceday/:racedayId` rather than the external numeric `raceDayId`.
 - Partial result availability settles the completed legs and leaves the rest unresolved.
+- A race may be marked `resultsReady` in Travsport before horse histories have caught up. In that case the ticket settlement now falls back to ATG game results for supported game types instead of staying pending unnecessarily.
 - Saved suggestions remain valid even if Elo, UI or strategy code changes later.
 - Unsaved session suggestions are intentionally transient and disappear when the user clears them instead of saving them.
 - Deleting a saved suggestion removes the stored snapshot only. It does not touch raceday, race, horse, Elo or result data.
+- A saved ticket refresh may legitimately do nothing if every leg is still in the future or already has a stored winner. That is treated as a correct no-op, not a failed refresh.
+- A V86 ticket can span two tracks. Result refresh therefore cannot assume that every leg belongs to the snapshot's primary raceday document.
 
 ## Data correctness and trust
 - The snapshot is immutable historical input.
 - Settlement is stored on the snapshot and can be refreshed when more result data exists.
-- Manual result refresh now waits for horse-result storage to catch up before re-reading settlement, so the button updates the same source of truth that settlement uses.
+- Manual result refresh now targets only the races on the saved ticket, then re-reads settlement from the same stored horse results that settlement always uses.
+- Manual result refresh is also time-aware. It only refreshes races that are expected to be finished, unless upstream has already flagged them as ready.
+- Manual result refresh is also ticket-aware across multiple raceday documents, so paired V86 legs can update from both tracks before settlement is recalculated.
+- If a refreshed race still lacks a winner in `Horse.results`, settlement now tries the matching ATG game payload before leaving the leg unresolved.
+- If refreshed results are newer than the stored Elo checkpoint, the refresh path also triggers an incremental Elo update. If not, the response tells the user to run global Elo update explicitly.
 - Analytics are based on saved snapshots, not on current generator output.
 
 ## Debugging
@@ -99,3 +111,5 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - 2026-04-05: Changed save behavior to explicit user-controlled persistence, added transient raceday preview flow and added manual result refresh for saved tickets.
 - 2026-04-05: Added deletion of saved suggestion snapshots from raceday history and ticket detail so test-created archives can be cleaned from the app.
 - 2026-04-05: Changed manual result refresh to wait for horse-result storage refresh before settlement is re-read, so the button updates real stored winners rather than only the raceday shell.
+- 2026-04-08: Changed saved-ticket result refresh to target only the relevant races and report Elo follow-up explicitly.
+- 2026-04-08: Changed saved-ticket result refresh to skip future or already-settled races and only fetch results for ticket legs that should be finished.

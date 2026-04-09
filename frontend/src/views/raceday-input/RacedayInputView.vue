@@ -31,11 +31,58 @@
           </div>
           <v-alert v-if="error" type="error" variant="tonal" class="mt-3">{{ error }}</v-alert>
         </div>
+
+        <router-link class="page-panel-soft guide-panel compact-row-link" :to="{ name: 'SpelforslagGuide' }">
+          <div class="panel-title">Guide</div>
+          <h2 class="guide-panel-title">Förstå spelförslagen</h2>
+          <p class="guide-panel-copy">
+            Läs hur prediction layer, publikandelar, mallar och budget formar kupongen.
+          </p>
+          <div class="guide-panel-footer">
+            <span class="shell-chip is-focus">Öppna guide</span>
+          </div>
+        </router-link>
       </div>
     </section>
 
     <section class="start-layout">
       <div class="page-panel day-list-panel">
+        <div class="model-status-panel">
+          <div>
+            <div class="panel-title">Elo</div>
+            <h2 class="guide-panel-title">Modellstatus</h2>
+            <p class="guide-panel-copy">
+              Se när lagrad Elo senast kördes och starta en ny uppdatering av hela ratinglagret.
+            </p>
+          </div>
+
+          <div class="model-status-grid">
+            <div class="status-box">
+              <span class="status-label">Version</span>
+              <strong>{{ eloStatus?.storedEloVersion || 'Okänd' }}</strong>
+            </div>
+            <div class="status-box">
+              <span class="status-label">Senast körd</span>
+              <strong>{{ formatStatusDateTime(eloStatus?.ratingLastUpdated) }}</strong>
+            </div>
+            <div class="status-box">
+              <span class="status-label">Senaste loppdatum</span>
+              <strong>{{ formatStatusDate(eloStatus?.lastProcessedRaceDate) }}</strong>
+            </div>
+            <div class="status-box">
+              <span class="status-label">Hästar med rating</span>
+              <strong>{{ eloStatus?.totalRatedHorses ?? '–' }}</strong>
+            </div>
+          </div>
+
+          <div class="model-status-actions">
+            <v-btn color="secondary" variant="elevated" :loading="eloUpdating" @click="runEloUpdate">
+              Uppdatera Elo
+            </v-btn>
+            <div v-if="eloMessage" class="model-status-message">{{ eloMessage }}</div>
+          </div>
+        </div>
+
         <div class="list-head">
           <div>
             <div class="panel-title">Aktuella tävlingsdagar</div>
@@ -108,6 +155,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useDateFormat } from '@/composables/useDateFormat.js';
+import { fetchEloStatus, triggerEloUpdate } from '@/api'
 
 export default {
   setup() {
@@ -137,6 +185,9 @@ export default {
 
     const fetchDate = ref('');
     const showSnackbar = ref(false);
+    const eloStatus = ref(null)
+    const eloUpdating = ref(false)
+    const eloMessage = ref('')
 
     const error = computed(() => store.state.racedayInput.error);
     const raceDays = computed(() => store.state.racedayInput.raceDays);
@@ -172,6 +223,30 @@ export default {
       if (el) el.scrollTop = 0
       setupObserver()
     };
+
+    const loadEloStatus = async () => {
+      const response = await fetchEloStatus()
+      if (response.ok) {
+        eloStatus.value = response.data
+      }
+    }
+
+    const runEloUpdate = async () => {
+      eloUpdating.value = true
+      eloMessage.value = ''
+      const response = await triggerEloUpdate()
+      eloUpdating.value = false
+
+      if (!response.ok) {
+        eloMessage.value = response.error || 'Kunde inte uppdatera Elo.'
+        return
+      }
+
+      const updated = response.data?.updatedHorseCount
+      const races = response.data?.raceCount
+      eloMessage.value = `Elo uppdaterad${Number.isFinite(updated) ? `, ${updated} hästar` : ''}${Number.isFinite(races) ? `, ${races} lopp` : ''}.`
+      await loadEloStatus()
+    }
 
     const navigateToRaceDay = (raceDayId) => {
       router.push({ name: 'Raceday', params: { racedayId: raceDayId } });
@@ -215,6 +290,7 @@ export default {
 
     onMounted(async () => {
       await store.dispatch('racedayInput/fetchRacedays', { page: 1 })
+      await loadEloStatus()
       await nextTick()
       setupObserver()
     });
@@ -241,10 +317,24 @@ export default {
       raceDaysWithResults,
       uniqueTracks,
       nextRaceday,
+      eloStatus,
+      eloUpdating,
+      eloMessage,
       fetchRacedays,
+      runEloUpdate,
       navigateToRaceDay,
       listContainer,
       sentinel,
+      formatStatusDate: formatDate,
+      formatStatusDateTime: (value) => {
+        if (!value) return '–'
+        const dt = new Date(value)
+        if (Number.isNaN(dt.getTime())) return '–'
+        return new Intl.DateTimeFormat('sv-SE', {
+          dateStyle: 'short',
+          timeStyle: 'short'
+        }).format(dt)
+      }
     };
   }
 }
@@ -276,6 +366,36 @@ export default {
   padding: 20px;
 }
 
+.guide-panel {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  color: var(--text-body);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.guide-panel:hover {
+  transform: translateY(-1px);
+  border-color: rgba(89, 212, 255, 0.24);
+  background: linear-gradient(180deg, rgba(18, 31, 54, 0.96), rgba(12, 21, 38, 0.94));
+}
+
+.guide-panel-title {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-strong);
+}
+
+.guide-panel-copy {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.guide-panel-footer {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .fetch-panel-copy {
   color: var(--text-muted);
   margin-top: 8px;
@@ -293,6 +413,49 @@ export default {
 
 .day-list-panel {
   padding: 22px;
+}
+
+.model-status-panel {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.model-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.status-box {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.status-label {
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.model-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.model-status-message {
+  color: var(--text-muted);
 }
 
 .list-head {
@@ -457,6 +620,10 @@ export default {
   .start-layout {
     grid-template-columns: 1fr;
   }
+
+  .model-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -471,6 +638,10 @@ export default {
 
   .raceday-row-meta {
     justify-items: start;
+  }
+
+  .model-status-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

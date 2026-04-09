@@ -4,6 +4,21 @@ import horseService from '../horse/horse-service.js'
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+const runWithConcurrency = async (items, worker, limit = 6) => {
+  const concurrency = Math.max(1, Number(limit) || 1)
+  let cursor = 0
+
+  const runners = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (cursor < items.length) {
+      const currentIndex = cursor
+      cursor += 1
+      await worker(items[currentIndex], currentIndex)
+    }
+  })
+
+  await Promise.all(runners)
+}
+
 export async function updateEarliestUpdatedHorseTimestamp(raceDayId, targetRaceId) {
   try {
     const raceDay = await Raceday.findById(raceDayId)
@@ -72,7 +87,46 @@ export async function refreshRacedayHorses(raceDay) {
   }
 }
 
+export async function refreshTargetRaceHorses(raceDay, raceIds = [], options = {}) {
+  const targetIds = new Set((raceIds || []).map((id) => String(id)))
+  const races = (raceDay?.raceList || []).filter((race) => targetIds.has(String(race?.raceId)))
+  const horseIds = [...new Set(races.flatMap((race) => (race?.horses || []).map((horse) => horse?.id)).filter(Boolean))]
+  const failedHorseIds = []
+  let updatedHorseCount = 0
+
+  await runWithConcurrency(
+    horseIds,
+    async (horseId, index) => {
+      try {
+        console.log(`Targeted refresh horse ${index + 1} of ${horseIds.length}: ${horseId}`)
+        await horseService.upsertHorseData(horseId)
+        updatedHorseCount += 1
+      } catch (error) {
+        console.error(`Skipped horse ${horseId} due to error:`, error.message)
+        failedHorseIds.push(horseId)
+      }
+    },
+    options.concurrency ?? 6
+  )
+
+  for (const race of races) {
+    try {
+      await updateEarliestUpdatedHorseTimestamp(raceDay._id, race.raceId)
+    } catch (error) {
+      console.error(`Failed updating earliest horse timestamp for race ${race.raceId}:`, error.message)
+    }
+  }
+
+  return {
+    raceIds: races.map((race) => Number(race.raceId)).filter(Number.isFinite),
+    requestedHorseCount: horseIds.length,
+    updatedHorseCount,
+    failedHorseIds
+  }
+}
+
 export default {
   updateEarliestUpdatedHorseTimestamp,
-  refreshRacedayHorses
+  refreshRacedayHorses,
+  refreshTargetRaceHorses
 }

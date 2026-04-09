@@ -4,10 +4,10 @@
 Generate V85 betting suggestions using templates, strategy modes, and optional user seed selections.
 
 ## User experience
-From raceday UI, users open V85 modal, choose template/modes/variants/budget, optionally lock origin horses, and receive one or multiple V85 ticket proposals.
+From raceday UI, users open V85 modal, choose template, modes, variants and budget, optionally lock origin horses, and receive one or multiple V85 ticket proposals. Generated tickets first appear in the live session on the raceday and are saved only if the user explicitly selects them.
 
 ## How it works
-Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates pick counts by template/strategy, emits ticket structure and budget summary, then persists each generated ticket as a frozen suggestion snapshot. Frontend renders mode/variant switcher, ticket breakdown and raceday-level access to saved suggestions.
+Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates pick counts by template and strategy, emits ticket structure and budget summary, and returns the proposals to the raceday session. Frontend renders mode and variant switcher, ticket breakdown and raceday-level access to saved suggestions. Only explicitly saved tickets become frozen suggestion snapshots.
 
 ## Inputs and outputs
 - Inputs:
@@ -51,7 +51,8 @@ Backend maps V85 legs for selected raceday, builds per-leg AI scores, allocates 
 - `frontend/src/views/raceday/components/V85SuggestionModal.vue`
 - `frontend/src/views/raceday/services/RacedayService.js`
 - `frontend/src/views/raceday/RacedayView.vue`
+- `docs/features/spelforslag-guide.md`
 
 ## Change log
 - 2026-02-27: Initial feature documentation.
-- 2026-04-05: Added automatic snapshot persistence and raceday history access for generated V85 tickets.
+- 2026-04-05: Changed V85 generation to raceday-session-first flow with explicit save into suggestion history.

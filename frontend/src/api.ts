@@ -184,19 +184,35 @@ export type HorseDetail = {
   id?: number
   name?: string
   rating?: number
+  ratingLastUpdated?: string | null
+  ratingLastRaceDate?: string | null
   formRating?: number
+  formRatingLastUpdated?: string | null
+  formRatingLastRaceDate?: string | null
   rawFormRating?: number
   formDelta?: number
   winScore?: number
   winProbability?: number
   formGapMetric?: number
   formModelVersion?: string
+  storedEloVersion?: string | null
+  eloVersion?: string | null
   formComponents?: Record<string, any>
   score?: number
   winningRate?: number
   placementRate?: number
   results?: HorseResult[]
   [key: string]: any
+}
+
+export type EloStatus = {
+  lastProcessedRaceDate: string | null
+  ratingLastUpdated: string | null
+  formRatingLastUpdated: string | null
+  ratingLastRaceDate: string | null
+  formRatingLastRaceDate: string | null
+  storedEloVersion: string | null
+  totalRatedHorses: number
 }
 
 export type DriverResult = {
@@ -246,6 +262,19 @@ export async function fetchHorseDetail(
   signal?: AbortSignal
 ): Promise<ApiResult<HorseDetail>> {
   return safeGet<HorseDetail>(`/horses/${horseId}`, { signal })
+}
+
+export async function fetchEloStatus(
+  signal?: AbortSignal
+): Promise<ApiResult<EloStatus>> {
+  return safeGet<EloStatus>('/rating/status', { signal })
+}
+
+export async function triggerEloUpdate(
+  options: { full?: boolean } = {}
+): Promise<ApiResult<any>> {
+  const suffix = options.full ? '?full=true' : ''
+  return safePost<any>(`/rating/update${suffix}`, {})
 }
 
 export async function fetchDriverDetail(

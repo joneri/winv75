@@ -44,6 +44,14 @@ export const primaryNavigation: NavigationTarget[] = [
     to: { name: 'SuggestionAnalytics' },
     description: 'Följ sparade spel och modellutveckling.',
     matchRoutes: ['SuggestionAnalytics', 'SuggestionDetail']
+  },
+  {
+    title: 'Guide',
+    shortTitle: 'Guide',
+    icon: 'mdi-book-open-page-variant-outline',
+    to: { name: 'SpelforslagGuide' },
+    description: 'Läs hur spelförslag byggs och vägs.',
+    matchRoutes: ['SpelforslagGuide']
   }
 ]
 

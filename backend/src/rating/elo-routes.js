@@ -3,6 +3,8 @@ import updateRatings from '../horse/update-elo-ratings.js'
 import eloService from './elo-service.js'
 import { evaluateElo } from './elo-eval.js'
 import { startAutoTuneJob, getAutoTuneStatus, cancelAutoTune, hasActiveJob } from './auto-tune.js'
+import HorseRating from '../horse/horse-rating-model.js'
+import RatingMeta from '../horse/rating-meta-model.js'
 
 const router = express.Router()
 
@@ -10,11 +12,46 @@ const router = express.Router()
 router.post('/update', async (req, res) => {
   try {
     const isFull = req.query.full === 'true' || req.query.full === '1'
-    await updateRatings(undefined, undefined, true, { fullRecalc: isFull })
-    res.json({ message: isFull ? 'Ratings fully rebuilt' : 'Ratings updated' })
+    const summary = await updateRatings(undefined, undefined, true, { fullRecalc: isFull })
+    res.json({
+      message: isFull ? 'Ratings fully rebuilt' : 'Ratings updated',
+      ...summary
+    })
   } catch (err) {
     console.error('Manual rating update failed', err)
     res.status(500).send('Failed to update ratings')
+  }
+})
+
+router.get('/status', async (req, res) => {
+  try {
+    const [meta, latestRating] = await Promise.all([
+      RatingMeta.findById('elo').lean(),
+      HorseRating.findOne({}, {
+        lastUpdated: 1,
+        formLastUpdated: 1,
+        lastRaceDate: 1,
+        formLastRaceDate: 1,
+        eloVersion: 1
+      })
+        .sort({ lastUpdated: -1 })
+        .lean()
+    ])
+
+    const totalRatedHorses = await HorseRating.countDocuments()
+
+    res.json({
+      lastProcessedRaceDate: meta?.lastProcessedRaceDate || null,
+      ratingLastUpdated: latestRating?.lastUpdated || null,
+      formRatingLastUpdated: latestRating?.formLastUpdated || null,
+      ratingLastRaceDate: latestRating?.lastRaceDate || null,
+      formRatingLastRaceDate: latestRating?.formLastRaceDate || null,
+      storedEloVersion: latestRating?.eloVersion || null,
+      totalRatedHorses
+    })
+  } catch (err) {
+    console.error('Failed to load Elo status', err)
+    res.status(500).json({ error: 'Failed to load Elo status' })
   }
 })
 

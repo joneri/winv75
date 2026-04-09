@@ -188,6 +188,17 @@ const updateRatings = async (
 
   console.log(`[ELO] Processed ${raceCount} races (${fromStr} -> ${toStr}), updated ${touchedHorses.size} horses, seeded ${seededCount} new ratings`)
   console.log('[ELO] Races per date:', perDateObject)
+
+  return {
+    fullRecalc,
+    raceCount,
+    updatedHorseCount: touchedHorses.size,
+    seededHorseCount: seededCount,
+    fromDate: firstProcessedDate ? firstProcessedDate.toISOString() : null,
+    toDate: lastProcessedDate ? lastProcessedDate.toISOString() : null,
+    lastProcessedRaceDate: lastRaceDate ? new Date(lastRaceDate).toISOString() : null,
+    perDateCounts: perDateObject
+  }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
