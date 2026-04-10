@@ -13,6 +13,17 @@ import {
     getLaneBiasStore
 } from '../rating/horse-elo-prediction.js'
 
+const getLatestResultDate = (results = []) => {
+    if (!Array.isArray(results)) return null
+
+    const dates = results
+        .map((result) => new Date(result?.raceInformation?.date ?? result?.date ?? ''))
+        .filter((date) => !Number.isNaN(date.getTime()))
+        .sort((left, right) => right.getTime() - left.getTime())
+
+    return dates[0] ? dates[0].toISOString() : null
+}
+
 const fetchResults = async (horseId) => {
     const url = `https://api.travsport.se/webapi/horses/results/organisation/TROT/sourceofdata/SPORT/horseid/${horseId}`
     try {
@@ -144,14 +155,16 @@ const applyPredictionFields = (entity, prediction) => ({
     rating: prediction.careerElo,
     careerElo: prediction.careerElo,
     ratingLastUpdated: entity?.lastUpdated ?? null,
-    ratingLastRaceDate: entity?.lastRaceDate ?? null,
+    ratingLastRaceDate: entity?.lastRaceDate ?? getLatestResultDate(entity?.results),
     rawFormRating: prediction.storedFormElo,
     storedFormElo: prediction.storedFormElo,
     formRating: prediction.formElo,
     formElo: prediction.formElo,
     formRatingLastUpdated: entity?.formLastUpdated ?? null,
-    formRatingLastRaceDate: entity?.formLastRaceDate ?? null,
+    formRatingLastRaceDate: entity?.formLastRaceDate ?? getLatestResultDate(entity?.results),
     formDelta: prediction.debug.formDelta,
+    formTrendDelta: prediction.debug.formTrendDelta,
+    formGapToCareer: prediction.debug.formGapToCareer,
     effectiveElo: prediction.effectiveElo,
     modelProbability: prediction.modelProbability ?? null,
     winProbability: prediction.modelProbability ?? null,

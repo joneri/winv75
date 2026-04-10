@@ -107,6 +107,8 @@ export type HorseListItem = {
   name: string
   formRating: number | null
   formDelta?: number | null
+  formTrendDelta?: number | null
+  formGapToCareer?: number | null
   winScore?: number | null
   winProbability?: number | null
   rating: number | null
@@ -191,6 +193,8 @@ export type HorseDetail = {
   formRatingLastRaceDate?: string | null
   rawFormRating?: number
   formDelta?: number
+  formTrendDelta?: number
+  formGapToCareer?: number
   winScore?: number
   winProbability?: number
   formGapMetric?: number

@@ -4,7 +4,7 @@
 Provide a raceday-centric overview with race cards, available game forms, and suggestion actions for the protected betting core.
 
 ## User experience
-On a raceday page, users see track/day context, race cards, game badges, saved/session suggestion history, update status for supported market percentages, and actions to generate V85, V5, V86, and DD ticket suggestions when those games exist.
+On a raceday page, users see track/day context, race cards, game badges, full-width proposition text, saved/session suggestion history, update status for supported market percentages, and actions to generate V85, V5, V86, and DD ticket suggestions when those games exist.
 
 ## How it works
 Frontend loads raceday detail, game types, DD/V86 game views, and saved suggestion history. The page opens modal flows for each supported game, fetches server-defined templates, and submits ticket-generation requests to the betting services.
@@ -37,6 +37,7 @@ Frontend loads raceday detail, game types, DD/V86 game views, and saved suggesti
 ## Defaults and fallbacks
 - Missing game support hides the corresponding action group.
 - Suggestion errors stay inside the modal and do not break the rest of the raceday page.
+- Long proposition text should use the full card width below the top metadata row instead of being squeezed into the left column beside game badges.
 
 ## Edge cases
 - Raceday not found returns `404`.
@@ -71,3 +72,4 @@ Frontend loads raceday detail, game types, DD/V86 game views, and saved suggesti
 - 2026-02-27: Initial feature documentation.
 - 2026-04-04: Reframed around the active raceday and betting flows after AI helper runtime removal.
 - 2026-04-05: Added raceday support for V5 and Dagens Dubbel suggestion flows.
+- 2026-04-10: Let long race proposition text span the full race card width below the chip-and-badge header.

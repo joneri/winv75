@@ -8,6 +8,7 @@
           <div class="page-chip-row">
             <div class="shell-chip is-track">{{ raceDays.length }} tävlingsdagar i listan</div>
             <div class="shell-chip is-focus">{{ raceDaysWithResults }} med resultat klara</div>
+            <div class="shell-chip is-success" v-if="staleResultCount > 0">{{ staleResultCount }} väntar på resultat</div>
             <div class="shell-chip">{{ uniqueTracks }} banor i aktuellt urval</div>
           </div>
         </div>
@@ -92,6 +93,16 @@
             <span v-if="nextRaceday" class="summary-label">Nästa start</span>
             <strong v-if="nextRaceday">{{ nextRaceday.trackName }}</strong>
             <span v-if="nextRaceday">{{ formatDayLabel(nextRaceday.firstStart) }} kl {{ formatTime(nextRaceday.firstStart) }}</span>
+            <v-btn
+              v-if="staleResultCount > 0"
+              color="success"
+              variant="tonal"
+              size="small"
+              :loading="staleRefreshLoading"
+              @click.stop="refreshStaleResults"
+            >
+              Uppdatera saknade resultat
+            </v-btn>
           </div>
         </div>
 
@@ -115,7 +126,22 @@
             <div class="raceday-row-main">
               <div class="raceday-row-top">
                 <span class="raceday-date">
-                  <span class="dot" v-if="raceDay.hasResults" title="Resultat klara"></span>
+                  <span
+                    v-if="raceDay.hasResults"
+                    class="result-pill"
+                    title="Resultat klara"
+                  >
+                    <span class="dot dot-success"></span>
+                    Klara
+                  </span>
+                  <span
+                    v-else-if="isPastWithoutResults(raceDay)"
+                    class="result-pill result-pill-pending"
+                    title="Passerat datum utan klara resultat"
+                  >
+                    <span class="dot dot-pending"></span>
+                    Saknas
+                  </span>
                   {{ formatDayLabel(raceDay.firstStart) }}
                 </span>
                 <span class="raceday-time">{{ formatTime(raceDay.firstStart) }}</span>
@@ -200,11 +226,37 @@ export default {
     const raceDaysWithResults = computed(() => raceDays.value.filter(day => day?.hasResults).length);
     const uniqueTracks = computed(() => new Set(raceDays.value.map(day => day?.trackName).filter(Boolean)).size);
     const nextRaceday = computed(() => raceDays.value[0] || null);
+    const staleRefreshSummary = computed(() => store.state.racedayInput.staleRefreshSummary);
 
     const listContainer = ref(null);
     const sentinel = ref(null);
     let observer = null;
     let removeScroll = null;
+
+    const toDateOnlyValue = (value) => {
+      if (!value) return null
+      const normalized = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? `${value}T00:00:00`
+        : value
+      const dt = new Date(normalized)
+      return Number.isNaN(dt.getTime()) ? null : dt
+    }
+
+    const isPastWithoutResults = (raceDay) => {
+      if (!raceDay || raceDay.hasResults) return false
+      const raceDate = toDateOnlyValue(raceDay.raceDayDate || raceDay.firstStart)
+      if (!raceDate) return false
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return raceDate.getTime() < today.getTime()
+    }
+
+    const staleResultCount = computed(() => raceDays.value.filter(day => isPastWithoutResults(day)).length)
+    const staleRaceDayIds = computed(() => raceDays.value
+      .filter(day => isPastWithoutResults(day))
+      .map(day => Number(day.raceDayId))
+      .filter(id => Number.isFinite(id)))
+    const staleRefreshLoading = computed(() => loading.value && staleResultCount.value > 0)
 
     // Helper to get the actual scrollable DOM element from the v-list component
     const getRootEl = () => {
@@ -223,6 +275,12 @@ export default {
       if (el) el.scrollTop = 0
       setupObserver()
     };
+
+    const refreshStaleResults = async () => {
+      await store.dispatch('racedayInput/refreshStaleResults', staleRaceDayIds.value)
+      await nextTick()
+      setupObserver()
+    }
 
     const loadEloStatus = async () => {
       const response = await fetchEloStatus()
@@ -317,10 +375,16 @@ export default {
       raceDaysWithResults,
       uniqueTracks,
       nextRaceday,
+      staleRefreshSummary,
+      staleResultCount,
+      staleRaceDayIds,
+      staleRefreshLoading,
       eloStatus,
       eloUpdating,
       eloMessage,
       fetchRacedays,
+      refreshStaleResults,
+      isPastWithoutResults,
       runEloUpdate,
       navigateToRaceDay,
       listContainer,
@@ -553,7 +617,8 @@ export default {
 .raceday-date {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
   font-weight: 700;
   color: var(--text-strong);
 }
@@ -598,11 +663,41 @@ export default {
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background-color: var(--success-emerald);
   display: inline-block;
+}
+
+.dot-success {
+  background-color: var(--success-emerald);
+  box-shadow: 0 0 0 4px rgba(56, 211, 159, 0.18);
+}
+
+.dot-pending {
+  background-color: var(--track-amber);
+  box-shadow: 0 0 0 4px rgba(245, 201, 121, 0.18);
+}
+
+.result-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 211, 159, 0.28);
+  background: var(--success-emerald-soft);
+  color: var(--success-emerald);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.result-pill-pending {
+  border-color: rgba(245, 201, 121, 0.24);
+  background: var(--track-amber-soft);
+  color: var(--track-amber);
 }
 
 :deep(.fetch-form .v-field) {

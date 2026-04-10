@@ -4,14 +4,15 @@
 Ingest raceday/startlist data from external horse-racing APIs into local storage and provide paginated raceday discovery in UI.
 
 ## User experience
-Users can fetch racedays by date, then browse a scrolling list of stored racedays with race count and result-ready indicator.
+Users can fetch racedays by date, then browse a scrolling list of stored racedays with race count, a visible result-ready indicator, and a refresh action for older racedays that still lack stored results.
 
 ## How it works
-Backend fetches raceday and startlist payloads, upserts `Raceday`, triggers asynchronous horse refresh, and exposes paged summary endpoints. Frontend consumes summary for infinite-scroll list.
+Backend fetches raceday and startlist payloads, upserts `Raceday`, triggers asynchronous horse refresh, and exposes paged summary endpoints. It also supports batch-refresh of stale past racedays that still have no `resultsReady` races in storage. Frontend consumes summary for infinite-scroll list and exposes that refresh action when stale rows are present.
 
 ## Inputs and outputs
 - Inputs:
   - `POST /api/raceday/fetch?date=YYYY-MM-DD`
+  - `POST /api/raceday/refresh-stale-results`
   - `GET /api/raceday/summary`
   - `GET /api/raceday`
 - Outputs:
@@ -32,16 +33,18 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, triggers asyn
 
 ## Data correctness and trust
 - `raceCount` and `hasResults` are computed from stored `raceList` state.
+- A stale result candidate is a stored raceday whose `raceDayDate` is before today and whose `raceList` still has no `resultsReady` race.
 - Earliest horse update timestamp is recomputed after horse refresh loop.
 
 ## Debugging
 - Primary log: backend logs in raceday service/routes during fetch/upsert/update loops.
-- What "good" looks like: new racedays appear in summary list, sorted by `firstStart`.
-- What "bad" looks like: empty summary after fetch or repeated upsert errors per raceday id.
+- What "good" looks like: new racedays appear in summary list, sorted by `firstStart`, completed racedays show an obvious green status, and stale past days can be refreshed into a result-ready state.
+- What "bad" looks like: empty summary after fetch, nearly invisible result status in dark mode, or repeated refresh failures for stale racedays.
 
 ## Related files
 - `backend/src/raceday/raceday-routes.js`
 - `backend/src/raceday/raceday-service.js`
+- `backend/src/raceday/raceday-result-refresh-service.js`
 - `backend/src/raceday/raceday-model.js`
 - `frontend/src/views/raceday-input/RacedayInputView.vue`
 - `frontend/src/views/raceday-input/store.js`
@@ -49,3 +52,4 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, triggers asyn
 
 ## Change log
 - 2026-02-27: Initial feature documentation.
+- 2026-04-10: Added dark-mode-safe result badges and stale past-raceday refresh support.

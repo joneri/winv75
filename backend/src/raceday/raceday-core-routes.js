@@ -4,6 +4,7 @@ import {
   getAllRacedays,
   getRacedayById,
   getRacedaysPaged,
+  refreshStaleRacedayResults,
   updateEarliestUpdatedHorseTimestamp,
   upsertStartlistData
 } from './raceday-service.js'
@@ -23,6 +24,18 @@ router.post('/fetch', async (req, res) => {
   } catch (error) {
     console.error('Error fetching raceday data from external API:', error)
     res.status(500).send('Failed to fetch raceday data')
+  }
+})
+
+router.post('/refresh-stale-results', async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 100
+    const raceDayIds = Array.isArray(req.body?.raceDayIds) ? req.body.raceDayIds : []
+    const result = await refreshStaleRacedayResults({ limit, raceDayIds })
+    res.json(result)
+  } catch (error) {
+    console.error('Error refreshing stale raceday results:', error)
+    res.status(500).send('Failed to refresh stale raceday results')
   }
 })
 

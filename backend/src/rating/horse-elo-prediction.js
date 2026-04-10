@@ -35,6 +35,7 @@ const RESULT_ANCHOR_MULTIPLIER = Number(process.env.ELO_RESULT_ANCHOR_MULTIPLIER
 const RESULT_TREND_MULTIPLIER = Number(process.env.ELO_RESULT_TREND_MULTIPLIER || 18)
 const FORM_ANCHOR_BLEND = Number(process.env.ELO_FORM_ANCHOR_BLEND || 0.52)
 const FORM_DELTA_CAP = Number(process.env.ELO_FORM_DELTA_CAP || 140)
+const FORM_STALE_REVERSION_DAYS = Number(process.env.ELO_FORM_STALE_REVERSION_DAYS || 180)
 
 const INACTIVITY_START_DAYS = Number(process.env.ELO_INACTIVITY_START_DAYS || 45)
 const INACTIVITY_SPAN_DAYS = Number(process.env.ELO_INACTIVITY_SPAN_DAYS || 110)
@@ -327,6 +328,17 @@ const listRelevantResults = (results = [], targetRaceDate = new Date()) => {
     })
 }
 
+const getLatestKnownRaceDate = (results = [], targetRaceDate = new Date()) => {
+  if (!Array.isArray(results)) return null
+
+  const dates = results
+    .map((result) => toDate(result?.raceInformation?.date ?? result?.date))
+    .filter((raceDate) => raceDate && !isPendingResult(raceDate, targetRaceDate))
+    .sort((left, right) => right.getTime() - left.getTime())
+
+  return dates[0] || null
+}
+
 const computeInactivityPenalty = (lastRaceDate, now = new Date()) => {
   if (!lastRaceDate) {
     return { penalty: INACTIVITY_CAP * 0.4, daysSinceLast: null }
@@ -348,6 +360,7 @@ const computeFormDelta = ({
   careerElo,
   storedFormElo,
   relevantResults,
+  latestKnownRaceDate,
   targetRaceDate
 }) => {
   const weightSum = relevantResults.reduce((sum, result) => sum + result.recencyWeight, 0)
@@ -365,22 +378,38 @@ const computeFormDelta = ({
   const anchorBlend = clamp(FORM_ANCHOR_BLEND * sampleWeight, 0, FORM_ANCHOR_BLEND)
   const anchoredForm = storedFormElo + ((resultAnchorElo - storedFormElo) * anchorBlend)
 
-  const lastRaceDate = relevantResults[0]?.raceDate || null
-  const inactivity = computeInactivityPenalty(lastRaceDate, targetRaceDate)
+  const lastKnownRaceDate = relevantResults[0]?.raceDate || latestKnownRaceDate || null
+  const staleDays = lastKnownRaceDate ? differenceInDays(lastKnownRaceDate, targetRaceDate) : null
+  const staleOverflowDays = Number.isFinite(staleDays)
+    ? Math.max(0, staleDays - RESULT_WINDOW_DAYS)
+    : null
+  const staleReversionRatio = weightSum > 0
+    ? 0
+    : clamp((staleOverflowDays ?? FORM_STALE_REVERSION_DAYS) / FORM_STALE_REVERSION_DAYS, 0, 1)
+  const staleReversionElo = storedFormElo + ((careerElo - storedFormElo) * staleReversionRatio)
+  const baseFormBeforeInactivity = weightSum > 0 ? anchoredForm : staleReversionElo
+
+  const inactivity = computeInactivityPenalty(lastKnownRaceDate, targetRaceDate)
   const formElo = Math.round(
-    clamp(anchoredForm - inactivity.penalty, careerElo - FORM_DELTA_CAP, careerElo + FORM_DELTA_CAP)
+    clamp(baseFormBeforeInactivity - inactivity.penalty, careerElo - FORM_DELTA_CAP, careerElo + FORM_DELTA_CAP)
   )
 
   return {
     formElo,
     delta: Number((formElo - careerElo).toFixed(2)),
+    trendDelta: Number((formElo - storedFormElo).toFixed(2)),
+    gapToCareer: Number((formElo - careerElo).toFixed(2)),
     weightedOutcome: Number(weightedOutcome.toFixed(4)),
     recentTrend: Number(recentTrend.toFixed(4)),
     weightSum: Number(weightSum.toFixed(4)),
     anchorBlend: Number(anchorBlend.toFixed(4)),
     inactivityPenalty: Number(inactivity.penalty.toFixed(2)),
     daysSinceLast: inactivity.daysSinceLast == null ? null : Number(inactivity.daysSinceLast.toFixed(1)),
-    resultAnchorElo: Number(resultAnchorElo.toFixed(2))
+    resultAnchorElo: Number(resultAnchorElo.toFixed(2)),
+    latestKnownRaceDate: lastKnownRaceDate ? lastKnownRaceDate.toISOString() : null,
+    staleOverflowDays: Number.isFinite(staleOverflowDays) ? Number(staleOverflowDays.toFixed(1)) : null,
+    staleReversionRatio: Number(staleReversionRatio.toFixed(4)),
+    staleReversionElo: Number(staleReversionElo.toFixed(2))
   }
 }
 
@@ -1088,12 +1117,14 @@ export const buildHorseEloPrediction = ({
   const targetContext = buildRaceContext(raceContext, now)
   const careerElo = Math.round(safeNumber(ratingDoc?.rating ?? horse?.rating, DEFAULT_ELO))
   const storedFormElo = Math.round(safeNumber(ratingDoc?.formRating ?? ratingDoc?.rating ?? horse?.formRating, careerElo))
+  const latestKnownRaceDate = getLatestKnownRaceDate(horse?.results || [], targetContext.raceDate)
   const relevantResults = listRelevantResults(horse?.results || [], targetContext.raceDate)
 
   const form = computeFormDelta({
     careerElo,
     storedFormElo,
     relevantResults,
+    latestKnownRaceDate,
     targetRaceDate: targetContext.raceDate
   })
 
@@ -1223,6 +1254,8 @@ export const buildHorseEloPrediction = ({
       storedFormElo,
       formElo: form.formElo,
       formDelta: form.delta,
+      formTrendDelta: form.trendDelta,
+      formGapToCareer: form.gapToCareer,
       weightedOutcome: form.weightedOutcome,
       recentTrend: form.recentTrend,
       weightSum: form.weightSum,
@@ -1230,6 +1263,10 @@ export const buildHorseEloPrediction = ({
       resultAnchorElo: form.resultAnchorElo,
       inactivityPenalty: form.inactivityPenalty,
       daysSinceLast: form.daysSinceLast,
+      latestKnownRaceDate: form.latestKnownRaceDate,
+      staleOverflowDays: form.staleOverflowDays,
+      staleReversionRatio: form.staleReversionRatio,
+      staleReversionElo: form.staleReversionElo,
       driverSupport,
       contextAdjustments,
       effectiveEloBreakdown,

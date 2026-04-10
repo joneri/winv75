@@ -2,7 +2,7 @@
   <v-container class="search-view" fluid>
     <div class="page-header">
       <h1 class="text-h4 mb-2">Hästar</h1>
-      <p class="text-body-2 text-medium-emphasis">Sorterat efter form ELO</p>
+      <p class="text-body-2 text-medium-emphasis">Sorterat efter samma runtime-form ELO som visas på hästsidan.</p>
     </div>
 
     <v-text-field
@@ -34,7 +34,7 @@
             <template #subtitle>
               <div class="subtitle-row">
                 <span>Form ELO {{ formatNumber(horse.formRating) }}</span>
-                <span v-if="isFiniteNumber(horse.formDelta)">Δ {{ formatSigned(horse.formDelta) }}</span>
+                <span v-if="isFiniteNumber(horse.formTrendDelta)">Trend Δ {{ formatSigned(horse.formTrendDelta) }}</span>
                 <span v-if="horse.rating">Class ELO {{ formatNumber(horse.rating) }}</span>
                 <span v-if="winningText(horse)">{{ winningText(horse) }}</span>
                 <span v-if="horse.trainerName">Tränare {{ horse.trainerName }}</span>
@@ -44,7 +44,7 @@
               <div class="append-data">
                 <div class="append-primary">{{ formatNumber(horse.formRating) }}</div>
                 <div class="append-label">Form ELO</div>
-                <div v-if="isFiniteNumber(horse.formDelta)" class="append-secondary">Δ {{ formatSigned(horse.formDelta) }}</div>
+                <div v-if="isFiniteNumber(horse.formTrendDelta)" class="append-secondary">Trend Δ {{ formatSigned(horse.formTrendDelta) }}</div>
               </div>
             </template>
           </v-list-item>

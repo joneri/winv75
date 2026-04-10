@@ -163,6 +163,70 @@ test('gallop hurts form but does not erase a strong recent profile, and withdraw
   assert.ok(prediction.formElo > prediction.careerElo - 50, 'Expected one gallop to hurt without collapsing form completely')
 })
 
+test('stale horses revert form back toward career and still track real inactivity outside the recency window', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 77,
+      results: [
+        {
+          raceInformation: { raceId: 701, date: daysAgo(320) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1911,
+      formRating: 2038
+    },
+    raceContext: {
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.weightSum, 0, 'Expected no recent result weights outside the lookback window')
+  assert.ok((prediction.debug.daysSinceLast || 0) > 300, 'Expected inactivity to use the latest known race date')
+  assert.ok(prediction.formElo < 1950, 'Expected stale form to revert materially toward career Elo')
+  assert.ok((prediction.debug.formTrendDelta || 0) < 0, 'Expected stale form trend to point downward from stored form')
+})
+
+test('fresh wins can produce a positive form trend even when form still sits below career level', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 88,
+      results: [
+        {
+          raceInformation: { raceId: 801, date: daysAgo(7) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'F'
+        },
+        {
+          raceInformation: { raceId: 802, date: daysAgo(300) },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 2068,
+      formRating: 2027
+    },
+    raceContext: {
+      raceDate: new Date()
+    }
+  })
+
+  assert.ok(prediction.formElo > prediction.storedFormElo, 'Expected runtime form to improve after a fresh win')
+  assert.ok((prediction.debug.formTrendDelta || 0) > 0, 'Expected trend delta to show upward movement')
+  assert.ok((prediction.debug.formGapToCareer || 0) < 0, 'Expected form to still sit below class Elo in this scenario')
+})
+
 test('track affinity adds a positive delta when the horse consistently outperforms its baseline on the current track', () => {
   const prediction = buildHorseEloPrediction({
     horse: {

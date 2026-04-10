@@ -35,9 +35,9 @@
               <span class="label">Form ELO</span>
               <span class="value">{{ formatNumber(horse.formRating ?? horse.rawFormRating) }}</span>
             </div>
-            <div class="meta-item" v-if="isFiniteNumber(horse.formDelta)">
-              <span class="label">Form Δ</span>
-              <span class="value">{{ formatSigned(horse.formDelta) }}</span>
+            <div class="meta-item" v-if="isFiniteNumber(horse.formTrendDelta)">
+              <span class="label">Trend Δ</span>
+              <span class="value">{{ formatSigned(horse.formTrendDelta) }}</span>
             </div>
             <div class="meta-item" v-if="isFiniteNumber(horse.winProbability)">
               <span class="label">Vinstchans</span>
@@ -275,8 +275,8 @@ watch(
 const statisticsChips = computed(() => {
   const chips: Array<{ key: string | number; text: string }> = []
 
-  if (isFiniteNumber(horse.value?.formDelta)) {
-    chips.push({ key: 'form-delta', text: `Form Δ ${formatSigned(horse.value?.formDelta)}` })
+  if (isFiniteNumber(horse.value?.formTrendDelta)) {
+    chips.push({ key: 'form-trend-delta', text: `Trend Δ ${formatSigned(horse.value?.formTrendDelta)}` })
   }
 
   if (isFiniteNumber(horse.value?.winProbability)) {

@@ -17,12 +17,6 @@
             <span v-if="startTime" class="race-chip race-chip-accent">Start {{ startTime }}</span>
             <span class="race-chip">{{ horseCount }} hästar</span>
           </div>
-          <p v-if="raceSummary" class="race-summary">
-            {{ raceSummary }}
-          </p>
-          <div v-if="lastUpdatedHorseTimestamp !== null" class="updated-indication">
-            Hästar senast uppdaterade {{ formattedUpdated }}
-          </div>
         </div>
 
         <div class="race-side">
@@ -34,6 +28,15 @@
               :leg="g.leg"
             />
           </div>
+        </div>
+      </div>
+
+      <div v-if="raceSummary || lastUpdatedHorseTimestamp !== null" class="race-meta">
+        <p v-if="raceSummary" class="race-summary">
+          {{ raceSummary }}
+        </p>
+        <div v-if="lastUpdatedHorseTimestamp !== null" class="updated-indication">
+          Hästar senast uppdaterade {{ formattedUpdated }}
         </div>
       </div>
 
@@ -218,7 +221,7 @@ export default {
 
 .race-heading {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -254,10 +257,17 @@ export default {
   background: rgba(245, 201, 121, 0.12);
 }
 
+.race-meta {
+  display: grid;
+  gap: 10px;
+}
+
 .race-summary {
   margin: 0;
+  max-width: none;
   color: var(--text-muted);
-  line-height: 1.55;
+  line-height: 1.7;
+  text-wrap: pretty;
 }
 
 .updated-indication {

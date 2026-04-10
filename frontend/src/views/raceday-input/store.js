@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { fetchRacedaysByDate, fetchRacedaysSummary } from './services/RacedayInputService.js'
+import { fetchRacedaysByDate, fetchRacedaysSummary, refreshStaleRacedayResults } from './services/RacedayInputService.js'
 
 const state = {
   loading: false,
@@ -10,6 +10,7 @@ const state = {
   raceDaysPageSize: 20,
   raceDaysTotal: 0,
   raceDaysHasMore: true,
+  staleRefreshSummary: null,
 }
 
 const mutations = {
@@ -42,6 +43,9 @@ const mutations = {
   },
   setHasMore(state, hasMore) {
     state.raceDaysHasMore = hasMore
+  },
+  setStaleRefreshSummary(state, summary) {
+    state.staleRefreshSummary = summary
   }
 }
 
@@ -75,6 +79,34 @@ const actions = {
       commit('setHasMore', hasMore)
     } catch (error) {
       console.error('Error fetching racedays:', error)
+      commit('setError', error.message)
+    } finally {
+      commit('setLoading', false)
+    }
+  },
+  async refreshStaleResults({ commit, state }, raceDayIds = []) {
+    if (state.loading) return
+    commit('setLoading', true)
+    commit('setError', null)
+    try {
+      const summary = await refreshStaleRacedayResults({
+        limit: Math.max(state.raceDaysPageSize, 100),
+        raceDayIds
+      })
+      commit('setStaleRefreshSummary', summary)
+      if (summary.scanned === 0) {
+        commit('setSuccessMessage', 'Inga passerade tävlingsdagar utan resultat behövde uppdateras.')
+      } else {
+        commit('setSuccessMessage', `Uppdaterade ${summary.refreshedCount} tävlingsdagar. ${summary.resolvedCount} har nu resultat klara.`)
+      }
+      const fields = ['firstStart','raceDayDate','trackName','raceStandard','raceCount','hasResults']
+      const { items, total } = await fetchRacedaysSummary({ page: 1, pageSize: state.raceDaysPageSize, fields })
+      commit('setRaceDays', items)
+      commit('setRaceDaysPage', 1)
+      commit('setRaceDaysTotal', total)
+      commit('setHasMore', state.raceDaysPageSize < total)
+    } catch (error) {
+      console.error('Error refreshing stale raceday results:', error)
       commit('setError', error.message)
     } finally {
       commit('setLoading', false)

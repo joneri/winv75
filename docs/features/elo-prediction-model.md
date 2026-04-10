@@ -15,6 +15,7 @@ Turn winv75 Elo into an explainable race prediction model with explicit career, 
   - recency decay
   - inactivity penalty
   - a controlled anchor back toward the persisted form Elo
+  - stale-form reversion toward `careerElo` when the horse has no in-window races but does have older completed starts
 - Driver Elo is used as a support delta, not as a dominant score.
 - Race context adds structured adjustments for:
   - start-method affinity when the horse has enough history in auto or volt
@@ -103,12 +104,15 @@ Lane bias is now context feature #3:
 - Newer races get higher weight through explicit half-life based recency weights.
 - Stored career and form ratings now decay between races using different half-life profiles instead of being tied to `Date.now()` at rebuild time.
 - Form decays back toward career much faster than career decays toward its seed/base.
+- When the latest real start is older than the prediction lookback window, runtime form no longer keeps a "hot" stored form untouched. It first reverts toward `careerElo`, then applies inactivity on the actual latest known race date.
 
 ## Outputs
 Race and horse prediction payloads now expose:
 - `careerElo`
 - `storedFormElo`
 - `formElo`
+- `formTrendDelta`
+- `formGapToCareer`
 - `driverElo`
 - `effectiveElo`
 - `modelProbability` on race-level payloads
@@ -129,6 +133,8 @@ Inspect `eloDebug` for:
 - per-race recency weights
 - result codes and scores
 - inactivity penalty
+- latest known race date outside the active lookback window
+- stale-form reversion ratio and reversion Elo when no recent races are available
 - context adjustments
 - track affinity raw measurement, sample size, confidence and `deltaElo`
 - start method, sample size, confidence and `startMethodDelta`
@@ -157,6 +163,7 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 - `backend/src/suggestion/suggestion-service.js`
 
 ## Change log
+- 2026-04-10: Fixed stale-form handling so inactive horses revert toward career Elo before inactivity is applied, and exposed separate trend-vs-stored-form plus gap-vs-career metrics.
 - 2026-04-05: Added explicit career/form/driver/effective Elo prediction model with debug and field-normalized probabilities.
 - 2026-04-05: Unified rebuild, direct update, and runtime prediction around shared Elo result and recency policies.
 - 2026-04-05: Added track affinity as the first explicit contextual prediction signal with min-sample protection, shrinkage and detailed debug breakdown.

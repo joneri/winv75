@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { resolveApiUrl } from '@/config/api-base.js'
 
 const updateHorse = async (horseId) => {
-  const upsertHorseEndpoint = `${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`
+  const upsertHorseEndpoint = resolveApiUrl(`/api/horses/${horseId}`)
   try {
     const response = await axios.put(upsertHorseEndpoint, {}, {
       headers: {
@@ -22,7 +23,7 @@ const updateHorse = async (horseId) => {
 
 const setEarliestUpdatedHorseTimestamp = async (raceDayId, raceId) => {
   try {
-    const response = await axios.put(`${import.meta.env.VITE_BE_URL}/api/raceday/${raceDayId}/race/${raceId}`)
+    const response = await axios.put(resolveApiUrl(`/api/raceday/${raceDayId}/race/${raceId}`))
     return response.data
   } catch (error) {
     console.error(`Error fetching the earliest updated horse timestamp for raceDayId ${raceDayId}, raceId ${raceId}:`, error)
@@ -33,7 +34,7 @@ const setEarliestUpdatedHorseTimestamp = async (raceDayId, raceId) => {
 
 const checkIfUpdatedRecently = async (horseId) => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/${horseId}`)
+        const response = await axios.get(resolveApiUrl(`/api/horses/${horseId}`))
         
         if (response.data && response.data.updatedAt) {
             const updatedAt = new Date(response.data.updatedAt)
@@ -56,7 +57,7 @@ const checkIfUpdatedRecently = async (horseId) => {
 
 const fetchRaceFromRaceId = async (raceId) => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/race/${raceId}`)
+        const response = await axios.get(resolveApiUrl(`/api/race/${raceId}`))
         return response.data
     } catch (error) {
         console.error("Failed to fetch race data", error)
@@ -66,7 +67,7 @@ const fetchRaceFromRaceId = async (raceId) => {
 
 const fetchHorseRankings = async (raceId) => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/rankings/${raceId}`)
+        const response = await axios.get(resolveApiUrl(`/api/horses/rankings/${raceId}`))
         return response.data
     } catch (error) {
         console.error("Failed to fetch race data", error)
@@ -77,7 +78,7 @@ const fetchHorseRankings = async (raceId) => {
 const fetchHorseScores = async (ids = []) => {
     try {
         const params = ids.length ? { params: { ids: ids.join(',') } } : {}
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/horses/scores`, params)
+        const response = await axios.get(resolveApiUrl('/api/horses/scores'), params)
         return response.data
     } catch (error) {
         console.error('Failed to fetch horse scores', error)
@@ -88,7 +89,7 @@ const fetchHorseScores = async (ids = []) => {
 const fetchDriverRatings = async (ids = []) => {
     try {
         const params = ids.length ? { params: { ids: ids.join(',') } } : {}
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/driver/ratings`, params)
+        const response = await axios.get(resolveApiUrl('/api/driver/ratings'), params)
         return response.data
     } catch (error) {
         console.error('Failed to fetch driver ratings', error)
@@ -98,7 +99,7 @@ const fetchDriverRatings = async (ids = []) => {
 
 const triggerRatingsUpdate = async () => {
     try {
-        await axios.post(`${import.meta.env.VITE_BE_URL}/api/rating/update`)
+        await axios.post(resolveApiUrl('/api/rating/update'))
     } catch (error) {
         console.error('Failed to trigger ratings update', error)
         throw error

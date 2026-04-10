@@ -14,6 +14,7 @@ Horse and driver Elo services process historical race placements with configurab
 - driver `elo` as driver form Elo
 
 Horse rebuild, direct race update, and runtime prediction now share the same result-code and recency policy layer. At read time, the prediction layer rebuilds a race-time `formElo`, adds controlled driver support, applies race context, applies start-method affinity when the horse has enough auto/volt history, applies start-position affinity when the horse has enough history from the active start position within the active start method, applies distance affinity when the horse has enough bucket history, applies track x distance affinity when the horse has enough exact joint-context history, applies same-track affinity when the sample is strong enough, applies shoe signal when the shoe taxonomy is trustworthy, applies driver-horse affinity when the active driver has real shared history with the horse, applies lane bias through hierarchical shrinkage, and produces `effectiveElo` plus field-normalized `modelProbability`.
+If a horse has no results inside the active runtime lookback window, the prediction layer now uses the latest known completed race date anyway to compute inactivity and reverts stale stored form back toward career Elo instead of preserving an old hot form signal.
 
 ## Inputs and outputs
 - Inputs:
@@ -69,6 +70,7 @@ That means stored rating freshness and runtime prediction freshness are related,
 - Rating updates no longer depend on `Date.now()` for historical race weighting.
 - Evaluation endpoints perform read-only computation and now report baseline vs upgraded model quality.
 - Race and horse payloads expose `eloDebug` so suspicious rankings can be traced to specific recent results, context signals, shrink values and weights.
+- Horse detail now separates trend movement (`formTrendDelta`, versus stored form) from gap to class (`formGapToCareer`, versus career Elo) so the UI does not present those as the same thing.
 - Stored horse ratings keep `lastUpdated`, `formLastUpdated`, `lastRaceDate`, `formLastRaceDate` and `eloVersion`.
 - The app now exposes a simple Elo status surface through `GET /api/rating/status`, a start-page update action, and horse-detail freshness fields.
 
@@ -90,6 +92,7 @@ That means stored rating freshness and runtime prediction freshness are related,
 - `backend/src/race/race-read-service.js`
 
 ## Change log
+- 2026-04-10: Added stale-form fallback logic for horses with only old starts and split trend-vs-stored-form from gap-vs-career in horse detail payloads.
 - 2026-02-27: Initial feature documentation.
 - 2026-04-04: Removed references to the deleted admin frontend surface.
 - 2026-04-05: Added explicit runtime prediction model with effective Elo, normalized probabilities, debug and comparative evaluation.

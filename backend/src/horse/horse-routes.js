@@ -3,6 +3,7 @@ import horseService from './horse-service.js'
 import HorseRating from './horse-rating-model.js'
 import Horse from './horse-model.js'
 import { validateNumericParam } from '../middleware/validators.js'
+import { buildHorseEloPrediction } from '../rating/horse-elo-prediction.js'
 
 const router = express.Router()
 
@@ -28,6 +29,40 @@ const decodeCursor = (cursor) => {
   }
 }
 
+const buildCatalogSortTuple = (entry = {}) => ({
+  formRating: Number.isFinite(Number(entry.formRating)) ? Number(entry.formRating) : Number.NEGATIVE_INFINITY,
+  rating: Number.isFinite(Number(entry.rating)) ? Number(entry.rating) : Number.NEGATIVE_INFINITY,
+  id: Number.isFinite(Number(entry.id)) ? Number(entry.id) : Number.MAX_SAFE_INTEGER
+})
+
+const compareCatalogEntries = (left = {}, right = {}) => {
+  const a = buildCatalogSortTuple(left)
+  const b = buildCatalogSortTuple(right)
+
+  if (a.formRating !== b.formRating) return b.formRating - a.formRating
+  if (a.rating !== b.rating) return b.rating - a.rating
+  return a.id - b.id
+}
+
+const isEntryAfterCursor = (entry = {}, cursor = null) => {
+  if (!cursor) return true
+
+  const tuple = buildCatalogSortTuple(entry)
+  const cursorForm = Number(cursor.formRating)
+  const cursorRating = Number(cursor.rating)
+  const cursorId = Number(cursor.id) || 0
+
+  if (Number.isFinite(cursorForm) && tuple.formRating !== cursorForm) {
+    return tuple.formRating < cursorForm
+  }
+
+  if (Number.isFinite(cursorRating) && tuple.rating !== cursorRating) {
+    return tuple.rating < cursorRating
+  }
+
+  return tuple.id > cursorId
+}
+
 router.get('/', async (req, res) => {
   try {
     const limit = clampLimit(req.query.limit)
@@ -43,28 +78,16 @@ router.get('/', async (req, res) => {
       match.name = { $regex: escapeRegex(search), $options: 'i' }
     }
 
-    if (cursor && Number.isFinite(Number(cursor.formRating))) {
-      const formRating = Number(cursor.formRating)
-      const horseId = Number(cursor.id) || 0
-      match.$or = [
-        { formRating: { $lt: formRating } },
-        { formRating, id: { $gt: horseId } }
-      ]
-    }
-
-    const sort = { formRating: -1, rating: -1, id: 1 }
-
     const pipeline = []
     if (Object.keys(match).length) {
       pipeline.push({ $match: match })
     }
-    pipeline.push({ $sort: sort })
-    pipeline.push({ $limit: limit + 1 })
     pipeline.push({
       $project: {
         _id: 0,
         id: 1,
         name: 1,
+        results: 1,
         formRating: 1,
         rating: 1,
         winningRate: 1,
@@ -76,30 +99,52 @@ router.get('/', async (req, res) => {
     })
 
     const docs = await Horse.aggregate(pipeline).option({ allowDiskUse: true })
+    const horseIds = docs.map((horse) => Number(horse.id)).filter(Number.isFinite)
+    const ratingDocs = horseIds.length
+      ? await HorseRating.find({ horseId: { $in: horseIds } }, {
+          _id: 0,
+          horseId: 1,
+          rating: 1,
+          formRating: 1
+        }).lean()
+      : []
+    const ratingMap = new Map(ratingDocs.map((doc) => [Number(doc.horseId), doc]))
 
-    const hasMore = docs.length > limit
-    const items = hasMore ? docs.slice(0, limit) : docs
-    const last = hasMore ? items[items.length - 1] : null
+    const predictedDocs = docs
+      .map((horse) => {
+        const prediction = buildHorseEloPrediction({
+          horse,
+          ratingDoc: ratingMap.get(Number(horse.id)) || {}
+        })
+
+        return {
+          id: horse.id,
+          name: horse.name,
+          formRating: prediction.formElo ?? (Number.isFinite(horse.formRating) ? horse.formRating : horse.rating ?? null),
+          formDelta: prediction.debug?.formGapToCareer ?? null,
+          formTrendDelta: prediction.debug?.formTrendDelta ?? null,
+          rating: prediction.careerElo ?? (Number.isFinite(horse.rating) ? horse.rating : null),
+          winningRate: horse.winningRate ?? null,
+          placementRate: horse.placementRate ?? null,
+          trainerName: horse.trainerName ?? null,
+          dateOfBirth: horse.dateOfBirth ?? null,
+          birthCountryCode: horse.birthCountryCode ?? null
+        }
+      })
+      .sort(compareCatalogEntries)
+
+    const cursorFiltered = cursor ? predictedDocs.filter((entry) => isEntryAfterCursor(entry, cursor)) : predictedDocs
+    const hasMore = cursorFiltered.length > limit
+    const items = hasMore ? cursorFiltered.slice(0, limit) : cursorFiltered
+    const last = items[items.length - 1] || null
 
     res.json({
-      items: items.map((horse) => ({
-        id: horse.id,
-        name: horse.name,
-        formRating: Number.isFinite(horse.formRating) ? horse.formRating : horse.rating ?? null,
-        formDelta: Number.isFinite(horse.formRating) && Number.isFinite(horse.rating)
-          ? Number((horse.formRating - horse.rating).toFixed(2))
-          : null,
-        rating: Number.isFinite(horse.rating) ? horse.rating : null,
-        winningRate: horse.winningRate ?? null,
-        placementRate: horse.placementRate ?? null,
-        trainerName: horse.trainerName ?? null,
-        dateOfBirth: horse.dateOfBirth ?? null,
-        birthCountryCode: horse.birthCountryCode ?? null
-      })),
+      items,
       hasMore,
       nextCursor: last
         ? encodeCursor({
             formRating: Number.isFinite(last.formRating) ? last.formRating : last.rating ?? 0,
+            rating: Number.isFinite(last.rating) ? last.rating : 0,
             id: last.id ?? 0
           })
         : null

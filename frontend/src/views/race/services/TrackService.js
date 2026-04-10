@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { resolveApiUrl } from '@/config/api-base.js'
 
 const normalize = (t) => {
   if (!t) return {}
@@ -14,7 +15,7 @@ const normalize = (t) => {
 
 const getTrackByCode = async (trackCode) => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/track/${trackCode}`)
+    const response = await axios.get(resolveApiUrl(`/api/track/${trackCode}`))
     return normalize(response.data)
   } catch (error) {
     console.error(`Failed to fetch track with code ${trackCode}:`, error)
