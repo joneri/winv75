@@ -3,10 +3,10 @@
 
 # AIM Copilot layer (optional)
 
-## Purpose
+## What it does
 
 The Copilot layer is an interface adapter for AIM.
-It makes AIM faster to start and easier to operate in VS Code with:
+It makes AIM easier to start and use in VS Code with:
 - custom agents
 - handoff buttons
 - slash commands via prompt files
@@ -20,7 +20,7 @@ Parity rule:
 - Copilot and Codex must execute the same repository-driven AIM behavior.
 - Where parity is impossible, Copilot must document the difference explicitly and fall back safely instead of silently changing the method.
 
-## What this layer must preserve
+## What it must preserve
 
 - Explicit role order: `PO → TDO → Dev → Reviewer → TDO → PO`
 - Gate semantics: approvals matter at `A`, `B`, `E`
@@ -28,6 +28,7 @@ Parity rule:
 - Escalation rules for scope, intent, trust, and missing inputs
 - Scope expansion only with explicit stop-and-ask
 - Execution mode visibility (`Strict` or `Auto`) at all gates
+- Cost profile visibility when not `Standard` or when resource use matters
 - Canonical role reporting (`PO`, `TDO`, `Dev`, `Reviewer`)
 
 ## Repository-aware loading
@@ -51,10 +52,14 @@ Minimum context areas:
 - `reviewer`
 - `environment`
 - `approval`
+- `cost`
 - `parallel`
+- `modularity`
 
 Copilot-specific rule:
-- command routing and handoff UI may differ, but those differences must consume the same normalized context rather than inventing a second policy model
+- command routing and handoff UI may differ, but they must still use the same normalized context instead of inventing a second policy model
+- Gate B planning must treat small increments as small behavioral scope, not minimal file count, and must ask whether focused files reduce future context load.
+- Builder and reviewer agents should prefer cohesive files and clear module boundaries when they preserve behavior, while rejecting broad rewrites, arbitrary splitting, or context hogs.
 
 Failure handling:
 - if repository layers contradict each other on a trust-affecting rule, stop and escalate
@@ -90,14 +95,14 @@ Fallback rule:
 - `.github/prompts/install-aim.prompt.md`
 - `.github/prompts/help-aim.prompt.md`
 - `.github/prompts/start-aim.prompt.md`
-- `.github/prompts/upgrade-aim-1.2-to-1.4.prompt.md`
+- `.github/prompts/upgrade-aim-1.5-to-1.6.prompt.md`
 
 Canonical rule:
 - `.github/agents/aim*.agent.md` are part of the shared AIM instruction layer and also act as native Copilot agent files.
 - `.github/prompts/` are source of truth for Copilot-specific entrypoints and UX wiring.
 - The shared AIM runtime contract still comes from `AGENTS.md` and `docs/workflow/agile-iteration-method.md`.
 
-## UI handoff buttons
+## Handoff buttons
 
 The `aim` agent defines handoff buttons to reduce typing and speed up gate flow:
 - `Send "approve"`
@@ -116,7 +121,7 @@ These are configured in:
 
 ## Quick start
 
-### Preferred production path
+### Preferred path
 1. Select `aim` in the Copilot agent dropdown.
 2. Run `/aim start "EPIC: ..."`
 3. Make mode explicit:
@@ -127,7 +132,7 @@ Behavior:
 - if there is no active incomplete Epic, initialize AIM and present Gate A
 - if an active incomplete Epic already exists in `.aim/state.json`, show status and resume that Epic instead of creating a parallel session
 
-### Secondary starts
+### Other valid starts
 Natural-language starts remain valid when the optional layer is installed:
 - `Install AIM`
 - `Start working according to AIM`
@@ -142,28 +147,26 @@ Then provide:
 - trust rules
 - acceptance criteria
 
-Migration start remains a secondary specialized path:
-- Run `/migrate-aim-1.0-to-1.1`.
-- Or use `docs/workflow/migrate-aim-1.0-to-1.1.md` in chat.
-- Run `/migrate-aim-1.1-to-1.2`.
-- Or use `docs/workflow/migrate-aim-1.1-to-1.2.md` in chat.
-- AIM 1.2 to AIM 1.4 migration is currently documented in `docs/workflow/migrate-aim-1.2-to-1.4.md`.
-- A dedicated Copilot prompt file is packaged as `.github/prompts/upgrade-aim-1.2-to-1.4.prompt.md`.
+Upgrade start remains a secondary specialized path:
+- Run `/aim upgrade 1.5-to-1.6`.
+- Or use `docs/workflow/migrate-aim-1.5-to-1.6.md` in chat.
 
-Help and diagnostics entrypoints:
+Help and diagnostics:
 Use these commands when the user needs orientation instead of immediate execution:
 - `/aim help`
 - `/aim status`
 - `/aim validate`
 - `/aim config`
-- `/aim upgrade 1.2-to-1.4`
+- `/aim cost standard|control|deep`
+- `/aim upgrade 1.5-to-1.6`
 
 Expected behavior:
 - `/aim help` explains the command surface, Epic versus Done Increment, mode choice, and where AIM state lives
 - `/aim status` summarizes current Epic, increment, role, mode, gate, adapter, and parallel capability
 - `/aim validate` checks `.aim`, `state.json`, runtime coherence, and ownership boundaries
 - `/aim config` explains effective configuration from repo policy, runtime state, and adapter limits
-- `/aim upgrade 1.2-to-1.4` points to the shared migration workflow and packaged migration prompt
+- `/aim cost standard|control|deep` sets runtime depth without changing approval semantics
+- `/aim upgrade 1.5-to-1.6` points to the shared migration workflow and packaged migration prompt
 
 ## Adapter support levels
 
@@ -193,7 +196,7 @@ Anything classified as `planned` or `not_in_release_contract` must not be presen
 Copilot must not treat `planned` as silently supported.
 It must preserve the policy intent and fall back safely.
 
-## Recommended default operating mode
+## Default operating mode
 
 - Start with PO Epic creation (`EPIC: ...`).
 - Let TDO define the first Done Increment from that Epic before coding.
@@ -202,7 +205,7 @@ It must preserve the policy intent and fall back safely.
 - Keep commit-after-Gate-E optional.
 - Use `/aim status` and `/aim replan` for control.
 
-## Optional commit policy
+## Commit policy
 
 Commit policy is team-level, not AIM-core.
 
@@ -259,12 +262,10 @@ Expected fix:
 
 - `AGENTS.md`
 - `docs/workflow/agile-iteration-method.md`
-- `docs/features/aim-1.4-bootstrap-and-resume.md`
-- `docs/features/aim-1.4-repo-aware-runtime-context.md`
-- `docs/features/aim-1.4-platform-adapters-and-parity.md`
+- `docs/features/aim-cost-control-mode.md`
+- `docs/features/aim-modularity-context-efficiency.md`
+- `docs/workflow/aim-adapter-guidance.md`
 - `.github/agents/aim.agent.md`
 - `.github/prompts/start-aim.prompt.md`
 - `.github/prompts/help-aim.prompt.md`
-- `.github/prompts/upgrade-aim-1.2-to-1.4.prompt.md`
-- `.github/prompts/migrate-aim-1.0-to-1.1.prompt.md`
-- `.github/prompts/migrate-aim-1.1-to-1.2.prompt.md`
+- `.github/prompts/upgrade-aim-1.5-to-1.6.prompt.md`

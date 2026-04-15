@@ -1,6 +1,7 @@
 # Epic docs
 
-In AIM 1.2, this folder is the kickoff artifact.
+In AIM 1.6, this folder remains the canonical Epic-doc location.
+Keep this folder focused on reusable templates and active, current AIM Epic material.
 
 ## Rule
 - PO writes the Epic from desired outcome and trust expectations.

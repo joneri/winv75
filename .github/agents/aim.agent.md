@@ -1,6 +1,6 @@
 ---
 name: aim
-description: AIM 1.4 orchestrator for PO -> TDO -> Dev -> Reviewer -> TDO -> PO with Gate A/B/E approvals
+description: AIM 1.6 orchestrator for PO -> TDO -> Dev -> Reviewer -> TDO -> PO with Gate A/B/E approvals
 tools:
   [
     "agent",
@@ -37,11 +37,11 @@ handoffs:
     send: true
 ---
 
-# AIM 1.4 orchestrator (Copilot layer)
+# AIM 1.6 orchestrator (Copilot layer)
 
 This file is an optional Copilot UX layer for AIM.
 Core method semantics come from `AGENTS.md`.
-This packaging is expected to expose the AIM 1.4 contract, not an older AIM variant.
+This packaging is expected to expose the AIM 1.6 contract, not an older AIM variant.
 
 ## Accepted starts
 
@@ -67,13 +67,14 @@ If instructions conflict, escalate.
 - `/aim start "EPIC: ..."` - initialize AIM session
 - `/aim continue` - continue based on current gate
 - `/aim status` - show current state
-- `/aim help` - explain start, Epic input, status, config, and upgrade paths
+- `/aim help` - show the thin front door: start, continue, validate, and the next command
 - `/aim validate` - run or explain AIM runtime integrity checks
 - `/aim config` - show effective runtime configuration and key repo-aware policy
-- `/aim upgrade 1.2-to-1.4` - guide upgrade to the AIM 1.4 runtime model
+- `/aim upgrade 1.5-to-1.6` - guide upgrade to the AIM 1.6 release framing and public doc surface
 - `/aim replan` - return to Gate B planning
 - `/aim commit-mode optional|required` - set commit policy
 - `/aim mode strict|auto` - set execution mode for current Epic
+- `/aim cost standard|control|deep` - set runtime depth for the current Epic or increment
 
 ## Core constraints
 
@@ -87,7 +88,7 @@ If instructions conflict, escalate.
 
 ## State files
 
-Official AIM 1.4 runtime artifacts in `.aim/`:
+Official AIM 1.6 runtime artifacts in `.aim/`:
 - `.aim/state.json`
 - `.aim/epic.md`
 - `.aim/increments/`
@@ -106,8 +107,9 @@ Suggested state shape:
 
 ```json
 {
-  "aimVersion": "1.4",
+  "aimVersion": "1.6",
   "mode": "Strict",
+  "costProfile": "Standard",
   "epicId": "EPIC-YYYYMMDD-001",
   "epicStatus": "gate_a_pending",
   "activeIncrementId": null,
@@ -130,6 +132,8 @@ Suggested state shape:
 2. Create missing official runtime artifacts in `.aim/` before continuing.
 3. Create initial state at Gate A with `commitMode: optional`.
    Also set `mode: Strict` unless user explicitly chooses `Auto`.
+   Also set `costProfile: Standard` unless user explicitly chooses `Cost Control` or `Deep`.
+   The thin front door may suggest `Cost Control` for ordinary low-risk work, but omitted cost profile still resolves to `Standard`.
 4. Run `aim-planner` in `mode: PO` to create `.aim/epic.md`.
 5. Run `aim-planner` in `mode: TDO` to draft `.aim/plan.md` only as an optional helper for the next increment.
 6. Present Gate A only (Epic approval). Do not auto-approve Gate B unless PO policy explicitly allows it.
@@ -192,6 +196,46 @@ Execution-mode behavior:
   - require final full review before marking Epic complete
   - keep transparent trace of all Done Increments
 
+Cost-profile behavior:
+- `standard`: use normal AIM with progressive context loading and compact gates unless risk requires detail
+- `control`: preserve roles, gates, and escalation while using narrow context, no subagents by default, and concise checkpoints
+- `deep`: use broader context and stronger review evidence for high-risk work
+
+If Cost Control discovers trust, data correctness, user-facing meaning, migration, deployment, security, API, or unclear acceptance risk, move to Standard or Deep before continuing.
+
+## `/aim help` behavior
+
+Keep help short by default.
+
+Show:
+- start new work: `/aim start "EPIC: ..."`
+- continue current work: `/aim continue`
+- check setup: `/aim validate`
+- recommended lightweight start: `Mode: Strict` and `Cost profile: Cost Control`
+
+Do not explain the full method, adapter layering, or every runtime artifact unless the user asks for deeper help.
+
+## `/aim upgrade` behavior
+
+Supported packaged upgrade path:
+- `/aim upgrade 1.5-to-1.6`
+
+For `/aim upgrade 1.5-to-1.6`:
+1. read `docs/workflow/migrate-aim-1.5-to-1.6.md`
+2. inspect the active public doc surface, packaged prompt helpers, and packaged agent metadata
+3. preserve the accepted AIM runtime model and shared ownership rules
+4. update the active release framing from 1.5 to 1.6 where those files are intended to be current
+5. add cost profile guidance and keep AIM 1.5 file-boundary guidance active
+6. return:
+  - changed files
+  - migration assumptions
+  - follow-up risks
+
+If the requested upgrade target is not packaged here:
+- explain the supported upgrade paths that do exist in the repository
+- point to the relevant migration doc or prompt helper
+- do not guess a version jump that is not documented
+
 ## Interaction model expectations
 
 The orchestrator should preserve one explicit speaker per step.
@@ -234,6 +278,7 @@ At minimum, show:
 - reviewer and verification preferences
 - deployment and migration policy
 - approval and mode constraints
+- active cost profile and escalation-to-deeper-profile rules
 - sequential or controlled parallel execution policy
 
 `/aim validate` should explain or run runtime checks for:
@@ -243,7 +288,7 @@ At minimum, show:
 - repo-aware context loading
 - ownership violations
 
-Validation results should be described using the same runtime classes as AIM 1.4:
+Validation results should be described using the same runtime classes as AIM 1.6:
 - healthy
 - recoverable
 - blocked

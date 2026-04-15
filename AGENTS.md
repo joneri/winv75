@@ -5,23 +5,25 @@
 # AGENTS.md
 
 ## Version
-This file defines **AIM 1.4** operational behavior while retaining the AIM 1.2 core loop semantics and the established AIM 1.3 runtime model.
+This file defines **AIM 1.6** operational behavior while retaining the AIM 1.2 core loop semantics and the accepted AIM 1.4 runtime model.
 
 ## Purpose
 This repo uses “Agile iteration method” with explicit AI roles and structured handoffs. The goal is to avoid bouncing between random theories and instead converge fast with small, shippable increments across supported adapters such as Codex, Copilot, and Claude Code.
 
-For AIM 1.4, this repo distinguishes between:
+For AIM 1.6, this repo distinguishes between:
 - AIM core
 - AIM runtime
 - repo-aware policy
 - platform adapters
 
 Release-line note:
-- AIM 1.4 keeps the accepted AIM 1.3 runtime architecture stable.
-- AIM 1.4 makes that runtime easier to adopt, package, and explain across Codex, Copilot, and Claude Code.
+- AIM 1.6 keeps the accepted AIM 1.4 runtime architecture stable.
+- AIM 1.6 makes cost control explicit without weakening gates, ownership, or escalation.
+- AIM 1.6 makes the public front door lighter: start, continue, or validate first; deeper method detail stays available behind the docs.
+- AIM 1.5 modularity and context-efficiency guidance remains active.
 
 Important: runtime capabilities differ by environment. AIM must prefer shared behavior first. If controlled parallel subagents are unavailable or disallowed by repo policy, the runtime must fall back to sequential execution without changing core gate semantics or ownership rules.
-For coding standards, PR rules and local commands, read CONTRIBUTING.md first.
+For coding standards, PR rules and local commands, read CONTRIBUTING.md first when it exists.
 
 ## How to read this file
 
@@ -37,6 +39,12 @@ Follow the gates in order. When in doubt:
 - otherwise continue to Gate E.
 
 ## How to start a run
+The front door should be thin.
+Before showing the full method, route the user to one of:
+- start a new AIM run
+- continue an existing AIM run
+- validate the AIM setup
+
 1. Open the repository in the chosen AIM adapter.
 2. Ensure `AGENTS.md` and the primary AIM workflow docs are present.
 3. If using Claude Code, also ensure `CLAUDE.md` is present.
@@ -45,60 +53,26 @@ Follow the gates in order. When in doubt:
 6. At hard gates, you may use short control replies such as `approve` or `change: ...` for the fastest path.
    These are transport shortcuts, not a requirement that AIM display the same visible CTA wording at every checkpoint.
 7. Choose execution mode at Epic start: `Strict` (default) or `Auto`.
+8. Choose cost profile when resource use matters: `Standard` (default), `Cost Control`, or `Deep`.
 
 Optional Epic-doc-first variant:
 1. Start from an Epic doc in `docs/epics/` and clarify trust rules first.
 2. Ask PO to write the Epic from the desired outcome in that Epic doc.
 3. Continue with normal gates.
 
-Kickoff contract (AIM 1.4):
+Kickoff contract (AIM 1.6):
 1. PO creates the Epic from what should be achieved.
 2. TDO creates the next Done Increment based on that Epic.
 
-## Optional adapter layers (AIM 1.4)
+## Optional adapter layers (AIM 1.6)
 
 Optional adapter layers may improve UX and discoverability, but they must preserve this file's gate and escalation semantics.
+Adapter-specific entrypoints, optional helper files, parity labels, and fallback details live in `docs/workflow/aim-adapter-guidance.md`.
 
-Copilot layer:
-- documented in `docs/workflow/copilot-layer.md`
-
-Claude Code layer:
-- uses `CLAUDE.md` as the project instruction bridge
-- may add `.claude/commands/` for AIM command entrypoints
-- may add `.claude/agents/` for AIM-aligned Claude helpers
-
-Quick start phrases:
-- `Install AIM`
-- `Start working according to AIM`
-- `/aim start "EPIC: ..."`
-- `/aim upgrade 1.2-to-1.4`
-- `Starta en AIM-loop med denna EPIC: ...`
-- `/migrate-aim-1.0-to-1.1`
-- `/migrate-aim-1.1-to-1.2`
-
-These layers improve UX and speed, but must preserve this file's gate and escalation semantics.
-
-## Codex skill and repo-aware AIM
-
-For repo-aware AIM, the repository is the canonical contract.
-
-In Codex:
-- the AIM skill is a bootstrap and convenience layer
-- the skill can expose the `/aim` command family, such as `/aim start "EPIC: ..."`
-- the skill can also expose convenience entrypoints such as `/aim help`, `/aim status`, `/aim config`, `/aim validate` and `/aim upgrade 1.2-to-1.4`
-
-Authority rule:
-- `AGENTS.md`, `docs/workflow/agile-iteration-method.md` and `.github/agents/aim*.agent.md` define repo-aware AIM behavior
-- the Codex skill must not replace that repo-owned contract with a hidden second source of truth
-
-Availability rule:
-- when the AIM skill is installed and enabled, `/aim` is the normal user-facing Codex start surface
-- without the skill, `/aim` is not available in Codex
-- without the skill, repo-aware AIM can still run in Codex through an explicit AIM start prompt when the repository already contains the shared AIM contract
-
-Practical rule:
-- use the skill when you want the fastest Codex start, bootstrap help, or the `/aim` command surface
-- use the repo contract as the source of truth in all cases
+Canonical rule:
+- adapters may expose faster commands or helper files
+- adapters must not redefine AIM core, runtime ownership, gate meaning, role order, or acceptance
+- if adapter guidance conflicts with this file, escalate to PO
 
 ## Repository profile (required)
 
@@ -131,15 +105,7 @@ Required AIM file structure:
 - `.github/agents/aim-reviewer.agent.md`
 
 Optional adapter file structure:
-- Copilot prompt helpers:
-  - `.github/prompts/start-aim.prompt.md`
-  - `.github/prompts/install-aim.prompt.md`
-  - `.github/prompts/help-aim.prompt.md`
-  - `.github/prompts/upgrade-aim-1.2-to-1.4.prompt.md`
-- Claude Code:
-  - `CLAUDE.md`
-  - `.claude/commands/`
-  - `.claude/agents/`
+- documented in `docs/workflow/aim-adapter-guidance.md`
 
 Layering and override order:
 1. AIM base semantics (internal skill baseline)
@@ -157,6 +123,8 @@ Installation boundary:
 - `.github/agents/aim*.agent.md` are part of the AIM repository instruction layer, not Copilot-only decoration.
 - In Copilot, those same files also act as native custom-agent files.
 - `.github/prompts/` are optional Copilot-style prompt helpers, not the canonical AIM contract.
+- In Codex, the repository remains the canonical AIM contract.
+- In Codex, `/aim` depends on the AIM skill or another compatible runtime entrypoint and should be treated as a launcher surface rather than the source of method authority.
 
 If layered instructions conflict and cannot be resolved safely, escalate to PO.
 
@@ -166,7 +134,51 @@ Role impact rule:
 - `Dev`: implementation and verification behavior within approved Gate B
 - `Reviewer`: correctness/risk checks and final readiness signal
 
-## AIM 1.4 architecture split
+## Documentation policy (feature docs)
+
+When a change introduces a new behaviour, a new data contract, a new fallback, or a non-obvious rule, we must document it.
+
+### Read-before-change rule
+Before proposing or implementing a fix, the agent must check whether a relevant feature explanation exists in `docs/features/`.
+If it exists, the agent must:
+- restate the intended behaviour from the doc
+- explain exactly what is broken and why, with evidence
+- keep the fix consistent with the documented contract, or explicitly propose a doc update as part of the same Done Increment
+
+### When to write documentation
+Create or update a feature explanation when:
+- a feature is introduced or significantly changed
+- a workaround is added that affects future debugging
+- the API contract changes, including shape, semantics, fallbacks, or flags
+- a fix relies on a specific assumption such as calendar symbol, trading days, or coverage thresholds
+
+### Where to write it
+Add a short doc in:
+
+```text
+docs/features/<feature-name>.md
+```
+
+Examples:
+- `docs/features/value-series-trading-days.md`
+- `docs/features/value-series-provisional-points.md`
+- `docs/features/autopost-kpis.md`
+
+### Required contents
+Keep it short and concrete:
+- Purpose: what user value it delivers
+- How it works: the core logic and any fallbacks
+- Key decisions: why this approach was chosen
+- Inputs/outputs: what comes in and what is returned
+- Edge cases: known traps and how they are handled
+- Debugging: the single best log or check to verify behaviour
+- Related files: the main files involved
+
+### Update rule
+If an iteration changes behaviour, it must also update the relevant feature explanation.
+If no such doc exists, create it.
+
+## AIM 1.6 architecture split
 
 The method and the runtime are related but not the same thing.
 
@@ -175,6 +187,11 @@ The method and the runtime are related but not the same thing.
   - gate semantics
   - Done Increment discipline
   - `Strict` and `Auto` execution modes
+- `AIM runtime depth`:
+  - `Standard`, `Cost Control`, and `Deep` cost profiles
+  - progressive context loading
+  - compact gate reporting when risk is low
+  - risk-scaled review and verification
 - `AIM runtime`:
   - bootstrap
   - repo-local `.aim` workspace
@@ -193,7 +210,7 @@ Ownership rule:
 - Repo-aware policy constrains what the runtime may do.
 - Platform adapters expose capabilities, but do not redefine AIM core semantics.
 
-## `.aim` workspace (AIM 1.4 architectural contract)
+## `.aim` workspace (AIM 1.6 architectural contract)
 
 `.aim` is the repo-local AIM runtime workspace.
 
@@ -204,7 +221,7 @@ Ownership rule:
 - If `.aim` is missing when AIM starts or resumes, the AIM runtime must create it before continuing.
 - In Codex or Claude Code, this creation is performed by AIM running inside the active adapter, not by the host product as a standalone AIM feature.
 
-Official AIM 1.4 workspace contract:
+Official AIM 1.6 workspace contract:
 - required artifacts:
   - `.aim/epic.md`
   - `.aim/state.json`
@@ -235,7 +252,7 @@ Housekeeping rules:
 - stale logs or analysis artifacts may be removed or archived once their decision value is captured elsewhere
 - secrets, credentials, tokens, and unrelated product data must never be stored in `.aim`
 
-## Bootstrap and resume flow (AIM 1.4)
+## Bootstrap and resume flow (AIM 1.6)
 
 All adapters must follow the same conceptual startup flow:
 1. detect repo root
@@ -256,7 +273,7 @@ Fallback rule:
 - if `.aim/state.json` conflicts with available artifacts or repo policy, stop and ask before continuing
 - if platform capability is unavailable, continue sequentially without changing the runtime contract
 
-## Normalized repo-aware runtime context (AIM 1.4)
+## Normalized repo-aware runtime context (AIM 1.6)
 
 After repository files are loaded, the runtime must normalize them into one repo-aware context object.
 
@@ -285,8 +302,12 @@ Canonical context fields:
   - platform limits, available capabilities, and adapter-specific constraints
 - `approval`
   - execution-mode constraints, commit policy, and any gate-specific approval rules
+- `cost`
+  - active cost profile, context budget, validation depth, and escalation-to-deeper-profile rules
 - `parallel`
   - whether parallel work is allowed, restricted, or disabled and where subagent outputs may go
+- `modularity`
+  - file-boundary, responsibility, and future context-efficiency guidance for planning, implementation, and review
 
 Normalization rules:
 - later layers may refine earlier layers, but must not silently contradict accepted AIM core semantics
@@ -298,7 +319,7 @@ Failure handling:
 - if layers contradict each other on a trust-affecting rule, stop and escalate
 - if a repo policy requests a capability the platform cannot support, preserve the policy in context and fall back safely at execution time
 
-## State transition model (AIM 1.4)
+## State transition model (AIM 1.6)
 
 `state.json` must represent one durable runtime state at a time.
 
@@ -346,7 +367,7 @@ Ownership rules for transitions:
 - `TDO` owns transition synthesis before Gate E
 - `PO` owns acceptance decisions that lead to `done_increment_accepted` or `epic_complete`
 
-## Validator support (AIM 1.4)
+## Validator support (AIM 1.6)
 
 The AIM runtime should support one quick integrity check over the active runtime state.
 
@@ -375,30 +396,31 @@ Ownership rule:
 - validator output may explain recommended repair actions
 - only the main AIM thread may perform repairs that mutate shared runtime state
 
-## Migration support (AIM 1.4)
+## Migration support (AIM 1.6)
 
-AIM 1.4 must remain adoptable by repositories that already use AIM 1.2.
+AIM 1.6 must remain adoptable by repositories that already use the accepted AIM 1.4 runtime model.
+The active repository surface keeps the current 1.5-to-1.6 upgrade bridge; older migration hops may live outside the active file set.
 
 Supported migration scenarios:
 - no `.aim` exists yet:
-  - create the official `.aim` workspace at first AIM 1.4 startup
+  - create the official `.aim` workspace at first AIM 1.6 startup
   - initialize `.aim/epic.md` and `.aim/state.json` from the active Epic context
 - informal `.aim` already exists:
   - preserve useful legacy helper artifacts during migration
-  - make the official AIM 1.4 workspace contract authoritative going forward
+  - make the official AIM 1.6 workspace contract authoritative going forward
 - Codex-only setup:
-  - adopt the shared AIM 1.4 runtime model without requiring optional Copilot-layer usage
+  - adopt the shared AIM 1.6 runtime model without requiring optional Copilot-layer usage
 - Claude Code setup:
-  - adopt the shared AIM 1.4 runtime model without replacing `AGENTS.md` with `CLAUDE.md`
+  - adopt the shared AIM 1.6 runtime model without replacing `AGENTS.md` with `CLAUDE.md`
 - Copilot-layer setup:
-  - keep `.github/agents/aim*.agent.md`, but align them to the shared AIM 1.4 runtime contract instead of adapter-only behavior
+  - keep `.github/agents/aim*.agent.md`, but align them to the shared AIM 1.6 runtime contract instead of adapter-only behavior
 
 Upgrade checklist:
 - confirm the repository profile still loads through `AGENTS.md` and `.github/agents/aim*.agent.md`
 - add or normalize the official `.aim` workspace contract
 - ensure `state.json` becomes the durable runtime checkpoint
 - update docs to distinguish AIM core, AIM runtime, repo-aware policy, and platform adapters
-- keep startup, resume, and validator behavior consistent with the AIM 1.4 runtime docs
+- keep startup, resume, and validator behavior consistent with the AIM 1.6 runtime docs
 
 Legacy artifact policy:
 - tolerated temporarily:
@@ -407,12 +429,12 @@ Legacy artifact policy:
 - migrated:
   - active Epic intent into `.aim/epic.md`
   - active runtime checkpoint into `.aim/state.json`
-  - repository docs that still describe AIM 1.2-only runtime behavior
+  - repository docs that still describe older runtime behavior
 - archived:
   - stale logs, analysis notes, or superseded helper artifacts once their decision value is captured elsewhere
 - removed or replaced:
   - legacy files that pretend to own current gate, role, or acceptance state outside `.aim/state.json`
-  - stale instructions that contradict AIM 1.4 runtime ownership or bootstrap rules
+  - stale instructions that contradict AIM 1.6 runtime ownership or bootstrap rules
 
 Migration and runtime integrity:
 - migration must preserve startup and resume continuity
@@ -420,45 +442,19 @@ Migration and runtime integrity:
 - recoverable migration gaps may be repaired by the main AIM thread
 - contradictory legacy state or contradictory repo instructions must be escalated instead of guessed through
 
-## Platform adapters and parity (AIM 1.4)
+## Platform adapters and parity (AIM 1.6)
 
-AIM 1.4 must document platform adapters explicitly instead of leaving parity to implication.
+AIM 1.6 documents platform adapters explicitly instead of leaving parity to implication.
 
-Parity classification:
-- `shared`
-  - same conceptual behavior and same runtime contract across supported adapters
-- `shared_with_adapter_differences`
-  - same runtime contract, but different entrypoints, tools, or interface mechanics
-- `codex_only`
-  - currently documented only for the Codex adapter
-- `copilot_only`
-  - currently documented only for the Copilot adapter
-- `claude_code_only`
-  - currently documented only for the Claude Code adapter
-- `planned`
-  - intentionally not yet treated as a supported shared capability
+Adapter-specific parity labels, capability notes, entrypoint examples, and optional helper-file details live in `docs/workflow/aim-adapter-guidance.md`.
 
-Adapter rules:
-- Codex:
-  - uses repository instructions plus the available Codex tool surface
-  - may expose bounded subagent capability where runtime support exists
-  - may expose adapter-specific tools such as MCP-backed browser automation
-- Copilot:
-  - uses `.github/agents/aim*.agent.md` as both shared instruction-layer input and native Copilot agent packaging
-  - uses `.github/prompts/` as optional Copilot command-entry helpers
-  - may differ in command routing, handoff UI, and prompt-file availability
-  - must still preserve the shared runtime contract and repo-aware policy interpretation
-- Claude Code:
-  - uses `AGENTS.md` as the canonical repository contract and `CLAUDE.md` as the Claude bridge layer
-  - may expose repository-defined entrypoints through `.claude/commands/` and helper agents through `.claude/agents/`
-  - may use bounded Claude helpers for analysis, discovery, verification, or option generation only
-  - must still preserve the shared runtime contract and repo-aware policy interpretation
+Canonical adapter rules retained here:
+- adapters must preserve the shared AIM runtime contract and repo-aware policy interpretation
+- adapters may differ in command routing, handoff UI, tools, or helper-file availability
+- if a capability is unavailable, preserve the intended policy and fall back safely instead of silently redefining the method
+- only the main AIM thread may own `.aim/state.json`, gate progression, or acceptance decisions
 
-Fallback rule:
-- if a capability is not available in one adapter, the adapter must preserve the intended policy, report the limitation, and fall back safely instead of silently redefining the method
-- regardless of parity level, only the main AIM thread may own `.aim/state.json`, gate progression, or acceptance decisions
-
-## Execution modes (AIM 1.4 architecture, AIM 1.2 core semantics preserved)
+## Execution modes (AIM 1.6 architecture, AIM 1.2 core semantics preserved)
 
 Mode must be selected when starting an Epic and shown in all gate outputs.
 
@@ -472,7 +468,34 @@ Mode must be selected when starting an Epic and shown in all gate outputs.
   - A final full review is required before Epic completion is accepted.
   - All generated Done Increments must be clearly traceable.
 
-## Controlled parallelism (AIM 1.4)
+## Cost profiles (AIM 1.6)
+
+Cost profile controls runtime depth. It does not change AIM gates, role ownership, Done Increment rules, or escalation conditions.
+
+- `Standard` (default):
+  - normal AIM behavior with progressive context loading
+  - read the shortest authoritative context first
+  - run cheap validation before manual artifact inspection
+  - keep gate outputs compact unless risk requires more detail
+- `Cost Control`:
+  - use for low-risk, reversible maintenance, documentation cleanup, small adapter text changes, or obvious narrow fixes
+  - no controlled parallel subagents by default
+  - read only `AGENTS.md`, the shortest relevant workflow or feature doc, and directly affected files unless risk appears
+  - prefer one compact Gate B, one implementation summary, one concise review, and one Gate E checkpoint
+  - skip nonessential `.aim` artifact inspection when the validator reports healthy and runtime state is not the work target
+- `Deep`:
+  - use for trust-sensitive, data-correctness, migration, deployment, public API, security, or high-blast-radius work
+  - allow broader inspection, stronger verification, and fuller review evidence
+
+Escalation rule:
+- if Cost Control discovers trust, data correctness, user-facing meaning, migration, deployment, or scope risk, move to `Standard` or `Deep` before continuing
+- if Standard work becomes unusually broad or uncertain, move to `Deep` before final acceptance
+
+Cost profiles are orthogonal to execution modes:
+- `Mode: Strict` + `Cost profile: Cost Control` means approvals still pause at A/B/E, but the runtime stays narrow
+- `Mode: Auto` + `Cost profile: Standard` means AIM can continue between increments while keeping normal runtime depth
+
+## Controlled parallelism (AIM 1.6)
 
 Controlled parallel work is optional and runtime-dependent.
 
@@ -540,6 +563,7 @@ Canonical role rule (AIM 1.2):
 - Scope is explicitly limited.
 - Risks and a basic test or verification plan are stated.
 - Files to be touched are explicit.
+- File boundaries are chosen for clear responsibility and future context efficiency, not for the lowest possible file count.
 - If requested by PO, the increment is constrained to one file only.
 
 ---
@@ -556,6 +580,8 @@ Canonical role rule (AIM 1.2):
   (no duplicated timelines or double-counted values).
 - Minimal tests or verifications are described and possible to run.
 - No unrelated refactors or cleanup.
+- Within the approved Gate B scope, Dev may extract cohesive presentation, hooks, helpers, domain logic, or service modules when that preserves behavior and makes the increment easier to understand, review, and change later.
+- Dev must not create a giant file or keep unrelated responsibilities together just to make the diff look smaller.
 - If uncertain about correctness or scope, Dev must ask before Gate C.
 
 ---
@@ -570,6 +596,7 @@ Canonical role rule (AIM 1.2):
   - edge cases
   - performance or data integrity risks
   - confusing or misleading behavior
+- Checks whether the changed file and module boundaries reduce future context load without needless fragmentation.
 - Produces a short, concrete change list.
 - If there are signs of syntactic issues  
   (duplicate declarations, duplicate keys, obviously broken diff), the Reviewer must block the increment and send it back to Dev before TDO can proceed.
@@ -595,8 +622,11 @@ Manual verification alone must NOT be treated as a blocking condition.
 - No guessing. If unsure, inspect code and show the exact file and function involved.
 - No scope creep. If something is outside scope, propose it as a later increment.
 - No “frontend vs backend” flip-flopping. Prove with data: input, output, contract.
-- One change set per increment. Keep it small.
+- One change set per increment. Keep behavioral scope small and shippable.
 - Respect the scope approved at Gate B. If the implementation requires more than was agreed, follow the Scope expansion rule.
+- Do not use “few files touched” as a proxy for good scope. More focused files can be better when each file has one clear responsibility.
+- Avoid context hogs: oversized route files, components, services, docs, or helpers that mix stable responsibilities and become expensive to inspect.
+- Split by responsibility and ownership when it reduces cognitive load and preserves the approved behavior. Do not split arbitrarily by line count.
 - Do not over-invest in log formatting. Use one clear per-request log only when needed, then remove or guard it behind a debug flag.
 - Keep canonical role names (`PO`, `TDO`, `Dev`, `Reviewer`) in method-level docs and outputs.
 
@@ -761,6 +791,7 @@ General constraints:
 Output format rules:
 - Always start each phase with: `Role: PO` (or `TDO`/`Dev`/`Reviewer`)
 - Always show current execution mode: `Mode: Strict` or `Mode: Auto`
+- Always show current cost profile when it is not `Standard`, or when resource use is part of the user's request
 - End each phase with a short next-step note.
   Use a visible `handoff` label only when it adds clarity; do not force it into every checkpoint.
 - Response shape must match the current role and step instead of forcing one generic template everywhere
@@ -885,6 +916,16 @@ All other gates exist to surface risk, not to request permission.
 A Done Increment may touch multiple files **if and only if**:
 - the files are required to deliver a coherent, end-to-end user experience
 - the scope matches what was approved at Gate B
+- the extra files create clearer responsibility boundaries or reduce future context cost for humans and AI agents
+
+Small increment means small behavioral scope, not necessarily minimal file count.
+No scope creep means no extra behavior, not “no new files”.
+The best increment is easy to review now and cheaper to change later.
+
+Gate B planning must ask whether the proposed file boundaries:
+- keep cohesive responsibilities together
+- avoid creating or enlarging context hogs
+- improve future comprehension without broad rewrites or arbitrary fragmentation
 
 If, during implementation or review, it becomes clear that:
 - additional files are needed beyond what was specified at Gate B, or
