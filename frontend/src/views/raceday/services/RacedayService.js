@@ -26,6 +26,31 @@ async function fetchPropositionTranslationOverview(limit = 250, propLanguage = '
   }
 }
 
+async function downloadPropositionTranslationBundle(format = 'json') {
+  try {
+    const response = await axios.get(`${API_BASE}/proposition-translations/export-bundle`, {
+      params: { format },
+      responseType: 'blob'
+    })
+    const contentDisposition = response.headers['content-disposition'] || ''
+    const match = contentDisposition.match(/filename="?([^";]+)"?/i)
+    const fileName = match?.[1] || (format === 'zip'
+      ? 'proposition-translation-bundle-package.zip'
+      : 'proposition-translation-bundle.json')
+    const blobUrl = window.URL.createObjectURL(response.data)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(blobUrl)
+  } catch (error) {
+    console.error('Error downloading proposition translation bundle:', error)
+    throw error
+  }
+}
+
 async function fetchSpelformer(racedayId) {
   try {
     const response = await axios.get(`${API_BASE}/spelformer/${racedayId}`)
@@ -230,5 +255,6 @@ export default {
   fetchV86Suggestion,
   fetchDdGameView,
   fetchV86GameView,
-  fetchPropositionTranslationOverview
+  fetchPropositionTranslationOverview,
+  downloadPropositionTranslationBundle
 }

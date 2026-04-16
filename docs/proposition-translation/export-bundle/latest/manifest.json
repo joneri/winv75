@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-04-16T11:52:35.744Z",
+  "sourceRepository": "winv75",
+  "ruleVersion": 12,
+  "auditGeneratedAt": "2026-04-16T10:29:53.666Z",
+  "supportedLanguages": {
+    "sv": "Svenska",
+    "fi": "Suomi",
+    "en": "English"
+  },
+  "exportPurpose": "Shareable proposition translation contract, audit snapshot, runtime-shaped samples, and acceptance cases for external consumers such as Team Betting BFF services.",
+  "consumerGuidance": {
+    "recommendedShortTerm": "Consume this bundle or call the WinV75 translation API from the Kotlin BFF instead of reimplementing the runtime matcher immediately.",
+    "recommendedLongTerm": "If the Kotlin BFF needs local execution, port the normalization and fallback runtime using rules.json plus golden-cases.json as the acceptance contract.",
+    "primaryRuntimeEndpoints": [
+      "GET /api/raceday/:id?propLanguage=sv|fi|en",
+      "GET /api/proposition-translations/overview?propLanguage=sv|fi|en",
+      "GET /api/proposition-translations/export-bundle"
+    ]
+  },
+  "sampleSnapshot": {
+    "overviewFiPropositionCount": 1040,
+    "overviewEnPropositionCount": 1040,
+    "overviewRuleCoveragePct": 94.32,
+    "overviewTranslatedCoveragePct": 98.76,
+    "racedaySampleCountPerLanguage": 3,
+    "goldenCaseCount": 10
+  },
+  "bundleTag": "rule-v12-2026-04-16T11-52-35-744Z",
+  "artifactFiles": [
+    "proposition-translation-bundle.json",
+    "rules.json",
+    "audit-report.json",
+    "overview-fi.json",
+    "overview-en.json",
+    "raceday-samples-fi.json",
+    "raceday-samples-en.json",
+    "golden-cases.json",
+    "team-betting-handoff.md",
+    "manifest.json"
+  ],
+  "packageArchiveFileName": "proposition-translation-bundle-package.zip"
+}

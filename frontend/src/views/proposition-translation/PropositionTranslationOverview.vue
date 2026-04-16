@@ -11,6 +11,31 @@
           <div class="shell-chip is-focus">{{ pageSummary.translatedCoveragePct }} % visning</div>
           <div v-if="pageSummary.fallbackSentenceCount" class="shell-chip">{{ pageSummary.fallbackSentenceCount }} fallback</div>
         </div>
+        <div class="hero-actions">
+          <div class="hero-action-buttons">
+            <v-btn
+              color="primary"
+              variant="flat"
+              prepend-icon="mdi-download"
+              :loading="exportingJson"
+              @click="downloadBundle('json')"
+            >
+              Ladda ner JSON-bundle
+            </v-btn>
+            <v-btn
+              color="secondary"
+              variant="outlined"
+              prepend-icon="mdi-folder-zip"
+              :loading="exportingZip"
+              @click="downloadBundle('zip')"
+            >
+              Ladda ner ZIP-paket
+            </v-btn>
+          </div>
+          <div class="hero-action-note">
+            JSON ger en enda komplett fil. ZIP-paketet innehåller både singelfilen, separata artefakter och Team Betting-handoff.
+          </div>
+        </div>
       </div>
 
       <div class="hero-metrics">
@@ -174,6 +199,8 @@ import RacedayService from '@/views/raceday/services/RacedayService.js'
 
 const loading = ref(true)
 const errorMessage = ref('')
+const exportingJson = ref(false)
+const exportingZip = ref(false)
 const overview = ref(null)
 const search = ref('')
 const qualityFilter = ref('all')
@@ -205,6 +232,23 @@ async function loadOverview() {
     errorMessage.value = 'Kunde inte hämta översättningsöversikten.'
   } finally {
     loading.value = false
+  }
+}
+
+async function downloadBundle(format) {
+  try {
+    if (format === 'zip') exportingZip.value = true
+    else exportingJson.value = true
+    errorMessage.value = ''
+    await RacedayService.downloadPropositionTranslationBundle(format)
+  } catch (error) {
+    console.error('Failed to download proposition translation bundle', error)
+    errorMessage.value = format === 'zip'
+      ? 'Kunde inte ladda ner Team Betting-paketet som ZIP.'
+      : 'Kunde inte ladda ner Team Betting-bundlen som JSON.'
+  } finally {
+    if (format === 'zip') exportingZip.value = false
+    else exportingJson.value = false
   }
 }
 
@@ -287,6 +331,25 @@ function statusClass(value) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.6fr);
   gap: 18px;
+}
+
+.hero-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  margin-top: 16px;
+}
+
+.hero-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-action-note {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  max-width: 42rem;
 }
 
 .quality-bars,
@@ -487,6 +550,14 @@ function statusClass(value) {
   .filter-row,
   .proposition-row {
     grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .hero-actions {
+    justify-items: stretch;
+  }
+
+  .hero-action-buttons {
     display: grid;
   }
 

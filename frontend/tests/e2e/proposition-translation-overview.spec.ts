@@ -14,4 +14,16 @@ test('proposition translation overview loads and language switch updates the lis
   await expect(page.getByText(/visning/i).first()).toBeVisible()
   await expect(page.getByText(/audit:/i).first()).toBeVisible()
   await expect(page.locator('.proposition-row').first()).toBeVisible()
+
+  const jsonDownloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: /ladda ner json-bundle/i }).click()
+  const jsonDownload = await jsonDownloadPromise
+
+  expect(jsonDownload.suggestedFilename()).toMatch(/^proposition-translation-bundle-.*\.json$/)
+
+  const zipDownloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: /ladda ner zip-paket/i }).click()
+  const zipDownload = await zipDownloadPromise
+
+  expect(zipDownload.suggestedFilename()).toMatch(/^proposition-translation-bundle-package-.*\.zip$/)
 })

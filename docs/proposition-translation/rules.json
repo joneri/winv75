@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 26,
   "source": "MongoDB winv75.racedays.raceList.propTexts for all proposition text types",
   "languages": {
     "sv": "Svenska",
@@ -9,6 +9,10 @@
   "variables": {
     "distance_m": {
       "description": "Race distance in meters, for example 2140.",
+      "type": "number"
+    },
+    "driver_age_limit": {
+      "description": "Maximum driver age used in youth-driver distance conditions, for example 18.",
       "type": "number"
     },
     "start_method": {
@@ -75,6 +79,30 @@
     "home_horse_count": {
       "description": "Number of home-track horses with priority.",
       "type": "number"
+    },
+    "home_track_aliases": {
+      "description": "Additional tracks that also count as home tracks in FX priority sentences.",
+      "type": "string"
+    },
+    "selection_limit": {
+      "description": "Horse-count threshold used in EX selection-order sentences.",
+      "type": "number"
+    },
+    "selection_order_basis": {
+      "description": "Selection basis used when too many horses are entered in an EX race.",
+      "type": "enum",
+      "values": {
+        "P21-ordning": {
+          "sv": "P21-ordning",
+          "fi": "P21-järjestyksessä",
+          "en": "P21 order"
+        },
+        "startpoängordning": {
+          "sv": "startpoängordning",
+          "fi": "lähtöpistejärjestyksessä",
+          "en": "start-points order"
+        }
+      }
     },
     "wildcard_authority": {
       "description": "Track or organizer named in a wildcard clause.",
@@ -207,6 +235,18 @@
     },
     "race_title": {
       "description": "Short proposition title.",
+      "type": "string"
+    },
+    "title_prefix": {
+      "description": "Free-form branded or series prefix that precedes a reusable L race-title chain.",
+      "type": "string"
+    },
+    "title_year": {
+      "description": "Four-digit year suffix used by recurring L title families such as branded B-trainer series names.",
+      "type": "number"
+    },
+    "presented_by_name": {
+      "description": "Name shown in short L title rows that only say Presenteras av ...",
       "type": "string"
     },
     "driver_category": {
@@ -389,6 +429,46 @@
       }
     },
     {
+      "id": "prefixed-race-title",
+      "types": ["L"],
+      "template": "{title_prefix} - {race_title}",
+      "render": {
+        "sv": "{title_prefix} - {race_title}",
+        "fi": "{title_prefix} - {race_title}",
+        "en": "{title_prefix} - {race_title}"
+      }
+    },
+    {
+      "id": "year-suffixed-race-title",
+      "types": ["L"],
+      "template": "{title_prefix} {race_title} {title_year}",
+      "render": {
+        "sv": "{title_prefix} {race_title} {title_year}",
+        "fi": "{title_prefix} {race_title} {title_year}",
+        "en": "{title_prefix} {race_title} {title_year}"
+      }
+    },
+    {
+      "id": "presented-by-title-row",
+      "types": ["L"],
+      "template": "Presenteras av {presented_by_name}.",
+      "render": {
+        "sv": "Presenteras av {presented_by_name}.",
+        "fi": "Esittelee {presented_by_name}.",
+        "en": "Presented by {presented_by_name}."
+      }
+    },
+    {
+      "id": "presented-by-title-row-no-period",
+      "types": ["L"],
+      "template": "Presenteras av {presented_by_name}",
+      "render": {
+        "sv": "Presenteras av {presented_by_name}",
+        "fi": "Esittelee {presented_by_name}",
+        "en": "Presented by {presented_by_name}"
+      }
+    },
+    {
       "id": "half-row-allowed-through",
       "types": ["H"],
       "template": "Halvrad tillåts t.o.m {date_text}",
@@ -420,7 +500,7 @@
     },
     {
       "id": "priority-for-group",
-      "types": ["FX"],
+      "types": ["FX", "EX"],
       "template": "Företräde för {priority_group}.",
       "render": {
         "sv": "Företräde för {priority_group}.",
@@ -436,6 +516,36 @@
         "sv": "{home_horse_count} hemmahästar har företräde.",
         "fi": "{home_horse_count} kotiradan hevosta on etusijalla.",
         "en": "{home_horse_count} home-track horses have priority."
+      }
+    },
+    {
+      "id": "home-horse-priority-no-count",
+      "types": ["FX"],
+      "template": "Hemmahästar har företräde.",
+      "render": {
+        "sv": "Hemmahästar har företräde.",
+        "fi": "Kotiradan hevoset ovat etusijalla.",
+        "en": "Home-track horses have priority."
+      }
+    },
+    {
+      "id": "home-horse-priority-with-aliases",
+      "types": ["FX"],
+      "template": "{home_horse_count} hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+      "render": {
+        "sv": "{home_horse_count} hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+        "fi": "{home_horse_count} kotiradan hevosta on etusijalla, ja kotiradoiksi lasketaan myös {home_track_aliases}.",
+        "en": "{home_horse_count} home-track horses have priority, and {home_track_aliases} also count as home tracks."
+      }
+    },
+    {
+      "id": "home-horse-priority-no-count-with-aliases",
+      "types": ["FX"],
+      "template": "Hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+      "render": {
+        "sv": "Hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+        "fi": "Kotiradan hevoset ovat etusijalla, ja kotiradoiksi lasketaan myös {home_track_aliases}.",
+        "en": "Home-track horses have priority, and {home_track_aliases} also count as home tracks."
       }
     },
     {
@@ -546,6 +656,966 @@
         "sv": "{age_exact}-åriga {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
         "fi": "{age_exact}-vuotiaat, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
         "en": "{age_exact}-year-olds, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "selection-order-threshold",
+      "types": ["EX"],
+      "template": "Om fler än {selection_limit} hästar anmäls tas startande hästar ut i {selection_order_basis}.",
+      "render": {
+        "sv": "Om fler än {selection_limit} hästar anmäls tas startande hästar ut i {selection_order_basis}.",
+        "fi": "Jos ilmoitetaan yli {selection_limit} hevosta, starttaavat hevoset valitaan {selection_order_basis}.",
+        "en": "If more than {selection_limit} horses are entered, starters are selected by {selection_order_basis}."
+      }
+    },
+    {
+      "id": "selection-draw-start-points-order",
+      "types": ["EX"],
+      "template": "Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår {track_order}.",
+      "render": {
+        "sv": "Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår {track_order}.",
+        "fi": "Lähtöradat lähtöpisteiden mukaan; alhaisimpien lähtöpisteiden hevonen saa radan 1 jne., järjestys {track_order}.",
+        "en": "Post positions by start points; the horse with the lowest start points gets post 1, etc., in this order: {track_order}."
+      }
+    },
+    {
+      "id": "selection-draw-standard-lot",
+      "types": ["EX"],
+      "template": "Spårtilldelning i respektive lopp enligt slumptal, dvs sedvanlig spårlottning.",
+      "render": {
+        "sv": "Spårtilldelning i respektive lopp enligt slumptal, dvs sedvanlig spårlottning.",
+        "fi": "Lähtöradat kussakin lähdössä arvotaan normaalilla lähtörata-arvonnalla.",
+        "en": "Post positions in each race are assigned by random draw, i.e. the standard post draw."
+      }
+    },
+    {
+      "id": "qualified-for-final-horses",
+      "types": ["EX"],
+      "template": "För till finalen kvalificerade hästar.",
+      "render": {
+        "sv": "För till finalen kvalificerade hästar.",
+        "fi": "Finaaliin karsituille hevosille.",
+        "en": "For horses qualified for the final."
+      }
+    },
+    {
+      "id": "must-have-participated-in-qualifier",
+      "types": ["EX"],
+      "template": "Häst måste ha deltagit i ett försök för att vara startberättigad i finalen.",
+      "render": {
+        "sv": "Häst måste ha deltagit i ett försök för att vara startberättigad i finalen.",
+        "fi": "Hevosen on täytynyt osallistua karsintaan ollakseen starttioikeutettu finaalissa.",
+        "en": "A horse must have taken part in a qualifier to be eligible to start in the final."
+      }
+    },
+    {
+      "id": "current-start-points-decide-ties",
+      "types": ["EX"],
+      "template": "Vid lika poängantal avgör aktuella startpoäng.",
+      "render": {
+        "sv": "Vid lika poängantal avgör aktuella startpoäng.",
+        "fi": "Tasapisteissä ratkaisevat kulloisetkin lähtöpisteet.",
+        "en": "If points are tied, the current start points decide."
+      }
+    },
+    {
+      "id": "qualified-horse-must-start-final",
+      "types": ["EX"],
+      "template": "Häst som kvalificerar sig för final är skyldig att starta i finalen.",
+      "render": {
+        "sv": "Häst som kvalificerar sig för final är skyldig att starta i finalen.",
+        "fi": "Finaaliin karsineen hevosen on osallistuttava finaaliin.",
+        "en": "A horse that qualifies for the final is required to start in the final."
+      }
+    },
+    {
+      "id": "honor-blanket-and-wreath-winning-horse",
+      "types": ["EX"],
+      "template": "Hederstäcke och lagerkrans till segrande häst.",
+      "render": {
+        "sv": "Hederstäcke och lagerkrans till segrande häst.",
+        "fi": "Kunniapeite ja laakeriseppele voittaneelle hevoselle.",
+        "en": "Honorary blanket and wreath to the winning horse."
+      }
+    },
+    {
+      "id": "honorary-prize-team-around-winning-horse",
+      "types": ["EX"],
+      "template": "Hederspris till teamet kring segrande häst.",
+      "render": {
+        "sv": "Hederspris till teamet kring segrande häst.",
+        "fi": "Kunniapalkinto voittaneen hevosen tiimille.",
+        "en": "Honorary prize to the team around the winning horse."
+      }
+    },
+    {
+      "id": "honorary-prize-circle-around-winning-horse",
+      "types": ["EX"],
+      "template": "Hederspris till kretsen runt segrande häst.",
+      "render": {
+        "sv": "Hederspris till kretsen runt segrande häst.",
+        "fi": "Kunniapalkinto voittaneen hevosen lähipiirille.",
+        "en": "Honorary prize to the circle around the winning horse."
+      }
+    },
+    {
+      "id": "honorary-prize-and-winner-plaque-owner",
+      "types": ["EX"],
+      "template": "Hederspris och segertavla till segrande hästs ägare.",
+      "render": {
+        "sv": "Hederspris och segertavla till segrande hästs ägare.",
+        "fi": "Kunniapalkinto ja voittotaulu voittaneen hevosen omistajalle.",
+        "en": "Honorary prize and winner plaque to the winning horse's owner."
+      }
+    },
+    {
+      "id": "gift-card-and-winner-plaque-owner",
+      "types": ["EX"],
+      "template": "Presentkort och segertavla till segrande hästs ägare.",
+      "render": {
+        "sv": "Presentkort och segertavla till segrande hästs ägare.",
+        "fi": "Lahjakortti ja voittotaulu voittaneen hevosen omistajalle.",
+        "en": "Gift card and winner plaque to the winning horse's owner."
+      }
+    },
+    {
+      "id": "sponsored-honor-blanket-winning-horse",
+      "types": ["EX"],
+      "template": "{sponsor_name} hederstäcke till segrande häst.",
+      "render": {
+        "sv": "{sponsor_name} hederstäcke till segrande häst.",
+        "fi": "{sponsor_name} kunniapeite voittaneelle hevoselle.",
+        "en": "{sponsor_name} honorary blanket to the winning horse."
+      }
+    },
+    {
+      "id": "sponsored-honor-blanket-and-wreath-winning-horse",
+      "types": ["EX"],
+      "template": "{sponsor_name} hederstäcke och lagerkrans till segrande häst.",
+      "render": {
+        "sv": "{sponsor_name} hederstäcke och lagerkrans till segrande häst.",
+        "fi": "{sponsor_name} kunniapeite ja laakeriseppele voittaneelle hevoselle.",
+        "en": "{sponsor_name} honorary blanket and wreath to the winning horse."
+      }
+    },
+    {
+      "id": "half-row-priority-not-applied-race",
+      "types": ["EX"],
+      "template": "Helrad före halvrad gäller ej i detta lopp.",
+      "render": {
+        "sv": "Helrad före halvrad gäller ej i detta lopp.",
+        "fi": "Täysi rivi ei ole etusijalla puolikkaaseen riviin nähden tässä lähdössä.",
+        "en": "A full row does not take priority over a half row in this race."
+      }
+    },
+    {
+      "id": "half-row-priority-not-applied-prop",
+      "types": ["EX"],
+      "template": "Helrad före halvrad gäller ej i denna prop.",
+      "render": {
+        "sv": "Helrad före halvrad gäller ej i denna prop.",
+        "fi": "Täysi rivi ei ole etusijalla puolikkaaseen riviin nähden tässä propositionissa.",
+        "en": "A full row does not take priority over a half row in this proposition."
+      }
+    },
+    {
+      "id": "final-qualification-top-fifteen-points",
+      "types": ["EX"],
+      "template": "De femton poängrikaste hästarna är kvalificerade för final därefter 16:e osv.",
+      "render": {
+        "sv": "De femton poängrikaste hästarna är kvalificerade för final därefter 16:e osv.",
+        "fi": "Finaaliin ovat karsineet viisitoista eniten pisteitä kerännyttä hevosta, sen jälkeen 16:s ja niin edelleen.",
+        "en": "The fifteen horses with the most points qualify for the final, then the 16th and so on."
+      }
+    },
+    {
+      "id": "qualifier-points-scale-30-14",
+      "types": ["EX"],
+      "template": "Poäng till prisplacerade hästar i försöken utdelas enligt skalan: 30-14-10-7-5-4-3-2 till prisplacerade hästar.",
+      "render": {
+        "sv": "Poäng till prisplacerade hästar i försöken utdelas enligt skalan: 30-14-10-7-5-4-3-2 till prisplacerade hästar.",
+        "fi": "Pisteet karsintojen palkintosijoille tulleille hevosille jaetaan asteikolla 30-14-10-7-5-4-3-2.",
+        "en": "Points are awarded to placed horses in the qualifiers according to the scale 30-14-10-7-5-4-3-2."
+      }
+    },
+    {
+      "id": "qualifier-points-scale-25-15",
+      "types": ["EX"],
+      "template": "Poängberäkning i försöken är 25-15-10-8-6-4-3-2.",
+      "render": {
+        "sv": "Poängberäkning i försöken är 25-15-10-8-6-4-3-2.",
+        "fi": "Karsintojen pistelaskenta on 25-15-10-8-6-4-3-2.",
+        "en": "Points in the qualifiers are calculated as 25-15-10-8-6-4-3-2."
+      }
+    },
+    {
+      "id": "series-more-info-norrlandselitserie",
+      "types": ["EX"],
+      "template": "Se www.norrlandselitserie.se för mer information.",
+      "render": {
+        "sv": "Se www.norrlandselitserie.se för mer information.",
+        "fi": "Lisätietoja osoitteessa www.norrlandselitserie.se.",
+        "en": "See www.norrlandselitserie.se for more information."
+      }
+    },
+    {
+      "id": "series-rules-abytravet",
+      "types": ["EX"],
+      "template": "Regler för serien finns på abytravet.se.",
+      "render": {
+        "sv": "Regler för serien finns på abytravet.se.",
+        "fi": "Sarjan säännöt löytyvät osoitteesta abytravet.se.",
+        "en": "The series rules are available at abytravet.se."
+      }
+    },
+    {
+      "id": "final-distance-autostart-post-ladder",
+      "types": ["EX"],
+      "template": "Finaldistans är {distance_m} m autostart, {runner_count} startande med spårtrappa.",
+      "render": {
+        "sv": "Finaldistans är {distance_m} m autostart, {runner_count} startande med spårtrappa.",
+        "fi": "Finaalimatka on {distance_m} m autolähtö, {runner_count} osallistujaa ratajärjestyksellä voittosumman mukaan.",
+        "en": "The final distance is {distance_m} m auto start, {runner_count} starters with a post-position ladder."
+      }
+    },
+    {
+      "id": "priority-rule-does-not-apply",
+      "types": ["EX"],
+      "template": "Företrädesregeln gäller EJ.",
+      "render": {
+        "sv": "Företrädesregeln gäller EJ.",
+        "fi": "Etusijasääntö ei ole voimassa.",
+        "en": "The priority rule does not apply."
+      }
+    },
+    {
+      "id": "final-tiebreak-lot",
+      "types": ["EX"],
+      "template": "I sista hand gäller lottning.",
+      "render": {
+        "sv": "I sista hand gäller lottning.",
+        "fi": "Viime kädessä ratkaisee arvonta.",
+        "en": "A draw applies as the final tiebreaker."
+      }
+    },
+    {
+      "id": "must-have-participated-in-at-least-one-qualifier",
+      "types": ["EX"],
+      "template": "Finalregler: Häst måste ha deltagit i minst ett försök för att vara startberättigad i finalen.",
+      "render": {
+        "sv": "Finalregler: Häst måste ha deltagit i minst ett försök för att vara startberättigad i finalen.",
+        "fi": "Finaalisäännöt: hevosen on täytynyt osallistua vähintään yhteen karsintaan ollakseen starttioikeutettu finaalissa.",
+        "en": "Final rules: a horse must have taken part in at least one qualifier to be eligible to start in the final."
+      }
+    },
+    {
+      "id": "half-row-priority-not-applied-final",
+      "types": ["EX"],
+      "template": "Helrad före halvrad gäller ej i finalen.",
+      "render": {
+        "sv": "Helrad före halvrad gäller ej i finalen.",
+        "fi": "Täysi rivi ei ole etusijalla puolikkaaseen riviin nähden finaalissa.",
+        "en": "A full row does not take priority over a half row in the final."
+      }
+    },
+    {
+      "id": "final-queue-next-horses-by-points",
+      "types": ["EX"],
+      "template": "Om häst med ordinarie finalplats inte anmäls till finalen ges efterföljande hästar, i poängordning, möjlighet att starta.",
+      "render": {
+        "sv": "Om häst med ordinarie finalplats inte anmäls till finalen ges efterföljande hästar, i poängordning, möjlighet att starta.",
+        "fi": "Jos hevosta, jolla on varsinainen finaalipaikka, ei ilmoiteta finaaliin, seuraaville hevosille annetaan pistejärjestyksessä mahdollisuus startata.",
+        "en": "If a horse with an ordinary final place is not entered for the final, the following horses are given the opportunity to start in points order."
+      }
+    },
+    {
+      "id": "qualifier-points-scale-10-8",
+      "types": ["EX"],
+      "template": "Poängberäkning i försöken är 10-8-7-6-5-4-3-2.",
+      "render": {
+        "sv": "Poängberäkning i försöken är 10-8-7-6-5-4-3-2.",
+        "fi": "Karsintojen pistelaskenta on 10-8-7-6-5-4-3-2.",
+        "en": "Points in the qualifiers are calculated as 10-8-7-6-5-4-3-2."
+      }
+    },
+    {
+      "id": "series-tie-break-latest-best-placing",
+      "types": ["EX"],
+      "template": "Vid lika placeringar i serien ges företräde till den häst vars bästa placering tagits vid senaste datum i serien.",
+      "render": {
+        "sv": "Vid lika placeringar i serien ges företräde till den häst vars bästa placering tagits vid senaste datum i serien.",
+        "fi": "Tasatuloksessa sarjassa etusija annetaan hevoselle, jonka paras sijoitus on saavutettu sarjan viimeisimpänä ajankohtana.",
+        "en": "If placings in the series are tied, priority is given to the horse whose best placing was achieved on the latest date in the series."
+      }
+    },
+    {
+      "id": "one-point-other-horses-participating",
+      "types": ["EX"],
+      "template": "En poäng tilldelas övriga hästar som deltar i loppen.",
+      "render": {
+        "sv": "En poäng tilldelas övriga hästar som deltar i loppen.",
+        "fi": "Yksi piste annetaan muille lähtöihin osallistuville hevosille.",
+        "en": "One point is awarded to the other horses taking part in the races."
+      }
+    },
+    {
+      "id": "one-point-disqualified-or-not-finished-horses",
+      "types": ["EX"],
+      "template": "En poäng tilldelas hästar som blir diskvalificerad eller inte fullföljer loppen.",
+      "render": {
+        "sv": "En poäng tilldelas hästar som blir diskvalificerad eller inte fullföljer loppen.",
+        "fi": "Yksi piste annetaan hevosille, jotka hylätään tai eivät suorita lähtöjä loppuun.",
+        "en": "One point is awarded to horses that are disqualified or do not complete the races."
+      }
+    },
+    {
+      "id": "breeders-crown-qualifiers-to-semifinals",
+      "types": ["EX"],
+      "template": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 2/11.",
+      "render": {
+        "sv": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 2/11.",
+        "fi": "Vuoden aikana ajetaan yhdeksän Breeders' Crown -karsintaa, ja jokaisen karsintalähdön neljä parasta hevosta etenevät Solvallan välieriin 2/11.",
+        "en": "Nine Breeders' Crown qualifiers are run during the year, and the four best horses from each qualifying race advance to the semi-finals at Solvalla on 2/11."
+      }
+    },
+    {
+      "id": "norrlands-elitserie-final-intro-umaker",
+      "types": ["EX"],
+      "template": "Norrlands Elitserie: Finalen i Norrlands Elitserie körs på Umåker 26 oktober med 100 000 kr i förstapris.",
+      "render": {
+        "sv": "Norrlands Elitserie: Finalen i Norrlands Elitserie körs på Umåker 26 oktober med 100 000 kr i förstapris.",
+        "fi": "Norrlands Elitserie: Norrlands Elitserien finaali ajetaan Umåkerissa 26. lokakuuta, ja ensipalkinto on 100 000 kr.",
+        "en": "Norrlands Elitserie: The final of Norrlands Elitserie is run at Umåker on 26 October with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "multiple-final-qualifications-still-apply",
+      "types": ["EX"],
+      "template": "Detta gäller också om en/flera hästar har kvalat in till finalen mer än en gång.",
+      "render": {
+        "sv": "Detta gäller också om en/flera hästar har kvalat in till finalen mer än en gång.",
+        "fi": "Tämä koskee myös tilanteita, joissa yksi tai useampi hevonen on karsinut finaaliin useammin kuin kerran.",
+        "en": "This also applies if one or more horses have qualified for the final more than once."
+      }
+    },
+    {
+      "id": "clarification-selected-by-start-points",
+      "types": ["EX"],
+      "template": "Förtydligande: Hästarna tas som vanligt ut efter startpoäng.",
+      "render": {
+        "sv": "Förtydligande: Hästarna tas som vanligt ut efter startpoäng.",
+        "fi": "Täsmennys: Hevoset valitaan kuten tavallisesti lähtöpisteiden perusteella.",
+        "en": "Clarification: The horses are selected as usual by start points."
+      }
+    },
+    {
+      "id": "one-point-other-riders-participating",
+      "types": ["EX"],
+      "template": "En poäng tilldelas övriga ryttare som deltar i loppen.",
+      "render": {
+        "sv": "En poäng tilldelas övriga ryttare som deltar i loppen.",
+        "fi": "Yksi piste annetaan muille lähtöihin osallistuville ratsastajille.",
+        "en": "One point is awarded to the other riders taking part in the races."
+      }
+    },
+    {
+      "id": "series-more-info-axevalla-aby",
+      "types": ["EX"],
+      "template": "Övrig info om serien finns på Axevallas och Åbys hemsidor.",
+      "render": {
+        "sv": "Övrig info om serien finns på Axevallas och Åbys hemsidor.",
+        "fi": "Lisätietoja sarjasta löytyy Axevallan ja Åbyn verkkosivuilta.",
+        "en": "More information about the series is available on the Axevalla and Åby websites."
+      }
+    },
+    {
+      "id": "series-score-standings-svenskatravligan",
+      "types": ["EX"],
+      "template": "Se poängställning på www.svenskatravligan.se",
+      "render": {
+        "sv": "Se poängställning på www.svenskatravligan.se",
+        "fi": "Katso pistetilanne osoitteesta www.svenskatravligan.se",
+        "en": "See the points standings at www.svenskatravligan.se"
+      }
+    },
+    {
+      "id": "series-participants-eligible-final-special-points",
+      "types": ["EX"],
+      "template": "Hästar som deltagit i serien är startberättigade i finalen enligt särskild poängberäkning.",
+      "render": {
+        "sv": "Hästar som deltagit i serien är startberättigade i finalen enligt särskild poängberäkning.",
+        "fi": "Sarjaan osallistuneet hevoset ovat starttioikeutettuja finaalissa erityisen pistelaskennan perusteella.",
+        "en": "Horses that have taken part in the series are eligible to start in the final according to a special points calculation."
+      }
+    },
+    {
+      "id": "final-posts-lotted-as-usual",
+      "types": ["EX"],
+      "template": "Spåren i finalen lottas som vanligt.",
+      "render": {
+        "sv": "Spåren i finalen lottas som vanligt.",
+        "fi": "Finaalin lähtöradat arvotaan kuten tavallisesti.",
+        "en": "The post positions in the final are drawn as usual."
+      }
+    },
+    {
+      "id": "gift-card-most-points-main-series-rider-5000",
+      "types": ["EX"],
+      "template": "Den ryttare som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av 5 000 kr.",
+      "render": {
+        "sv": "Den ryttare som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av 5 000 kr.",
+        "fi": "Perussarjassa eniten pisteitä kerännyt ratsastaja saa 5 000 kr arvoisen lahjakortin.",
+        "en": "The rider with the most points in the main series receives a gift card worth 5,000 SEK."
+      }
+    },
+    {
+      "id": "one-point-disqualified-or-not-finished-riders",
+      "types": ["EX"],
+      "template": "En poäng tilldelas ryttare som blir diskvalificerad eller inte fullföljer loppen.",
+      "render": {
+        "sv": "En poäng tilldelas ryttare som blir diskvalificerad eller inte fullföljer loppen.",
+        "fi": "Yksi piste annetaan myös ratsastajille, jotka hylätään tai eivät suorita lähtöä loppuun.",
+        "en": "One point is also awarded to riders who are disqualified or do not complete the race."
+      }
+    },
+    {
+      "id": "one-point-other-drivers-including-disqualified",
+      "types": ["EX"],
+      "template": "En poäng tilldelas övriga kuskar som deltar i loppen, även de som blir diskvalificerade eller inte fullföljer loppen.",
+      "render": {
+        "sv": "En poäng tilldelas övriga kuskar som deltar i loppen, även de som blir diskvalificerade eller inte fullföljer loppen.",
+        "fi": "Yksi piste annetaan muille lähtöihin osallistuville ohjastajille, myös niille jotka hylätään tai eivät suorita lähtöä loppuun.",
+        "en": "One point is awarded to the other drivers who take part in the races, including those who are disqualified or do not complete the race."
+      }
+    },
+    {
+      "id": "gift-card-most-points-main-series-driver-and-trainer",
+      "types": ["EX"],
+      "template": "Den kusk och tränare som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av {amount_kr} kr vardera.",
+      "render": {
+        "sv": "Den kusk och tränare som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av {amount_kr} kr vardera.",
+        "fi": "Perussarjassa eniten pisteitä kerännyt ohjastaja ja valmentaja saavat kumpikin {amount_kr} kr arvoisen lahjakortin.",
+        "en": "The driver and trainer with the most points in the main series each receive a gift card worth {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "gift-card-final-winner-driver-and-trainer",
+      "types": ["EX"],
+      "template": "Den kusk och tränare som vinner finalen erhåller ett presentkort till ett värde av {amount_kr} kr vardera.",
+      "render": {
+        "sv": "Den kusk och tränare som vinner finalen erhåller ett presentkort till ett värde av {amount_kr} kr vardera.",
+        "fi": "Finaalin voittava ohjastaja ja valmentaja saavat kumpikin {amount_kr} kr arvoisen lahjakortin.",
+        "en": "The driver and trainer who win the final each receive a gift card worth {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "one-point-disqualified-or-not-finished-drivers-and-trainers",
+      "types": ["EX"],
+      "template": "En poäng tilldelas kuskar och tränare som blir diskvalificerad eller inte fullföljer loppen.",
+      "render": {
+        "sv": "En poäng tilldelas kuskar och tränare som blir diskvalificerad eller inte fullföljer loppen.",
+        "fi": "Yksi piste annetaan myös ohjastajille ja valmentajille, jotka hylätään tai eivät suorita lähtöä loppuun.",
+        "en": "One point is also awarded to drivers and trainers who are disqualified or do not complete the race."
+      }
+    },
+    {
+      "id": "one-point-other-drivers-and-trainers-participating",
+      "types": ["EX"],
+      "template": "En poäng tilldelas övriga kuskar och tränare som deltar i loppen.",
+      "render": {
+        "sv": "En poäng tilldelas övriga kuskar och tränare som deltar i loppen.",
+        "fi": "Yksi piste annetaan muille lähtöihin osallistuville ohjastajille ja valmentajille.",
+        "en": "One point is awarded to the other drivers and trainers taking part in the races."
+      }
+    },
+    {
+      "id": "driver-loses-30-points-for-driving-offence",
+      "types": ["EX"],
+      "template": "Körsven som döms för drivningsförseelse fråntas 30 poäng.",
+      "render": {
+        "sv": "Körsven som döms för drivningsförseelse fråntas 30 poäng.",
+        "fi": "Ohjastajalta, joka tuomitaan ajorikkomuksesta, vähennetään 30 pistettä.",
+        "en": "A driver penalized for a driving offence loses 30 points."
+      }
+    },
+    {
+      "id": "drivers-receive-series-points-150-scale",
+      "types": ["EX"],
+      "template": "Körsvenner erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10.",
+      "render": {
+        "sv": "Körsvenner erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10.",
+        "fi": "Ohjastajat saavat sarjassa pisteitä sijoitusasteikon 150-80-50-40-30-20-10-10 mukaan.",
+        "en": "Drivers receive points in the series according to the placing scale 150-80-50-40-30-20-10-10."
+      }
+    },
+    {
+      "id": "ladugardsinredes-apprentice-amateur-series-2025-intro",
+      "types": ["EX"],
+      "template": "Ladugårdsinredes Lärlings-/Amatörserie 2025 är en serie för B- och K-licensinnehavare med 10 lopp på Axevalla och 10 lopp på Åby från januari till december.",
+      "render": {
+        "sv": "Ladugårdsinredes Lärlings-/Amatörserie 2025 är en serie för B- och K-licensinnehavare med 10 lopp på Axevalla och 10 lopp på Åby från januari till december.",
+        "fi": "Ladugårdsinredes Lärlings-/Amatörserie 2025 on B- ja K-lisenssin haltijoille tarkoitettu sarja, jossa ajetaan 10 lähtöä Axevallassa ja 10 lähtöä Åbyssa tammikuusta joulukuuhun.",
+        "en": "Ladugårdsinredes Apprentice/Amateur Series 2025 is a series for B and K licence holders with 10 races at Axevalla and 10 races at Åby from January to December."
+      }
+    },
+    {
+      "id": "qualifier-winners-choose-first",
+      "types": ["EX"],
+      "template": "Försöksvinnarna väljer först, därefter tvåorna osv.",
+      "render": {
+        "sv": "Försöksvinnarna väljer först, därefter tvåorna osv.",
+        "fi": "Karsintavoittajat valitsevat ensin, sen jälkeen toiseksi sijoittuneet ja niin edelleen.",
+        "en": "The qualifier winners choose first, then the runners-up, and so on."
+      }
+    },
+    {
+      "id": "points-tie-draw",
+      "types": ["EX"],
+      "template": "Vid lika poängtal sker lottning.",
+      "render": {
+        "sv": "Vid lika poängtal sker lottning.",
+        "fi": "Tasapisteissä ratkaisee arvonta.",
+        "en": "If points are tied, a draw decides."
+      }
+    },
+    {
+      "id": "two-horses-from-each-qualifier-to-final",
+      "types": ["EX"],
+      "template": "Från varje försök kvalar två hästar in till finalen.",
+      "render": {
+        "sv": "Från varje försök kvalar två hästar in till finalen.",
+        "fi": "Kustakin karsinnasta kaksi hevosta kvalificerar sig finaaliin.",
+        "en": "Two horses from each qualifier qualify for the final."
+      }
+    },
+    {
+      "id": "series-points-scale-12-8",
+      "types": ["EX"],
+      "template": "Poängskala i serien: 12-8-6-5-4-3-2-1.",
+      "render": {
+        "sv": "Poängskala i serien: 12-8-6-5-4-3-2-1.",
+        "fi": "Sarjan pisteasteikko: 12-8-6-5-4-3-2-1.",
+        "en": "Points scale in the series: 12-8-6-5-4-3-2-1."
+      }
+    },
+    {
+      "id": "top-15-points-qualified-final",
+      "types": ["EX"],
+      "template": "De 15 poängrikaste hästarna är kvalificerade för finalen.",
+      "render": {
+        "sv": "De 15 poängrikaste hästarna är kvalificerade för finalen.",
+        "fi": "Finaaliin ovat karsineet 15 eniten pisteitä kerännyttä hevosta.",
+        "en": "The 15 horses with the most points qualify for the final."
+      }
+    },
+    {
+      "id": "customserien-membership-fee",
+      "types": ["EX"],
+      "template": "För att få tillgodoräkna sig poäng i Customserien {distance_m} måste medlemsavgift till Solvalla Amatörklubb inbetalas senast dagen före aktuell tävlingsdag.",
+      "render": {
+        "sv": "För att få tillgodoräkna sig poäng i Customserien {distance_m} måste medlemsavgift till Solvalla Amatörklubb inbetalas senast dagen före aktuell tävlingsdag.",
+        "fi": "Jotta pisteet voidaan laskea hyväksi Customserien {distance_m} -sarjassa, jäsenmaksu Solvalla Amatörklubbiin on maksettava viimeistään päivää ennen kyseistä kilpailupäivää.",
+        "en": "To have points counted in Customserien {distance_m}, the membership fee to Solvalla Amateur Club must be paid no later than the day before the relevant race day."
+      }
+    },
+    {
+      "id": "customs-b-trainer-series-membership-fee",
+      "types": ["EX"],
+      "template": "För att få tillgodoräkna sig poäng i Customs B-tränarserie {distance_m} måste medlemsavgift till Solvalla Amatörklubb inbetalas senast dagen före aktuell tävlingsdag.",
+      "render": {
+        "sv": "För att få tillgodoräkna sig poäng i Customs B-tränarserie {distance_m} måste medlemsavgift till Solvalla Amatörklubb inbetalas senast dagen före aktuell tävlingsdag.",
+        "fi": "Jotta pisteet voidaan laskea hyväksi Customs B-tränarserie {distance_m} -sarjassa, jäsenmaksu Solvalla Amatörklubbiin on maksettava viimeistään päivää ennen kyseistä kilpailupäivää.",
+        "en": "To have points counted in Customs B-trainer Series {distance_m}, the membership fee to Solvalla Amateur Club must be paid no later than the day before the relevant race day."
+      }
+    },
+    {
+      "id": "membership-info-solvalla-amatorklubb",
+      "types": ["EX"],
+      "template": "För medlemskap se www.solvalla-amatorklubb.se.",
+      "render": {
+        "sv": "För medlemskap se www.solvalla-amatorklubb.se.",
+        "fi": "Jäsenyydestä lisätietoja osoitteessa www.solvalla-amatorklubb.se.",
+        "en": "For membership information, see www.solvalla-amatorklubb.se."
+      }
+    },
+    {
+      "id": "membership-info-and-all-drivers-welcome",
+      "types": ["EX"],
+      "template": "För medlemskap se www.solvalla-amatorklubb.se Alla kuskar är välkomna, oavsett hemmabana.",
+      "render": {
+        "sv": "För medlemskap se www.solvalla-amatorklubb.se Alla kuskar är välkomna, oavsett hemmabana.",
+        "fi": "Jäsenyydestä lisätietoja osoitteessa www.solvalla-amatorklubb.se. Kaikki ohjastajat ovat tervetulleita kotiradasta riippumatta.",
+        "en": "For membership information, see www.solvalla-amatorklubb.se. All drivers are welcome regardless of home track."
+      }
+    },
+    {
+      "id": "all-trainers-welcome-regardless-home-track",
+      "types": ["EX"],
+      "template": "Alla tränare är välkomna, oavsett hemmabana.",
+      "render": {
+        "sv": "Alla tränare är välkomna, oavsett hemmabana.",
+        "fi": "Kaikki valmentajat ovat tervetulleita kotiradasta riippumatta.",
+        "en": "All trainers are welcome regardless of home track."
+      }
+    },
+    {
+      "id": "final-first-prize-150000-kronor",
+      "types": ["EX"],
+      "template": "Förstapris i finalen är 150 000 kronor.",
+      "render": {
+        "sv": "Förstapris i finalen är 150 000 kronor.",
+        "fi": "Finaalin ykköspalkinto on 150 000 kruunua.",
+        "en": "The first prize in the final is 150,000 SEK."
+      }
+    },
+    {
+      "id": "other-horses-start-from-distance",
+      "types": ["EX"],
+      "template": "Övriga hästar startar från distansen {distance_m} meter.",
+      "render": {
+        "sv": "Övriga hästar startar från distansen {distance_m} meter.",
+        "fi": "Muut hevoset lähtevät {distance_m} metrin matkalta.",
+        "en": "The other horses start from the {distance_m} metre distance."
+      }
+    },
+    {
+      "id": "horses-driven-by-underage-drivers-start-at-distance",
+      "types": ["EX"],
+      "template": "Hästar som körs av kuskar som ännu inte fyllt {driver_age_limit} år startar på distansen {distance_m} meter.",
+      "render": {
+        "sv": "Hästar som körs av kuskar som ännu inte fyllt {driver_age_limit} år startar på distansen {distance_m} meter.",
+        "fi": "Hevoset, joita ohjastavat kuskit jotka eivät ole vielä täyttäneet {driver_age_limit} vuotta, lähtevät {distance_m} metrin matkalta.",
+        "en": "Horses driven by drivers who have not yet turned {driver_age_limit} start from the {distance_m} metre distance."
+      }
+    },
+    {
+      "id": "horse-entered-must-suit-young-driver",
+      "types": ["EX"],
+      "template": "Häst som anmäls till detta lopp ska vara lämplig för en ungdom att köra.",
+      "render": {
+        "sv": "Häst som anmäls till detta lopp ska vara lämplig för en ungdom att köra.",
+        "fi": "Tähän lähtöön ilmoitetun hevosen tulee sopia nuoren ohjastettavaksi.",
+        "en": "A horse entered in this race must be suitable to be driven by a young person."
+      }
+    },
+    {
+      "id": "unplaced-horses-one-point",
+      "types": ["EX"],
+      "template": "Oplacerade hästar 1p.",
+      "render": {
+        "sv": "Oplacerade hästar 1p.",
+        "fi": "Sijoittumattomat hevoset: 1 p.",
+        "en": "Unplaced horses: 1 point."
+      }
+    },
+    {
+      "id": "series-comprises-14-qualifiers",
+      "types": ["EX"],
+      "template": "Serien omfattar 14 försökslopp.",
+      "render": {
+        "sv": "Serien omfattar 14 försökslopp.",
+        "fi": "Sarjaan kuuluu 14 karsintalähtöä.",
+        "en": "The series comprises 14 qualifying races."
+      }
+    },
+    {
+      "id": "top-72-seeded-horses-get-places",
+      "types": ["EX"],
+      "template": "De 72 högst seedade enligt ST:s seedningssystem bereds plats i loppen.",
+      "render": {
+        "sv": "De 72 högst seedade enligt ST:s seedningssystem bereds plats i loppen.",
+        "fi": "ST:n sijoitusjärjestelmän 72 korkeimmalle sijoitetulle hevoselle varataan paikka lähdöissä.",
+        "en": "The 72 highest-seeded horses according to the ST seeding system are given places in the races."
+      }
+    },
+    {
+      "id": "mandatory-scratchings-over-72-entered",
+      "types": ["EX"],
+      "template": "Vid fler än 72 anmälda hästar tillämpas tvångsstrykningar.",
+      "render": {
+        "sv": "Vid fler än 72 anmälda hästar tillämpas tvångsstrykningar.",
+        "fi": "Jos ilmoitettuja hevosia on yli 72, sovelletaan pakollisia poisjääntejä.",
+        "en": "If more than 72 horses are entered, mandatory scratchings are applied."
+      }
+    },
+    {
+      "id": "draw-used-for-the-rest",
+      "types": ["EX"],
+      "template": "För övriga sker lottning.",
+      "render": {
+        "sv": "För övriga sker lottning.",
+        "fi": "Muiden osalta ratkaisee arvonta.",
+        "en": "A draw is used for the remaining places."
+      }
+    },
+    {
+      "id": "max-runner-count",
+      "types": ["EX"],
+      "template": "Max {runner_count} startande.",
+      "render": {
+        "sv": "Max {runner_count} startande.",
+        "fi": "Enintään {runner_count} osallistujaa.",
+        "en": "Maximum {runner_count} starters."
+      }
+    },
+    {
+      "id": "horses-divided-according-to-seeding-rules",
+      "types": ["EX"],
+      "template": "Uppdelning av hästar i olika avdelningar sker enligt Svensk Travsports seedningsregler.",
+      "render": {
+        "sv": "Uppdelning av hästar i olika avdelningar sker enligt Svensk Travsports seedningsregler.",
+        "fi": "Hevoset jaetaan eri osastoihin Svensk Travsportin sijoitussääntöjen mukaisesti.",
+        "en": "Horses are divided into different sections according to Svensk Travsport's seeding rules."
+      }
+    },
+    {
+      "id": "stakes-paid-are-not-refunded",
+      "types": ["EX"],
+      "template": "Gjorda insatser återbetalas ej.",
+      "render": {
+        "sv": "Gjorda insatser återbetalas ej.",
+        "fi": "Maksettuja panoksia ei palauteta.",
+        "en": "Paid stakes are not refunded."
+      }
+    },
+    {
+      "id": "max-10-horses-in-each-qualifier",
+      "types": ["EX"],
+      "template": "Maximalt 10 hästar i vardera uttagningslopp.",
+      "render": {
+        "sv": "Maximalt 10 hästar i vardera uttagningslopp.",
+        "fi": "Kussakin karsintalähdössä enintään 10 hevosta.",
+        "en": "A maximum of 10 horses in each qualifying race."
+      }
+    },
+    {
+      "id": "bag-of-carrots-for-all-starting-horses",
+      "types": ["EX"],
+      "template": "Svensk Cater och Gävletravet bjuder alla startande hästar på en påse morötter.",
+      "render": {
+        "sv": "Svensk Cater och Gävletravet bjuder alla startande hästar på en påse morötter.",
+        "fi": "Svensk Cater ja Gävletravet tarjoavat kaikille starttaaville hevosille pussillisen porkkanoita.",
+        "en": "Svensk Cater and Gävletravet offer all starting horses a bag of carrots."
+      }
+    },
+    {
+      "id": "driver-may-not-have-held-a-licence-variant",
+      "types": ["EX"],
+      "template": "Kusk får ej innehaft A-licens.",
+      "render": {
+        "sv": "Kusk får ej innehaft A-licens.",
+        "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
+        "en": "The driver may not have held an A licence."
+      }
+    },
+    {
+      "id": "final-proposition-mare-class-handicap",
+      "types": ["EX"],
+      "template": "Finalproposition stoklass 2140 voltstart, 20 m vid 120 001 kr, 40 m vid 220 001 kr, 60 m vid 420 001 kr.",
+      "render": {
+        "sv": "Finalproposition stoklass 2140 voltstart, 20 m vid 120 001 kr, 40 m vid 220 001 kr, 60 m vid 420 001 kr.",
+        "fi": "Finaalipropositio tammaluokka: 2140 m volttilähtö, 20 m 120 001 kr kohdalla, 40 m 220 001 kr kohdalla, 60 m 420 001 kr kohdalla.",
+        "en": "Final proposition, mare class: 2140 m standing start, 20 m at 120,001 SEK, 40 m at 220,001 SEK, 60 m at 420,001 SEK."
+      }
+    },
+    {
+      "id": "final-proposition-open-class-handicap",
+      "types": ["EX"],
+      "template": "Finalproposition öppen klass 2140 voltstart, 20 m vid 175 001 kr, 40 m vid 275 001 kr, 60 m vid 475 001 kr.",
+      "render": {
+        "sv": "Finalproposition öppen klass 2140 voltstart, 20 m vid 175 001 kr, 40 m vid 275 001 kr, 60 m vid 475 001 kr.",
+        "fi": "Finaalipropositio avoin luokka: 2140 m volttilähtö, 20 m 175 001 kr kohdalla, 40 m 275 001 kr kohdalla, 60 m 475 001 kr kohdalla.",
+        "en": "Final proposition, open class: 2140 m standing start, 20 m at 175,001 SEK, 40 m at 275,001 SEK, 60 m at 475,001 SEK."
+      }
+    },
+    {
+      "id": "qualifier-points-scale-30-14-10-7-5-4-3-2-optional",
+      "types": ["EX"],
+      "template": "Poängberäkning i försöken enligt följande 30-14-10-7-5-4-3(-2).",
+      "render": {
+        "sv": "Poängberäkning i försöken enligt följande 30-14-10-7-5-4-3(-2).",
+        "fi": "Pistelaskenta karsinnoissa on seuraava: 30-14-10-7-5-4-3(-2).",
+        "en": "Points in the qualifiers are calculated as follows: 30-14-10-7-5-4-3(-2)."
+      }
+    },
+    {
+      "id": "half-row-priority-not-applied-this-proposition",
+      "types": ["EX"],
+      "template": "Helrad före halvrad gäller ej i denna proposition.",
+      "render": {
+        "sv": "Helrad före halvrad gäller ej i denna proposition.",
+        "fi": "Täysi rivi ei ole etusijalla puolikkaaseen riviin nähden tässä propositionissa.",
+        "en": "A full row does not take priority over a half row in this proposition."
+      }
+    },
+    {
+      "id": "respective-federation-rules-apply-in-final",
+      "types": ["EX"],
+      "template": "Respektive förbunds reglemente gäller i finalen.",
+      "render": {
+        "sv": "Respektive förbunds reglemente gäller i finalen.",
+        "fi": "Kunkin liiton säännöt ovat voimassa finaalissa.",
+        "en": "Each federation's regulations apply in the final."
+      }
+    },
+    {
+      "id": "follow-standings-mantorphastsportarena",
+      "types": ["EX"],
+      "template": "Följ ställningen på www.mantorphastsportarena.se",
+      "render": {
+        "sv": "Följ ställningen på www.mantorphastsportarena.se",
+        "fi": "Seuraa tilannetta osoitteessa www.mantorphastsportarena.se",
+        "en": "Follow the standings at www.mantorphastsportarena.se"
+      }
+    },
+    {
+      "id": "horse-cannot-also-be-entered-if-qualified-elsewhere",
+      "types": ["EX"],
+      "template": "Häst kan inte heller startanmälas om den redan är kvalificerad till annat lopp som förhindrar deltagande i en eventuell final.",
+      "render": {
+        "sv": "Häst kan inte heller startanmälas om den redan är kvalificerad till annat lopp som förhindrar deltagande i en eventuell final.",
+        "fi": "Hevosta ei myöskään voida ilmoittaa starttiin, jos se on jo karsinut toiseen lähtöön, joka estää osallistumisen mahdolliseen finaaliin.",
+        "en": "A horse may also not be entered if it is already qualified for another race that prevents participation in a possible final."
+      }
+    },
+    {
+      "id": "more-info-bergsaker-series",
+      "types": ["EX"],
+      "template": "Se mer info på www.bergsaker.com/sport-och-spel/serier/",
+      "render": {
+        "sv": "Se mer info på www.bergsaker.com/sport-och-spel/serier/",
+        "fi": "Lisätietoja osoitteessa www.bergsaker.com/sport-och-spel/serier/",
+        "en": "More information is available at www.bergsaker.com/sport-och-spel/serier/"
+      }
+    },
+    {
+      "id": "post-positions-in-each-race-according-to-start-points",
+      "types": ["EX"],
+      "template": "Spårtilldelning i respektive lopp enligt startpoäng.",
+      "render": {
+        "sv": "Spårtilldelning i respektive lopp enligt startpoäng.",
+        "fi": "Lähtöratojen jako kussakin lähdössä starttipisteiden mukaan.",
+        "en": "Post positions in each race are assigned according to start points."
+      }
+    },
+    {
+      "id": "trainer-may-request-invited-driver",
+      "types": ["EX"],
+      "template": "Tränare kan önska kusk bland de inbjudna, som vid kompletteringen rangordnar sina styrningar.",
+      "render": {
+        "sv": "Tränare kan önska kusk bland de inbjudna, som vid kompletteringen rangordnar sina styrningar.",
+        "fi": "Valmentaja voi toivoa ohjastajaa kutsuttujen joukosta, jotka täydennyksessä asettavat ajonsa järjestykseen.",
+        "en": "Trainers may request a driver among the invited ones, who rank their drives during the completion stage."
+      }
+    },
+    {
+      "id": "for-the-36-horses-qualified-for-semifinal",
+      "types": ["EX"],
+      "template": "För de 36 hästar som kvalificerat sig till semifinal.",
+      "render": {
+        "sv": "För de 36 hästar som kvalificerat sig till semifinal.",
+        "fi": "Niille 36 hevoselle, jotka ovat karsineet semifinaaliin.",
+        "en": "For the 36 horses that have qualified for the semifinal."
+      }
+    },
+    {
+      "id": "horse-qualified-for-final-must-start-october-11",
+      "types": ["EX"],
+      "template": "Häst som kvalificerar sig för final är skyldig att starta i finalen lördag 11 oktober.",
+      "render": {
+        "sv": "Häst som kvalificerar sig för final är skyldig att starta i finalen lördag 11 oktober.",
+        "fi": "Hevosen, joka karsii finaaliin, on osallistuttava finaaliin lauantaina 11. lokakuuta.",
+        "en": "A horse that qualifies for the final is required to start in the final on Saturday 11 October."
+      }
+    },
+    {
+      "id": "horse-qualified-for-final-must-start-eskilstuna-2025",
+      "types": ["EX"],
+      "template": "Häst som kvalificerar sig för final är skyldig att starta i finalen som körs i Eskilstuna lördag 15/11 2025.",
+      "render": {
+        "sv": "Häst som kvalificerar sig för final är skyldig att starta i finalen som körs i Eskilstuna lördag 15/11 2025.",
+        "fi": "Hevosen, joka karsii finaaliin, on osallistuttava Eskilstunassa lauantaina 15.11.2025 ajettavaan finaaliin.",
+        "en": "A horse that qualifies for the final is required to start in the final held in Eskilstuna on Saturday 15/11 2025."
+      }
+    },
+    {
+      "id": "horses-seeded-into-three-semifinals",
+      "types": ["EX"],
+      "template": "Hästarna seedas och delas upp i tre semifinaler i enlighet med Svensk Travsports regler för insatslopp.",
+      "render": {
+        "sv": "Hästarna seedas och delas upp i tre semifinaler i enlighet med Svensk Travsports regler för insatslopp.",
+        "fi": "Hevoset sijoitetaan ja jaetaan kolmeen semifinaaliin Svensk Travsportin panoslähtöjä koskevien sääntöjen mukaisesti.",
+        "en": "The horses are seeded and divided into three semifinals in accordance with Svensk Travsport's rules for stake races."
+      }
+    },
+    {
+      "id": "horses-selected-according-to-stake-race-seeding-rules",
+      "types": ["EX"],
+      "template": "Hästarna uttages enligt Svensk Travsports regler för seedning av insatslopp.",
+      "render": {
+        "sv": "Hästarna uttages enligt Svensk Travsports regler för seedning av insatslopp.",
+        "fi": "Hevoset valitaan Svensk Travsportin panoslähtöjen sijoitussääntöjen mukaisesti.",
+        "en": "The horses are selected according to Svensk Travsport's seeding rules for stake races."
+      }
+    },
+    {
+      "id": "top-three-in-series-choose-final-posts",
+      "types": ["EX"],
+      "template": "OBS! De tre bäst placerade i serien får välja startspår i finalen.",
+      "render": {
+        "sv": "OBS! De tre bäst placerade i serien får välja startspår i finalen.",
+        "fi": "Huom! Sarjan kolme parasta saavat valita lähtöratansa finaalissa.",
+        "en": "Note: The three best-placed competitors in the series may choose their post positions in the final."
+      }
+    },
+    {
+      "id": "gavleborgs-monte-series-2025-intro",
+      "types": ["EX"],
+      "template": "Regler Gävleborgs Montéserie 2025: 18 försök rids under året i Bollnäs, Gävle och på Hagmyren där de tolv främsta ryttarna kvalificerar sig till final på Bollnäs 13 september.",
+      "render": {
+        "sv": "Regler Gävleborgs Montéserie 2025: 18 försök rids under året i Bollnäs, Gävle och på Hagmyren där de tolv främsta ryttarna kvalificerar sig till final på Bollnäs 13 september.",
+        "fi": "Gävleborgin Monté-sarjan 2025 säännöt: vuoden aikana ratsastetaan 18 osalähtöä Bollnäsissä, Gävlessä ja Hagmyrenissä, ja kaksitoista parasta ratsastajaa karsii Bollnäsissä 13. syyskuuta ajettavaan finaaliin.",
+        "en": "Rules for Gävleborgs Montéserie 2025: 18 qualifying races are ridden during the year in Bollnäs, Gävle and Hagmyren, and the twelve best riders qualify for the final in Bollnäs on 13 September."
+      }
+    },
+    {
+      "id": "youth-series-b-k-licence-max-150-starts-2024",
+      "types": ["EX"],
+      "template": "Ungdomsserien är för kuskar med B- eller K-licens och som körde högst 150 lopp 2024.",
+      "render": {
+        "sv": "Ungdomsserien är för kuskar med B- eller K-licens och som körde högst 150 lopp 2024.",
+        "fi": "Nuorten sarja on tarkoitettu B- tai K-lisenssin haltijoille, jotka ajoivat enintään 150 lähtöä vuonna 2024.",
+        "en": "The youth series is for drivers with a B or K licence who drove at most 150 races in 2024."
+      }
+    },
+    {
+      "id": "youth-series-b-k-licence-max-150-starts-2025",
+      "types": ["EX"],
+      "template": "Ungdomsserien är för kuskar med B- eller K-licens och som körde högst 150 lopp 2025.",
+      "render": {
+        "sv": "Ungdomsserien är för kuskar med B- eller K-licens och som körde högst 150 lopp 2025.",
+        "fi": "Nuorten sarja on tarkoitettu B- tai K-lisenssin haltijoille, jotka ajoivat enintään 150 lähtöä vuonna 2025.",
+        "en": "The youth series is for drivers with a B or K licence who drove at most 150 races in 2025."
+      }
+    },
+    {
+      "id": "driver-may-not-have-held-a-licence",
+      "types": ["EX"],
+      "template": "Kusk får ej haft A-licens.",
+      "render": {
+        "sv": "Kusk får ej haft A-licens.",
+        "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
+        "en": "The driver may not have held an A licence."
+      }
+    },
+    {
+      "id": "driver-may-not-previously-have-held-a-licence",
+      "types": ["EX"],
+      "template": "Körsven får ej tidigare innehaft A-licens.",
+      "render": {
+        "sv": "Körsven får ej tidigare innehaft A-licens.",
+        "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
+        "en": "The driver may not previously have held an A licence."
       }
     },
     {

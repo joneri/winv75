@@ -1,0 +1,2820 @@
+[
+  {
+    "_id": "69dfcc895202b79c20f1ed7b",
+    "raceDayId": 616248,
+    "firstStart": "2026-04-15T16:15:00.000Z",
+    "raceDayDate": "2026-04-15",
+    "raceList": [
+      {
+        "raceNumber": 1,
+        "raceId": 1290710,
+        "propTexts": [
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425265a",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "Prop. 1. Svensk Travsports Unghästserie - Treåringslopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425265b",
+            "sourceText": "Prop. 1. Svensk Travsports Unghästserie - Treåringslopp",
+            "displayText": "Prop. 1. Swedish Trotting Association Young Horse Series - Three-year-old race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "3-åriga svenska högst 25.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare. Ej häst med begränsade rättigheter.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425265c",
+            "sourceText": "3-åriga svenska högst 25.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare. Ej häst med begränsade rättigheter.",
+            "displayText": "3-year-olds Swedish, at most 25.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier. Not for horses with limited rights.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "Företrädesregeln gäller.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d45425265d",
+            "sourceText": "Företrädesregeln gäller.",
+            "displayText": "The priority rule applies.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "2140 m. Voltstart.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d45425265e",
+            "sourceText": "2140 m. Voltstart.",
+            "displayText": "2140 m. Standing start.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "Pris: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 180.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425265f",
+            "sourceText": "Pris: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 180.000 kr.",
+            "displayText": "Prizes: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 180.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727368,
+            "propositionNumber": "1",
+            "text": "Svensk Travsports hederspris till segrande hästs ägare, hästskötare och uppfödare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252660",
+            "sourceText": "Svensk Travsports hederspris till segrande hästs ägare, hästskötare och uppfödare.",
+            "displayText": "Svensk Travsports honorary prize to the winning horse's owner, groom, breeder.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 2,
+        "raceId": 1290711,
+        "propTexts": [
+          {
+            "propositionId": 727376,
+            "propositionNumber": "2",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425266e",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727376,
+            "propositionNumber": "2",
+            "text": "Prop. 2. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425266f",
+            "sourceText": "Prop. 2. ",
+            "displayText": "Prop. 2.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727376,
+            "propositionNumber": "2",
+            "text": "3-åriga och äldre 10.001 - 85.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252670",
+            "sourceText": "3-åriga och äldre 10.001 - 85.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 10.001 - 85.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727376,
+            "propositionNumber": "2",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252671",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727376,
+            "propositionNumber": "2",
+            "text": "Pris: 50.000-25.000-13.000-10.000-7.500-(5.500)-(3.500) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 120.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252672",
+            "sourceText": "Pris: 50.000-25.000-13.000-10.000-7.500-(5.500)-(3.500) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 120.000 kr.",
+            "displayText": "Prizes: 50.000-25.000-13.000-10.000-7.500-(5.500)-(3.500) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 120.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727376,
+            "propositionNumber": "2",
+            "text": "Presentkort till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252673",
+            "sourceText": "Presentkort till segrande hästs ägare.",
+            "displayText": "Gift card to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 5,
+        "raceId": 1290712,
+        "propTexts": [
+          {
+            "propositionId": 727371,
+            "propositionNumber": "3",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425267d",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727371,
+            "propositionNumber": "3",
+            "text": "Prop. 3. Treåringslopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425267e",
+            "sourceText": "Prop. 3. Treåringslopp",
+            "displayText": "Prop. 3. Three-year-old race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727371,
+            "propositionNumber": "3",
+            "text": "3-åriga 1.500 - 150.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425267f",
+            "sourceText": "3-åriga 1.500 - 150.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds, 1.500 - 150.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727371,
+            "propositionNumber": "3",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252680",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727371,
+            "propositionNumber": "3",
+            "text": "Pris: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 180.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252681",
+            "sourceText": "Pris: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 180.000 kr.",
+            "displayText": "Prizes: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 180.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727371,
+            "propositionNumber": "3",
+            "text": "Presentkort till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252682",
+            "sourceText": "Presentkort till segrande hästs ägare.",
+            "displayText": "Gift card to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 7,
+        "raceId": 1290713,
+        "propTexts": [
+          {
+            "propositionId": 727367,
+            "propositionNumber": "4",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252690",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727367,
+            "propositionNumber": "4",
+            "text": "Prop. 4. Svensk Travsports Unghästserie - Fyraåringslopp Ston",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252691",
+            "sourceText": "Prop. 4. Svensk Travsports Unghästserie - Fyraåringslopp Ston",
+            "displayText": "Prop. 4. Swedish Trotting Association Young Horse Series - Four-year-old race Mares",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727367,
+            "propositionNumber": "4",
+            "text": "4-åriga svenska ston 50.001 - 250.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare. Ej häst med begränsade rättigheter.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252692",
+            "sourceText": "4-åriga svenska ston 50.001 - 250.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare. Ej häst med begränsade rättigheter.",
+            "displayText": "4-year-olds Swedish mares, 50.001 - 250.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier. Not for horses with limited rights.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727367,
+            "propositionNumber": "4",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252693",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727367,
+            "propositionNumber": "4",
+            "text": "Pris: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 180.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252694",
+            "sourceText": "Pris: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 180.000 kr.",
+            "displayText": "Prizes: 70.000-35.000-22.500-17.000-10.000-6.500-6.500-6.500 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 180.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727367,
+            "propositionNumber": "4",
+            "text": "Svensk Travsports hederspris till segrande hästs ägare, hästskötare och uppfödare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252695",
+            "sourceText": "Svensk Travsports hederspris till segrande hästs ägare, hästskötare och uppfödare.",
+            "displayText": "Svensk Travsports honorary prize to the winning horse's owner, groom, breeder.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 10,
+        "raceId": 1290714,
+        "propTexts": [
+          {
+            "propositionId": 727369,
+            "propositionNumber": "5",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542526a3",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727369,
+            "propositionNumber": "5",
+            "text": "Prop. 5. Stall Courant Solvallaserien 220 - Fördel Ston (Försök 4 i Meeting 2 - Final Solvalla 15/5)",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542526a4",
+            "sourceText": "Prop. 5. Stall Courant Solvallaserien 220 - Fördel Ston (Försök 4 i Meeting 2 - Final Solvalla 15/5)",
+            "displayText": "Prop. 5. Stall Courant Solvallaserien 220 - Mares preferred (Försök 4 i Meeting 2 - Final Solvalla 15/5)",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727369,
+            "propositionNumber": "5",
+            "text": "3-åriga och äldre hingstar och valacker 75.001 - 220.000 kr samt 3-åriga och äldre ston 75.001 - 320.000 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542526a5",
+            "sourceText": "3-åriga och äldre hingstar och valacker 75.001 - 220.000 kr samt 3-åriga och äldre ston 75.001 - 320.000 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older stallions and geldings, 75.001 - 220.000 SEK and 3-year-olds and older mares, 75.001 - 320.000 SEK. Driver requirement category 1. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727369,
+            "propositionNumber": "5",
+            "text": "1640 m. Autostart. 12 startande. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542526a6",
+            "sourceText": "1640 m. Autostart. 12 startande. Spårförbehåll ej tillåtet.",
+            "displayText": "1640 m. Auto start. 12 starters. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727369,
+            "propositionNumber": "5",
+            "text": "Pris: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 195.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542526a7",
+            "sourceText": "Pris: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 195.000 kr.",
+            "displayText": "Prizes: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 SEK (7 prize placings). At least 2.500 SEK to all competitors. Maximum total prize money: 195.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727369,
+            "propositionNumber": "5",
+            "text": "Presentkort och segertavla till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526a8",
+            "sourceText": "Presentkort och segertavla till segrande hästs ägare.",
+            "displayText": "Gift card and winner plaque to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 0,
+              "quality": "fallback-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 4,
+        "raceId": 1290715,
+        "propTexts": [
+          {
+            "propositionId": 727370,
+            "propositionNumber": "6",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542526b2",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727370,
+            "propositionNumber": "6",
+            "text": "Prop. 6. Stall Courant",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542526b3",
+            "sourceText": "Prop. 6. Stall Courant",
+            "displayText": "Prop. 6. Stall Courant",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727370,
+            "propositionNumber": "6",
+            "text": "3-åriga och äldre 100.001 - 345.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542526b4",
+            "sourceText": "3-åriga och äldre 100.001 - 345.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 100.001 - 345.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727370,
+            "propositionNumber": "6",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542526b5",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727370,
+            "propositionNumber": "6",
+            "text": "Pris: 60.000-30.000-17.000-13.000-10.000-(6.000)-(4.500) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 145.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542526b6",
+            "sourceText": "Pris: 60.000-30.000-17.000-13.000-10.000-(6.000)-(4.500) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 145.000 kr.",
+            "displayText": "Prizes: 60.000-30.000-17.000-13.000-10.000-(6.000)-(4.500) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 145.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727370,
+            "propositionNumber": "6",
+            "text": "Presentkort till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526b7",
+            "sourceText": "Presentkort till segrande hästs ägare.",
+            "displayText": "Gift card to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 6,
+        "raceId": 1290716,
+        "propTexts": [
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542526c7",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "Prop. 7. Customs B-tränarserie - Omgång 4",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542526c8",
+            "sourceText": "Prop. 7. Customs B-tränarserie - Omgång 4",
+            "displayText": "Prop. 7. Customs B-trainer Series - Round 4",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "3-åriga och äldre 50.001 - 400.000 kr i B-träning. I oavbruten B-träning fr.o.m. 260310. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542526c9",
+            "sourceText": "3-åriga och äldre 50.001 - 400.000 kr i B-träning. I oavbruten B-träning fr.o.m. 260310. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 50.001 - 400.000 SEK in B training. In uninterrupted B training since 260310. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "2140 m. Tillägg 20 m vid vunna 160.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542526ca",
+            "sourceText": "2140 m. Tillägg 20 m vid vunna 160.001 kr",
+            "displayText": "2140 m. Handicap: 20 m at earnings of at least 160.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "Pris: 60.000-30.000-17.000-13.000-10.000-(6.000)-(4.500) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 152.500 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542526cb",
+            "sourceText": "Pris: 60.000-30.000-17.000-13.000-10.000-(6.000)-(4.500) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 152.500 kr.",
+            "displayText": "Prizes: 60.000-30.000-17.000-13.000-10.000-(6.000)-(4.500) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 152.500 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "För att få tillgodoräkna sig poäng i Customs B-tränarserie 2026 måste medlemsavgift till Solvalla Amatörklubb inbetalas senast dagen före aktuell tävlingsdag. För medlemskap se www.solvalla-amatorklubb.se. Alla tränare är välkomna, oavsett hemmabana.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526cc",
+            "sourceText": "För att få tillgodoräkna sig poäng i Customs B-tränarserie 2026 måste medlemsavgift till Solvalla Amatörklubb inbetalas senast dagen före aktuell tävlingsdag. För medlemskap se www.solvalla-amatorklubb.se. Alla tränare är välkomna, oavsett hemmabana.",
+            "displayText": "To have points counted in Customs B-tränarserie 2026, the membership fee to Solvalla Amatörklubb must be paid no later than the day before the relevant race day. For membership, see www.solvalla-amatorklubb.se. Alla trainers är welcome, regardless of home track.",
+            "translation": {
+              "language": "en",
+              "coverage": 0,
+              "quality": "fallback-match"
+            }
+          },
+          {
+            "propositionId": 727375,
+            "propositionNumber": "7",
+            "text": "Presentkort till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526cd",
+            "sourceText": "Presentkort till segrande hästs ägare.",
+            "displayText": "Gift card to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 9,
+        "raceId": 1290717,
+        "propTexts": [
+          {
+            "propositionId": 727372,
+            "propositionNumber": "8",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542526db",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727372,
+            "propositionNumber": "8",
+            "text": "Prop. 8. Stall Courant Solvallaserien 720 - Fördel Ston (Försök 4 i Meeting 2 - Final Solvalla 15/5)",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542526dc",
+            "sourceText": "Prop. 8. Stall Courant Solvallaserien 720 - Fördel Ston (Försök 4 i Meeting 2 - Final Solvalla 15/5)",
+            "displayText": "Prop. 8. Stall Courant Solvallaserien 720 - Mares preferred (Försök 4 i Meeting 2 - Final Solvalla 15/5)",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727372,
+            "propositionNumber": "8",
+            "text": "3-åriga och äldre hingstar och valacker 220.001 - 720.000 kr samt 3-åriga och äldre ston 220.001 - 1.020.000 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542526dd",
+            "sourceText": "3-åriga och äldre hingstar och valacker 220.001 - 720.000 kr samt 3-åriga och äldre ston 220.001 - 1.020.000 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older stallions and geldings, 220.001 - 720.000 SEK and 3-year-olds and older mares, 220.001 - 1.020.000 SEK. Driver requirement category 1. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727372,
+            "propositionNumber": "8",
+            "text": "2140 m. Autostart. 12 startande. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542526de",
+            "sourceText": "2140 m. Autostart. 12 startande. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Auto start. 12 starters. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727372,
+            "propositionNumber": "8",
+            "text": "Pris: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 195.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542526df",
+            "sourceText": "Pris: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 195.000 kr.",
+            "displayText": "Prizes: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 SEK (7 prize placings). At least 2.500 SEK to all competitors. Maximum total prize money: 195.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727372,
+            "propositionNumber": "8",
+            "text": "Presentkort och segertavla till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526e0",
+            "sourceText": "Presentkort och segertavla till segrande hästs ägare.",
+            "displayText": "Gift card and winner plaque to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 0,
+              "quality": "fallback-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 3,
+        "raceId": 1290718,
+        "propTexts": [
+          {
+            "propositionId": 727377,
+            "propositionNumber": "9",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542526e7",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727377,
+            "propositionNumber": "9",
+            "text": "Prop. 9. Fyraåringslopp - Spårtrappa",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542526e8",
+            "sourceText": "Prop. 9. Fyraåringslopp - Spårtrappa",
+            "displayText": "Prop. 9. Four-year-old race - Post-position ladder",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727377,
+            "propositionNumber": "9",
+            "text": "4-åriga lägst 100.001 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542526e9",
+            "sourceText": "4-åriga lägst 100.001 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "4-year-olds, at least 100.001 SEK. Driver requirement category 1. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727377,
+            "propositionNumber": "9",
+            "text": "2140 m. Autostart. 10 startande. Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår 1,2,3,4,5,6,9,10,7,8. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542526ea",
+            "sourceText": "2140 m. Autostart. 10 startande. Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår 1,2,3,4,5,6,9,10,7,8. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Auto start. 10 starters. Post positions by earnings; the horse with the lowest earnings gets post 1, etc., in this order: 1,2,3,4,5,6,9,10,7,8. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727377,
+            "propositionNumber": "9",
+            "text": "Pris: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 190.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542526eb",
+            "sourceText": "Pris: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 190.000 kr.",
+            "displayText": "Prizes: 80.000-40.000-22.500-16.000-11.000-8.000-5.000 SEK (7 prize placings). At least 2.500 SEK to all competitors. Maximum total prize money: 190.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727377,
+            "propositionNumber": "9",
+            "text": "Presentkort till segrande hästs ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526ec",
+            "sourceText": "Presentkort till segrande hästs ägare.",
+            "displayText": "Gift card to the winning horse's owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 8,
+        "raceId": 1290719,
+        "propTexts": [
+          {
+            "propositionId": 727366,
+            "propositionNumber": "10",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542526f7",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727366,
+            "propositionNumber": "10",
+            "text": "Prop. 10. Avelsföreningens Jubileumslöpning",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542526f8",
+            "sourceText": "Prop. 10. Avelsföreningens Jubileumslöpning",
+            "displayText": "Prop. 10. Avelsföreningens Jubileumslöpning",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727366,
+            "propositionNumber": "10",
+            "text": "4-7-åriga ston lägst 100.001 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542526f9",
+            "sourceText": "4-7-åriga ston lägst 100.001 kr. Körsvenskrav kat. 1. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "4-7-year-olds mares, at least 100.001 SEK. Driver requirement category 1. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727366,
+            "propositionNumber": "10",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542526fa",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727366,
+            "propositionNumber": "10",
+            "text": "Pris: 100.000-50.000-29.000-17.500-11.500-9.000-5.500 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 235.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542526fb",
+            "sourceText": "Pris: 100.000-50.000-29.000-17.500-11.500-9.000-5.500 kr (7 prisplacerade). Lägst 2.500 kr till alla tävlande. Prispengar max total: 235.000 kr.",
+            "displayText": "Prizes: 100.000-50.000-29.000-17.500-11.500-9.000-5.500 SEK (7 prize placings). At least 2.500 SEK to all competitors. Maximum total prize money: 235.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727366,
+            "propositionNumber": "10",
+            "text": "Avelsföreningens hederspris till segrande hästs ägare, tränare, kusk, hästskötare och uppfödare. Hederstäcke till segrande häst.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d4542526fc",
+            "sourceText": "Avelsföreningens hederspris till segrande hästs ägare, tränare, kusk, hästskötare och uppfödare. Hederstäcke till segrande häst.",
+            "displayText": "Avelsföreningens honorary prize to the winning horse's owner, trainer, driver, groom, breeder. Honorary blanket to the winning horse.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 13,
+        "raceId": 1290720,
+        "propTexts": [
+          {
+            "propositionId": 727373,
+            "propositionNumber": "50",
+            "text": "Prop. 50. Kvallopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252706",
+            "sourceText": "Prop. 50. Kvallopp",
+            "displayText": "Prop. 50. Qualifying race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727373,
+            "propositionNumber": "50",
+            "text": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252707",
+            "sourceText": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "displayText": "2-year-olds and older. Driver requirement category 2. Drivers born 101231 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727373,
+            "propositionNumber": "50",
+            "text": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252708",
+            "sourceText": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Standing start. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727373,
+            "propositionNumber": "50",
+            "text": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252709",
+            "sourceText": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "displayText": "Prizes: 0-0-0-0-0-(0)-(0) SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 14,
+        "raceId": 1290721,
+        "propTexts": [
+          {
+            "propositionId": 730467,
+            "propositionNumber": "55",
+            "text": "Prop. 55. Kvallopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252712",
+            "sourceText": "Prop. 55. Kvallopp",
+            "displayText": "Prop. 55. Qualifying race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 730467,
+            "propositionNumber": "55",
+            "text": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252713",
+            "sourceText": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "displayText": "2-year-olds and older. Driver requirement category 2. Drivers born 101231 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 730467,
+            "propositionNumber": "55",
+            "text": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252714",
+            "sourceText": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Standing start. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 730467,
+            "propositionNumber": "55",
+            "text": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252715",
+            "sourceText": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "displayText": "Prizes: 0-0-0-0-0-(0)-(0) SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      }
+    ],
+    "raceStandard": "**, Avelsföreningens Jubileumslöpning",
+    "trackName": "Solvalla"
+  },
+  {
+    "_id": "69dfcc885202b79c20f1ed79",
+    "raceDayId": 616249,
+    "firstStart": "2026-04-15T15:45:00.000Z",
+    "raceDayDate": "2026-04-15",
+    "raceList": [
+      {
+        "raceNumber": 1,
+        "raceId": 1290726,
+        "propTexts": [
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425250e",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "Prop. 1. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425250f",
+            "sourceText": "Prop. 1. ",
+            "displayText": "Prop. 1.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "3-åriga och äldre högst 15.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252510",
+            "sourceText": "3-åriga och äldre högst 15.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, at most 15.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "Företräde för 3-åriga. Företrädesregeln gäller.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252511",
+            "sourceText": "Företräde för 3-åriga. Företrädesregeln gäller.",
+            "displayText": "Priority for 3-åriga. The priority rule applies.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "2140 m. Voltstart.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252512",
+            "sourceText": "2140 m. Voltstart.",
+            "displayText": "2140 m. Standing start.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 99.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252513",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 99.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 99.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727491,
+            "propositionNumber": "1",
+            "text": "Hederspris till segrande hästs ägare och körsven.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252514",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven.",
+            "displayText": "Honorary prize to the winning horse's owner, driver.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 2,
+        "raceId": 1290727,
+        "propTexts": [
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425251e",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "Prop. 2. Taxi Göteborg | Stolopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425251f",
+            "sourceText": "Prop. 2. Taxi Göteborg | Stolopp",
+            "displayText": "Prop. 2. Taxi Göteborg | Mares race",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "3-åriga och äldre ston högst 60.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252520",
+            "sourceText": "3-åriga och äldre ston högst 60.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older mares, at most 60.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "Företrädesregeln gäller.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252521",
+            "sourceText": "Företrädesregeln gäller.",
+            "displayText": "The priority rule applies.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "2140 m. Tillägg 20 m vid vunna 24.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252522",
+            "sourceText": "2140 m. Tillägg 20 m vid vunna 24.001 kr",
+            "displayText": "2140 m. Handicap: 20 m at earnings of at least 24.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 105.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252523",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 105.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 105.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727483,
+            "propositionNumber": "2",
+            "text": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252524",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "displayText": "Honorary prize to the winning horse's owner, driver. Honorary blanket to the winning horse.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 5,
+        "raceId": 1290728,
+        "propTexts": [
+          {
+            "propositionId": 727484,
+            "propositionNumber": "3",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252532",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727484,
+            "propositionNumber": "3",
+            "text": "Prop. 3. MCR",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252533",
+            "sourceText": "Prop. 3. MCR",
+            "displayText": "Prop. 3. MCR",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727484,
+            "propositionNumber": "3",
+            "text": "3-åriga och äldre 50.001 - 140.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252534",
+            "sourceText": "3-åriga och äldre 50.001 - 140.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 50.001 - 140.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727484,
+            "propositionNumber": "3",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252535",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727484,
+            "propositionNumber": "3",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 99.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252536",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 99.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 99.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727484,
+            "propositionNumber": "3",
+            "text": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252537",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "displayText": "Honorary prize to the winning horse's owner, driver. Honorary blanket to the winning horse.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 3,
+        "raceId": 1290729,
+        "propTexts": [
+          {
+            "propositionId": 727492,
+            "propositionNumber": "4",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252544",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727492,
+            "propositionNumber": "4",
+            "text": "Prop. 4. Svensk Cater",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252545",
+            "sourceText": "Prop. 4. Svensk Cater",
+            "displayText": "Prop. 4. Svensk Cater",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727492,
+            "propositionNumber": "4",
+            "text": "3-åriga och äldre 15.001 - 200.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252546",
+            "sourceText": "3-åriga och äldre 15.001 - 200.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 15.001 - 200.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727492,
+            "propositionNumber": "4",
+            "text": "2140 m. Tillägg 20 m vid vunna 80.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252547",
+            "sourceText": "2140 m. Tillägg 20 m vid vunna 80.001 kr",
+            "displayText": "2140 m. Handicap: 20 m at earnings of at least 80.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727492,
+            "propositionNumber": "4",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 105.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252548",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 105.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 105.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727492,
+            "propositionNumber": "4",
+            "text": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252549",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "displayText": "Honorary prize to the winning horse's owner, driver. Honorary blanket to the winning horse.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 6,
+        "raceId": 1290730,
+        "propTexts": [
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252556",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "Prop. 5. Ladugårdsinredes Lärlings-/Amatörserie - Omgång 7 - K30",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252557",
+            "sourceText": "Prop. 5. Ladugårdsinredes Lärlings-/Amatörserie - Omgång 7 - K30",
+            "displayText": "Prop. 5. Ladugårdsinredes Lärlings-/Amatörserie - Round 7 - K30",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "3-åriga och äldre 150.001 - 445.000 kr med högst 1500 poäng, körda av B- eller K- licensinnehavare. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare med högst 30 sulkylopp under 2025.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252558",
+            "sourceText": "3-åriga och äldre 150.001 - 445.000 kr med högst 1500 poäng, körda av B- eller K- licensinnehavare. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare med högst 30 sulkylopp under 2025.",
+            "displayText": "3-year-olds and older, 150.001 - 445.000 SEK and at most 1500 points, driven by B or K licence holders. Driver requirement category 2. Drivers born 080415 or earlier, with at most 30 sulky races during 2025.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "2640 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252559",
+            "sourceText": "2640 m. Autostart. 12 startande.",
+            "displayText": "2640 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår 1,2,3,4,5,6,9,10,7,11,8,12. Har två hästar samma startpoäng tillämpas lottning.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d45425255a",
+            "sourceText": "Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår 1,2,3,4,5,6,9,10,7,11,8,12. Har två hästar samma startpoäng tillämpas lottning.",
+            "displayText": "Post positions by start points; the horse with the lowest start points gets post 1, etc., in this order: 1,2,3,4,5,6,9,10,7,11,8,12. If two horses have the same start points, a draw is used.",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-5.400-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 102.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425255b",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-5.400-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 102.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-5.400-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 102.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "Ladugårdsinredes Lärlings-/Amatörserie 2026 är en serie för B- och K-licensinnehavare med 10 lopp på Axevalla och 10 lopp på Åby från januari till december. Kuskar erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10. Kusk som döms för drivningsförseelse fråntas 30 poäng. Övrig info om serien finns på Axevallas och Åbys hemsidor.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d45425255c",
+            "sourceText": "Ladugårdsinredes Lärlings-/Amatörserie 2026 är en serie för B- och K-licensinnehavare med 10 lopp på Axevalla och 10 lopp på Åby från januari till december. Kuskar erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10. Kusk som döms för drivningsförseelse fråntas 30 poäng. Övrig info om serien finns på Axevallas och Åbys hemsidor.",
+            "displayText": "Ladugårdsinredes Apprentice/Amateur Series 2026 is a series for B and K licence holders with 10 races at Axevalla and 10 races at Åby from January to December. Drivers receive points in the series according to the placing scale 150-80-50-40-30-20-10-10. A driver penalized for a driving offence loses 30 points. More information about the series is available on Axevalla's and Åby's websites.",
+            "translation": {
+              "language": "en",
+              "coverage": 0,
+              "quality": "fallback-match"
+            }
+          },
+          {
+            "propositionId": 727485,
+            "propositionNumber": "5",
+            "text": "Hederspris till segrande hästs ägare och körsven.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d45425255d",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven.",
+            "displayText": "Honorary prize to the winning horse's owner, driver.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 7,
+        "raceId": 1290731,
+        "propTexts": [
+          {
+            "propositionId": 727493,
+            "propositionNumber": "6",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425256b",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727493,
+            "propositionNumber": "6",
+            "text": "Prop. 6. RA Bygg | Spårtrappa",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425256c",
+            "sourceText": "Prop. 6. RA Bygg | Spårtrappa",
+            "displayText": "Prop. 6. RA Bygg | Post-position ladder",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727493,
+            "propositionNumber": "6",
+            "text": "3-åriga och äldre 200.001 - 625.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425256d",
+            "sourceText": "3-åriga och äldre 200.001 - 625.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 200.001 - 625.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727493,
+            "propositionNumber": "6",
+            "text": "1640 m. Autostart. 12 startande. Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår 1,2,3,4,5,6,9,10,7,11,8,12. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d45425256e",
+            "sourceText": "1640 m. Autostart. 12 startande. Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår 1,2,3,4,5,6,9,10,7,11,8,12. Spårförbehåll ej tillåtet.",
+            "displayText": "1640 m. Auto start. 12 starters. Post positions by earnings; the horse with the lowest earnings gets post 1, etc., in this order: 1,2,3,4,5,6,9,10,7,11,8,12. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727493,
+            "propositionNumber": "6",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 99.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425256f",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) kr. Lägst 1.500 kr till alla tävlande. Prispengar max total: 99.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-(5.400)-(3.000) SEK. At least 1.500 SEK to all competitors. Maximum total prize money: 99.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727493,
+            "propositionNumber": "6",
+            "text": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252570",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven. Hederstäcke till segrande häst.",
+            "displayText": "Honorary prize to the winning horse's owner, driver. Honorary blanket to the winning horse.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 8,
+        "raceId": 1290732,
+        "propTexts": [
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252579",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "Prop. 7. P21-lopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425257a",
+            "sourceText": "Prop. 7. P21-lopp",
+            "displayText": "Prop. 7. P21 race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "3-åriga och äldre 200.001 - 900.000 kr med högst 500 poäng. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425257b",
+            "sourceText": "3-åriga och äldre 200.001 - 900.000 kr med högst 500 poäng. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 200.001 - 900.000 SEK and at most 500 points. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "Punkt 21 tillämpas i detta lopp.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d45425257c",
+            "sourceText": "Punkt 21 tillämpas i detta lopp.",
+            "displayText": "Rule point 21 applies in this race.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "2140 m. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d45425257d",
+            "sourceText": "2140 m. Autostart. 12 startande.",
+            "displayText": "2140 m. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "Pris: 20.000-10.000-7.500-6.000-5.000-4.000-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 64.500 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425257e",
+            "sourceText": "Pris: 20.000-10.000-7.500-6.000-5.000-4.000-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 64.500 kr.",
+            "displayText": "Prizes: 20.000-10.000-7.500-6.000-5.000-4.000-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 64.500 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727486,
+            "propositionNumber": "7",
+            "text": "Hederspris till segrande hästs ägare och körsven.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d45425257f",
+            "sourceText": "Hederspris till segrande hästs ägare och körsven.",
+            "displayText": "Honorary prize to the winning horse's owner, driver.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 4,
+        "raceId": 1290733,
+        "propTexts": [
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425258b",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "Prop. 8. Brizy Montéryttarserie 2026 - Omgång 4",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425258c",
+            "sourceText": "Prop. 8. Brizy Montéryttarserie 2026 - Omgång 4",
+            "displayText": "Prop. 8. Brizy Montéryttarserie 2026 - Round 4",
+            "translation": {
+              "language": "en",
+              "coverage": 0.5,
+              "quality": "partial-rule-match"
+            }
+          },
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "4-åriga och äldre 10.001 - 285.000 kr. Körsvenskrav kat. 2. Ryttare födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425258d",
+            "sourceText": "4-åriga och äldre 10.001 - 285.000 kr. Körsvenskrav kat. 2. Ryttare födda 080415 eller tidigare.",
+            "displayText": "4-year-olds and older, 10.001 - 285.000 SEK. Driver requirement category 2. Riders born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "2140 m. Monté. Autostart. 12 startande.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d45425258e",
+            "sourceText": "2140 m. Monté. Autostart. 12 startande.",
+            "displayText": "2140 m. Mounted race. Auto start. 12 starters.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "Pris: 40.000-20.000-11.000-7.500-6.400-5.400-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 102.300 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425258f",
+            "sourceText": "Pris: 40.000-20.000-11.000-7.500-6.400-5.400-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 102.300 kr.",
+            "displayText": "Prizes: 40.000-20.000-11.000-7.500-6.400-5.400-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 102.300 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "Regler för serien finns på abytravet.se.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252590",
+            "sourceText": "Regler för serien finns på abytravet.se.",
+            "displayText": "The series rules are available at abytravet.se.",
+            "translation": {
+              "language": "en",
+              "coverage": 0,
+              "quality": "fallback-match"
+            }
+          },
+          {
+            "propositionId": 727487,
+            "propositionNumber": "8",
+            "text": "Brizy's hederspris till segrande hästs ryttare och ägare.",
+            "typ": "EX",
+            "_id": "69dfcc881dba65d454252591",
+            "sourceText": "Brizy's hederspris till segrande hästs ryttare och ägare.",
+            "displayText": "Brizy's honorary prize to the winning horse's rider, owner.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 13,
+        "raceId": 1290734,
+        "propTexts": [
+          {
+            "propositionId": 727488,
+            "propositionNumber": "50",
+            "text": "Prop. 50. Kvallopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425259e",
+            "sourceText": "Prop. 50. Kvallopp",
+            "displayText": "Prop. 50. Qualifying race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727488,
+            "propositionNumber": "50",
+            "text": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425259f",
+            "sourceText": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "displayText": "2-year-olds and older. Driver requirement category 2. Drivers born 101231 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727488,
+            "propositionNumber": "50",
+            "text": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542525a0",
+            "sourceText": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Standing start. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727488,
+            "propositionNumber": "50",
+            "text": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542525a1",
+            "sourceText": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "displayText": "Prizes: 0-0-0-0-0-(0)-(0) SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      }
+    ],
+    "trackName": "Åby"
+  },
+  {
+    "_id": "69dfcc885202b79c20f1ed78",
+    "raceDayId": 616247,
+    "firstStart": "2026-04-15T10:20:00.000Z",
+    "raceDayDate": "2026-04-15",
+    "raceList": [
+      {
+        "raceNumber": 13,
+        "raceId": 1290745,
+        "propTexts": [
+          {
+            "propositionId": 727868,
+            "propositionNumber": "50",
+            "text": "Prop. 50. Kvallopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542523c2",
+            "sourceText": "Prop. 50. Kvallopp",
+            "displayText": "Prop. 50. Qualifying race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727868,
+            "propositionNumber": "50",
+            "text": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542523c3",
+            "sourceText": "2-åriga och äldre. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "displayText": "2-year-olds and older. Driver requirement category 2. Drivers born 101231 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727868,
+            "propositionNumber": "50",
+            "text": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542523c4",
+            "sourceText": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Standing start. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727868,
+            "propositionNumber": "50",
+            "text": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542523c5",
+            "sourceText": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "displayText": "Prizes: 0-0-0-0-0-(0)-(0) SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 14,
+        "raceId": 1290746,
+        "propTexts": [
+          {
+            "propositionId": 727871,
+            "propositionNumber": "61",
+            "text": "Kallblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542523cb",
+            "sourceText": "Kallblodiga",
+            "displayText": "Cold-blooded trotters",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727871,
+            "propositionNumber": "61",
+            "text": "Prop. 61. Premielopp",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542523cc",
+            "sourceText": "Prop. 61. Premielopp",
+            "displayText": "Prop. 61. Premium race",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727871,
+            "propositionNumber": "61",
+            "text": "2-åriga svenska och norska kallblodiga. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542523cd",
+            "sourceText": "2-åriga svenska och norska kallblodiga. Körsvenskrav kat. 2. Körsvenner födda 101231 eller tidigare.",
+            "displayText": "2-year-olds Swedish and Norwegian cold-blooded trotters. Driver requirement category 2. Drivers born 101231 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727871,
+            "propositionNumber": "61",
+            "text": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542523ce",
+            "sourceText": "2140 m. Voltstart. Spårförbehåll ej tillåtet.",
+            "displayText": "2140 m. Standing start. Track-position reservations are not allowed.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727871,
+            "propositionNumber": "61",
+            "text": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542523cf",
+            "sourceText": "Pris: 0-0-0-0-0-(0)-(0) kr.",
+            "displayText": "Prizes: 0-0-0-0-0-(0)-(0) SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727871,
+            "propositionNumber": "61",
+            "text": "Halvrad tillåts t.o.m onsdag 8 april.",
+            "typ": "H",
+            "_id": "69dfcc881dba65d4542523d0",
+            "sourceText": "Halvrad tillåts t.o.m onsdag 8 april.",
+            "displayText": "Half row allowed through onsdag 8 april.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 6,
+        "raceId": 1290747,
+        "propTexts": [
+          {
+            "propositionId": 727873,
+            "propositionNumber": "1",
+            "text": "Kallblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542523db",
+            "sourceText": "Kallblodiga",
+            "displayText": "Cold-blooded trotters",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727873,
+            "propositionNumber": "1",
+            "text": "Prop. 1. Fördel Ston",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542523dc",
+            "sourceText": "Prop. 1. Fördel Ston",
+            "displayText": "Prop. 1. Mares preferred",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727873,
+            "propositionNumber": "1",
+            "text": "3-åriga och äldre svenska och norska kallblodiga högst 20.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542523dd",
+            "sourceText": "3-åriga och äldre svenska och norska kallblodiga högst 20.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older Swedish and Norwegian cold-blooded trotters, at most 20.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727873,
+            "propositionNumber": "1",
+            "text": "Företrädesregeln gäller. 5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d4542523de",
+            "sourceText": "Företrädesregeln gäller. 5 hemmahästar har företräde.",
+            "displayText": "The priority rule applies. 5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727873,
+            "propositionNumber": "1",
+            "text": "1640 m. Tillägg 20 m för hingstar och valacker.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542523df",
+            "sourceText": "1640 m. Tillägg 20 m för hingstar och valacker.",
+            "displayText": "1640 m. Handicap: 20 m for stallions and geldings.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727873,
+            "propositionNumber": "1",
+            "text": "Pris: 20.000-10.000-7.500-6.000-5.000-4.000-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 69.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542523e0",
+            "sourceText": "Pris: 20.000-10.000-7.500-6.000-5.000-4.000-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 69.000 kr.",
+            "displayText": "Prizes: 20.000-10.000-7.500-6.000-5.000-4.000-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 69.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 8,
+        "raceId": 1290748,
+        "propTexts": [
+          {
+            "propositionId": 727874,
+            "propositionNumber": "2",
+            "text": "Kallblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542523ec",
+            "sourceText": "Kallblodiga",
+            "displayText": "Cold-blooded trotters",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727874,
+            "propositionNumber": "2",
+            "text": "Prop. 2. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d4542523ed",
+            "sourceText": "Prop. 2. ",
+            "displayText": "Prop. 2.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727874,
+            "propositionNumber": "2",
+            "text": "3-åriga och äldre svenska och norska kallblodiga 20.001 - 100.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d4542523ee",
+            "sourceText": "3-åriga och äldre svenska och norska kallblodiga 20.001 - 100.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older Swedish and Norwegian cold-blooded trotters, 20.001 - 100.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727874,
+            "propositionNumber": "2",
+            "text": "5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d4542523ef",
+            "sourceText": "5 hemmahästar har företräde.",
+            "displayText": "5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727874,
+            "propositionNumber": "2",
+            "text": "2640 m. Tillägg 20 m vid vunna 70.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d4542523f0",
+            "sourceText": "2640 m. Tillägg 20 m vid vunna 70.001 kr",
+            "displayText": "2640 m. Handicap: 20 m at earnings of at least 70.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727874,
+            "propositionNumber": "2",
+            "text": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d4542523f1",
+            "sourceText": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "displayText": "Prizes: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 79.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 3,
+        "raceId": 1290749,
+        "propTexts": [
+          {
+            "propositionId": 727875,
+            "propositionNumber": "3",
+            "text": "Kallblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d4542523ff",
+            "sourceText": "Kallblodiga",
+            "displayText": "Cold-blooded trotters",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727875,
+            "propositionNumber": "3",
+            "text": "Prop. 3. Svensk Travsports Kallblodsserie",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252400",
+            "sourceText": "Prop. 3. Svensk Travsports Kallblodsserie",
+            "displayText": "Prop. 3. Swedish Trotting Association Cold-Blooded Series",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727875,
+            "propositionNumber": "3",
+            "text": "3-åriga och äldre svenska och norska kallblodiga 70.001 - 300.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252401",
+            "sourceText": "3-åriga och äldre svenska och norska kallblodiga 70.001 - 300.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older Swedish and Norwegian cold-blooded trotters, 70.001 - 300.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727875,
+            "propositionNumber": "3",
+            "text": "5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252402",
+            "sourceText": "5 hemmahästar har företräde.",
+            "displayText": "5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727875,
+            "propositionNumber": "3",
+            "text": "1640 m. Tillägg 20 m vid vunna 180.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252403",
+            "sourceText": "1640 m. Tillägg 20 m vid vunna 180.001 kr",
+            "displayText": "1640 m. Handicap: 20 m at earnings of at least 180.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727875,
+            "propositionNumber": "3",
+            "text": "Pris: 45.000-22.500-12.000-8.500-6.800-5.500-3.200-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 117.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252404",
+            "sourceText": "Pris: 45.000-22.500-12.000-8.500-6.800-5.500-3.200-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 117.000 kr.",
+            "displayText": "Prizes: 45.000-22.500-12.000-8.500-6.800-5.500-3.200-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 117.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 1,
+        "raceId": 1290750,
+        "propTexts": [
+          {
+            "propositionId": 727876,
+            "propositionNumber": "4",
+            "text": "Kallblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252410",
+            "sourceText": "Kallblodiga",
+            "displayText": "Cold-blooded trotters",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727876,
+            "propositionNumber": "4",
+            "text": "Prop. 4. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252411",
+            "sourceText": "Prop. 4. ",
+            "displayText": "Prop. 4.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727876,
+            "propositionNumber": "4",
+            "text": "3-åriga och äldre svenska och norska kallblodiga 180.001 - 650.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252412",
+            "sourceText": "3-åriga och äldre svenska och norska kallblodiga 180.001 - 650.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older Swedish and Norwegian cold-blooded trotters, 180.001 - 650.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727876,
+            "propositionNumber": "4",
+            "text": "5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252413",
+            "sourceText": "5 hemmahästar har företräde.",
+            "displayText": "5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727876,
+            "propositionNumber": "4",
+            "text": "2140 m. Tillägg 20 m vid 1.201 poäng.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252414",
+            "sourceText": "2140 m. Tillägg 20 m vid 1.201 poäng.",
+            "displayText": "2140 m. Handicap: 20 m at 1.201 points.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727876,
+            "propositionNumber": "4",
+            "text": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252415",
+            "sourceText": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "displayText": "Prizes: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 79.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 5,
+        "raceId": 1290751,
+        "propTexts": [
+          {
+            "propositionId": 727877,
+            "propositionNumber": "5",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d45425241e",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727877,
+            "propositionNumber": "5",
+            "text": "Prop. 5. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d45425241f",
+            "sourceText": "Prop. 5. ",
+            "displayText": "Prop. 5.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727877,
+            "propositionNumber": "5",
+            "text": "3-åriga och äldre högst 15.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252420",
+            "sourceText": "3-åriga och äldre högst 15.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, at most 15.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727877,
+            "propositionNumber": "5",
+            "text": "Företrädesregeln gäller. 5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252421",
+            "sourceText": "Företrädesregeln gäller. 5 hemmahästar har företräde.",
+            "displayText": "The priority rule applies. 5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727877,
+            "propositionNumber": "5",
+            "text": "2140 m. Tillägg 20 m vid vunna 6.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252422",
+            "sourceText": "2140 m. Tillägg 20 m vid vunna 6.001 kr",
+            "displayText": "2140 m. Handicap: 20 m at earnings of at least 6.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727877,
+            "propositionNumber": "5",
+            "text": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252423",
+            "sourceText": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "displayText": "Prizes: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 79.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 7,
+        "raceId": 1290752,
+        "propTexts": [
+          {
+            "propositionId": 727878,
+            "propositionNumber": "6",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252431",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727878,
+            "propositionNumber": "6",
+            "text": "Prop. 6. Fördel Ston",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252432",
+            "sourceText": "Prop. 6. Fördel Ston",
+            "displayText": "Prop. 6. Mares preferred",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727878,
+            "propositionNumber": "6",
+            "text": "3-åriga och äldre hingstar och valacker 6.001 - 55.000 kr samt 3-åriga och äldre ston 6.001 - 75.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252433",
+            "sourceText": "3-åriga och äldre hingstar och valacker 6.001 - 55.000 kr samt 3-åriga och äldre ston 6.001 - 75.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older stallions and geldings, 6.001 - 55.000 SEK and 3-year-olds and older mares, 6.001 - 75.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727878,
+            "propositionNumber": "6",
+            "text": "4 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252434",
+            "sourceText": "4 hemmahästar har företräde.",
+            "displayText": "4 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727878,
+            "propositionNumber": "6",
+            "text": "2140 m. Voltstart.",
+            "typ": "T",
+            "_id": "69dfcc881dba65d454252435",
+            "sourceText": "2140 m. Voltstart.",
+            "displayText": "2140 m. Standing start.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727878,
+            "propositionNumber": "6",
+            "text": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 74.500 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d454252436",
+            "sourceText": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 74.500 kr.",
+            "displayText": "Prizes: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 74.500 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 2,
+        "raceId": 1290753,
+        "propTexts": [
+          {
+            "propositionId": 727879,
+            "propositionNumber": "7",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252446",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727879,
+            "propositionNumber": "7",
+            "text": "Prop. 7. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252447",
+            "sourceText": "Prop. 7. ",
+            "displayText": "Prop. 7.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727879,
+            "propositionNumber": "7",
+            "text": "3-åriga och äldre 55.001 - 315.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d454252448",
+            "sourceText": "3-åriga och äldre 55.001 - 315.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 55.001 - 315.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727879,
+            "propositionNumber": "7",
+            "text": "5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d454252449",
+            "sourceText": "5 hemmahästar har företräde.",
+            "displayText": "5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727879,
+            "propositionNumber": "7",
+            "text": "2140 m. Tillägg 20 m vid vunna 126.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d45425244a",
+            "sourceText": "2140 m. Tillägg 20 m vid vunna 126.001 kr",
+            "displayText": "2140 m. Handicap: 20 m at earnings of at least 126.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727879,
+            "propositionNumber": "7",
+            "text": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425244b",
+            "sourceText": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "displayText": "Prizes: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 79.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      },
+      {
+        "raceNumber": 4,
+        "raceId": 1290754,
+        "propTexts": [
+          {
+            "propositionId": 727880,
+            "propositionNumber": "8",
+            "text": "Varmblodiga",
+            "typ": "U",
+            "_id": "69dfcc881dba65d454252458",
+            "sourceText": "Varmblodiga",
+            "displayText": "Standardbreds",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727880,
+            "propositionNumber": "8",
+            "text": "Prop. 8. ",
+            "typ": "L",
+            "_id": "69dfcc881dba65d454252459",
+            "sourceText": "Prop. 8. ",
+            "displayText": "Prop. 8.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727880,
+            "propositionNumber": "8",
+            "text": "3-åriga och äldre 126.001 - 1.545.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "typ": "V",
+            "_id": "69dfcc881dba65d45425245a",
+            "sourceText": "3-åriga och äldre 126.001 - 1.545.000 kr. Körsvenskrav kat. 2. Körsvenner födda 080415 eller tidigare.",
+            "displayText": "3-year-olds and older, 126.001 - 1.545.000 SEK. Driver requirement category 2. Drivers born 080415 or earlier.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727880,
+            "propositionNumber": "8",
+            "text": "5 hemmahästar har företräde.",
+            "typ": "FX",
+            "_id": "69dfcc881dba65d45425245b",
+            "sourceText": "5 hemmahästar har företräde.",
+            "displayText": "5 home-track horses have priority.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727880,
+            "propositionNumber": "8",
+            "text": "1640 m. Tillägg 20 m vid vunna 515.001 kr",
+            "typ": "T",
+            "_id": "69dfcc881dba65d45425245c",
+            "sourceText": "1640 m. Tillägg 20 m vid vunna 515.001 kr",
+            "displayText": "1640 m. Handicap: 20 m at earnings of at least 515.001 SEK",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          },
+          {
+            "propositionId": 727880,
+            "propositionNumber": "8",
+            "text": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "typ": "P",
+            "_id": "69dfcc881dba65d45425245d",
+            "sourceText": "Pris: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 kr (8 prisplacerade). Lägst 1.500 kr till alla tävlande. Prispengar max total: 79.000 kr.",
+            "displayText": "Prizes: 25.000-12.500-8.500-6.500-5.500-4.500-3.000-3.000 SEK (8 prize placings). At least 1.500 SEK to all competitors. Maximum total prize money: 79.000 SEK.",
+            "translation": {
+              "language": "en",
+              "coverage": 1,
+              "quality": "rule-match"
+            }
+          }
+        ]
+      }
+    ],
+    "trackName": "Hagmyren"
+  }
+]

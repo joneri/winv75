@@ -1,0 +1,352 @@
+[
+  {
+    "typ": "L",
+    "text": "Wången Cup - Lärlingslopp - Spårtrappa",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Wången Cup - Lärlingslopp - Spårtrappa",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Wången Cup - Oppilaslähtö - Ratajärjestys voittosumman mukaan",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Wången Cup - Apprentice race - Post-position ladder",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "L",
+    "text": "Presenteras av Gotlands Travskola.",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Presenteras av Gotlands Travskola.",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Esittelee Gotlands Travskola.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Presented by Gotlands Travskola.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "L",
+    "text": "Svelands och BTR:s B-tränarserie 2026",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Svelands och BTR:s B-tränarserie 2026",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Svelands och BTR:s B-valmentajasarja 2026",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Svelands och BTR:s B-trainer Series 2026",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "L",
+    "text": "Svensk Travsports Unghästserie - Treåringar",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Svensk Travsports Unghästserie - Treåringar",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Svensk Travsports nuorten hevosten sarja - 3-vuotiaat",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Swedish Trotting Association Young Horse Series - Three-year-olds",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "L",
+    "text": "Juniorchans - U25/K100",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Juniorchans - U25/K100",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Juniorimahdollisuus - U25/K100",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Junior chance - U25/K100",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "L",
+    "text": "Stayerlopp",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Stayerlopp",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Stayer-lähtö",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Stayer race",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "V",
+    "text": "Ryttare födda 091231 eller tidigare.",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Ryttare födda 091231 eller tidigare.",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Ratsastajat syntyneet 091231 tai aiemmin.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Riders born 091231 or earlier.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "V",
+    "text": "Hos tränare som gjort högst 150 starter under 2024.",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Hos tränare som gjort högst 150 starter under 2024.",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Valmentajilta, joilla oli enintään 150 starttia vuonna 2024.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "From trainers with at most 150 starts during 2024.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "EX",
+    "text": "Gotlands Travsällskap har möjlighet att utdela ett wildcard i detta lopp.",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "Gotlands Travsällskap har möjlighet att utdela ett wildcard i detta lopp.",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "Gotlands Travsällskap voi myöntää yhden wildcardin tässä lähdössä.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "Gotlands Travsällskap may award one wildcard in this race.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
+        "translatedSentenceCount": 1,
+        "coverage": 1,
+        "quality": "rule-match"
+      }
+    }
+  },
+  {
+    "typ": "FX",
+    "text": "4 hemmahästar har företräde, som hemmabana räknas även Rättvik.",
+    "translations": {
+      "sv": {
+        "language": "sv",
+        "text": "4 hemmahästar har företräde, som hemmabana räknas även Rättvik.",
+        "translated": false,
+        "coverage": 1,
+        "quality": "source"
+      },
+      "fi": {
+        "language": "fi",
+        "text": "4 kotiradan hevosta on etusijalla, ja kotiradoiksi lasketaan myös Rättvik.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 0,
+        "fallbackMatchedSentenceCount": 1,
+        "translatedSentenceCount": 1,
+        "coverage": 0,
+        "quality": "fallback-match"
+      },
+      "en": {
+        "language": "en",
+        "text": "4 home-track horses have priority, and Rättvik also count as home tracks.",
+        "translated": true,
+        "sentenceCount": 1,
+        "ruleMatchedSentenceCount": 0,
+        "fallbackMatchedSentenceCount": 1,
+        "translatedSentenceCount": 1,
+        "coverage": 0,
+        "quality": "fallback-match"
+      }
+    }
+  }
+]

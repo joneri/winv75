@@ -121,33 +121,66 @@ const EXACT_FALLBACK_TRANSLATIONS = {
 
 const TITLE_FRAGMENT_TRANSLATIONS = {
   fi: new Map([
+    ['Amatörlopp', 'Amatöörilähtö'],
+    ['Bonuslopp', 'Bonuslähtö'],
+    ['Breddlopp', 'Leveyskilpailu'],
     ['Breddlopp', 'Leveyskilpailu'],
     ['Breddplus', 'Leveysplus'],
+    ['Breeders\' Crown', 'Breeders\' Crown'],
     ['B-tränarlopp', 'B-valmentajalähtö'],
     ['B-tränarserie', 'B-valmentajasarja'],
+    ['B-tränarserien', 'B-valmentajasarja'],
+    ['Customserien', 'Customsarja'],
+    ['Dam-SM', 'Dam-SM'],
+    ['Delningslopp', 'Jakolähtö'],
     ['Delningsproposition', 'Jakopropositio'],
     ['Juniorchans', 'Juniorimahdollisuus'],
+    ['K30-lopp', 'K30-lähtö'],
+    ['Klass I', 'Luokka I'],
+    ['Klass II', 'Luokka II'],
+    ['Klass III', 'Luokka III'],
     ['Kvallopp', 'Karsintalähtö'],
     ['Lärlingslopp', 'Oppilaslähtö'],
     ['Lärlingsserie', 'Oppilassarja'],
     ['Lärlingsserien', 'Oppilassarja'],
     ['Monté', 'Monté'],
+    ['Montéfinal', 'Montéfinaali'],
     ['Montélopp', 'Montélähtö'],
+    ['Montéryttar-SM', 'Montératsastajien SM'],
+    ['Montéryttarserie', 'Montératsastajasarja'],
     ['Montéserie', 'Montésarja'],
     ['P21', 'P21'],
     ['P21-lopp', 'P21-lähtö'],
+    ['P22-lopp', 'P22-lähtö'],
     ['Premielopp', 'Preemiolähtö'],
     ['Omgång', 'Osakilpailu'],
     ['Presenteras av', 'Esittelee'],
     ['Sedvanlig spårlottning', 'Tavanomainen lähtörata-arvonta'],
+    ['Solvallaserien', 'Solvalla-sarja'],
     ['Spår efter startpoäng', 'Lähtöradat lähtöpisteiden mukaan'],
     ['Spårtrappa', 'Ratajärjestys voittosumman mukaan'],
+    ['StoChampionatet', 'StoChampionatet'],
+    ['Stodivisionen', 'Tammadivisioona'],
+    ['Stayerlopp', 'Stayer-lähtö'],
     ['Specialare', 'Erikoislähtö'],
     ['Stolopp', 'Tammalähtö'],
     ['Ston', 'Tammat'],
+    ['Svensk Trav-Kriterium', 'Ruotsin ravikriterium'],
+    ['Svensk Uppfödningslöpning', 'Ruotsin kasvattajakilpailu'],
+    ['Svenskt Trav-Kriterium', 'Ruotsin ravikriterium'],
+    ['Svenskt Trav-Oaks', 'Ruotsin Oaks'],
+    ['Svenskt Travderby', 'Ruotsin raviderby'],
+    ['Svensk Travsport', 'Svensk Travsport'],
+    ['Treåringar', '3-vuotiaat'],
+    ['Tre-/Fyraåriga', '3- ja 4-vuotiaat'],
+    ['Tre-/Fyraåringslopp', '3-/4-vuotislähtö'],
     ['Treåringslopp', '3-vuotislähtö'],
     ['Treåriga', '3-vuotiaat'],
     ['Tvååringslopp', '2-vuotislähtö'],
+    ['Ungdomslopp', 'Nuorisolähtö'],
+    ['U25/K100', 'U25/K100'],
+    ['U30/K150', 'U30/K150'],
+    ['U30/K400', 'U30/K400'],
     ['Fyraåringslopp', '4-vuotislähtö'],
     ['Fyraåriga', '4-vuotiaat'],
     ['Hingstar/Valacker', 'Oriit/Ruunat'],
@@ -161,33 +194,70 @@ const TITLE_FRAGMENT_TRANSLATIONS = {
     ['Amatör-SM', 'Amatööri-SM']
   ]),
   en: new Map([
+    ['Amatörlopp', 'Amateur race'],
+    ['Bonuslopp', 'Bonus race'],
+    ['Breddlopp', 'Grassroots race'],
     ['Breddlopp', 'Grassroots race'],
     ['Breddplus', 'Grassroots Plus'],
+    ['Breeders\' Crown', 'Breeders\' Crown'],
     ['B-tränarlopp', 'B-trainer race'],
     ['B-tränarserie', 'B-trainer Series'],
+    ['B-tränarserien', 'B-trainer Series'],
+    ['Bronsdivisionen', 'Bronze Division'],
+    ['Customserien', 'Custom Series'],
+    ['Dam-SM', 'Ladies Championship'],
+    ['Delningslopp', 'Division race'],
     ['Delningsproposition', 'Division proposition'],
+    ['Diamantstoet', 'Diamond Mares'],
+    ['Gulddivisionen', 'Gold Division'],
     ['Juniorchans', 'Junior chance'],
+    ['K30-lopp', 'K30 race'],
+    ['Klass I', 'Class I'],
+    ['Klass II', 'Class II'],
+    ['Klass III', 'Class III'],
     ['Kvallopp', 'Qualifying race'],
     ['Lärlingslopp', 'Apprentice race'],
     ['Lärlingsserie', 'Apprentice Series'],
     ['Lärlingsserien', 'Apprentice Series'],
     ['Monté', 'Monté'],
+    ['Montéfinal', 'Monté Final'],
     ['Montélopp', 'Mounted race'],
+    ['Montéryttar-SM', 'Monté Riders\' Championship'],
+    ['Montéryttarserie', 'Monté Rider Series'],
     ['Montéserie', 'Monté series'],
     ['P21', 'P21'],
     ['P21-lopp', 'P21 race'],
+    ['P22-lopp', 'P22 race'],
     ['Premielopp', 'Premium race'],
     ['Omgång', 'Round'],
     ['Presenteras av', 'Presented by'],
     ['Sedvanlig spårlottning', 'Standard post draw'],
+    ['Silverdivisionen', 'Silver Division'],
+    ['Solvallaserien', 'Solvalla Series'],
     ['Spår efter startpoäng', 'Post positions by start points'],
     ['Spårtrappa', 'Post-position ladder'],
+    ['StoChampionatet', 'Mares Championship'],
+    ['Stodivisionen', 'Mares Division'],
+    ['Stayerlopp', 'Stayer race'],
     ['Specialare', 'Special race'],
     ['Stolopp', 'Mares race'],
     ['Ston', 'Mares'],
+    ['Svensk Trav-Kriterium', 'Swedish Trotting Criterion'],
+    ['Svensk Uppfödningslöpning', 'Swedish Breeders\' Race'],
+    ['Svenskt Trav-Kriterium', 'Swedish Trotting Criterion'],
+    ['Svenskt Trav-Oaks', 'Swedish Trotting Oaks'],
+    ['Svenskt Travderby', 'Swedish Trotting Derby'],
+    ['Svensk Travsport', 'Swedish Trotting Association'],
+    ['Treåringar', 'Three-year-olds'],
+    ['Tre-/Fyraåriga', 'Three- and four-year-olds'],
+    ['Tre-/Fyraåringslopp', 'Three-/four-year-old race'],
     ['Treåringslopp', 'Three-year-old race'],
     ['Treåriga', 'Three-year-olds'],
     ['Tvååringslopp', 'Two-year-old race'],
+    ['Ungdomslopp', 'Youth race'],
+    ['U25/K100', 'U25/K100'],
+    ['U30/K150', 'U30/K150'],
+    ['U30/K400', 'U30/K400'],
     ['Fyraåringslopp', 'Four-year-old race'],
     ['Fyraåriga', 'Four-year-olds'],
     ['Hingstar/Valacker', 'Stallions/Geldings'],
@@ -200,6 +270,39 @@ const TITLE_FRAGMENT_TRANSLATIONS = {
     ['Uttagningslopp', 'Qualifying race'],
     ['Amatör-SM', 'Amateur Championship']
   ])
+}
+
+const KNOWN_RACE_TITLE_FRAGMENTS = [...new Set([
+  ...TITLE_FRAGMENT_TRANSLATIONS.fi.keys(),
+  ...TITLE_FRAGMENT_TRANSLATIONS.en.keys()
+])].sort((left, right) => right.length - left.length)
+
+const TITLE_REGEX_REPLACEMENTS = {
+  fi: [
+    [/\bFörsök (\d+) av (\d+)\b/g, (_, round, total) => `Karsinta ${round}/${total}`],
+    [/\bFörsök (\d+)\b/g, (_, round) => `Karsinta ${round}`],
+    [/\bi Meeting (\d+)\b/g, (_, meeting) => `Meetingissä ${meeting}`],
+    [/\bOmgång (\d+)\b/g, (_, round) => `Osakilpailu ${round}`],
+    [/\bSemifinal\b/g, 'Välierä'],
+    [/\bFinal\b/g, 'Finaali'],
+    [/\bUttagningslopp till\b/g, 'Karsintalähtö'],
+    [/\bFördel födda (\d{4}) eller senare\b/gi, (_, year) => `Etu vuonna ${year} tai myöhemmin syntyneille`],
+    [/\bFör hästar som aldrig vunnit lopp\b/gi, 'Hevosille, jotka eivät ole koskaan voittaneet lähtöä'],
+    [/\bB-\/K-licens\b/g, 'B-/K-lisenssi'],
+    [/\b(\d+)\s+år\b/g, (_, years) => `${years} vuotta`]
+  ],
+  en: [
+    [/\bFörsök (\d+) av (\d+)\b/g, (_, round, total) => `Qualifier ${round} of ${total}`],
+    [/\bFörsök (\d+)\b/g, (_, round) => `Qualifier ${round}`],
+    [/\bi Meeting (\d+)\b/g, (_, meeting) => `in Meeting ${meeting}`],
+    [/\bOmgång (\d+)\b/g, (_, round) => `Round ${round}`],
+    [/\bSemifinal\b/g, 'Semi-final'],
+    [/\bUttagningslopp till\b/g, 'Qualifier for'],
+    [/\bFördel födda (\d{4}) eller senare\b/gi, (_, year) => `Preference for those born in ${year} or later`],
+    [/\bFör hästar som aldrig vunnit lopp\b/gi, 'For horses that have never won a race'],
+    [/\bB-\/K-licens\b/g, 'B/K licence'],
+    [/\b(\d+)\s+år\b/g, (_, years) => `${years} years`]
+  ]
 }
 
 const GENERIC_FALLBACK_REPLACEMENTS = {
@@ -403,6 +506,73 @@ function normalizeWhitespace(value) {
   return String(value || '').replace(/\s+/g, ' ').trim()
 }
 
+function isGenericLTitle(text, propositionType) {
+  if (propositionType !== 'L') return false
+
+  const normalized = normalizeWhitespace(text)
+  if (!normalized) return false
+  if (/^Prop\./.test(normalized)) return false
+  if (/^Presenteras av\b/.test(normalized)) return false
+
+  return true
+}
+
+function isKnownRaceTitleChain(value) {
+  const normalized = normalizeWhitespace(value)
+  if (!normalized || /[.:]/.test(normalized)) return false
+
+  let remaining = normalized
+  for (const fragment of KNOWN_RACE_TITLE_FRAGMENTS) {
+    remaining = remaining.replaceAll(fragment, '')
+  }
+
+  return remaining.replace(/\s*-\s*/g, '').replace(/\s+/g, '') === ''
+}
+
+function splitPrefixedRaceTitle(value) {
+  const normalized = normalizeWhitespace(value)
+  const segments = normalized.split(/\s+-\s+/)
+
+  if (segments.length < 2) return null
+
+  for (let index = 1; index < segments.length; index += 1) {
+    const titlePrefix = segments.slice(0, index).join(' - ')
+    const raceTitle = segments.slice(index).join(' - ')
+
+    if (titlePrefix && isKnownRaceTitleChain(raceTitle)) {
+      return { titlePrefix, raceTitle }
+    }
+  }
+
+  return null
+}
+
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function splitYearSuffixedRaceTitle(value) {
+  const normalized = normalizeWhitespace(value)
+  const yearMatch = normalized.match(/^(.+)\s+(\d{4})$/)
+  if (!yearMatch) return null
+
+  const titleWithPrefix = yearMatch[1]
+  const titleYear = yearMatch[2]
+
+  for (const fragment of KNOWN_RACE_TITLE_FRAGMENTS) {
+    const suffixMatch = titleWithPrefix.match(new RegExp(`^(.+)\\s+(${escapeRegExp(fragment)})$`))
+    if (suffixMatch) {
+      return {
+        titlePrefix: suffixMatch[1],
+        raceTitle: suffixMatch[2],
+        titleYear
+      }
+    }
+  }
+
+  return null
+}
+
 function splitSentences(text) {
   return normalizeWhitespace(text)
     .replace(/\bProp\.\s+/g, 'Prop.__SPACE__')
@@ -458,7 +628,7 @@ function translateSwedishDateText(value, language) {
   ))
 }
 
-export function normalizeTemplate(sentence) {
+export function normalizeTemplate(sentence, propositionType = null) {
   const text = normalizeWhitespace(sentence)
   if (/^Tillägg\b/.test(text) && (/\bvid\b/.test(text) || /\bför\b/.test(text))) {
     return text.endsWith('.') ? 'Tillägg {allowance_text}.' : 'Tillägg {allowance_text}'
@@ -478,14 +648,25 @@ export function normalizeTemplate(sentence) {
     .replace(/^Närmast upp t\.o\.m\s+([\d.]+)\s+kr\.$/g, 'Närmast upp t.o.m {amount_kr} kr.')
     .replace(/^(\d+)\s+enligt punkt\s+(\d+)\.$/g, '{selection_count} enligt punkt {rule_point}.')
     .replace(/^Företräde för (.+)\.$/g, 'Företräde för {priority_group}.')
+    .replace(/^Hemmahästar har företräde,\s+som hemmabana räknas även (.+)\.$/g, 'Hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.')
     .replace(/^(\d+)\s+hemmahästar har företräde\.$/g, '{home_horse_count} hemmahästar har företräde.')
+    .replace(/^(\d+)\s+hemmahästar har företräde,\s+som hemmabana räknas även (.+)\.$/g, '{home_horse_count} hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.')
     .replace(/^(.+?)\s+(kan utdela|kan i samråd utdela|har möjlighet att dela ut|har även möjlighet att dela ut|har möjligheten att dela ut|förbehåller sig rätten att dela ut)\s+(ett wildcard|två wildcard|två wildcards|högst två wildcards|tre wildcards|wildcards)( i detta lopp(?:, företrädesvis till häst i träning i utlandet|, företrädesvis till häst i utländsk träning|, i första hand till utländska ekipage| oavsett startpoäng)?\.| i loppet\.|\.)$/g, '{wildcard_authority} {wildcard_action} {wildcard_award_phrase}{wildcard_context}')
     .replace(/^Wildcard har utdelats till (.+)\.$/g, 'Wildcard har utdelats till {wildcard_recipients}.')
     .replace(/^Wildcards har utdelats till (.+)\.$/g, 'Wildcards har utdelats till {wildcard_recipients}.')
     .replace(/^Wildcards har utdelads till (.+)\.$/g, 'Wildcards har utdelads till {wildcard_recipients}.')
     .replace(/^Ett wildcard har tilldelats (.+)\.$/g, 'Ett wildcard har tilldelats {wildcard_recipients}.')
+    .replace(/^Presenteras av (.+)\.$/g, 'Presenteras av {presented_by_name}.')
+    .replace(/^Presenteras av ([^.]+)$/g, 'Presenteras av {presented_by_name}')
     .replace(/^Hederspris till segrande hästs (.+)\.$/g, 'Hederspris till segrande hästs {honorary_prize_recipients}.')
     .replace(/^(.+) hederspris till segrande hästs (.+)\.$/g, '{sponsor_name} hederspris till segrande hästs {honorary_prize_recipients}.')
+    .replace(/^Hederstäcke och lagerkrans till segrande häst\.?$/g, 'Hederstäcke och lagerkrans till segrande häst.')
+    .replace(/^Hederspris till teamet kring segrande häst\.?$/g, 'Hederspris till teamet kring segrande häst.')
+    .replace(/^Hederspris till kretsen runt segrande häst\.?$/g, 'Hederspris till kretsen runt segrande häst.')
+    .replace(/^Hederspris och segertavla till segrande hästs ägare\.?$/g, 'Hederspris och segertavla till segrande hästs ägare.')
+    .replace(/^Presentkort och segertavla till segrande hästs ägare\.?$/g, 'Presentkort och segertavla till segrande hästs ägare.')
+    .replace(/^(.+?) hederstäcke och lagerkrans till segrande häst\.?$/gi, '{sponsor_name} hederstäcke och lagerkrans till segrande häst.')
+    .replace(/^(.+?) hederstäcke till segrande häst\.?$/gi, '{sponsor_name} hederstäcke till segrande häst.')
     .replace(/^(Kvallopp|Spårtrappa|Premielopp|Stolopp|P21-lopp)$/g, '{race_title}')
     .replace(/^Körsvenskrav kat\.\s+(\d+)\.$/g, 'Körsvenskrav kat. {driver_category}.')
     .replace(/^(Körsvenner|Ryttare) födda (\d{6}) eller tidigare(?: med högst (\d+) (sulkylopp|montélopp) under (\d{4}))?\.$/g, '{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.')
@@ -514,10 +695,14 @@ export function normalizeTemplate(sentence) {
     .replace(/^Spår efter spårtrappa\.$/g, 'Spår efter spårtrappa.')
     .replace(/^Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp\.$/g, 'Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp.')
     .replace(/^Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst (\d+) startande i vardera lopp\.$/g, 'Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst {runner_count} startande i vardera lopp.')
-    .replace(/^Om fler än 72 hästar anmäls tas startande hästar ut i startpoängordning\.$/g, 'Om fler än 72 hästar anmäls tas startande hästar ut i startpoängordning.')
+    .replace(/^Om fler än (\d+) hästar anmäls,? tas startande hästar ut i (P21-ordning|startpoängordning)\.$/g, 'Om fler än {selection_limit} hästar anmäls tas startande hästar ut i {selection_order_basis}.')
     .replace(/^Har två hästar samma startpoäng tillämpas lottning\.$/g, 'Har två hästar samma startpoäng tillämpas lottning.')
+    .replace(/^Spårtilldelning i respektive lopp enligt slumptal, dvs sedvanlig spå(?:r|t)lottning\.$/g, 'Spårtilldelning i respektive lopp enligt slumptal, dvs sedvanlig spårlottning.')
+    .replace(/^Övriga hästar startar från distansen (\d{3,4}) meter\.$/g, 'Övriga hästar startar från distansen {distance_m} meter.')
+    .replace(/^Hästar som körs av kuskar som ännu inte fyllt (\d+) år startar på distansen (\d{3,4}) meter\.$/g, 'Hästar som körs av kuskar som ännu inte fyllt {driver_age_limit} år startar på distansen {distance_m} meter.')
     .replace(/^Presentkort till segrande hästs ägare\.$/g, 'Presentkort till segrande hästs ägare.')
     .replace(/^Vinnarbild till segrande hästs ägare\.$/g, 'Vinnarbild till segrande hästs ägare.')
+    .replace(/^Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår [0-9,]+\.$/g, 'Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår {track_order}.')
     .replace(/\b\d{3,4}\s*m\b/g, '{distance_m} m')
     .replace(/\b(Autostart|Voltstart|Linjestart)\b/g, '{start_method}')
     .replace(/\b\d+\s+startande\b/g, '{runner_count} startande')
@@ -530,6 +715,24 @@ export function normalizeTemplate(sentence) {
 
   if (template !== text) {
     return template
+  }
+
+  if (isKnownRaceTitleChain(text)) {
+    return '{race_title}'
+  }
+
+  const prefixedRaceTitle = splitPrefixedRaceTitle(text)
+  if (prefixedRaceTitle) {
+    return '{title_prefix} - {race_title}'
+  }
+
+  const yearSuffixedRaceTitle = splitYearSuffixedRaceTitle(text)
+  if (yearSuffixedRaceTitle) {
+    return '{title_prefix} {race_title} {title_year}'
+  }
+
+  if (isGenericLTitle(text, propositionType)) {
+    return '{race_title}'
   }
 
   if ((/^\d(?:-\d+)?-?åriga\b/i.test(text) || /^(?:svenska|norska)(?:\s+och\s+(?:svenska|norska))?\s+kallblodiga\.$/i.test(text)) && /^(.+)\.$/.test(text) && /(åriga|ston|kallblodiga|hingstar och valacker|svenska|norska|mockinländare)/i.test(text)) {
@@ -557,22 +760,31 @@ function findRule(rules, typ, template) {
   return rules.sentenceRules.find(rule => rule.types.includes(typ) && rule.template === template) || null
 }
 
-function extractVariables(sentence) {
+function extractVariables(sentence, propositionType = null) {
   const text = normalizeWhitespace(sentence)
   const vars = {}
   const distance = text.match(/\b(\d{3,4})\s*m\b/)
+  const otherHorsesDistance = text.match(/^Övriga hästar startar från distansen (\d{3,4}) meter\.$/i)
+  const underAgeDriversDistance = text.match(/^Hästar som körs av kuskar som ännu inte fyllt (\d+) år startar på distansen (\d{3,4}) meter\.$/i)
   const breedType = text.match(/^(Varmblodiga|Kallblodiga)$/)
   const propLabel = text.match(/^Prop\.\s+([0-9A-Z]+)\.(?:\s+(.+))?$/)
   const halfRowDate = text.match(/^Halvrad tillåts t\.o\.m\s+(.+)$/)
   const rulePoint = text.match(/^Punkt\s+(\d+)\s+tillämpas i detta lopp\.$/)
   const shortRulePoint = text.match(/^(\d+)\s+enligt punkt\s+(\d+)\.$/)
   const priorityGroup = text.match(/^Företräde för (.+)\.$/)
+  const homeTrackAliasesOnly = text.match(/^Hemmahästar har företräde,\s+som hemmabana räknas även (.+)\.$/i)
   const homeHorseCount = text.match(/^(\d+)\s+hemmahästar har företräde\.$/)
+  const homeHorseCountWithAliases = text.match(/^(\d+)\s+hemmahästar har företräde,\s+som hemmabana räknas även (.+)\.$/i)
   const wildcardAuthorityClause = text.match(/^(.+?)\s+(kan utdela|kan i samråd utdela|har möjlighet att dela ut|har även möjlighet att dela ut|har möjligheten att dela ut|förbehåller sig rätten att dela ut)\s+(ett wildcard|två wildcard|två wildcards|högst två wildcards|tre wildcards|wildcards)( i detta lopp(?:, företrädesvis till häst i träning i utlandet|, företrädesvis till häst i utländsk träning|, i första hand till utländska ekipage| oavsett startpoäng)?\.| i loppet\.|\.)$/)
   const wildcardAwarded = text.match(/^(Wildcard har utdelats till|Wildcards har utdelats till|Wildcards har utdelads till|Ett wildcard har tilldelats)\s+(.+)\.$/)
+  const presentedBy = text.match(/^Presenteras av (.+?)(?:\.)?$/)
   const honoraryPrize = text.match(/^Hederspris till segrande hästs (.+)\.$/)
   const sponsoredHonoraryPrize = text.match(/^(.+) hederspris till segrande hästs (.+)\.$/)
-  const raceTitle = text.match(/^(Kvallopp|Spårtrappa|Premielopp|Stolopp|P21-lopp)$/)
+  const sponsoredHonorBlanketAndWreath = text.match(/^(.+?) hederstäcke och lagerkrans till segrande häst\.?$/i)
+  const sponsoredHonorBlanket = text.match(/^(.+?) hederstäcke till segrande häst\.?$/i)
+  const raceTitle = isKnownRaceTitleChain(text) ? text : null
+  const prefixedRaceTitle = raceTitle ? null : splitPrefixedRaceTitle(text)
+  const yearSuffixedRaceTitle = raceTitle || prefixedRaceTitle ? null : splitYearSuffixedRaceTitle(text)
   const driverCategory = text.match(/^Körsvenskrav kat\.\s+(\d+)\.$/)
   const participantBirthBefore = text.match(/^(Körsvenner|Ryttare) födda (\d{6}) eller tidigare(?: med högst (\d+) (sulkylopp|montélopp) under (\d{4}))?\.$/)
   const participantBirthRange = text.match(/^(Körsvenner|Ryttare) födda (\d{6}) till (\d{6})(?: med högst (\d+) (sulkylopp|montélopp) under (\d{4}))?\.$/)
@@ -594,6 +806,7 @@ function extractVariables(sentence) {
   const genericRangeEarnings = text.match(/^((?:\d(?:-\d+)?-?åriga)(?:.+?)?)\s+([\d.]+) - ([\d.]+) kr(?: med högst (\d+) poäng)?\.$/)
   const eligibilitySubjectOnly = text.match(/^(.+)\.$/)
   const startMethod = text.match(/\b(Autostart|Voltstart|Linjestart)\b/)
+  const selectionSentence = text.match(/^Om fler än (\d+) hästar anmäls,? tas startande hästar ut i (P21-ordning|startpoängordning)\.$/i)
   const runnerCount = text.match(/\b(\d+)\s+startande\b/)
   const prizeLadder = text.match(/Pris:\s+([0-9.()]+(?:-[0-9.()]+)*)\s+(?:kr|samt)/)
   const placedCount = text.match(/\((\d+)\s+prisplacerade\)/)
@@ -605,6 +818,11 @@ function extractVariables(sentence) {
   const firstAmount = text.match(/\b(\d{1,3}(?:\.\d{3})+)\s+kr\b/)
 
   if (distance) vars.distance_m = distance[1]
+  if (otherHorsesDistance) vars.distance_m = otherHorsesDistance[1]
+  if (underAgeDriversDistance) {
+    vars.driver_age_limit = underAgeDriversDistance[1]
+    vars.distance_m = underAgeDriversDistance[2]
+  }
   if (breedType) vars.breed_type = breedType[1]
   if (propLabel) {
     vars.prop_number = propLabel[1]
@@ -617,7 +835,12 @@ function extractVariables(sentence) {
     vars.rule_point = shortRulePoint[2]
   }
   if (priorityGroup) vars.priority_group = priorityGroup[1]
+  if (homeTrackAliasesOnly) vars.home_track_aliases = homeTrackAliasesOnly[1]
   if (homeHorseCount) vars.home_horse_count = homeHorseCount[1]
+  if (homeHorseCountWithAliases) {
+    vars.home_horse_count = homeHorseCountWithAliases[1]
+    vars.home_track_aliases = homeHorseCountWithAliases[2]
+  }
   if (wildcardAuthorityClause) {
     vars.wildcard_authority = wildcardAuthorityClause[1]
     vars.wildcard_action = wildcardAuthorityClause[2]
@@ -625,12 +848,27 @@ function extractVariables(sentence) {
     vars.wildcard_context = wildcardAuthorityClause[4]
   }
   if (wildcardAwarded) vars.wildcard_recipients = wildcardAwarded[2]
+  if (presentedBy) vars.presented_by_name = presentedBy[1]
   if (honoraryPrize) vars.honorary_prize_recipients = honoraryPrize[1]
   if (sponsoredHonoraryPrize) {
     vars.sponsor_name = sponsoredHonoraryPrize[1]
     vars.honorary_prize_recipients = sponsoredHonoraryPrize[2]
   }
-  if (raceTitle) vars.race_title = raceTitle[1]
+  if (sponsoredHonorBlanketAndWreath) vars.sponsor_name = sponsoredHonorBlanketAndWreath[1]
+  if (sponsoredHonorBlanket) vars.sponsor_name = sponsoredHonorBlanket[1]
+  if (raceTitle) vars.race_title = raceTitle
+  if (prefixedRaceTitle) {
+    vars.title_prefix = prefixedRaceTitle.titlePrefix
+    vars.race_title = prefixedRaceTitle.raceTitle
+  }
+  if (yearSuffixedRaceTitle) {
+    vars.title_prefix = yearSuffixedRaceTitle.titlePrefix
+    vars.race_title = yearSuffixedRaceTitle.raceTitle
+    vars.title_year = yearSuffixedRaceTitle.titleYear
+  }
+  if (!vars.race_title && isGenericLTitle(text, propositionType)) {
+    vars.race_title = text
+  }
   if (driverCategory) vars.driver_category = driverCategory[1]
   if (participantBirthBefore) {
     vars.participant_role = participantBirthBefore[1]
@@ -745,6 +983,10 @@ function extractVariables(sentence) {
     vars.eligibility_subject = eligibilitySubjectOnly[1]
   }
   if (startMethod) vars.start_method = startMethod[1]
+  if (selectionSentence) {
+    vars.selection_limit = Number(selectionSentence[1])
+    vars.selection_order_basis = selectionSentence[2]
+  }
   if (runnerCount) vars.runner_count = runnerCount[1]
   if (prizeLadder) vars.prize_ladder = prizeLadder[1]
   if (placedCount) vars.placed_count = placedCount[1]
@@ -913,14 +1155,7 @@ function renderValue(rules, language, key, value) {
 }
 
 function renderRaceTitle(value, language) {
-  const labels = {
-    Kvallopp: { fi: 'Karsintalähtö', en: 'Qualifying race' },
-    Spårtrappa: { fi: 'Ratajärjestys voittosumman mukaan', en: 'Post-position ladder' },
-    Premielopp: { fi: 'Preemiolähtö', en: 'Premium race' },
-    Stolopp: { fi: 'Tammalähtö', en: 'Mares race' },
-    'P21-lopp': { fi: 'P21-lähtö', en: 'P21 race' }
-  }
-  return language === 'sv' ? value : labels[value]?.[language] || value
+  return language === 'sv' ? value : translateTitleFragment(value, language)
 }
 
 function renderDriverRaceLimit(value, language) {
@@ -1326,6 +1561,20 @@ function translateTitleFragment(fragment, language) {
       changed = true
       translated = next
     }
+  }
+
+  for (const [pattern, replacement] of TITLE_REGEX_REPLACEMENTS[language] || []) {
+    const next = translated.replace(pattern, replacement)
+    if (next !== translated) {
+      changed = true
+      translated = next
+    }
+  }
+
+  const dateTranslated = translateSwedishDateText(translated, language)
+  if (dateTranslated !== translated) {
+    changed = true
+    translated = dateTranslated
   }
 
   return changed ? translated : fragment
@@ -2252,9 +2501,17 @@ export async function translatePropositionText(text, typ, language = 'sv') {
     }
   }
 
-  const exactTextTranslation = translateExactFallbackText(sourceText, lang)
+  const rules = await loadRules()
+  const rendered = []
+  let matched = 0
+  let fallbackMatched = 0
+  const sentences = splitSentences(sourceText)
+  const fullyRuleMatched = sentences.length > 0 && sentences.every(sentence => (
+    Boolean(findRule(rules, typ, normalizeTemplate(sentence, typ)))
+  ))
+
+  const exactTextTranslation = fullyRuleMatched ? null : translateExactFallbackText(sourceText, lang)
   if (exactTextTranslation) {
-    const sentences = splitSentences(sourceText)
     return {
       language: lang,
       text: exactTextTranslation,
@@ -2268,14 +2525,8 @@ export async function translatePropositionText(text, typ, language = 'sv') {
     }
   }
 
-  const rules = await loadRules()
-  const rendered = []
-  let matched = 0
-  let fallbackMatched = 0
-  const sentences = splitSentences(sourceText)
-
   for (const sentence of sentences) {
-    const template = normalizeTemplate(sentence)
+    const template = normalizeTemplate(sentence, typ)
     const rule = findRule(rules, typ, template)
     if (!rule) {
       const fallback = translateFallbackSentence(sentence, typ, lang)
@@ -2288,7 +2539,7 @@ export async function translatePropositionText(text, typ, language = 'sv') {
       continue
     }
     matched += 1
-    const variables = extractVariables(sentence)
+    const variables = extractVariables(sentence, typ)
     if (variables.allowance_segments) {
       variables.allowance_text = variables.allowance_segments
     }
@@ -2346,7 +2597,7 @@ async function summarizeTextMatch(rules, propText, language = 'sv') {
   const templates = []
 
   for (const sentence of sentences) {
-    const template = normalizeTemplate(sentence)
+    const template = normalizeTemplate(sentence, typ)
     const rule = findRule(rules, typ, template)
     if (rule) matched += 1
     templates.push({

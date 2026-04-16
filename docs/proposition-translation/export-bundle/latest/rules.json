@@ -1,0 +1,1592 @@
+{
+  "version": 12,
+  "source": "MongoDB winv75.racedays.raceList.propTexts for all proposition text types",
+  "languages": {
+    "sv": "Svenska",
+    "fi": "Suomi",
+    "en": "English"
+  },
+  "variables": {
+    "distance_m": {
+      "description": "Race distance in meters, for example 2140.",
+      "type": "number"
+    },
+    "start_method": {
+      "description": "Start method from the Swedish source text.",
+      "type": "enum",
+      "values": {
+        "Autostart": {
+          "sv": "Autostart",
+          "fi": "Autolähtö",
+          "en": "Auto start"
+        },
+        "Voltstart": {
+          "sv": "Voltstart",
+          "fi": "Volttilähtö",
+          "en": "Standing start"
+        },
+        "Linjestart": {
+          "sv": "Linjestart",
+          "fi": "Linjastartti",
+          "en": "Line start"
+        }
+      }
+    },
+    "breed_type": {
+      "description": "Race breed/category heading from proposition type U.",
+      "type": "enum",
+      "values": {
+        "Varmblodiga": {
+          "sv": "Varmblodiga",
+          "fi": "Lämminveriset",
+          "en": "Standardbreds"
+        },
+        "Kallblodiga": {
+          "sv": "Kallblodiga",
+          "fi": "Kylmäveriset",
+          "en": "Cold-blooded trotters"
+        }
+      }
+    },
+    "prop_number": {
+      "description": "Proposition number from type L.",
+      "type": "string"
+    },
+    "prop_title": {
+      "description": "Optional proposition title, usually a proper race or series name.",
+      "type": "string"
+    },
+    "date_text": {
+      "description": "Source date wording for half-row allowance notices.",
+      "type": "string"
+    },
+    "rule_point": {
+      "description": "Svensk Travsport rule point number.",
+      "type": "number"
+    },
+    "selection_count": {
+      "description": "Count used in short priority clauses such as '2 enligt punkt 21'.",
+      "type": "number"
+    },
+    "priority_group": {
+      "description": "Priority group text for FX priority notices.",
+      "type": "string"
+    },
+    "home_horse_count": {
+      "description": "Number of home-track horses with priority.",
+      "type": "number"
+    },
+    "wildcard_authority": {
+      "description": "Track or organizer named in a wildcard clause.",
+      "type": "string"
+    },
+    "wildcard_action": {
+      "description": "Authority verb phrase used in wildcard clauses.",
+      "type": "enum",
+      "values": {
+        "kan utdela": {
+          "sv": "kan utdela",
+          "fi": "voi myöntää",
+          "en": "may award"
+        },
+        "kan i samråd utdela": {
+          "sv": "kan i samråd utdela",
+          "fi": "voi yhteisymmärryksessä myöntää",
+          "en": "may in consultation award"
+        },
+        "har möjlighet att dela ut": {
+          "sv": "har möjlighet att dela ut",
+          "fi": "voi myöntää",
+          "en": "may award"
+        },
+        "har även möjlighet att dela ut": {
+          "sv": "har även möjlighet att dela ut",
+          "fi": "voi myös myöntää",
+          "en": "may also award"
+        },
+        "har möjligheten att dela ut": {
+          "sv": "har möjligheten att dela ut",
+          "fi": "voi myöntää",
+          "en": "may award"
+        },
+        "förbehåller sig rätten att dela ut": {
+          "sv": "förbehåller sig rätten att dela ut",
+          "fi": "pidättää oikeuden myöntää",
+          "en": "reserves the right to award"
+        }
+      }
+    },
+    "wildcard_award_phrase": {
+      "description": "Wildcard quantity phrase from the source text.",
+      "type": "enum",
+      "values": {
+        "ett wildcard": {
+          "sv": "ett wildcard",
+          "fi": "yhden wildcardin",
+          "en": "one wildcard"
+        },
+        "två wildcard": {
+          "sv": "två wildcard",
+          "fi": "kaksi wildcardia",
+          "en": "two wildcards"
+        },
+        "två wildcards": {
+          "sv": "två wildcards",
+          "fi": "kaksi wildcardia",
+          "en": "two wildcards"
+        },
+        "högst två wildcards": {
+          "sv": "högst två wildcards",
+          "fi": "enintään kaksi wildcardia",
+          "en": "up to two wildcards"
+        },
+        "tre wildcards": {
+          "sv": "tre wildcards",
+          "fi": "kolme wildcardia",
+          "en": "three wildcards"
+        },
+        "wildcards": {
+          "sv": "wildcards",
+          "fi": "wildcardeja",
+          "en": "wildcards"
+        }
+      }
+    },
+    "wildcard_context": {
+      "description": "Optional trailing context in wildcard clauses.",
+      "type": "enum",
+      "values": {
+        ".": {
+          "sv": ".",
+          "fi": ".",
+          "en": "."
+        },
+        " i detta lopp.": {
+          "sv": " i detta lopp.",
+          "fi": " tässä lähdössä.",
+          "en": " in this race."
+        },
+        " i loppet.": {
+          "sv": " i loppet.",
+          "fi": " lähdössä.",
+          "en": " in the race."
+        },
+        " i detta lopp, företrädesvis till häst i träning i utlandet.": {
+          "sv": " i detta lopp, företrädesvis till häst i träning i utlandet.",
+          "fi": " tässä lähdössä, ensisijaisesti ulkomailla valmennuksessa olevalle hevoselle.",
+          "en": " in this race, preferably to a horse trained abroad."
+        },
+        " i detta lopp, företrädesvis till häst i utländsk träning.": {
+          "sv": " i detta lopp, företrädesvis till häst i utländsk träning.",
+          "fi": " tässä lähdössä, ensisijaisesti ulkomailla valmennetulle hevoselle.",
+          "en": " in this race, preferably to a horse in foreign training."
+        },
+        " i detta lopp, i första hand till utländska ekipage.": {
+          "sv": " i detta lopp, i första hand till utländska ekipage.",
+          "fi": " tässä lähdössä, ensisijaisesti ulkomaisille valjakoille.",
+          "en": " in this race, primarily to foreign entries."
+        },
+        " i detta lopp oavsett startpoäng.": {
+          "sv": " i detta lopp oavsett startpoäng.",
+          "fi": " tässä lähdössä lähtöpisteistä riippumatta.",
+          "en": " in this race regardless of start points."
+        }
+      }
+    },
+    "wildcard_recipients": {
+      "description": "Named horses or entries that received a wildcard.",
+      "type": "string"
+    },
+    "sponsor_name": {
+      "description": "Sponsor or race organizer name in honorary prize text.",
+      "type": "string"
+    },
+    "honorary_prize_recipients": {
+      "description": "Recipients in honorary prize text.",
+      "type": "list"
+    },
+    "race_title": {
+      "description": "Short proposition title.",
+      "type": "string"
+    },
+    "title_prefix": {
+      "description": "Free-form branded or series prefix that precedes a reusable L race-title chain.",
+      "type": "string"
+    },
+    "title_year": {
+      "description": "Four-digit year suffix used by recurring L title families such as branded B-trainer series names.",
+      "type": "number"
+    },
+    "presented_by_name": {
+      "description": "Name shown in short L title rows that only say Presenteras av ...",
+      "type": "string"
+    },
+    "driver_category": {
+      "description": "Driver requirement category.",
+      "type": "number"
+    },
+    "driver_birth_date": {
+      "description": "Compact YYMMDD birth date threshold for drivers.",
+      "type": "string"
+    },
+    "driver_race_limit": {
+      "description": "Optional driver race-count limit phrase.",
+      "type": "rendered_text"
+    },
+    "secondary_driver_race_limit": {
+      "description": "Second driver/rider race-count limit phrase used by malformed joined V clauses.",
+      "type": "rendered_text"
+    },
+    "participant_role": {
+      "description": "Eligible V participant group for driver/rider birth rules.",
+      "type": "enum",
+      "values": {
+        "Körsvenner": {
+          "sv": "Körsvenner",
+          "fi": "Ohjastajat",
+          "en": "Drivers"
+        },
+        "Ryttare": {
+          "sv": "Ryttare",
+          "fi": "Ratsastajat",
+          "en": "Riders"
+        }
+      }
+    },
+    "driver_birth_date_start": {
+      "description": "Start of a compact YYMMDD birth date interval for V participants.",
+      "type": "string"
+    },
+    "driver_birth_date_end": {
+      "description": "End of a compact YYMMDD birth date interval for V participants.",
+      "type": "string"
+    },
+    "trainer_start_limit": {
+      "description": "Maximum number of starts made by a trainer during the referenced year.",
+      "type": "number"
+    },
+    "trainer_start_year": {
+      "description": "Year used in trainer activity limit clauses.",
+      "type": "number"
+    },
+    "training_code": {
+      "description": "Training code used in uninterrupted training clauses, usually A or B.",
+      "type": "string"
+    },
+    "training_since_date": {
+      "description": "Compact YYMMDD date from uninterrupted training clauses.",
+      "type": "string"
+    },
+    "eligibility_subject": {
+      "description": "General V eligibility subject phrase such as '2-åriga svenska (ej mockinländare)'.",
+      "type": "string"
+    },
+    "eligibility_subject_secondary": {
+      "description": "Second V eligibility subject in compound range clauses joined by 'samt'.",
+      "type": "string"
+    },
+    "eligibility_suffix": {
+      "description": "Eligibility suffix after a max/min/range clause, for example non-winner or licence-holder restrictions.",
+      "type": "rendered_text"
+    },
+    "secondary_clause_suffix": {
+      "description": "Extra condition attached to the second clause in a compound V range sentence.",
+      "type": "rendered_text"
+    },
+    "age_exact": {
+      "description": "Exact horse age for V clauses that apply to one age only.",
+      "type": "number"
+    },
+    "age_min": {
+      "description": "Minimum horse age.",
+      "type": "number"
+    },
+    "amount_min_kr": {
+      "description": "Minimum earnings amount.",
+      "type": "money"
+    },
+    "amount_max_kr": {
+      "description": "Maximum earnings amount.",
+      "type": "money"
+    },
+    "amount_secondary_min_kr": {
+      "description": "Minimum earnings amount for the second subject in a compound V range clause.",
+      "type": "money"
+    },
+    "amount_secondary_max_kr": {
+      "description": "Maximum earnings amount for the second subject in a compound V range clause.",
+      "type": "money"
+    },
+    "amount_secondary_kr": {
+      "description": "Single earnings amount used by the second clause in a compound V sentence.",
+      "type": "money"
+    },
+    "points_limit": {
+      "description": "Optional maximum points condition.",
+      "type": "rendered_text"
+    },
+    "runner_count": {
+      "description": "Maximum number of starters.",
+      "type": "number"
+    },
+    "prize_ladder": {
+      "description": "Ordered prize amounts exactly as sourced, including parenthesized optional prizes.",
+      "type": "money_ladder"
+    },
+    "amount_kr": {
+      "description": "Swedish krona amount exactly as sourced.",
+      "type": "money"
+    },
+    "placed_count": {
+      "description": "Number of explicitly placed prize recipients.",
+      "type": "number"
+    },
+    "premium_chance_percent": {
+      "description": "Extra prize percentage for premium-chance horses.",
+      "type": "number"
+    },
+    "track_order": {
+      "description": "Comma-separated track draw order exactly as sourced.",
+      "type": "string"
+    },
+    "allowance_text": {
+      "description": "Rendered allowance text built from parsed allowance segments.",
+      "type": "rendered_text"
+    },
+    "allowance_segments": {
+      "description": "Structured allowance segments parsed from Tillägg terms.",
+      "type": "array",
+      "segmentKinds": [
+        "earnings",
+        "points",
+        "category"
+      ]
+    }
+  },
+  "sentenceRules": [
+    {
+      "id": "breed-type",
+      "types": [
+        "U"
+      ],
+      "template": "{breed_type}",
+      "render": {
+        "sv": "{breed_type}",
+        "fi": "{breed_type}",
+        "en": "{breed_type}"
+      }
+    },
+    {
+      "id": "proposition-number",
+      "types": [
+        "L"
+      ],
+      "template": "Prop. {prop_number}.",
+      "render": {
+        "sv": "Prop. {prop_number}.",
+        "fi": "Prop. {prop_number}.",
+        "en": "Prop. {prop_number}."
+      }
+    },
+    {
+      "id": "proposition-number-title",
+      "types": [
+        "L"
+      ],
+      "template": "Prop. {prop_number}. {prop_title}",
+      "render": {
+        "sv": "Prop. {prop_number}. {prop_title}",
+        "fi": "Prop. {prop_number}. {prop_title}",
+        "en": "Prop. {prop_number}. {prop_title}"
+      }
+    },
+    {
+      "id": "race-title",
+      "types": [
+        "L"
+      ],
+      "template": "{race_title}",
+      "render": {
+        "sv": "{race_title}",
+        "fi": "{race_title}",
+        "en": "{race_title}"
+      }
+    },
+    {
+      "id": "prefixed-race-title",
+      "types": [
+        "L"
+      ],
+      "template": "{title_prefix} - {race_title}",
+      "render": {
+        "sv": "{title_prefix} - {race_title}",
+        "fi": "{title_prefix} - {race_title}",
+        "en": "{title_prefix} - {race_title}"
+      }
+    },
+    {
+      "id": "year-suffixed-race-title",
+      "types": [
+        "L"
+      ],
+      "template": "{title_prefix} {race_title} {title_year}",
+      "render": {
+        "sv": "{title_prefix} {race_title} {title_year}",
+        "fi": "{title_prefix} {race_title} {title_year}",
+        "en": "{title_prefix} {race_title} {title_year}"
+      }
+    },
+    {
+      "id": "presented-by-title-row",
+      "types": [
+        "L"
+      ],
+      "template": "Presenteras av {presented_by_name}.",
+      "render": {
+        "sv": "Presenteras av {presented_by_name}.",
+        "fi": "Esittelee {presented_by_name}.",
+        "en": "Presented by {presented_by_name}."
+      }
+    },
+    {
+      "id": "presented-by-title-row-no-period",
+      "types": [
+        "L"
+      ],
+      "template": "Presenteras av {presented_by_name}",
+      "render": {
+        "sv": "Presenteras av {presented_by_name}",
+        "fi": "Esittelee {presented_by_name}",
+        "en": "Presented by {presented_by_name}"
+      }
+    },
+    {
+      "id": "half-row-allowed-through",
+      "types": [
+        "H"
+      ],
+      "template": "Halvrad tillåts t.o.m {date_text}",
+      "render": {
+        "sv": "Halvrad tillåts t.o.m {date_text}",
+        "fi": "Puolikas rivi sallitaan {date_text} asti",
+        "en": "Half row allowed through {date_text}"
+      }
+    },
+    {
+      "id": "priority-rule-applies",
+      "types": [
+        "FX"
+      ],
+      "template": "Företrädesregeln gäller.",
+      "render": {
+        "sv": "Företrädesregeln gäller.",
+        "fi": "Etusijasääntö on voimassa.",
+        "en": "The priority rule applies."
+      }
+    },
+    {
+      "id": "rule-point-applies",
+      "types": [
+        "FX"
+      ],
+      "template": "Punkt {rule_point} tillämpas i detta lopp.",
+      "render": {
+        "sv": "Punkt {rule_point} tillämpas i detta lopp.",
+        "fi": "Kohtaa {rule_point} sovelletaan tässä lähdössä.",
+        "en": "Rule point {rule_point} applies in this race."
+      }
+    },
+    {
+      "id": "priority-for-group",
+      "types": [
+        "FX"
+      ],
+      "template": "Företräde för {priority_group}.",
+      "render": {
+        "sv": "Företräde för {priority_group}.",
+        "fi": "Etusija {priority_group}.",
+        "en": "Priority for {priority_group}."
+      }
+    },
+    {
+      "id": "home-horse-priority",
+      "types": [
+        "FX"
+      ],
+      "template": "{home_horse_count} hemmahästar har företräde.",
+      "render": {
+        "sv": "{home_horse_count} hemmahästar har företräde.",
+        "fi": "{home_horse_count} kotiradan hevosta on etusijalla.",
+        "en": "{home_horse_count} home-track horses have priority."
+      }
+    },
+    {
+      "id": "priority-nearest-up-through",
+      "types": [
+        "FX"
+      ],
+      "template": "Närmast upp t.o.m {amount_kr} kr.",
+      "render": {
+        "sv": "Närmast upp t.o.m {amount_kr} kr.",
+        "fi": "Seuraavana enintään {amount_kr} kr.",
+        "en": "Next up to and including {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "selection-count-according-to-point",
+      "types": [
+        "FX"
+      ],
+      "template": "{selection_count} enligt punkt {rule_point}.",
+      "render": {
+        "sv": "{selection_count} enligt punkt {rule_point}.",
+        "fi": "{selection_count} kohdan {rule_point} mukaan.",
+        "en": "{selection_count} according to point {rule_point}."
+      }
+    },
+    {
+      "id": "driver-category-requirement",
+      "types": [
+        "V"
+      ],
+      "template": "Körsvenskrav kat. {driver_category}.",
+      "render": {
+        "sv": "Körsvenskrav kat. {driver_category}.",
+        "fi": "Ohjastajavaatimus, kategoria {driver_category}.",
+        "en": "Driver requirement category {driver_category}."
+      }
+    },
+    {
+      "id": "driver-born-before",
+      "types": [
+        "V"
+      ],
+      "template": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.",
+      "render": {
+        "sv": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.",
+        "fi": "{participant_role} syntyneet {driver_birth_date} tai aiemmin{driver_race_limit}.",
+        "en": "{participant_role} born {driver_birth_date} or earlier{driver_race_limit}."
+      }
+    },
+    {
+      "id": "driver-born-range",
+      "types": [
+        "V"
+      ],
+      "template": "{participant_role} födda {driver_birth_date_start} till {driver_birth_date_end}{driver_race_limit}.",
+      "render": {
+        "sv": "{participant_role} födda {driver_birth_date_start} till {driver_birth_date_end}{driver_race_limit}.",
+        "fi": "{participant_role} syntyneet {driver_birth_date_start} - {driver_birth_date_end}{driver_race_limit}.",
+        "en": "{participant_role} born {driver_birth_date_start} to {driver_birth_date_end}{driver_race_limit}."
+      }
+    },
+    {
+      "id": "driver-born-before-merged-driver-limit",
+      "types": [
+        "V"
+      ],
+      "template": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.{amount_min_kr}-{amount_max_kr} kr {secondary_driver_race_limit}.",
+      "render": {
+        "sv": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.{amount_min_kr}-{amount_max_kr} kr {secondary_driver_race_limit}.",
+        "fi": "{participant_role} syntyneet {driver_birth_date} tai aiemmin{driver_race_limit}. {amount_min_kr}-{amount_max_kr} kr {secondary_driver_race_limit}.",
+        "en": "{participant_role} born {driver_birth_date} or earlier{driver_race_limit}. {amount_min_kr}-{amount_max_kr} SEK {secondary_driver_race_limit}."
+      }
+    },
+    {
+      "id": "all-horses",
+      "types": [
+        "V"
+      ],
+      "template": "Alla.",
+      "render": {
+        "sv": "Alla.",
+        "fi": "Kaikki.",
+        "en": "All."
+      }
+    },
+    {
+      "id": "eligibility-compound-range-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr.",
+      "render": {
+        "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr.",
+        "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr ja {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} kr.",
+        "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK and {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} SEK."
+      }
+    },
+    {
+      "id": "eligibility-compound-range-secondary-suffix",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr{secondary_clause_suffix}.",
+      "render": {
+        "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr{secondary_clause_suffix}.",
+        "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr ja {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} kr{secondary_clause_suffix}.",
+        "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK and {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} SEK{secondary_clause_suffix}."
+      }
+    },
+    {
+      "id": "eligibility-compound-range-secondary-min-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} lägst {amount_secondary_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} lägst {amount_secondary_kr} kr{points_limit}.",
+        "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr ja {eligibility_subject_secondary}, vähintään {amount_secondary_kr} kr{points_limit}.",
+        "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK and {eligibility_subject_secondary}, at least {amount_secondary_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "eligibility-exact-age-range-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{age_exact}-åriga {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{age_exact}-åriga {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+        "fi": "{age_exact}-vuotiaat, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+        "en": "{age_exact}-year-olds, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "continuous-training-since-date",
+      "types": [
+        "V"
+      ],
+      "template": "I oavbruten {training_code}-träning fr.o.m. {training_since_date}{eligibility_suffix}.",
+      "render": {
+        "sv": "I oavbruten {training_code}-träning fr.o.m. {training_since_date}{eligibility_suffix}.",
+        "fi": "Yhtäjaksoisesti {training_code}-valmennuksessa alkaen {training_since_date}{eligibility_suffix}.",
+        "en": "In uninterrupted {training_code} training since {training_since_date}{eligibility_suffix}."
+      }
+    },
+    {
+      "id": "trainer-start-limit",
+      "types": [
+        "V"
+      ],
+      "template": "Hos tränare som gjort högst {trainer_start_limit} starter under {trainer_start_year}.",
+      "render": {
+        "sv": "Hos tränare som gjort högst {trainer_start_limit} starter under {trainer_start_year}.",
+        "fi": "Valmentajilta, joilla oli enintään {trainer_start_limit} starttia vuonna {trainer_start_year}.",
+        "en": "From trainers with at most {trainer_start_limit} starts during {trainer_start_year}."
+      }
+    },
+    {
+      "id": "eligibility-subject-only",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject}.",
+      "render": {
+        "sv": "{eligibility_subject}.",
+        "fi": "{eligibility_subject}.",
+        "en": "{eligibility_subject}."
+      }
+    },
+    {
+      "id": "eligibility-subject-max-earnings-suffix",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} högst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+      "render": {
+        "sv": "{eligibility_subject} högst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+        "fi": "{eligibility_subject}, enintään {amount_kr} kr{points_limit}{eligibility_suffix}.",
+        "en": "{eligibility_subject}, at most {amount_kr} SEK{points_limit}{eligibility_suffix}."
+      }
+    },
+    {
+      "id": "eligibility-subject-max-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} högst {amount_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{eligibility_subject} högst {amount_kr} kr{points_limit}.",
+        "fi": "{eligibility_subject}, enintään {amount_kr} kr{points_limit}.",
+        "en": "{eligibility_subject}, at most {amount_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "eligibility-subject-min-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} lägst {amount_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{eligibility_subject} lägst {amount_kr} kr{points_limit}.",
+        "fi": "{eligibility_subject}, vähintään {amount_kr} kr{points_limit}.",
+        "en": "{eligibility_subject}, at least {amount_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "eligibility-subject-min-earnings-suffix",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} lägst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+      "render": {
+        "sv": "{eligibility_subject} lägst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+        "fi": "{eligibility_subject}, vähintään {amount_kr} kr{points_limit}{eligibility_suffix}.",
+        "en": "{eligibility_subject}, at least {amount_kr} SEK{points_limit}{eligibility_suffix}."
+      }
+    },
+    {
+      "id": "eligibility-subject-range-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+        "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+        "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "eligibility-subject-range-earnings-suffix",
+      "types": [
+        "V"
+      ],
+      "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}{eligibility_suffix}.",
+      "render": {
+        "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}{eligibility_suffix}.",
+        "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr{points_limit}{eligibility_suffix}.",
+        "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK{points_limit}{eligibility_suffix}."
+      }
+    },
+    {
+      "id": "eligibility-max-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{age_min}-åriga och äldre högst {amount_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{age_min}-åriga och äldre högst {amount_kr} kr{points_limit}.",
+        "fi": "{age_min}-vuotiaat ja vanhemmat, enintään {amount_kr} kr{points_limit}.",
+        "en": "{age_min}-year-olds and older, at most {amount_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "eligibility-min-earnings",
+      "types": [
+        "V"
+      ],
+      "template": "{age_min}-åriga och äldre lägst {amount_kr} kr.",
+      "render": {
+        "sv": "{age_min}-åriga och äldre lägst {amount_kr} kr.",
+        "fi": "{age_min}-vuotiaat ja vanhemmat, vähintään {amount_kr} kr.",
+        "en": "{age_min}-year-olds and older, at least {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "eligibility-earnings-range",
+      "types": [
+        "V"
+      ],
+      "template": "{age_min}-åriga och äldre {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "render": {
+        "sv": "{age_min}-åriga och äldre {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+        "fi": "{age_min}-vuotiaat ja vanhemmat, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+        "en": "{age_min}-year-olds and older, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+      }
+    },
+    {
+      "id": "premium-race-result-removes-chance",
+      "types": [
+        "V"
+      ],
+      "template": "Häst som får godkänt resultat i premielopp stryks därmed från premiechansen.",
+      "render": {
+        "sv": "Häst som får godkänt resultat i premielopp stryks därmed från premiechansen.",
+        "fi": "Hevonen, joka saa hyväksytyn tuloksen preemiolähdössä, poistetaan samalla premie-mahdollisuudesta.",
+        "en": "A horse with an approved result in a premium race is thereby removed from the premium-chance program."
+      }
+    },
+    {
+      "id": "no-limited-rights-horse",
+      "types": [
+        "V"
+      ],
+      "template": "Ej häst med begränsade rättigheter.",
+      "render": {
+        "sv": "Ej häst med begränsade rättigheter.",
+        "fi": "Ei hevosille, joilla on rajoitetut oikeudet.",
+        "en": "Not for horses with limited rights."
+      }
+    },
+    {
+      "id": "honorary-prize",
+      "types": [
+        "EX"
+      ],
+      "template": "Hederspris till segrande hästs {honorary_prize_recipients}.",
+      "render": {
+        "sv": "Hederspris till segrande hästs {honorary_prize_recipients}.",
+        "fi": "Kunniapalkinto voittaneen hevosen {honorary_prize_recipients}.",
+        "en": "Honorary prize to the winning horse's {honorary_prize_recipients}."
+      }
+    },
+    {
+      "id": "sponsored-honorary-prize",
+      "types": [
+        "EX"
+      ],
+      "template": "{sponsor_name} hederspris till segrande hästs {honorary_prize_recipients}.",
+      "render": {
+        "sv": "{sponsor_name} hederspris till segrande hästs {honorary_prize_recipients}.",
+        "fi": "{sponsor_name}: kunniapalkinto voittaneen hevosen {honorary_prize_recipients}.",
+        "en": "{sponsor_name} honorary prize to the winning horse's {honorary_prize_recipients}."
+      }
+    },
+    {
+      "id": "honorary-blanket",
+      "types": [
+        "EX"
+      ],
+      "template": "Hederstäcke till segrande häst.",
+      "render": {
+        "sv": "Hederstäcke till segrande häst.",
+        "fi": "Kunniapeite voittaneelle hevoselle.",
+        "en": "Honorary blanket to the winning horse."
+      }
+    },
+    {
+      "id": "wildcard-authority-clause",
+      "types": [
+        "EX"
+      ],
+      "template": "{wildcard_authority} {wildcard_action} {wildcard_award_phrase}{wildcard_context}",
+      "render": {
+        "sv": "{wildcard_authority} {wildcard_action} {wildcard_award_phrase}{wildcard_context}",
+        "fi": "{wildcard_authority} {wildcard_action} {wildcard_award_phrase}{wildcard_context}",
+        "en": "{wildcard_authority} {wildcard_action} {wildcard_award_phrase}{wildcard_context}"
+      }
+    },
+    {
+      "id": "wildcard-awarded-singular",
+      "types": [
+        "EX"
+      ],
+      "template": "Wildcard har utdelats till {wildcard_recipients}.",
+      "render": {
+        "sv": "Wildcard har utdelats till {wildcard_recipients}.",
+        "fi": "Wildcard on myönnetty {wildcard_recipients}.",
+        "en": "A wildcard has been awarded to {wildcard_recipients}."
+      }
+    },
+    {
+      "id": "wildcard-awarded-plural",
+      "types": [
+        "EX"
+      ],
+      "template": "Wildcards har utdelats till {wildcard_recipients}.",
+      "render": {
+        "sv": "Wildcards har utdelats till {wildcard_recipients}.",
+        "fi": "Wildcardit on myönnetty {wildcard_recipients}.",
+        "en": "Wildcards have been awarded to {wildcard_recipients}."
+      }
+    },
+    {
+      "id": "wildcard-awarded-plural-legacy-typo",
+      "types": [
+        "EX"
+      ],
+      "template": "Wildcards har utdelads till {wildcard_recipients}.",
+      "render": {
+        "sv": "Wildcards har utdelads till {wildcard_recipients}.",
+        "fi": "Wildcardit on myönnetty {wildcard_recipients}.",
+        "en": "Wildcards have been awarded to {wildcard_recipients}."
+      }
+    },
+    {
+      "id": "wildcard-assigned-singular",
+      "types": [
+        "EX"
+      ],
+      "template": "Ett wildcard har tilldelats {wildcard_recipients}.",
+      "render": {
+        "sv": "Ett wildcard har tilldelats {wildcard_recipients}.",
+        "fi": "Yksi wildcard on myönnetty {wildcard_recipients}.",
+        "en": "One wildcard has been assigned to {wildcard_recipients}."
+      }
+    },
+    {
+      "id": "wildcard-eligibility-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "Wildcard kan ges till: 1) häst som är i träning i utlandet, 2) svensktränad häst som startanmälts till deltävling, samt 3) svensktränad häst som varit prisplacerad i Grupp I-lopp under 2025.",
+      "render": {
+        "sv": "Wildcard kan ges till: 1) häst som är i träning i utlandet, 2) svensktränad häst som startanmälts till deltävling, samt 3) svensktränad häst som varit prisplacerad i Grupp I-lopp under 2025.",
+        "fi": "Wildcard voidaan myöntää: 1) ulkomailla valmennuksessa olevalle hevoselle, 2) ruotsalaisvalmennetulle hevoselle, joka on ilmoitettu osakilpailuun, sekä 3) ruotsalaisvalmennetulle hevoselle, joka on sijoittunut palkinnoille Group I -lähdössä vuonna 2025.",
+        "en": "A wildcard may be awarded to: 1) a horse trained abroad, 2) a Swedish-trained horse entered in a qualifying stage, and 3) a Swedish-trained horse placed in a Group I race during 2025."
+      }
+    },
+    {
+      "id": "wildcard-eligibility-2026",
+      "types": [
+        "EX"
+      ],
+      "template": "Wildcard kan ges till: 1) häst som är i träning i utlandet, 2) svensktränad häst som startanmälts till deltävling, samt 3) svensktränad häst som varit prisplacerad i Grupp I-lopp under 2026.",
+      "render": {
+        "sv": "Wildcard kan ges till: 1) häst som är i träning i utlandet, 2) svensktränad häst som startanmälts till deltävling, samt 3) svensktränad häst som varit prisplacerad i Grupp I-lopp under 2026.",
+        "fi": "Wildcard voidaan myöntää: 1) ulkomailla valmennuksessa olevalle hevoselle, 2) ruotsalaisvalmennetulle hevoselle, joka on ilmoitettu osakilpailuun, sekä 3) ruotsalaisvalmennetulle hevoselle, joka on sijoittunut palkinnoille Group I -lähdössä vuonna 2026.",
+        "en": "A wildcard may be awarded to: 1) a horse trained abroad, 2) a Swedish-trained horse entered in a qualifying stage, and 3) a Swedish-trained horse placed in a Group I race during 2026."
+      }
+    },
+    {
+      "id": "wildcard-two-can-be-awarded-in-race",
+      "types": [
+        "EX"
+      ],
+      "template": "Två wildcards kan delas ut i detta lopp.",
+      "render": {
+        "sv": "Två wildcards kan delas ut i detta lopp.",
+        "fi": "Tässä lähdössä voidaan myöntää kaksi wildcardia.",
+        "en": "Two wildcards may be awarded in this race."
+      }
+    },
+    {
+      "id": "wildcard-gotland-authority",
+      "types": [
+        "EX"
+      ],
+      "template": "Gotlands Travsällskap har möjlighet att utdela ett wildcard i detta lopp.",
+      "render": {
+        "sv": "Gotlands Travsällskap har möjlighet att utdela ett wildcard i detta lopp.",
+        "fi": "Gotlands Travsällskap voi myöntää yhden wildcardin tässä lähdössä.",
+        "en": "Gotlands Travsällskap may award one wildcard in this race."
+      }
+    },
+    {
+      "id": "wildcard-extra-seven-stl",
+      "types": [
+        "EX"
+      ],
+      "template": "Utöver sju hästar enligt STL-poängberäkningen kan Norrlands Travsällskap (Bergsåker) utdela tre wildcards.",
+      "render": {
+        "sv": "Utöver sju hästar enligt STL-poängberäkningen kan Norrlands Travsällskap (Bergsåker) utdela tre wildcards.",
+        "fi": "STL-pistelaskennan mukaisten seitsemän hevosen lisäksi Norrlands Travsällskap (Bergsåker) voi myöntää kolme wildcardia.",
+        "en": "In addition to seven horses selected by STL points, Norrlands Travsällskap (Bergsåker) may award three wildcards."
+      }
+    },
+    {
+      "id": "wildcard-extra-eight-stl",
+      "types": [
+        "EX"
+      ],
+      "template": "Utöver åtta hästar enligt STL-poängberäkningen kan Stockholms Travsällskap (Solvalla) utdela två wildcards.",
+      "render": {
+        "sv": "Utöver åtta hästar enligt STL-poängberäkningen kan Stockholms Travsällskap (Solvalla) utdela två wildcards.",
+        "fi": "STL-pistelaskennan mukaisten kahdeksan hevosen lisäksi Stockholms Travsällskap (Solvalla) voi myöntää kaksi wildcardia.",
+        "en": "In addition to eight horses selected by STL points, Stockholms Travsällskap (Solvalla) may award two wildcards."
+      }
+    },
+    {
+      "id": "wildcard-aby-foreign-entry-priority",
+      "types": [
+        "EX"
+      ],
+      "template": "Åby Travsällskap här även rätt att dela ut två wildcard och då i första hand till ett utländskt ekipage.",
+      "render": {
+        "sv": "Åby Travsällskap här även rätt att dela ut två wildcard och då i första hand till ett utländskt ekipage.",
+        "fi": "Åby Travsällskapilla on myös oikeus myöntää kaksi wildcardia, ensisijaisesti ulkomaiselle valjakolle.",
+        "en": "Åby Travsällskap also has the right to award two wildcards, primarily to a foreign entry."
+      }
+    },
+    {
+      "id": "uet-qualifier-note-2025-13-of-16",
+      "types": [
+        "EX"
+      ],
+      "template": "Detta är även uttagningslopp (13 av 16) i UET Elite Circuit 2025.",
+      "render": {
+        "sv": "Detta är även uttagningslopp (13 av 16) i UET Elite Circuit 2025.",
+        "fi": "Tämä on myös UET Elite Circuit 2025 -sarjan karsintalähtö (13/16).",
+        "en": "This is also qualifying race 13 of 16 in UET Elite Circuit 2025."
+      }
+    },
+    {
+      "id": "uet-qualifier-note-2025-6-of-16",
+      "types": [
+        "EX"
+      ],
+      "template": "Detta är även uttagningslopp (6 av 16) i UET Elite Circuit 2025.",
+      "render": {
+        "sv": "Detta är även uttagningslopp (6 av 16) i UET Elite Circuit 2025.",
+        "fi": "Tämä on myös UET Elite Circuit 2025 -sarjan karsintalähtö (6/16).",
+        "en": "This is also qualifying race 6 of 16 in UET Elite Circuit 2025."
+      }
+    },
+    {
+      "id": "uet-qualifier-note-2025-8-of-16",
+      "types": [
+        "EX"
+      ],
+      "template": "Detta är även uttagningslopp (8 av 16) i UET Elite Circuit 2025.",
+      "render": {
+        "sv": "Detta är även uttagningslopp (8 av 16) i UET Elite Circuit 2025.",
+        "fi": "Tämä on myös UET Elite Circuit 2025 -sarjan karsintalähtö (8/16).",
+        "en": "This is also qualifying race 8 of 16 in UET Elite Circuit 2025."
+      }
+    },
+    {
+      "id": "uet-eligible-horses-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "Eligible horses in the UET Elite Circuit Final 2025: All horses that have participated in at least 1 of the 15 stages of the UET Elite Circuit 2025 are invited to participate in the finale.",
+      "render": {
+        "sv": "Eligible horses in the UET Elite Circuit Final 2025: All horses that have participated in at least 1 of the 15 stages of the UET Elite Circuit 2025 are invited to participate in the finale.",
+        "fi": "UET Elite Circuit Final 2025 -finaaliin kutsutaan kaikki hevoset, jotka ovat osallistuneet vähintään yhteen UET Elite Circuit 2025:n 15 osakilpailusta.",
+        "en": "Eligible horses in the UET Elite Circuit Final 2025: All horses that have participated in at least one of the 15 stages of the UET Elite Circuit 2025 are invited to participate in the finale."
+      }
+    },
+    {
+      "id": "uet-eligible-horses-2023",
+      "types": [
+        "EX"
+      ],
+      "template": "Eligible horses in the UET Elite Circuit Finale 2023: All horses that have participated in at least 1 of the 15 stages of the UET Elite Circuit 2023 are invited to participate in the finale.",
+      "render": {
+        "sv": "Eligible horses in the UET Elite Circuit Finale 2023: All horses that have participated in at least 1 of the 15 stages of the UET Elite Circuit 2023 are invited to participate in the finale.",
+        "fi": "UET Elite Circuit Finale 2023 -finaaliin kutsutaan kaikki hevoset, jotka ovat osallistuneet vähintään yhteen UET Elite Circuit 2023:n 15 osakilpailusta.",
+        "en": "Eligible horses in the UET Elite Circuit Finale 2023: All horses that have participated in at least one of the 15 stages of the UET Elite Circuit 2023 are invited to participate in the finale."
+      }
+    },
+    {
+      "id": "uet-eligible-starters-2023",
+      "types": [
+        "EX"
+      ],
+      "template": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2023.",
+      "render": {
+        "sv": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2023.",
+        "fi": "Hevosille, jotka ovat startanneet vähintään yhdessä UET Elite Circuit 2023 -sarjaan kuuluvassa lähdössä.",
+        "en": "For horses that have started in at least one of the races included in UET Elite Circuit 2023."
+      }
+    },
+    {
+      "id": "uet-eligible-starters-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2025.",
+      "render": {
+        "sv": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2025.",
+        "fi": "Hevosille, jotka ovat startanneet vähintään yhdessä UET Elite Circuit 2025 -sarjaan kuuluvassa lähdössä.",
+        "en": "For horses that have started in at least one of the races included in UET Elite Circuit 2025."
+      }
+    },
+    {
+      "id": "uet-starting-positions-choice-2023",
+      "types": [
+        "EX"
+      ],
+      "template": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2023 have the option of self-choice starting positions, if the trainer decides to participate in the Finale.",
+      "render": {
+        "sv": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2023 have the option of self-choice starting positions, if the trainer decides to participate in the Finale.",
+        "fi": "Lähtöpaikat: UET Elite Circuit 2023 -sarjassa sijoille 1-5 sijoittuneilla hevosilla on mahdollisuus valita lähtöpaikka itse, jos valmentaja päättää osallistua finaaliin.",
+        "en": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2023 may choose their own starting positions if the trainer decides to participate in the Finale."
+      }
+    },
+    {
+      "id": "uet-starting-positions-choice-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2025 have the option of self-choice starting positions, if the trainer decides to participate in the Final.",
+      "render": {
+        "sv": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2025 have the option of self-choice starting positions, if the trainer decides to participate in the Final.",
+        "fi": "Lähtöpaikat: UET Elite Circuit 2025 -sarjassa sijoille 1-5 sijoittuneilla hevosilla on mahdollisuus valita lähtöpaikka itse, jos valmentaja päättää osallistua finaaliin.",
+        "en": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2025 may choose their own starting positions if the trainer decides to participate in the Final."
+      }
+    },
+    {
+      "id": "uet-starting-positions-ranked-horse-2023",
+      "types": [
+        "EX"
+      ],
+      "template": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2023 after the last stage will be declared to start in the Finale, the trainer can choose starting position in order of ranking.",
+      "render": {
+        "sv": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2023 after the last stage will be declared to start in the Finale, the trainer can choose starting position in order of ranking.",
+        "fi": "Jos UET Elite Circuit 2023 -sarjassa viimeisen osakilpailun jälkeen sijoilla 1, 2, 3, 4 tai 5 oleva hevonen ilmoitetaan finaaliin, valmentaja voi valita lähtöpaikan sijoitusjärjestyksessä.",
+        "en": "If a horse ranked 1, 2, 3, 4 or 5 in UET Elite Circuit 2023 after the last stage is declared for the Finale, the trainer may choose the starting position in ranking order."
+      }
+    },
+    {
+      "id": "uet-starting-positions-ranked-horse-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2025 after the last stage will be declared to start in the Final, the trainer can choose starting position in order of ranking.",
+      "render": {
+        "sv": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2025 after the last stage will be declared to start in the Final, the trainer can choose starting position in order of ranking.",
+        "fi": "Jos UET Elite Circuit 2025 -sarjassa viimeisen osakilpailun jälkeen sijoilla 1, 2, 3, 4 tai 5 oleva hevonen ilmoitetaan finaaliin, valmentaja voi valita lähtöpaikan sijoitusjärjestyksessä.",
+        "en": "If a horse ranked 1, 2, 3, 4 or 5 in UET Elite Circuit 2025 after the last stage is declared for the Final, the trainer may choose the starting position in ranking order."
+      }
+    },
+    {
+      "id": "uet-starting-positions-remaining-2023",
+      "types": [
+        "EX"
+      ],
+      "template": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2023 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+      "render": {
+        "sv": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2023 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+        "fi": "Muille hevosille, jotka ovat UET Elite Circuit 2023 -sarjassa sijalla 6 tai alempana viimeisen osakilpailun jälkeen, kaikki jäljellä olevat lähtöpaikat 1-12 arvotaan kokonaan.",
+        "en": "For the remaining horses, ranked 6 or lower in UET Elite Circuit 2023 after the last stage, all remaining starting positions 1-12 are allocated by a full draw."
+      }
+    },
+    {
+      "id": "uet-starting-positions-remaining-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2025 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+      "render": {
+        "sv": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2025 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+        "fi": "Muille hevosille, jotka ovat UET Elite Circuit 2025 -sarjassa sijalla 6 tai alempana viimeisen osakilpailun jälkeen, kaikki jäljellä olevat lähtöpaikat 1-12 arvotaan kokonaan.",
+        "en": "For the remaining horses, ranked 6 or lower in UET Elite Circuit 2025 after the last stage, all remaining starting positions 1-12 are allocated by a full draw."
+      }
+    },
+    {
+      "id": "uet-preliminary-start-nomination-2025-october-3",
+      "types": [
+        "EX"
+      ],
+      "template": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 3th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+      "render": {
+        "sv": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 3th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+        "fi": "Alustava lähtöilmoitus ja lopullinen ilmoittautuminen (kansainväliset hevoset): Ruotsin ulkopuolella valmennettujen hevosten alustava lähtöilmoitus tulee tehdä Svensk Travsportille viimeistään perjantaina 3. lokakuuta klo 09.00 sähköpostitse osoitteeseen startdeclaration@travsport.se tai puhelimitse numeroon +46 8 475 27 50.",
+        "en": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden must be made to the Swedish Trotting Association no later than Friday October 3rd at 09.00, by email to startdeclaration@travsport.se or by telephone +46 8 475 27 50."
+      }
+    },
+    {
+      "id": "uet-preliminary-start-nomination-2023-october-6",
+      "types": [
+        "EX"
+      ],
+      "template": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 6th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+      "render": {
+        "sv": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 6th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+        "fi": "Alustava lähtöilmoitus ja lopullinen ilmoittautuminen (kansainväliset hevoset): Ruotsin ulkopuolella valmennettujen hevosten alustava lähtöilmoitus tulee tehdä Svensk Travsportille viimeistään perjantaina 6. lokakuuta klo 09.00 sähköpostitse osoitteeseen startdeclaration@travsport.se tai puhelimitse numeroon +46 8 475 27 50.",
+        "en": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden must be made to the Swedish Trotting Association no later than Friday October 6th at 09.00, by email to startdeclaration@travsport.se or by telephone +46 8 475 27 50."
+      }
+    },
+    {
+      "id": "uet-transport-final-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Final and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+      "render": {
+        "sv": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Final and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+        "fi": "Kuljetus hevosille Solvallaan: UET Elite Circuit Final- ja UET Grand Prix -hevosille järjestetään lentokuljetus Deauvillesta Solvallaan ja takaisin.",
+        "en": "Transport for horses to Solvalla: Flight transport for UET Elite Circuit Final and UET Grand Prix horses will be arranged from Deauville to Solvalla and back."
+      }
+    },
+    {
+      "id": "uet-transport-finale-2023",
+      "types": [
+        "EX"
+      ],
+      "template": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Finale and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+      "render": {
+        "sv": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Finale and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+        "fi": "Kuljetus hevosille Solvallaan: UET Elite Circuit Finale- ja UET Grand Prix -hevosille järjestetään lentokuljetus Deauvillesta Solvallaan ja takaisin.",
+        "en": "Transport for horses to Solvalla: Flight transport for UET Elite Circuit Finale and UET Grand Prix horses will be arranged from Deauville to Solvalla and back."
+      }
+    },
+    {
+      "id": "world-record-bonus-1640-autostart",
+      "types": [
+        "EX"
+      ],
+      "template": "Slås det aktuella världsrekordet över distansen 1640 meter autostart för antingen hingstar/valacker eller för ston tillfaller en extra prissumma på {amount_kr} kr till segrande häst.",
+      "render": {
+        "sv": "Slås det aktuella världsrekordet över distansen 1640 meter autostart för antingen hingstar/valacker eller för ston tillfaller en extra prissumma på {amount_kr} kr till segrande häst.",
+        "fi": "Jos nykyinen maailmanennätys 1640 metrin autolähdössä joko oriille/ruunille tai tammoille lyödään, voittaneelle hevoselle maksetaan ylimääräinen palkintosumma {amount_kr} kr.",
+        "en": "If the current world record over 1640 metres auto start for either stallions/geldings or mares is broken, an extra prize of {amount_kr} SEK is awarded to the winning horse."
+      }
+    },
+    {
+      "id": "world-record-mares-short-standing-3yo",
+      "types": [
+        "EX"
+      ],
+      "template": "Världsrekordet för 3-åriga ston över kort distans med voltstart på 800-metersbana är 1.16,0.",
+      "render": {
+        "sv": "Världsrekordet för 3-åriga ston över kort distans med voltstart på 800-metersbana är 1.16,0.",
+        "fi": "800 metrin radalla voltista lyhyellä matkalla 3-vuotiaiden tammojen maailmanennätys on 1.16,0.",
+        "en": "The world record for 3-year-old mares over a short distance with a standing start on an 800-metre track is 1.16,0."
+      }
+    },
+    {
+      "id": "world-record-mares-short-standing-4yo",
+      "types": [
+        "EX"
+      ],
+      "template": "För 4-åriga ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.14,8.",
+      "render": {
+        "sv": "För 4-åriga ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.14,8.",
+        "fi": "4-vuotiaiden tammojen maailmanennätys lyhyellä matkalla voltista 800 metrin radalla on 1.14,8.",
+        "en": "For 4-year-old mares over a short distance with a standing start on an 800-metre track, the world record is 1.14,8."
+      }
+    },
+    {
+      "id": "world-record-mares-short-standing-5yo-plus",
+      "types": [
+        "EX"
+      ],
+      "template": "För 5-åriga och äldre ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.11,1 och sattes av Betting Pacer i detta lopp ifjol.",
+      "render": {
+        "sv": "För 5-åriga och äldre ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.11,1 och sattes av Betting Pacer i detta lopp ifjol.",
+        "fi": "5-vuotiaiden ja vanhempien tammojen maailmanennätys lyhyellä matkalla voltista 800 metrin radalla on 1.11,1, ja sen teki Betting Pacer tässä lähdössä viime vuonna.",
+        "en": "For 5-year-old and older mares over a short distance with a standing start on an 800-metre track, the world record is 1.11,1, set by Betting Pacer in this race last year."
+      }
+    },
+    {
+      "id": "world-record-mares-long-4yo",
+      "types": [
+        "EX"
+      ],
+      "template": "Världsrekordet för 4-åriga ston över lång distans på 800-metersbana är 1.22,2.",
+      "render": {
+        "sv": "Världsrekordet för 4-åriga ston över lång distans på 800-metersbana är 1.22,2.",
+        "fi": "800 metrin radalla pitkällä matkalla 4-vuotiaiden tammojen maailmanennätys on 1.22,2.",
+        "en": "The world record for 4-year-old mares over a long distance on an 800-metre track is 1.22,2."
+      }
+    },
+    {
+      "id": "world-record-mares-long-5yo-plus",
+      "types": [
+        "EX"
+      ],
+      "template": "För 5-åriga och äldre ston över lång distans på 800-metersbana är världsrekordet 1.15,4 och rekordet sattes i detta lopp ifjol av Daniel Redén-tränade Mahala.",
+      "render": {
+        "sv": "För 5-åriga och äldre ston över lång distans på 800-metersbana är världsrekordet 1.15,4 och rekordet sattes i detta lopp ifjol av Daniel Redén-tränade Mahala.",
+        "fi": "5-vuotiaiden ja vanhempien tammojen maailmanennätys pitkällä matkalla 800 metrin radalla on 1.15,4, ja ennätys tehtiin tässä lähdössä viime vuonna Daniel Redénin valmentamalla Mahalalla.",
+        "en": "For 5-year-old and older mares over a long distance on an 800-metre track, the world record is 1.15,4, set in this race last year by Daniel Redén-trained Mahala."
+      }
+    },
+    {
+      "id": "world-record-mares-long-3yo-none",
+      "types": [
+        "EX"
+      ],
+      "template": "För 3-åriga ston finns inget världsrekord noterat över aktuell bana och distans.",
+      "render": {
+        "sv": "För 3-åriga ston finns inget världsrekord noterat över aktuell bana och distans.",
+        "fi": "3-vuotiaille tammoille ei ole merkitty maailmanennätystä tällä radalla ja matkalla.",
+        "en": "For 3-year-old mares, no world record is listed for the current track and distance."
+      }
+    },
+    {
+      "id": "track-ladder-allocation",
+      "types": [
+        "EX"
+      ],
+      "template": "Spårtilldelning enligt spårtrappa.",
+      "render": {
+        "sv": "Spårtilldelning enligt spårtrappa.",
+        "fi": "Lähtöradat jaetaan voittosumman mukaisen ratajärjestyksen mukaan.",
+        "en": "Post positions allocated by post-position ladder."
+      }
+    },
+    {
+      "id": "post-by-ladder",
+      "types": [
+        "EX"
+      ],
+      "template": "Spår efter spårtrappa.",
+      "render": {
+        "sv": "Spår efter spårtrappa.",
+        "fi": "Lähtöradat voittosumman mukaisen ratajärjestyksen mukaan.",
+        "en": "Post positions by post-position ladder."
+      }
+    },
+    {
+      "id": "split-by-earnings-max-twelve",
+      "types": [
+        "EX"
+      ],
+      "template": "Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp.",
+      "render": {
+        "sv": "Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp.",
+        "fi": "Ilmoitetut hevoset jaetaan voittosumman mukaan, enintään kaksitoista osallistujaa lähtöä kohti.",
+        "en": "Entered horses are split by earnings, with at most twelve starters per race."
+      }
+    },
+    {
+      "id": "split-by-earnings-max-runners",
+      "types": [
+        "EX"
+      ],
+      "template": "Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst {runner_count} startande i vardera lopp.",
+      "render": {
+        "sv": "Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst {runner_count} startande i vardera lopp.",
+        "fi": "Ilmoitetut hevoset jaetaan voittosumman mukaan sopivaan määrään lähtöjä, enintään {runner_count} osallistujaa lähtöä kohti.",
+        "en": "Entered horses are split by earnings into a suitable number of races, with at most {runner_count} starters in each race."
+      }
+    },
+    {
+      "id": "too-many-horses-by-points",
+      "types": [
+        "EX"
+      ],
+      "template": "Om fler än 72 hästar anmäls tas startande hästar ut i startpoängordning.",
+      "render": {
+        "sv": "Om fler än 72 hästar anmäls tas startande hästar ut i startpoängordning.",
+        "fi": "Jos ilmoitetaan yli 72 hevosta, starttaavat hevoset valitaan lähtöpistejärjestyksessä.",
+        "en": "If more than 72 horses are entered, starters are selected by start points."
+      }
+    },
+    {
+      "id": "same-points-lottery",
+      "types": [
+        "EX"
+      ],
+      "template": "Har två hästar samma startpoäng tillämpas lottning.",
+      "render": {
+        "sv": "Har två hästar samma startpoäng tillämpas lottning.",
+        "fi": "Jos kahdella hevosella on samat lähtöpisteet, ratkaisu tehdään arvonnalla.",
+        "en": "If two horses have the same start points, a draw is used."
+      }
+    },
+    {
+      "id": "gift-card-owner",
+      "types": [
+        "EX"
+      ],
+      "template": "Presentkort till segrande hästs ägare.",
+      "render": {
+        "sv": "Presentkort till segrande hästs ägare.",
+        "fi": "Lahjakortti voittaneen hevosen omistajalle.",
+        "en": "Gift card to the winning horse's owner."
+      }
+    },
+    {
+      "id": "winner-photo-owner",
+      "types": [
+        "EX"
+      ],
+      "template": "Vinnarbild till segrande hästs ägare.",
+      "render": {
+        "sv": "Vinnarbild till segrande hästs ägare.",
+        "fi": "Voittajakuva voittaneen hevosen omistajalle.",
+        "en": "Winner photo to the winning horse's owner."
+      }
+    },
+    {
+      "id": "distance",
+      "types": [
+        "T"
+      ],
+      "template": "{distance_m} m.",
+      "render": {
+        "sv": "{distance_m} m.",
+        "fi": "{distance_m} m.",
+        "en": "{distance_m} m."
+      }
+    },
+    {
+      "id": "start-method",
+      "types": [
+        "T"
+      ],
+      "template": "{start_method}.",
+      "render": {
+        "sv": "{start_method}.",
+        "fi": "{start_method}.",
+        "en": "{start_method}."
+      }
+    },
+    {
+      "id": "runner-count",
+      "types": [
+        "T"
+      ],
+      "template": "{runner_count} startande.",
+      "render": {
+        "sv": "{runner_count} startande.",
+        "fi": "{runner_count} osallistujaa.",
+        "en": "{runner_count} starters."
+      }
+    },
+    {
+      "id": "prize-ladder",
+      "types": [
+        "P"
+      ],
+      "template": "Pris: {prize_ladder} kr.",
+      "render": {
+        "sv": "Pris: {prize_ladder} kr.",
+        "fi": "Palkinnot: {prize_ladder} kr.",
+        "en": "Prizes: {prize_ladder} SEK."
+      }
+    },
+    {
+      "id": "prize-ladder-placed-count",
+      "types": [
+        "P"
+      ],
+      "template": "Pris: {prize_ladder} kr ({placed_count} prisplacerade).",
+      "render": {
+        "sv": "Pris: {prize_ladder} kr ({placed_count} prisplacerade).",
+        "fi": "Palkinnot: {prize_ladder} kr ({placed_count} palkintosijaa).",
+        "en": "Prizes: {prize_ladder} SEK ({placed_count} prize placings)."
+      }
+    },
+    {
+      "id": "prize-ladder-other-finishers",
+      "types": [
+        "P"
+      ],
+      "template": "Pris: {prize_ladder} samt {amount_kr} kr till övriga ej distanserade och ej diskvalificerade som fullföljer loppet.",
+      "render": {
+        "sv": "Pris: {prize_ladder} samt {amount_kr} kr till övriga ej distanserade och ej diskvalificerade som fullföljer loppet.",
+        "fi": "Palkinnot: {prize_ladder} sekä {amount_kr} kr muille maaliin tulleille, joita ei ole hylätty eikä tuomittu distanseeratuiksi.",
+        "en": "Prizes: {prize_ladder}, plus {amount_kr} SEK to other finishers who are not distanced or disqualified."
+      }
+    },
+    {
+      "id": "minimum-prize-all",
+      "types": [
+        "P"
+      ],
+      "template": "Lägst {amount_kr} kr till alla tävlande.",
+      "render": {
+        "sv": "Lägst {amount_kr} kr till alla tävlande.",
+        "fi": "Vähintään {amount_kr} kr kaikille osallistujille.",
+        "en": "At least {amount_kr} SEK to all competitors."
+      }
+    },
+    {
+      "id": "max-total-prize",
+      "types": [
+        "P"
+      ],
+      "template": "Prispengar max total: {amount_kr} kr.",
+      "render": {
+        "sv": "Prispengar max total: {amount_kr} kr.",
+        "fi": "Palkintorahojen enimmäissumma yhteensä: {amount_kr} kr.",
+        "en": "Maximum total prize money: {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "no-track-reservation",
+      "types": [
+        "T"
+      ],
+      "template": "Spårförbehåll ej tillåtet.",
+      "render": {
+        "sv": "Spårförbehåll ej tillåtet.",
+        "fi": "Rata-/lähtöpaikkatoivetta ei sallita.",
+        "en": "Track-position reservations are not allowed."
+      }
+    },
+    {
+      "id": "allowance-terms",
+      "types": [
+        "T"
+      ],
+      "template": "Tillägg {allowance_text}",
+      "render": {
+        "sv": "Tillägg {allowance_text}",
+        "fi": "Tasoitus: {allowance_text}",
+        "en": "Handicap: {allowance_text}"
+      }
+    },
+    {
+      "id": "allowance-terms-period",
+      "types": [
+        "T"
+      ],
+      "template": "Tillägg {allowance_text}.",
+      "render": {
+        "sv": "Tillägg {allowance_text}.",
+        "fi": "Tasoitus: {allowance_text}.",
+        "en": "Handicap: {allowance_text}."
+      }
+    },
+    {
+      "id": "allowance-continuation",
+      "types": [
+        "T"
+      ],
+      "template": "{allowance_text}",
+      "render": {
+        "sv": "{allowance_text}",
+        "fi": "{allowance_text}",
+        "en": "{allowance_text}"
+      }
+    },
+    {
+      "id": "allowance-continuation-period",
+      "types": [
+        "T"
+      ],
+      "template": "{allowance_text}.",
+      "render": {
+        "sv": "{allowance_text}.",
+        "fi": "{allowance_text}.",
+        "en": "{allowance_text}."
+      }
+    },
+    {
+      "id": "start-sum-track-order",
+      "types": [
+        "T"
+      ],
+      "template": "Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår {track_order}.",
+      "render": {
+        "sv": "Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår {track_order}.",
+        "fi": "Lähtöradat voittosumman mukaan; pienimmän voittosumman hevonen saa radan 1 jne., järjestys {track_order}.",
+        "en": "Post positions by earnings; the horse with the lowest earnings gets post 1, etc., in this order: {track_order}."
+      }
+    },
+    {
+      "id": "mounted-race",
+      "types": [
+        "T"
+      ],
+      "template": "Monté.",
+      "render": {
+        "sv": "Monté.",
+        "fi": "Monté.",
+        "en": "Mounted race."
+      }
+    },
+    {
+      "id": "premium-chance-extra-prize",
+      "types": [
+        "P"
+      ],
+      "template": "För premiechansad häst adderas {premium_chance_percent} % extra prispengar.",
+      "render": {
+        "sv": "För premiechansad häst adderas {premium_chance_percent} % extra prispengar.",
+        "fi": "Premiechansad-hevoselle lisätään {premium_chance_percent} % ylimääräistä palkintorahaa.",
+        "en": "A premium-chance horse receives {premium_chance_percent}% extra prize money."
+      }
+    },
+    {
+      "id": "premium-chance-double-prize",
+      "types": [
+        "P"
+      ],
+      "template": "Premiechansad häst får dubbla prispengar.",
+      "render": {
+        "sv": "Premiechansad häst får dubbla prispengar.",
+        "fi": "Premiechansad-hevonen saa kaksinkertaiset palkintorahat.",
+        "en": "A premium-chance horse receives double prize money."
+      }
+    }
+  ]
+}
