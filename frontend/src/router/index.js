@@ -9,6 +9,7 @@ import DriverSearchView from '@/views/drivers/DriverSearchView.vue'
 import SuggestionDetailView from '@/views/suggestion/SuggestionDetailView.vue'
 import SuggestionAnalyticsView from '@/views/suggestion/SuggestionAnalyticsView.vue'
 import SpelforslagGuideView from '@/views/guide/SpelforslagGuideView.vue'
+import PropositionTranslationOverview from '@/views/proposition-translation/PropositionTranslationOverview.vue'
 
 const routes = [
   {
@@ -99,6 +100,18 @@ const routes = [
     }
   },
   {
+    path: '/propositioner/oversattning',
+    name: 'PropositionTranslationOverview',
+    component: PropositionTranslationOverview,
+    meta: {
+      parent: 'RacedayInput',
+      breadcrumb: {
+        label: 'Propositioner',
+        to: { name: 'PropositionTranslationOverview' }
+      }
+    }
+  },
+  {
     path: '/race/:raceId',
     name: 'race',
     component: RaceHorsesView,
@@ -163,6 +176,9 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(import.meta.env.VITE_BASE_URL),
     routes,
+    scrollBehavior() {
+      return { top: 0 }
+    }
 });
 
 router.beforeEach((to, from) => {

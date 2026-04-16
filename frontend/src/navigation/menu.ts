@@ -46,6 +46,14 @@ export const primaryNavigation: NavigationTarget[] = [
     matchRoutes: ['SuggestionAnalytics', 'SuggestionDetail']
   },
   {
+    title: 'Propositioner',
+    shortTitle: 'Proppar',
+    icon: 'mdi-translate',
+    to: { name: 'PropositionTranslationOverview' },
+    description: 'Följ regelmatchning och översättningstäckning.',
+    matchRoutes: ['PropositionTranslationOverview']
+  },
+  {
     title: 'Guide',
     shortTitle: 'Guide',
     icon: 'mdi-book-open-page-variant-outline',

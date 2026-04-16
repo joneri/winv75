@@ -9,6 +9,7 @@ import {
   upsertStartlistData
 } from './raceday-service.js'
 import { validateNumericParam, validateObjectIdParam } from '../middleware/validators.js'
+import { translateRacedayPropositions } from '../proposition/proposition-translation-service.js'
 
 const router = express.Router()
 
@@ -100,7 +101,9 @@ router.get('/:id', validateObjectIdParam('id'), async (req, res) => {
   try {
     const raceday = await getRacedayById(req.params.id)
     if (raceday) {
-      return res.send(raceday)
+      const propLanguage = typeof req.query.propLanguage === 'string' ? req.query.propLanguage : 'sv'
+      const response = await translateRacedayPropositions(raceday, propLanguage)
+      return res.send(response)
     }
     res.status(404).send('Raceday not found.')
   } catch (error) {

@@ -19,6 +19,19 @@
         </div>
 
         <div class="hero-metrics">
+          <div class="language-control hero-metric-card">
+            <div class="panel-title">Språk</div>
+            <v-select
+              v-model="selectedPropLanguage"
+              :items="propLanguageOptions"
+              item-title="label"
+              item-value="value"
+              density="compact"
+              variant="outlined"
+              hide-details
+              aria-label="Välj propositionsspråk"
+            />
+          </div>
           <div class="hero-metric-card">
             <div class="panel-title">Osparade</div>
             <div class="hero-metric-value">{{ sessionUnsavedSuggestions.length }}</div>
@@ -566,6 +579,12 @@ export default {
     const v5UpdateMessage = ref('')
     const v85UpdateMessage = ref('')
     const v86UpdateMessage = ref('')
+    const selectedPropLanguage = ref('sv')
+    const propLanguageOptions = [
+      { label: 'Svenska', value: 'sv' },
+      { label: 'Finska', value: 'fi' },
+      { label: 'Engelska', value: 'en' }
+    ]
     const normalizeGameCode = (value) => {
       const upper = String(value || '').toUpperCase()
       return upper === 'DD' ? 'DD' : upper
@@ -591,7 +610,7 @@ export default {
     onMounted(async () => {
       try {
         loading.value = true
-        racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+        racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId, selectedPropLanguage.value)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
         await loadDdGameView()
         await loadV86GameView()
@@ -636,7 +655,7 @@ export default {
 
     const refreshRaceday = async () => {
       try {
-        racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId)
+        racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId, selectedPropLanguage.value)
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
         await loadDdGameView()
         await loadV86GameView()
@@ -645,6 +664,10 @@ export default {
         console.error('Error refreshing raceday details:', error)
       }
     }
+
+    watch(selectedPropLanguage, async () => {
+      await refreshRaceday()
+    })
 
     const refreshSavedSuggestions = async () => {
       try {
@@ -1147,6 +1170,8 @@ export default {
       v85UpdateMessage,
       v86UpdatedLabel,
       v86UpdateMessage,
+      selectedPropLanguage,
+      propLanguageOptions,
       ddStatusLabel,
       handleGeneratedSuggestions,
       sessionUnsavedSuggestions,

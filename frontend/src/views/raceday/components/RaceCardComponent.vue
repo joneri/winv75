@@ -115,7 +115,7 @@ export default {
     const horseCount = computed(() => Array.isArray(props.race?.horses) ? props.race.horses.length : 0)
 
     const raceSummary = computed(() => {
-      const texts = Array.isArray(props.race?.propTexts) ? props.race.propTexts.map(item => item?.text).filter(Boolean) : []
+      const texts = Array.isArray(props.race?.propTexts) ? props.race.propTexts.map(item => item?.displayText || item?.text).filter(Boolean) : []
       return texts.join(' ').trim()
     })
 

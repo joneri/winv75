@@ -2,12 +2,26 @@ import axios from 'axios'
 
 const API_BASE = '/api'
 
-const fetchRacedayDetails = async racedayId => {
+const fetchRacedayDetails = async (racedayId, propLanguage = 'sv') => {
   try {
-    const response = await axios.get(`${API_BASE}/raceday/${racedayId}`)
+    const response = await axios.get(`${API_BASE}/raceday/${racedayId}`, {
+      params: { propLanguage }
+    })
     return response.data
   } catch (error) {
     console.error('Error fetching raceday details:', error)
+    throw error
+  }
+}
+
+async function fetchPropositionTranslationOverview(limit = 250, propLanguage = 'sv') {
+  try {
+    const response = await axios.get(`${API_BASE}/proposition-translations/overview`, {
+      params: { limit, propLanguage }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error fetching proposition translation overview:', error)
     throw error
   }
 }
@@ -215,5 +229,6 @@ export default {
   fetchDdSuggestion,
   fetchV86Suggestion,
   fetchDdGameView,
-  fetchV86GameView
+  fetchV86GameView,
+  fetchPropositionTranslationOverview
 }
