@@ -165,18 +165,25 @@ function splitSentences(text) {
     .replace(/\bkat\.\s+/g, 'kat.__SPACE__')
     .replace(/\bt\.o\.m\s+/g, 't.o.m__SPACE__')
     .replace(/\bfr\.o\.m\.\s+/g, 'fr.o.m.__SPACE__')
+    .replace(/\binkl\.\s+/g, 'inkl.__SPACE__')
+    .replace(/\bexkl\.\s+/g, 'exkl.__SPACE__')
     .split(/(?<=\.)\s+/)
     .map(sentence => sentence
       .replace(/Prop\.__SPACE__/g, 'Prop. ')
       .replace(/kat\.__SPACE__/g, 'kat. ')
       .replace(/t\.o\.m__SPACE__/g, 't.o.m ')
-      .replace(/fr\.o\.m\.__SPACE__/g, 'fr.o.m. '))
+      .replace(/fr\.o\.m\.__SPACE__/g, 'fr.o.m. ')
+      .replace(/inkl\.__SPACE__/g, 'inkl. ')
+      .replace(/exkl\.__SPACE__/g, 'exkl. '))
     .map(sentence => sentence.trim())
     .filter(Boolean)
 }
 
 function normalizeTemplate(sentence, propositionType = null) {
   const text = normalizeWhitespace(sentence)
+  if (text === 'Final på Rättvik 2/8.' || text === 'Final på Östersund 13/12.') {
+    return text
+  }
   if (/^Tillägg\b/.test(text) && (/\bvid\b/.test(text) || /\bför\b/.test(text))) {
     return text.endsWith('.') ? 'Tillägg {allowance_text}.' : 'Tillägg {allowance_text}'
   }
@@ -187,6 +194,24 @@ function normalizeTemplate(sentence, propositionType = null) {
   const template = text
     .replace(/^Varmblodiga$/g, '{breed_type}')
     .replace(/^Kallblodiga$/g, '{breed_type}')
+    .replace(/^För alla försök gäller att tvångsprissumman beräknas utifrån gällande regler för landet där försöket körs\.$/g, 'För alla försök gäller att tvångsprissumman beräknas ut ifrån gällande regler för landet där försöket körs.')
+    .replace(/^Försök 1,3,5 körs med proposition 50\.001-([\d. ]+) kr\.$/g, 'Försök 1, 3 och 5 körs med proposition 50.001-{amount_kr} kr.')
+    .replace(/^Försök 2,4,6 körs med proposition 170\.001-([\d. ]+) kr\.$/g, 'Försök 2, 4 och 6 körs med proposition 170.001-{amount_kr} kr.')
+    .replace(/^Final på (.+?) (\d+\/\d+)\.$/g, 'Final på {track_name} {date_text}.')
+    .replace(/^DubbelCupen Meeting (\d+): Försök körs på (.+)\.$/g, 'DubbelCupen Meeting {meeting_number}: Försök körs på {meeting_schedule}.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m vid vunna ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m vid vunna {amount_kr_2} kr.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m ([\d. ]+) kr,\s+20 m h\/v\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 20 m h/v.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+alla inkvalade ston,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m ([\d. ]+) kr,\s+60 m ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, alla inkvalade ston, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 60 m {amount_kr_3} kr.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+alla inkvalade ston,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, alla inkvalade ston, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.')
+    .replace(/^Anmälningsavgiften till detta lopp är ([\d. ]+) kr \(inkl\.? moms\)\.$/g, 'Anmälningsavgiften till detta lopp är {amount_kr} kr (inkl moms).')
+    .replace(/^Övrigt: Se separat utgiven proposition eller www\.stochampionatet\.se Anmälningsavgift: ([\d. ]+) kronor exkl\.? moms\.$/g, 'Övrigt: Se separat utgiven proposition eller www.stochampionatet.se Anmälningsavgift: {amount_kr} kronor exkl moms.')
+    .replace(/^Anmälningsavgift:\s*([\d. ]+)\s+(SEK|Euro)\.$/g, 'Anmälningsavgift: {amount_fee} {currency}.')
+    .replace(/^Anmälningsavgift:\s*([\d. ]+) SEK \(ex moms\)\.$/g, 'Anmälningsavgift: {amount_kr} SEK (ex moms).')
+    .replace(/^Anmälningsavgift:\s*([\d. ]+) kr exkl moms\.$/g, 'Anmälningsavgift: {amount_kr} kr exkl moms.')
+    .replace(/^Anmälningsavgift\s+([\d. ]+) kr \(exkl moms\)\.$/g, 'Anmälningsavgift {amount_kr} kr (exkl moms).')
+    .replace(/^Startanmälningsavgiften till detta lopp är ([\d. ]+) kr inkl\.? moms\.$/g, 'Startanmälningsavgiften till detta lopp är {amount_kr} kr inkl moms.')
     .replace(/^Prop\.\s+([0-9A-Z]+)\.$/g, 'Prop. {prop_number}.')
     .replace(/^Prop\.\s+([0-9A-Z]+)\.\s+(.+)$/g, 'Prop. {prop_number}. {prop_title}')
     .replace(/^Halvrad tillåts t\.o\.m\s+(.+)$/g, 'Halvrad tillåts t.o.m {date_text}')
@@ -242,7 +267,8 @@ function normalizeTemplate(sentence, propositionType = null) {
     .replace(/^Spår efter spårtrappa\.$/g, 'Spår efter spårtrappa.')
     .replace(/^Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp\.$/g, 'Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp.')
     .replace(/^Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst (\d+) startande i vardera lopp\.$/g, 'Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst {runner_count} startande i vardera lopp.')
-    .replace(/^Om fler än (\d+) hästar anmäls,? tas startande hästar ut i (P21-ordning|startpoängordning)\.$/g, 'Om fler än {selection_limit} hästar anmäls tas startande hästar ut i {selection_order_basis}.')
+    .replace(/^Om fler än (\d+) hästar anmäls,? tas startande hästar ut i (P21-ordning|startpoängordning|poängordning)\.$/g, 'Om fler än {selection_limit} hästar anmäls tas startande hästar ut i {selection_order_basis}.')
+    .replace(/^Vid fler än (\d+) anmälda hästar tillämpas tvångsstrykning, gjorda insatser återbetalas ej\.$/g, 'Vid fler än {selection_limit} anmälda hästar tillämpas tvångsstrykning, gjorda insatser återbetalas ej.')
     .replace(/^Har två hästar samma startpoäng tillämpas lottning\.$/g, 'Har två hästar samma startpoäng tillämpas lottning.')
     .replace(/^Spårtilldelning i respektive lopp enligt slumptal, dvs sedvanlig spå(?:r|t)lottning\.$/g, 'Spårtilldelning i respektive lopp enligt slumptal, dvs sedvanlig spårlottning.')
     .replace(/^Övriga hästar startar från distansen (\d{3,4}) meter\.$/g, 'Övriga hästar startar från distansen {distance_m} meter.')
@@ -250,6 +276,16 @@ function normalizeTemplate(sentence, propositionType = null) {
     .replace(/^Presentkort till segrande hästs ägare\.$/g, 'Presentkort till segrande hästs ägare.')
     .replace(/^Vinnarbild till segrande hästs ägare\.$/g, 'Vinnarbild till segrande hästs ägare.')
     .replace(/^Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår [0-9,]+\.$/g, 'Spår efter startpoäng där häst med lägst startpoäng får spår 1 osv, enligt följande ordning spår {track_order}.')
+    .replace(/^De sju hästar med högst startpoäng med ([\d. ]+) - ([\d. ]+) kr intjänat \(([^)]+)\) startar från distansen (\d{3,4}) meter (?:med|från) spår ([0-9-]+)\.$/g, 'De sju hästar med högst startpoäng med {amount_min_kr} - {amount_max_kr} kr intjänat ({stl_division}) startar från distansen {distance_m} meter med spår {track_order}.')
+    .replace(/^Poängberäkning enligt särskilda bestämmelser för STL-lopp\.$/g, 'Poängberäkning enligt särskilda bestämmelser för STL-lopp.')
+    .replace(/^Poängställning kan ses på (.+)\.?$/g, 'Poängställning kan ses på {standings_url}')
+    .replace(/^Se finalklara hästar här: (.+?)\.?$/g, 'Se finalklara hästar här: {standings_url}')
+    .replace(/^En av propositionerna 1,2,3 eller 4 kommer om möjligt att delas i ytterligare ett lopp denna dag\.$/g, 'En av propositionerna 1,2,3 eller 4 kommer om möjligt att delas i ytterligare ett lopp denna dag.')
+    .replace(/^Om en häst har kvalificerat sig som ordinarie till final i flera klasser ska den alltid starta i den högsta klassen\.$/g, 'Om en häst har kvalificerat sig som ordinarie till final i flera klasser ska den alltid starta i den högsta klassen.')
+    .replace(/^Häst som kvalificerar sig för final är skyldig att starta i finalen på Eskilstuna 28 juni 2025 \(med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025\)\.$/g, 'Häst som kvalificerar sig för final är skyldig att starta i finalen på Eskilstuna 28 juni 2025 (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).')
+    .replace(/^MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1995 eller senare som körs i tio försök under året där de tolv främsta kuskarna kvalificerar sig till final den 15 december\.$/g, 'MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1995 eller senare som körs i tio försök under året där de tolv främsta kuskarna kvalificerar sig till final den 15 december.')
+    .replace(/^MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1996 eller senare som körs i åtta försök under året där de tolv främsta kuskarna kvalificerar sig till final på Mantorp 19\/10\.$/g, 'MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1996 eller senare som körs i åtta försök under året där de tolv främsta kuskarna kvalificerar sig till final på Mantorp 19/10.')
+    .replace(/^Häst som är inkvalad till finalen, men som inte startar där beläggs med startförbud under perioden (.+)\.$/g, 'Häst som är inkvalad till finalen, men som inte startar där beläggs med startförbud under perioden {date_range_text}.')
     .replace(/\b\d{3,4}\s*m\b/g, '{distance_m} m')
     .replace(/\b(Autostart|Voltstart|Linjestart)\b/g, '{start_method}')
     .replace(/\b\d+\s+startande\b/g, '{runner_count} startande')
@@ -292,6 +328,8 @@ function normalizeTemplate(sentence, propositionType = null) {
 function extractVariables(sentence, propositionType = null) {
   const text = normalizeWhitespace(sentence)
   const vars = {}
+  const shortFinalNotice = text.match(/^Final på (.+?) (\d+\/\d+)\.$/i)
+  const dubbelCupMeetingIntro = text.match(/^DubbelCupen Meeting (\d+): Försök körs på (.+)\.$/i)
   const distance = text.match(/\b(\d{3,4})\s*m\b/)
   const otherHorsesDistance = text.match(/^Övriga hästar startar från distansen (\d{3,4}) meter\.$/i)
   const underAgeDriversDistance = text.match(/^Hästar som körs av kuskar som ännu inte fyllt (\d+) år startar på distansen (\d{3,4}) meter\.$/i)
@@ -335,16 +373,29 @@ function extractVariables(sentence, propositionType = null) {
   const genericRangeEarnings = text.match(/^((?:\d(?:-\d+)?-?åriga)(?:.+?)?)\s+([\d.]+) - ([\d.]+) kr(?: med högst (\d+) poäng)?\.$/)
   const eligibilitySubjectOnly = text.match(/^(.+)\.$/)
   const startMethod = text.match(/\b(Autostart|Voltstart|Linjestart)\b/)
-  const selectionSentence = text.match(/^Om fler än (\d+) hästar anmäls,? tas startande hästar ut i (P21-ordning|startpoängordning)\.$/i)
+  const selectionSentence = text.match(/^Om fler än (\d+) hästar anmäls,? tas startande hästar ut i (P21-ordning|startpoängordning|poängordning)\.$/i)
+  const forcedScratchingsNoRefund = text.match(/^Vid fler än (\d+) anmälda hästar tillämpas tvångsstrykning, gjorda insatser återbetalas ej\.$/i)
   const runnerCount = text.match(/\b(\d+)\s+startande\b/)
   const prizeLadder = text.match(/Pris:\s+([0-9.()]+(?:-[0-9.()]+)*)\s+(?:kr|samt)/)
   const amounts = [...text.matchAll(/\b(\d{1,3}(?:\.\d{3})+)\s+kr\b/g)].map(match => match[1])
   const placedCount = text.match(/\((\d+)\s+prisplacerade\)/)
   const premiumChancePercent = text.match(/För premiechansad häst adderas (\d+) % extra prispengar\./)
   const trackOrder = text.match(/ordning spår ([0-9,]+)\./)
+  const stlTopSevenStartPoints = text.match(/^De sju hästar med högst startpoäng med ([\d. ]+) - ([\d. ]+) kr intjänat \(([^)]+)\) startar från distansen (\d{3,4}) meter (?:med|från) spår ([0-9-]+)\.$/i)
+  const standingsUrl = text.match(/^Poängställning kan ses på (.+?)\.?$/i)
+  const finalQualifiedHorsesUrl = text.match(/^Se finalklara hästar här: (.+?)\.?$/i)
+  const finalStartBanPeriod = text.match(/^Häst som är inkvalad till finalen, men som inte startar där beläggs med startförbud under perioden (.+)\.$/i)
   const allowance = text.match(/^Tillägg\s+(.+?)(\.)?$/)
   const allowanceContinuation = text.match(/^(\d+\s+m\s+vid.+?)(\.)?$/)
 
+  if (shortFinalNotice) {
+    vars.track_name = shortFinalNotice[1]
+    vars.date_text = shortFinalNotice[2]
+  }
+  if (dubbelCupMeetingIntro) {
+    vars.meeting_number = Number(dubbelCupMeetingIntro[1])
+    vars.meeting_schedule = dubbelCupMeetingIntro[2]
+  }
   if (distance) vars.distance_m = Number(distance[1])
   if (otherHorsesDistance) vars.distance_m = Number(otherHorsesDistance[1])
   if (underAgeDriversDistance) {
@@ -515,6 +566,17 @@ function extractVariables(sentence, propositionType = null) {
     vars.selection_limit = Number(selectionSentence[1])
     vars.selection_order_basis = selectionSentence[2]
   }
+  if (forcedScratchingsNoRefund) vars.selection_limit = Number(forcedScratchingsNoRefund[1])
+  if (stlTopSevenStartPoints) {
+    vars.amount_min_kr = stlTopSevenStartPoints[1]
+    vars.amount_max_kr = stlTopSevenStartPoints[2]
+    vars.stl_division = stlTopSevenStartPoints[3]
+    vars.distance_m = Number(stlTopSevenStartPoints[4])
+    vars.track_order = stlTopSevenStartPoints[5]
+  }
+  if (standingsUrl) vars.standings_url = standingsUrl[1]
+  if (finalQualifiedHorsesUrl) vars.standings_url = finalQualifiedHorsesUrl[1]
+  if (finalStartBanPeriod) vars.date_range_text = finalStartBanPeriod[1]
   if (runnerCount) vars.runner_count = Number(runnerCount[1])
   if (prizeLadder) vars.prize_ladder = prizeLadder[1]
   if (amounts.length) vars.amount_kr = amounts

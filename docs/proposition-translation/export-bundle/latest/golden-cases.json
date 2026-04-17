@@ -330,22 +330,22 @@
         "text": "4 kotiradan hevosta on etusijalla, ja kotiradoiksi lasketaan myös Rättvik.",
         "translated": true,
         "sentenceCount": 1,
-        "ruleMatchedSentenceCount": 0,
-        "fallbackMatchedSentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
         "translatedSentenceCount": 1,
-        "coverage": 0,
-        "quality": "fallback-match"
+        "coverage": 1,
+        "quality": "rule-match"
       },
       "en": {
         "language": "en",
         "text": "4 home-track horses have priority, and Rättvik also count as home tracks.",
         "translated": true,
         "sentenceCount": 1,
-        "ruleMatchedSentenceCount": 0,
-        "fallbackMatchedSentenceCount": 1,
+        "ruleMatchedSentenceCount": 1,
+        "fallbackMatchedSentenceCount": 0,
         "translatedSentenceCount": 1,
-        "coverage": 0,
-        "quality": "fallback-match"
+        "coverage": 1,
+        "quality": "rule-match"
       }
     }
   }

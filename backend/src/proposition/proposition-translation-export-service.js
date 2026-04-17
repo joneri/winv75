@@ -13,7 +13,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..')
 const RULES_PATH = path.join(REPO_ROOT, 'docs', 'proposition-translation', 'rules.json')
 const AUDIT_PATH = path.join(REPO_ROOT, 'docs', 'proposition-translation', 'audit-report.json')
+const TEAM_BETTING_README_PATH = path.join(REPO_ROOT, 'docs', 'features', 'proposition-translation-team-betting-readme.md')
 const HANDOFF_SPEC_PATH = path.join(REPO_ROOT, 'docs', 'features', 'proposition-translation-team-betting-handoff.md')
+const TEAM_BETTING_EPIC_PATH = path.join(REPO_ROOT, 'docs', 'features', 'proposition-translation-team-betting-epic.md')
 
 const GOLDEN_CASES = [
   { typ: 'L', text: 'Wången Cup - Lärlingslopp - Spårtrappa' },
@@ -136,7 +138,11 @@ export async function buildPropositionTranslationBundle() {
 
 export async function buildPropositionTranslationBundleArtifacts() {
   const bundle = await buildPropositionTranslationBundle()
-  const handoffSpec = await fs.readFile(HANDOFF_SPEC_PATH, 'utf8')
+  const [teamBettingReadme, handoffSpec, teamBettingEpic] = await Promise.all([
+    fs.readFile(TEAM_BETTING_README_PATH, 'utf8'),
+    fs.readFile(HANDOFF_SPEC_PATH, 'utf8'),
+    fs.readFile(TEAM_BETTING_EPIC_PATH, 'utf8')
+  ])
 
   const artifactFileNames = [
     'proposition-translation-bundle.json',
@@ -147,7 +153,9 @@ export async function buildPropositionTranslationBundleArtifacts() {
     'raceday-samples-fi.json',
     'raceday-samples-en.json',
     'golden-cases.json',
+    'README-team-betting.md',
     'team-betting-handoff.md',
+    'team-betting-translation-epic.md',
     'manifest.json'
   ]
 
@@ -163,7 +171,9 @@ export async function buildPropositionTranslationBundleArtifacts() {
     ['raceday-samples-fi.json', serializeJson(bundle.racedaySamples.fi)],
     ['raceday-samples-en.json', serializeJson(bundle.racedaySamples.en)],
     ['golden-cases.json', serializeJson(bundle.goldenCases)],
+    ['README-team-betting.md', teamBettingReadme.endsWith('\n') ? teamBettingReadme : `${teamBettingReadme}\n`],
     ['team-betting-handoff.md', handoffSpec.endsWith('\n') ? handoffSpec : `${handoffSpec}\n`],
+    ['team-betting-translation-epic.md', teamBettingEpic.endsWith('\n') ? teamBettingEpic : `${teamBettingEpic}\n`],
     ['manifest.json', serializeJson(bundle.manifest)]
   ]
 

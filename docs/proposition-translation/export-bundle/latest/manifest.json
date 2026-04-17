@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-16T11:52:35.744Z",
+  "generatedAt": "2026-04-17T07:39:18.880Z",
   "sourceRepository": "winv75",
-  "ruleVersion": 12,
-  "auditGeneratedAt": "2026-04-16T10:29:53.666Z",
+  "ruleVersion": 42,
+  "auditGeneratedAt": "2026-04-17T07:19:19.584Z",
   "supportedLanguages": {
     "sv": "Svenska",
     "fi": "Suomi",
@@ -19,14 +19,14 @@
     ]
   },
   "sampleSnapshot": {
-    "overviewFiPropositionCount": 1040,
-    "overviewEnPropositionCount": 1040,
-    "overviewRuleCoveragePct": 94.32,
-    "overviewTranslatedCoveragePct": 98.76,
+    "overviewFiPropositionCount": 1036,
+    "overviewEnPropositionCount": 1036,
+    "overviewRuleCoveragePct": 98.81,
+    "overviewTranslatedCoveragePct": 99.88,
     "racedaySampleCountPerLanguage": 3,
     "goldenCaseCount": 10
   },
-  "bundleTag": "rule-v12-2026-04-16T11-52-35-744Z",
+  "bundleTag": "rule-v42-2026-04-17T07-39-18-880Z",
   "artifactFiles": [
     "proposition-translation-bundle.json",
     "rules.json",
@@ -36,7 +36,9 @@
     "raceday-samples-fi.json",
     "raceday-samples-en.json",
     "golden-cases.json",
+    "README-team-betting.md",
     "team-betting-handoff.md",
+    "team-betting-translation-epic.md",
     "manifest.json"
   ],
   "packageArchiveFileName": "proposition-translation-bundle-package.zip"

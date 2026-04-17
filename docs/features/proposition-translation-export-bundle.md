@@ -20,7 +20,9 @@ The bundle includes:
 - `overview-fi.json` and `overview-en.json`: sample overview API payloads
 - `raceday-samples-fi.json` and `raceday-samples-en.json`: sample translated raceday payloads in the same shape as the frontend consumes
 - `golden-cases.json`: portable expected outputs and quality flags for a curated set of proposition texts across `sv`, `fi`, and `en`
+- `README-team-betting.md`: a short start-here note in the ZIP root that points Team Betting to the Epic, the implementation handoff, and the acceptance cases
 - `team-betting-handoff.md`: a short implementation note for the Kotlin/BFF team
+- `team-betting-translation-epic.md`: a higher-level Team Betting Epic that explains ownership, rollout stages, and acceptance boundaries for translation work
 - `manifest.json`: bundle metadata, file descriptions, and consumer guidance
 
 ## Key decisions
@@ -29,7 +31,9 @@ The bundle includes:
 - Provide one ZIP package that combines the single-file bundle and the split artifacts in one deliverable.
 - Export both contract data and runtime-shaped sample payloads so downstream teams do not need to reverse-engineer frontend expectations.
 - Include `golden-cases.json` so another stack, such as a Kotlin BFF, can validate a reimplementation against the same acceptance examples.
+- Include a short ZIP-root README so the receiving team has one obvious “start here” file.
 - Include a short `team-betting-handoff.md` file inside the package so the receiving team gets usage guidance together with the data.
+- Include a separate Team Betting Epic inside the package so the receiving team gets a durable operating model, not just file-by-file implementation notes.
 - Keep the export reproducible from local data rather than hand-curated ZIP files.
 
 ## Inputs/outputs

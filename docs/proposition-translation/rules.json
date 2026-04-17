@@ -1,5 +1,5 @@
 {
-  "version": 26,
+  "version": 46,
   "source": "MongoDB winv75.racedays.raceList.propTexts for all proposition text types",
   "languages": {
     "sv": "Svenska",
@@ -64,6 +64,22 @@
       "description": "Source date wording for half-row allowance notices.",
       "type": "string"
     },
+    "date_range_text": {
+      "description": "Source date-range wording used in final start-ban notices.",
+      "type": "string"
+    },
+    "track_name": {
+      "description": "Track name used in short final and obligation notices.",
+      "type": "string"
+    },
+    "meeting_number": {
+      "description": "Meeting number used in recurring DubbelCupen intros.",
+      "type": "number"
+    },
+    "meeting_schedule": {
+      "description": "Comma-separated qualifier calendar used in recurring series intro rows.",
+      "type": "string"
+    },
     "rule_point": {
       "description": "Svensk Travsport rule point number.",
       "type": "number"
@@ -101,8 +117,21 @@
           "sv": "startpoängordning",
           "fi": "lähtöpistejärjestyksessä",
           "en": "start-points order"
+        },
+        "poängordning": {
+          "sv": "poängordning",
+          "fi": "pistejärjestyksessä",
+          "en": "points order"
         }
       }
+    },
+    "stl_division": {
+      "description": "STL division label embedded in recurring start-point allocation clauses.",
+      "type": "string"
+    },
+    "standings_url": {
+      "description": "Series standings URL used in short standings notices.",
+      "type": "string"
     },
     "wildcard_authority": {
       "description": "Track or organizer named in a wildcard clause.",
@@ -363,6 +392,18 @@
     },
     "amount_kr": {
       "description": "Swedish krona amount exactly as sourced.",
+      "type": "money"
+    },
+    "amount_kr_1": {
+      "description": "First Swedish krona threshold amount in a multi-threshold rule.",
+      "type": "money"
+    },
+    "amount_kr_2": {
+      "description": "Second Swedish krona threshold amount in a multi-threshold rule.",
+      "type": "money"
+    },
+    "amount_kr_3": {
+      "description": "Third Swedish krona threshold amount in a multi-threshold rule.",
       "type": "money"
     },
     "placed_count": {
@@ -666,6 +707,36 @@
         "sv": "Om fler än {selection_limit} hästar anmäls tas startande hästar ut i {selection_order_basis}.",
         "fi": "Jos ilmoitetaan yli {selection_limit} hevosta, starttaavat hevoset valitaan {selection_order_basis}.",
         "en": "If more than {selection_limit} horses are entered, starters are selected by {selection_order_basis}."
+      }
+    },
+    {
+      "id": "short-final-track-date",
+      "types": ["EX"],
+      "template": "Final på {track_name} {date_text}.",
+      "render": {
+        "sv": "Final på {track_name} {date_text}.",
+        "fi": "Finaali {track_name} {date_text}.",
+        "en": "Final at {track_name} {date_text}."
+      }
+    },
+    {
+      "id": "dubbelcupen-meeting-qualifier-calendar",
+      "types": ["EX"],
+      "template": "DubbelCupen Meeting {meeting_number}: Försök körs på {meeting_schedule}.",
+      "render": {
+        "sv": "DubbelCupen Meeting {meeting_number}: Försök körs på {meeting_schedule}.",
+        "fi": "DubbelCupen Meeting {meeting_number}: Karsinnat ajetaan {meeting_schedule}.",
+        "en": "DubbelCupen Meeting {meeting_number}: Qualifiers are run at {meeting_schedule}."
+      }
+    },
+    {
+      "id": "stl-top-seven-start-points-distance-posts",
+      "types": ["EX"],
+      "template": "De sju hästar med högst startpoäng med {amount_min_kr} - {amount_max_kr} kr intjänat ({stl_division}) startar från distansen {distance_m} meter med spår {track_order}.",
+      "render": {
+        "sv": "De sju hästar med högst startpoäng med {amount_min_kr} - {amount_max_kr} kr intjänat ({stl_division}) startar från distansen {distance_m} meter med spår {track_order}.",
+        "fi": "Ne seitsemän hevosta, joilla on eniten lähtöpisteitä ja ansioita {amount_min_kr} - {amount_max_kr} kr ({stl_division}), starttaavat {distance_m} metrin matkalta lähtöradoilta {track_order}.",
+        "en": "The seven horses with the highest start points and earnings of {amount_min_kr} - {amount_max_kr} SEK ({stl_division}) start from the {distance_m}-metre distance from post positions {track_order}."
       }
     },
     {
@@ -1039,6 +1110,76 @@
       }
     },
     {
+      "id": "stl-special-points-provisions",
+      "types": ["EX"],
+      "template": "Poängberäkning enligt särskilda bestämmelser för STL-lopp.",
+      "render": {
+        "sv": "Poängberäkning enligt särskilda bestämmelser för STL-lopp.",
+        "fi": "Pistelaskenta määräytyy STL-lähtöjen erityismääräysten mukaan.",
+        "en": "Points are calculated according to the special provisions for STL races."
+      }
+    },
+    {
+      "id": "series-standings-visible-url",
+      "types": ["EX"],
+      "template": "Poängställning kan ses på {standings_url}",
+      "render": {
+        "sv": "Poängställning kan ses på {standings_url}",
+        "fi": "Pistetilanne näkyy osoitteessa {standings_url}",
+        "en": "Standings can be seen at {standings_url}"
+      }
+    },
+    {
+      "id": "one-of-propositions-may-be-split-extra-race",
+      "types": ["EX"],
+      "template": "En av propositionerna 1,2,3 eller 4 kommer om möjligt att delas i ytterligare ett lopp denna dag.",
+      "render": {
+        "sv": "En av propositionerna 1,2,3 eller 4 kommer om möjligt att delas i ytterligare ett lopp denna dag.",
+        "fi": "Yksi propositioista 1,2,3 tai 4 voidaan mahdollisuuksien mukaan jakaa vielä yhdeksi lähdöksi tämän kilpailupäivän aikana.",
+        "en": "One of propositions 1, 2, 3 or 4 may, if possible, be split into an additional race on this day."
+      }
+    },
+    {
+      "id": "horse-qualified-in-several-final-classes-must-start-highest",
+      "types": ["EX"],
+      "template": "Om en häst har kvalificerat sig som ordinarie till final i flera klasser ska den alltid starta i den högsta klassen.",
+      "render": {
+        "sv": "Om en häst har kvalificerat sig som ordinarie till final i flera klasser ska den alltid starta i den högsta klassen.",
+        "fi": "Jos hevonen on kvalifioitunut varsinaisena finaaliin useassa luokassa, sen on aina startattava korkeimmassa luokassa.",
+        "en": "If a horse has qualified as an ordinary finalist in several classes, it must always start in the highest class."
+      }
+    },
+    {
+      "id": "qualified-horse-must-start-eskilstuna-final-june-2025",
+      "types": ["EX"],
+      "template": "Häst som kvalificerar sig för final är skyldig att starta i finalen på Eskilstuna 28 juni 2025 (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).",
+      "render": {
+        "sv": "Häst som kvalificerar sig för final är skyldig att starta i finalen på Eskilstuna 28 juni 2025 (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).",
+        "fi": "Finaaliin kvalifioituneen hevosen on startattava Eskilstunan finaalissa 28. kesäkuuta 2025 (velvollisuus tarkoittaa, että hevosen on startattava finaalissa, muuten sille asetetaan starttikielto ajalle 22. kesäkuuta - 4. heinäkuuta 2025).",
+        "en": "A horse that qualifies for the final is required to start in the final at Eskilstuna on 28 June 2025 (required means that the horse must start in the final, otherwise it is barred from starting during the period 22 June to 4 July 2025)."
+      }
+    },
+    {
+      "id": "mantorpakademins-youth-series-1995-intro",
+      "types": ["EX"],
+      "template": "MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1995 eller senare som körs i tio försök under året där de tolv främsta kuskarna kvalificerar sig till final den 15 december.",
+      "render": {
+        "sv": "MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1995 eller senare som körs i tio försök under året där de tolv främsta kuskarna kvalificerar sig till final den 15 december.",
+        "fi": "MantorpAkademins Ungdomsserie on nuoriso-ohjastajien sarja vuosina 1995 tai myöhemmin syntyneille. Sarjassa ajetaan vuoden aikana kymmenen karsintaa, joista kaksitoista parasta ohjastajaa kvalifioituu finaaliin 15. joulukuuta.",
+        "en": "MantorpAkademins Youth Series is a drivers' series for young people born in 1995 or later. Ten qualifiers are run during the year, and the twelve best drivers qualify for the final on 15 December."
+      }
+    },
+    {
+      "id": "mantorpakademins-youth-series-1996-intro",
+      "types": ["EX"],
+      "template": "MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1996 eller senare som körs i åtta försök under året där de tolv främsta kuskarna kvalificerar sig till final på Mantorp 19/10.",
+      "render": {
+        "sv": "MantorpAkademins Ungdomsserie: En kuskserie för ungdomar födda 1996 eller senare som körs i åtta försök under året där de tolv främsta kuskarna kvalificerar sig till final på Mantorp 19/10.",
+        "fi": "MantorpAkademins Ungdomsserie on nuoriso-ohjastajien sarja vuosina 1996 tai myöhemmin syntyneille. Sarjassa ajetaan vuoden aikana kahdeksan karsintaa, joista kaksitoista parasta ohjastajaa kvalifioituu Mantorpissa 19/10 ajettavaan finaaliin.",
+        "en": "MantorpAkademins Youth Series is a drivers' series for young people born in 1996 or later. Eight qualifiers are run during the year, and the twelve best drivers qualify for the final at Mantorp on 19/10."
+      }
+    },
+    {
       "id": "series-participants-eligible-final-special-points",
       "types": ["EX"],
       "template": "Hästar som deltagit i serien är startberättigade i finalen enligt särskild poängberäkning.",
@@ -1089,6 +1230,46 @@
       }
     },
     {
+      "id": "series-participating-drivers-presented-travsport",
+      "types": ["EX"],
+      "template": "Deltagande kuskar presenteras i propositionen på travsport.se.",
+      "render": {
+        "sv": "Deltagande kuskar presenteras i propositionen på travsport.se.",
+        "fi": "Osallistuvat ohjastajat esitellään travsport.se-sivuston propositionissa.",
+        "en": "Participating drivers are presented in the proposition at travsport.se."
+      }
+    },
+    {
+      "id": "gift-card-most-points-main-series-driver",
+      "types": ["EX"],
+      "template": "Den kusk som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av {amount_kr} kr.",
+      "render": {
+        "sv": "Den kusk som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av {amount_kr} kr.",
+        "fi": "Perussarjassa eniten pisteitä kerännyt ohjastaja saa {amount_kr} kr arvoisen lahjakortin.",
+        "en": "The driver with the most points in the main series receives a gift card worth {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "gift-card-final-winner-driver",
+      "types": ["EX"],
+      "template": "Den kusk som vinner finalen erhåller ett presentkort till ett värde av {amount_kr} kr.",
+      "render": {
+        "sv": "Den kusk som vinner finalen erhåller ett presentkort till ett värde av {amount_kr} kr.",
+        "fi": "Finaalin voittava ohjastaja saa {amount_kr} kr arvoisen lahjakortin.",
+        "en": "The driver who wins the final receives a gift card worth {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "main-series-counts-as-final-division",
+      "types": ["EX"],
+      "template": "Grundserien räknas som en finalavdelning.",
+      "render": {
+        "sv": "Grundserien räknas som en finalavdelning.",
+        "fi": "Perussarja lasketaan finaalilähdöksi.",
+        "en": "The main series counts as a final division."
+      }
+    },
+    {
       "id": "gift-card-most-points-main-series-driver-and-trainer",
       "types": ["EX"],
       "template": "Den kusk och tränare som samlat ihop flest poäng i grundserien erhåller ett presentkort till ett värde av {amount_kr} kr vardera.",
@@ -1119,6 +1300,16 @@
       }
     },
     {
+      "id": "one-point-disqualified-or-not-finished-drivers",
+      "types": ["EX"],
+      "template": "En poäng tilldelas kuskar som blir diskvalificerad eller inte fullföljer loppen.",
+      "render": {
+        "sv": "En poäng tilldelas kuskar som blir diskvalificerad eller inte fullföljer loppen.",
+        "fi": "Yksi piste annetaan myös kuskeille, jotka hylätään tai eivät suorita lähtöä loppuun.",
+        "en": "One point is also awarded to drivers who are disqualified or do not complete the race."
+      }
+    },
+    {
       "id": "one-point-other-drivers-and-trainers-participating",
       "types": ["EX"],
       "template": "En poäng tilldelas övriga kuskar och tränare som deltar i loppen.",
@@ -1126,6 +1317,16 @@
         "sv": "En poäng tilldelas övriga kuskar och tränare som deltar i loppen.",
         "fi": "Yksi piste annetaan muille lähtöihin osallistuville ohjastajille ja valmentajille.",
         "en": "One point is awarded to the other drivers and trainers taking part in the races."
+      }
+    },
+    {
+      "id": "one-point-other-drivers-participating",
+      "types": ["EX"],
+      "template": "En poäng tilldelas övriga kuskar som deltar i loppen.",
+      "render": {
+        "sv": "En poäng tilldelas övriga kuskar som deltar i loppen.",
+        "fi": "Yksi piste annetaan muille lähtöihin osallistuville kuskeille.",
+        "en": "One point is awarded to the other drivers taking part in the races."
       }
     },
     {
@@ -1146,6 +1347,276 @@
         "sv": "Körsvenner erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10.",
         "fi": "Ohjastajat saavat sarjassa pisteitä sijoitusasteikon 150-80-50-40-30-20-10-10 mukaan.",
         "en": "Drivers receive points in the series according to the placing scale 150-80-50-40-30-20-10-10."
+      }
+    },
+    {
+      "id": "drivers-and-trainers-series-points-25-scale",
+      "types": ["EX"],
+      "template": "Poängberäkning i försöken för kuskar och tränare är 25-15-10-8-6-4-3-2.",
+      "render": {
+        "sv": "Poängberäkning i försöken för kuskar och tränare är 25-15-10-8-6-4-3-2.",
+        "fi": "Kuskien ja valmentajien pistelaskenta karsinnoissa on 25-15-10-8-6-4-3-2.",
+        "en": "Points in the qualifiers for drivers and trainers are calculated as 25-15-10-8-6-4-3-2."
+      }
+    },
+    {
+      "id": "series-tie-highest-start-points",
+      "types": ["EX"],
+      "template": "Vid lika seriepoäng gäller högst startpoäng.",
+      "render": {
+        "sv": "Vid lika seriepoäng gäller högst startpoäng.",
+        "fi": "Tasapisteissä ratkaisee korkein lähtöpistemäärä.",
+        "en": "If series points are tied, the highest start points apply."
+      }
+    },
+    {
+      "id": "top-twelve-drivers-final-at-romme",
+      "types": ["EX"],
+      "template": "De tolv främsta kuskarna i serien gör upp i en final på Romme.",
+      "render": {
+        "sv": "De tolv främsta kuskarna i serien gör upp i en final på Romme.",
+        "fi": "Sarjan kaksitoista parasta ohjastajaa ratkaisevat voittajan Rommessa ajettavassa finaalissa.",
+        "en": "The twelve best drivers in the series compete in a final at Romme."
+      }
+    },
+    {
+      "id": "romme-final-open-and-mares-prize-notice",
+      "types": ["EX"],
+      "template": "Final på Romme 11/6 med 150 000 kr i förstapris i öppna finalen och 150 000 kr i förstapris i stofinalen.",
+      "render": {
+        "sv": "Final på Romme 11/6 med 150 000 kr i förstapris i öppna finalen och 150 000 kr i förstapris i stofinalen.",
+        "fi": "Finaali ajetaan Rommessa 11/6, ja avoimen finaalin sekä tammafinaalin ensipalkinto on 150 000 kr.",
+        "en": "The final at Romme on 11/6 carries 150,000 SEK to the winner in both the open final and the mares' final."
+      }
+    },
+    {
+      "id": "sundbyholm-membership-required-for-final",
+      "types": ["EX"],
+      "template": "För att få deltaga i finalen måste måste man vara medlem i Sundbyholms Travförening.",
+      "render": {
+        "sv": "För att få deltaga i finalen måste måste man vara medlem i Sundbyholms Travförening.",
+        "fi": "Finaaliin osallistuminen edellyttää Sundbyholms Travföreningin jäsenyyttä.",
+        "en": "To participate in the final, you must be a member of Sundbyholms Travförening."
+      }
+    },
+    {
+      "id": "qualifiers-1-3-5-proposition-range",
+      "types": ["EX"],
+      "template": "Försök 1, 3 och 5 körs med proposition 50.001-{amount_kr} kr.",
+      "render": {
+        "sv": "Försök 1, 3 och 5 körs med proposition 50.001-{amount_kr} kr.",
+        "fi": "Karsinnat 1, 3 ja 5 ajetaan propositionilla 50.001-{amount_kr} kr.",
+        "en": "Qualifiers 1, 3 and 5 are run under the proposition 50.001-{amount_kr} kr."
+      }
+    },
+    {
+      "id": "qualifiers-2-4-6-proposition-range",
+      "types": ["EX"],
+      "template": "Försök 2, 4 och 6 körs med proposition 170.001-{amount_kr} kr.",
+      "render": {
+        "sv": "Försök 2, 4 och 6 körs med proposition 170.001-{amount_kr} kr.",
+        "fi": "Karsinnat 2, 4 ja 6 ajetaan propositionilla 170.001-{amount_kr} kr.",
+        "en": "Qualifiers 2, 4 and 6 are run under the proposition 170.001-{amount_kr} kr."
+      }
+    },
+    {
+      "id": "sleipner-cup-2025-qualifier-calendar",
+      "types": ["EX"],
+      "template": "Sleipner Cup 2025: Försök körs på Bs 28/2, B 5/3, B 19/3, U 28/3, Bs 5/4, B 10/4, G 17/4, D 19/4, Sk 28/4, Rä 2/5, B 8/5, År 22/5, Ös 26/5 och Bs 28/5.",
+      "render": {
+        "sv": "Sleipner Cup 2025: Försök körs på Bs 28/2, B 5/3, B 19/3, U 28/3, Bs 5/4, B 10/4, G 17/4, D 19/4, Sk 28/4, Rä 2/5, B 8/5, År 22/5, Ös 26/5 och Bs 28/5.",
+        "fi": "Sleipner Cup 2025: Karsinnat ajetaan Bs 28/2, B 5/3, B 19/3, U 28/3, Bs 5/4, B 10/4, G 17/4, D 19/4, Sk 28/4, Rä 2/5, B 8/5, År 22/5, Ös 26/5 ja Bs 28/5.",
+        "en": "Sleipner Cup 2025: Qualifiers are run at Bs 28/2, B 5/3, B 19/3, U 28/3, Bs 5/4, B 10/4, G 17/4, D 19/4, Sk 28/4, Rä 2/5, B 8/5, År 22/5, Ös 26/5 and Bs 28/5."
+      }
+    },
+    {
+      "id": "e3-bonus-autumn-series-2025-intro",
+      "types": ["EX"],
+      "template": "E3 Bonus - Höstserien 2025: Körs i elva försök där de tolv hästar med mest poäng i serien är startberättigade i finalen som körs onsdag 3/12 på Bergsåker med ett förstapris på 100 000 kr.",
+      "render": {
+        "sv": "E3 Bonus - Höstserien 2025: Körs i elva försök där de tolv hästar med mest poäng i serien är startberättigade i finalen som körs onsdag 3/12 på Bergsåker med ett förstapris på 100 000 kr.",
+        "fi": "E3 Bonus - Syyssarja 2025: Sarja ajetaan yhdentoista karsinnan muodossa, ja sarjan kaksitoista eniten pisteitä kerännyttä hevosta ovat starttioikeutettuja finaalissa, joka ajetaan keskiviikkona 3/12 Bergsåkerissa, jossa ensipalkinto on 100 000 kr.",
+        "en": "E3 Bonus - Autumn Series 2025: The series is run over eleven qualifiers, and the twelve horses with the most points in the series are eligible for the final, which is run on Wednesday 3/12 at Bergsåker with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "e3-bonus-spring-series-2025-intro",
+      "types": ["EX"],
+      "template": "E3 Bonus - Vårserien 2025: Körs i elva försök där de tolv hästar med mest poäng i serien är startberättigade i finalen som körs fredag 30 maj på Romme med ett förstapris på 100 000 kr.",
+      "render": {
+        "sv": "E3 Bonus - Vårserien 2025: Körs i elva försök där de tolv hästar med mest poäng i serien är startberättigade i finalen som körs fredag 30 maj på Romme med ett förstapris på 100 000 kr.",
+        "fi": "E3 Bonus - Kevätsarja 2025: Sarja ajetaan yhdentoista karsinnan muodossa, ja sarjan kaksitoista eniten pisteitä kerännyttä hevosta ovat starttioikeutettuja finaalissa, joka ajetaan perjantaina 30. toukokuuta Rommessa, jossa ensipalkinto on 100 000 kr.",
+        "en": "E3 Bonus - Spring Series 2025: The series is run over eleven qualifiers, and the twelve horses with the most points in the series are eligible for the final, which is run on Friday 30 May at Romme with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "e3-bonus-spring-series-2026-intro",
+      "types": ["EX"],
+      "template": "E3 Bonus - Vårserien 2026: Körs i elva försök där de tolv hästar med mest poäng i serien är startberättigade i finalen som körs tisdag 26/5 på Eskilstuna med ett förstapris på 100 000 kr.",
+      "render": {
+        "sv": "E3 Bonus - Vårserien 2026: Körs i elva försök där de tolv hästar med mest poäng i serien är startberättigade i finalen som körs tisdag 26/5 på Eskilstuna med ett förstapris på 100 000 kr.",
+        "fi": "E3 Bonus - Kevätsarja 2026: Sarja ajetaan yhdentoista karsinnan muodossa, ja sarjan kaksitoista eniten pisteitä kerännyttä hevosta ovat starttioikeutettuja finaalissa, joka ajetaan tiistaina 26/5 Eskilstunassa, jossa ensipalkinto on 100 000 kr.",
+        "en": "E3 Bonus - Spring Series 2026: The series is run over eleven qualifiers, and the twelve horses with the most points in the series are eligible for the final, which is run on Tuesday 26/5 at Eskilstuna with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "jasab-apprentice-series-info-link",
+      "types": ["EX"],
+      "template": "JASAB Lärlingsserie se: www.bergsaker.com/sport-och-spel/sport/serier/",
+      "render": {
+        "sv": "JASAB Lärlingsserie se: www.bergsaker.com/sport-och-spel/sport/serier/",
+        "fi": "JASAB-oppilassarja, katso: www.bergsaker.com/sport-och-spel/sport/serier/",
+        "en": "JASAB Apprentice Series, see: www.bergsaker.com/sport-och-spel/sport/serier/"
+      }
+    },
+    {
+      "id": "jasab-apprentice-series-more-info-link",
+      "types": ["EX"],
+      "template": "För mer info JASAB Lärlingsserie se: www.bergsaker.com/sport-och-spel/sport/serier/.",
+      "render": {
+        "sv": "För mer info JASAB Lärlingsserie se: www.bergsaker.com/sport-och-spel/sport/serier/.",
+        "fi": "Lisätietoa JASAB-oppilassarjasta: www.bergsaker.com/sport-och-spel/sport/serier/.",
+        "en": "For more information about the JASAB Apprentice Series, see: www.bergsaker.com/sport-och-spel/sport/serier/."
+      }
+    },
+    {
+      "id": "anderssons-hastsports-apprentice-series-2025-intro",
+      "types": ["EX"],
+      "template": "Anderssons Hästsports Lärlingsserie 2025: En lärlingsserie som körs över tolv omgångar på Romme och Rättvik.",
+      "render": {
+        "sv": "Anderssons Hästsports Lärlingsserie 2025: En lärlingsserie som körs över tolv omgångar på Romme och Rättvik.",
+        "fi": "Anderssons Hästsports Lärlingsserie 2025: Oppilassarja, joka ajetaan kahdentoista osalähdön mittaisena Rommessa ja Rättvikissä.",
+        "en": "Anderssons Hästsports Apprentice Series 2025: An apprentice series run over twelve rounds at Romme and Rättvik."
+      }
+    },
+    {
+      "id": "dalatravet-standings-and-more-info-link",
+      "types": ["EX"],
+      "template": "Ställning och mer info finns att läsa på dalatravet.se.",
+      "render": {
+        "sv": "Ställning och mer info finns att läsa på dalatravet.se.",
+        "fi": "Sarjataulukko ja lisätiedot löytyvät osoitteesta dalatravet.se.",
+        "en": "Standings and more information are available at dalatravet.se."
+      }
+    },
+    {
+      "id": "qualifier-cancelled-two-highest-start-points-respective-federation-rules-final",
+      "types": ["EX"],
+      "template": "Om försök inte körs kvalificerar sig de två hästarna med mest startpoäng vid anmälan.Respektive förbunds reglemente gäller i finalen.",
+      "render": {
+        "sv": "Om försök inte körs kvalificerar sig de två hästarna med mest startpoäng vid anmälan.Respektive förbunds reglemente gäller i finalen.",
+        "fi": "Jos karsintaa ei ajeta, ilmoittautumishetkellä eniten lähtöpisteitä saaneet kaksi hevosta kvalifioituvat finaaliin. Finaalissa sovelletaan asianomaisen liiton sääntöjä.",
+        "en": "If a qualifier is not run, the two horses with the highest start points at declaration qualify for the final. The respective federation's rules apply in the final."
+      }
+    },
+    {
+      "id": "winning-team-must-start-in-aby-final-saturday-27-9",
+      "types": ["EX"],
+      "template": "Segrande ekipage är skyldiga att starta i finalen på Åby lördag 27/9.",
+      "render": {
+        "sv": "Segrande ekipage är skyldiga att starta i finalen på Åby lördag 27/9.",
+        "fi": "Voittanut valjakko on velvollinen starttaamaan finaalissa Åbyssa lauantaina 27/9.",
+        "en": "The winning team is required to start in the final at Åby on Saturday 27/9."
+      }
+    },
+    {
+      "id": "winning-team-must-start-in-aby-final-saturday-30-september",
+      "types": ["EX"],
+      "template": "Segrande ekipage är skyldiga att starta i finalen på Åby lördag 30 september.",
+      "render": {
+        "sv": "Segrande ekipage är skyldiga att starta i finalen på Åby lördag 30 september.",
+        "fi": "Voittanut valjakko on velvollinen starttaamaan finaalissa Åbyssa lauantaina 30. syyskuuta.",
+        "en": "The winning team is required to start in the final at Åby on Saturday 30 September."
+      }
+    },
+    {
+      "id": "tie-qualifier-two-horses-advance-to-final",
+      "types": ["EX"],
+      "template": "Vid eventuellt dött lopp går hästen/hästarna med mest poäng vid startanmälan i försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare till final.",
+      "render": {
+        "sv": "Vid eventuellt dött lopp går hästen/hästarna med mest poäng vid startanmälan i försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare till final.",
+        "fi": "Mahdollisessa tasatuloksessa karsinnasta jatkaa ilmoittautumishetkellä eniten pisteitä saanut hevonen tai hevoset, minkä jälkeen ratkaistaan arvalla, joten jokaisesta karsinnasta etenee finaaliin aina kaksi hevosta.",
+        "en": "In the event of a dead heat, the horse or horses with the most points at declaration for the qualifier advance first, followed by a draw, so exactly two horses from each qualifier always advance to the final."
+      }
+    },
+    {
+      "id": "reserve-runner-up-is-invited-to-start-and-so-on",
+      "types": ["EX"],
+      "template": "Vid förfall blir tvåan i mål tillfrågad att starta osv.",
+      "render": {
+        "sv": "Vid förfall blir tvåan i mål tillfrågad att starta osv.",
+        "fi": "Poisjäännin sattuessa toiseksi tullut kutsutaan starttaamaan ja niin edelleen.",
+        "en": "If there is a withdrawal, the runner-up is asked to start, and so on."
+      }
+    },
+    {
+      "id": "entry-fee-for-this-race-including-vat",
+      "types": ["EX"],
+      "template": "Anmälningsavgiften till detta lopp är {amount_kr} kr (inkl moms).",
+      "render": {
+        "sv": "Anmälningsavgiften till detta lopp är {amount_kr} kr (inkl moms).",
+        "fi": "Tämän lähdön ilmoittautumismaksu on {amount_kr} kr (sis. alv).",
+        "en": "The entry fee for this race is {amount_kr} SEK (incl. VAT)."
+      }
+    },
+    {
+      "id": "entry-fee-sek-ex-vat",
+      "types": ["EX"],
+      "template": "Anmälningsavgift: {amount_kr} SEK (ex moms).",
+      "render": {
+        "sv": "Anmälningsavgift: {amount_kr} SEK (ex moms).",
+        "fi": "Ilmoittautumismaksu: {amount_kr} SEK (ilman alv).",
+        "en": "Entry fee: {amount_kr} SEK (excl. VAT)."
+      }
+    },
+    {
+      "id": "entry-fee-kr-excluding-vat",
+      "types": ["EX"],
+      "template": "Anmälningsavgift {amount_kr} kr (exkl moms).",
+      "render": {
+        "sv": "Anmälningsavgift {amount_kr} kr (exkl moms).",
+        "fi": "Ilmoittautumismaksu {amount_kr} kr (ilman alv).",
+        "en": "Entry fee {amount_kr} SEK (excl. VAT)."
+      }
+    },
+    {
+      "id": "stochampionatet-separate-proposition-entry-fee-excluding-vat",
+      "types": ["EX"],
+      "template": "Övrigt: Se separat utgiven proposition eller www.stochampionatet.se Anmälningsavgift: {amount_kr} kronor exkl moms.",
+      "render": {
+        "sv": "Övrigt: Se separat utgiven proposition eller www.stochampionatet.se Anmälningsavgift: {amount_kr} kronor exkl moms.",
+        "fi": "Övrigt: Katso erikseen julkaistu propositio tai www.stochampionatet.se. Ilmoittautumismaksu: {amount_kr} kruunua ilman alv.",
+        "en": "Other: See the separately published proposition or www.stochampionatet.se. Entry fee: {amount_kr} SEK excl. VAT."
+      }
+    },
+    {
+      "id": "entry-fee-amount-currency",
+      "types": ["EX"],
+      "template": "Anmälningsavgift: {amount_fee} {currency}.",
+      "render": {
+        "sv": "Anmälningsavgift: {amount_fee} {currency}.",
+        "fi": "Ilmoittautumismaksu: {amount_fee} {currency}.",
+        "en": "Entry fee: {amount_fee} {currency}."
+      }
+    },
+    {
+      "id": "entry-fee-colon-kr-excluding-vat",
+      "types": ["EX"],
+      "template": "Anmälningsavgift: {amount_kr} kr exkl moms.",
+      "render": {
+        "sv": "Anmälningsavgift: {amount_kr} kr exkl moms.",
+        "fi": "Ilmoittautumismaksu: {amount_kr} kr ilman alv.",
+        "en": "Entry fee: {amount_kr} SEK excl. VAT."
+      }
+    },
+    {
+      "id": "start-entry-fee-for-this-race-including-vat",
+      "types": ["EX"],
+      "template": "Startanmälningsavgiften till detta lopp är {amount_kr} kr inkl moms.",
+      "render": {
+        "sv": "Startanmälningsavgiften till detta lopp är {amount_kr} kr inkl moms.",
+        "fi": "Tämän lähdön startti-ilmoittautumismaksu on {amount_kr} kr (sis. alv).",
+        "en": "The start declaration fee for this race is {amount_kr} SEK (incl. VAT)."
       }
     },
     {
@@ -1289,6 +1760,26 @@
       }
     },
     {
+      "id": "horses-ridden-by-riders-30-or-fewer-races-2024-start-2140",
+      "types": ["EX"],
+      "template": "Hästar som rids av ryttare som red 30 eller färre lopp 2024 startar på distansen 2140.",
+      "render": {
+        "sv": "Hästar som rids av ryttare som red 30 eller färre lopp 2024 startar på distansen 2140.",
+        "fi": "Hevoset, joita ratsastavat ratsastajat jotka ratsastivat 30 tai vähemmän lähtöä vuonna 2024, lähtevät 2140 metrin matkalta.",
+        "en": "Horses ridden by riders who rode 30 or fewer races in 2024 start from the 2140 distance."
+      }
+    },
+    {
+      "id": "horses-ridden-by-riders-31-or-more-races-2024-start-2160",
+      "types": ["EX"],
+      "template": "Hästar som rids av ryttare som red 31 eller fler lopp 2024 startar från distansen 2160.",
+      "render": {
+        "sv": "Hästar som rids av ryttare som red 31 eller fler lopp 2024 startar från distansen 2160.",
+        "fi": "Hevoset, joita ratsastavat ratsastajat jotka ratsastivat 31 tai enemmän lähtöä vuonna 2024, lähtevät 2160 metrin matkalta.",
+        "en": "Horses ridden by riders who rode 31 or more races in 2024 start from the 2160 distance."
+      }
+    },
+    {
       "id": "horse-entered-must-suit-young-driver",
       "types": ["EX"],
       "template": "Häst som anmäls till detta lopp ska vara lämplig för en ungdom att köra.",
@@ -1379,6 +1870,16 @@
       }
     },
     {
+      "id": "mandatory-scratchings-no-refund-over-entered",
+      "types": ["EX"],
+      "template": "Vid fler än {selection_limit} anmälda hästar tillämpas tvångsstrykning, gjorda insatser återbetalas ej.",
+      "render": {
+        "sv": "Vid fler än {selection_limit} anmälda hästar tillämpas tvångsstrykning, gjorda insatser återbetalas ej.",
+        "fi": "Jos ilmoitettuja hevosia on yli {selection_limit}, sovelletaan pakollisia poisjääntejä eikä maksettuja panoksia palauteta.",
+        "en": "If more than {selection_limit} horses are entered, mandatory scratchings are applied and paid stakes are not refunded."
+      }
+    },
+    {
       "id": "max-10-horses-in-each-qualifier",
       "types": ["EX"],
       "template": "Maximalt 10 hästar i vardera uttagningslopp.",
@@ -1406,6 +1907,256 @@
         "sv": "Kusk får ej innehaft A-licens.",
         "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
         "en": "The driver may not have held an A licence."
+      }
+    },
+    {
+      "id": "honorary-prize-to-winning-owner-driver-groom",
+      "types": ["EX"],
+      "template": "Hederspris till segrande häst ägare, kösven och hästskötare.",
+      "render": {
+        "sv": "Hederspris till segrande häst ägare, kösven och hästskötare.",
+        "fi": "Kunniapalkinto voittaneen hevosen omistajalle, ohjastajalle ja hoitajalle.",
+        "en": "Honorary prize to the winning horse's owner, driver and groom."
+      }
+    },
+    {
+      "id": "final-run-as-two-races-thursday-23-october-2025",
+      "types": ["EX"],
+      "template": "Finalen körs med två lopp torsdag 23 oktober 2025.",
+      "render": {
+        "sv": "Finalen körs med två lopp torsdag 23 oktober 2025.",
+        "fi": "Finaali ajetaan kahtena lähtönä torstaina 23. lokakuuta 2025.",
+        "en": "The final is run as two races on Thursday 23 October 2025."
+      }
+    },
+    {
+      "id": "forced-prize-money-calculated-by-country-rules",
+      "types": ["EX"],
+      "template": "För alla försök gäller att tvångsprissumman beräknas ut ifrån gällande regler för landet där försöket körs.",
+      "render": {
+        "sv": "För alla försök gäller att tvångsprissumman beräknas ut ifrån gällande regler för landet där försöket körs.",
+        "fi": "Kaikissa karsinnoissa pakollinen prissumma lasketaan sen maan voimassa olevien sääntöjen mukaan, jossa karsinta ajetaan.",
+        "en": "For all qualifiers, the mandatory prize-money amount is calculated according to the rules in force in the country where the qualifier is run."
+      }
+    },
+    {
+      "id": "valid-scratching-reason-final-track-may-choose-replacement",
+      "types": ["EX"],
+      "template": "Genom giltig strykningsorsak (innan anmälan för finalen har gått ut) för en av de 10 hästar som har kvalat in till final, kan finalbanan välja bland de hästar som har startat i försöken.",
+      "render": {
+        "sv": "Genom giltig strykningsorsak (innan anmälan för finalen har gått ut) för en av de 10 hästar som har kvalat in till final, kan finalbanan välja bland de hästar som har startat i försöken.",
+        "fi": "Jos yhdellä finaaliin karsineista 10 hevosesta on hyväksyttävä poisjääntisyy ennen kuin ilmoittautuminen finaaliin on päättynyt, finaalirata voi valita niiden hevosten joukosta, jotka ovat startanneet karsinnoissa.",
+        "en": "If one of the 10 horses qualified for the final has a valid scratching reason before final declarations have closed, the host track for the final may choose from among the horses that have started in the qualifiers."
+      }
+    },
+    {
+      "id": "horses-selected-by-start-points",
+      "types": ["EX"],
+      "template": "Hästarna uttages efter startpoäng.",
+      "render": {
+        "sv": "Hästarna uttages efter startpoäng.",
+        "fi": "Hevoset valitaan starttipisteiden perusteella.",
+        "en": "The horses are selected by start points."
+      }
+    },
+    {
+      "id": "announced-at-declaration-three-selected-post-positions-ranked",
+      "types": ["EX"],
+      "template": "Meddelas vid anmälan där tre valda startspår ska rangordnas.",
+      "render": {
+        "sv": "Meddelas vid anmälan där tre valda startspår ska rangordnas.",
+        "fi": "Ilmoitetaan ilmoittautumisen yhteydessä, jolloin kolme valittua lähtörataa tulee asettaa järjestykseen.",
+        "en": "Announced at declaration, where three selected starting positions are to be ranked."
+      }
+    },
+    {
+      "id": "if-no-qualifier-run-top-two-by-start-points-qualify",
+      "types": ["EX"],
+      "template": "Om försök inte körs så kvalificerar sig de två hästarna med mest startpoäng vid anmälan.",
+      "render": {
+        "sv": "Om försök inte körs så kvalificerar sig de två hästarna med mest startpoäng vid anmälan.",
+        "fi": "Jos karsintaa ei ajeta, ilmoittautumishetkellä eniten starttipisteitä saaneet kaksi hevosta kvalifioituvat.",
+        "en": "If a qualifier is not run, the two horses with the most start points at declaration qualify."
+      }
+    },
+    {
+      "id": "series-consists-of-eleven-qualifiers",
+      "types": ["EX"],
+      "template": "Serien omfattar elva försökslopp.",
+      "render": {
+        "sv": "Serien omfattar elva försökslopp.",
+        "fi": "Sarja käsittää yksitoista karsintalähtöä.",
+        "en": "The series consists of eleven qualifying races."
+      }
+    },
+    {
+      "id": "series-consists-of-ten-qualifiers",
+      "types": ["EX"],
+      "template": "Serien omfattar tio försökslopp.",
+      "render": {
+        "sv": "Serien omfattar tio försökslopp.",
+        "fi": "Sarja käsittää kymmenen karsintalähtöä.",
+        "en": "The series consists of ten qualifying races."
+      }
+    },
+    {
+      "id": "top-ten-from-final-divisions-qualify-for-same-evening-final-race",
+      "types": ["EX"],
+      "template": "Till finalloppet som körs samma kväll är de tio främsta från finalavdelningarna (grundserien + två finalavdelningar) kvalificerade.",
+      "render": {
+        "sv": "Till finalloppet som körs samma kväll är de tio främsta från finalavdelningarna (grundserien + två finalavdelningar) kvalificerade.",
+        "fi": "Samana iltana ajettavaan finaalilähtöön kvalifioituvat finaaliosastojen kymmenen parasta (perussarja + kaksi finaaliosastoa).",
+        "en": "The ten best from the final divisions (main series + two final divisions) qualify for the final race run the same evening."
+      }
+    },
+    {
+      "id": "others-may-start-subject-to-available-space",
+      "types": ["EX"],
+      "template": "Övriga kan starta i mån av plats.",
+      "render": {
+        "sv": "Övriga kan starta i mån av plats.",
+        "fi": "Muut voivat startata tilan salliessa.",
+        "en": "Others may start subject to available space."
+      }
+    },
+    {
+      "id": "dahlbergs-bilservice-b-trainer-series-ten-qualifiers-final-3-december",
+      "types": ["EX"],
+      "template": "Dahlbergs Bilservice B-tränarserie består av tio försökslopp på Bergsåker under 2025, med final den 3 december.",
+      "render": {
+        "sv": "Dahlbergs Bilservice B-tränarserie består av tio försökslopp på Bergsåker under 2025, med final den 3 december.",
+        "fi": "Dahlbergs Bilservicen B-valmentajasarja koostuu kymmenestä Bergsåkerissa vuonna 2025 ajettavasta karsintalähdöstä, ja finaali ajetaan 3. joulukuuta.",
+        "en": "Dahlbergs Bilservice B-trainers' series consists of ten qualifying races at Bergsåker in 2025, with the final on 3 December."
+      }
+    },
+    {
+      "id": "solvalla-series-highest-total-points-final-eligible",
+      "types": ["EX"],
+      "template": "De hästar som efter försökstävlingarna i Solvallaserien uppnått högsta sammanlagda poängtal är startberättigade i finalen.",
+      "render": {
+        "sv": "De hästar som efter försökstävlingarna i Solvallaserien uppnått högsta sammanlagda poängtal är startberättigade i finalen.",
+        "fi": "Ne hevoset, jotka ovat Solvalla-sarjan karsintakilpailujen jälkeen saavuttaneet korkeimman yhteenlasketun pistemäärän, ovat starttioikeutettuja finaalissa.",
+        "en": "The horses that have achieved the highest total number of points after the qualifying competitions in the Solvalla series are eligible for the final."
+      }
+    },
+    {
+      "id": "twelve-horses-qualify-for-final",
+      "types": ["EX"],
+      "template": "Det är tolv hästar som kvalificerar sig till finalen.",
+      "render": {
+        "sv": "Det är tolv hästar som kvalificerar sig till finalen.",
+        "fi": "Finaaliin kvalifioituu kaksitoista hevosta.",
+        "en": "Twelve horses qualify for the final."
+      }
+    },
+    {
+      "id": "final-at-rattvik-2-8",
+      "types": ["EX"],
+      "template": "Final på Rättvik 2/8.",
+      "render": {
+        "sv": "Final på Rättvik 2/8.",
+        "fi": "Finaali Rättvikissä 2/8.",
+        "en": "Final at Rättvik on 2/8."
+      }
+    },
+    {
+      "id": "final-at-ostersund-13-12",
+      "types": ["EX"],
+      "template": "Final på Östersund 13/12.",
+      "render": {
+        "sv": "Final på Östersund 13/12.",
+        "fi": "Finaali Östersundissa 13/12.",
+        "en": "Final at Östersund on 13/12."
+      }
+    },
+    {
+      "id": "aby-final-3-may-first-prize-one-million",
+      "types": ["EX"],
+      "template": "Finalen körs på Åby 3 maj med ett förstapris på 1 000 000 kr.",
+      "render": {
+        "sv": "Finalen körs på Åby 3 maj med ett förstapris på 1 000 000 kr.",
+        "fi": "Finaali ajetaan Åbyssä 3. toukokuuta, jossa ensipalkinto on 1 000 000 kr.",
+        "en": "The final is run at Åby on 3 May with 1,000,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "honor-prize-to-winning-owner-trainer-driver-groom",
+      "types": ["EX"],
+      "template": "Hederpris till segrande hästs ägare, tränare, körsven och hästskötare.",
+      "render": {
+        "sv": "Hederpris till segrande hästs ägare, tränare, körsven och hästskötare.",
+        "fi": "Kunniapalkinto voittaneen hevosen omistajalle, valmentajalle, ohjastajalle ja hoitajalle.",
+        "en": "Honorary prize to the winning horse's owner, trainer, driver and groom."
+      }
+    },
+    {
+      "id": "horse-must-have-participated-in-at-least-one-qualifier-for-final-eligibility",
+      "types": ["EX"],
+      "template": "Häst måste ha deltagit i minst ett försök för att vara startberättigad i finalen.",
+      "render": {
+        "sv": "Häst måste ha deltagit i minst ett försök för att vara startberättigad i finalen.",
+        "fi": "Hevosen on täytynyt osallistua vähintään yhteen karsintaan ollakseen starttioikeutettu finaalissa.",
+        "en": "A horse must have taken part in at least one qualifier to be eligible to start in the final."
+      }
+    },
+    {
+      "id": "final-proposition-two-thresholds-open-hv-allowance",
+      "types": ["EX"],
+      "template": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 20 m h/v.",
+      "render": {
+        "sv": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 20 m h/v.",
+        "fi": "Finaalipropositio: {distance_m} m volttilähtö, 20 m {amount_kr_1} kr kohdalla, 40 m {amount_kr_2} kr kohdalla, lisäksi 20 m oriille ja ruunille.",
+        "en": "Final proposition: {distance_m} m standing start, 20 m at {amount_kr_1} SEK, 40 m at {amount_kr_2} SEK, plus 20 m for stallions and geldings."
+      }
+    },
+    {
+      "id": "final-proposition-two-thresholds-open",
+      "types": ["EX"],
+      "template": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.",
+      "render": {
+        "sv": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.",
+        "fi": "Finaalipropositio: {distance_m} m volttilähtö, 20 m {amount_kr_1} kr kohdalla, 40 m {amount_kr_2} kr kohdalla.",
+        "en": "Final proposition: {distance_m} m standing start, 20 m at {amount_kr_1} SEK, 40 m at {amount_kr_2} SEK."
+      }
+    },
+    {
+      "id": "final-proposition-two-thresholds-open-repeated-vunna",
+      "types": ["EX"],
+      "template": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m vid vunna {amount_kr_2} kr.",
+      "render": {
+        "sv": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m vid vunna {amount_kr_2} kr.",
+        "fi": "Finaalipropositio: {distance_m} m volttilähtö, 20 m {amount_kr_1} kr kohdalla, 40 m {amount_kr_2} kr kohdalla.",
+        "en": "Final proposition: {distance_m} m standing start, 20 m at {amount_kr_1} SEK, 40 m at {amount_kr_2} SEK."
+      }
+    },
+    {
+      "id": "final-proposition-single-threshold-open",
+      "types": ["EX"],
+      "template": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr.",
+      "render": {
+        "sv": "Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr.",
+        "fi": "Finaalipropositio: {distance_m} m volttilähtö, 20 m {amount_kr_1} kr kohdalla.",
+        "en": "Final proposition: {distance_m} m standing start, 20 m at {amount_kr_1} SEK."
+      }
+    },
+    {
+      "id": "final-proposition-qualified-mares-two-thresholds",
+      "types": ["EX"],
+      "template": "Finalproposition: {distance_m} m voltstart, alla inkvalade ston, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.",
+      "render": {
+        "sv": "Finalproposition: {distance_m} m voltstart, alla inkvalade ston, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.",
+        "fi": "Finaalipropositio: {distance_m} m volttilähtö, kaikki karsitut tammat, 20 m {amount_kr_1} kr kohdalla, 40 m {amount_kr_2} kr kohdalla.",
+        "en": "Final proposition: {distance_m} m standing start, all qualified mares, 20 m at {amount_kr_1} SEK, 40 m at {amount_kr_2} SEK."
+      }
+    },
+    {
+      "id": "final-proposition-qualified-mares-three-thresholds",
+      "types": ["EX"],
+      "template": "Finalproposition: {distance_m} m voltstart, alla inkvalade ston, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 60 m {amount_kr_3} kr.",
+      "render": {
+        "sv": "Finalproposition: {distance_m} m voltstart, alla inkvalade ston, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 60 m {amount_kr_3} kr.",
+        "fi": "Finaalipropositio: {distance_m} m volttilähtö, kaikki karsitut tammat, 20 m {amount_kr_1} kr kohdalla, 40 m {amount_kr_2} kr kohdalla, 60 m {amount_kr_3} kr kohdalla.",
+        "en": "Final proposition: {distance_m} m standing start, all qualified mares, 20 m at {amount_kr_1} SEK, 40 m at {amount_kr_2} SEK, 60 m at {amount_kr_3} SEK."
       }
     },
     {
@@ -1519,6 +2270,16 @@
       }
     },
     {
+      "id": "breeders-crown-semifinal-rules-see-prop-4",
+      "types": ["EX"],
+      "template": "Regler för Breeders' Crown-semifinaler se prop 4.",
+      "render": {
+        "sv": "Regler för Breeders' Crown-semifinaler se prop 4.",
+        "fi": "Breeders' Crown -välierien säännöt, katso prop 4.",
+        "en": "For the Breeders' Crown semi-final rules, see prop 4."
+      }
+    },
+    {
       "id": "horse-qualified-for-final-must-start-october-11",
       "types": ["EX"],
       "template": "Häst som kvalificerar sig för final är skyldig att starta i finalen lördag 11 oktober.",
@@ -1526,6 +2287,176 @@
         "sv": "Häst som kvalificerar sig för final är skyldig att starta i finalen lördag 11 oktober.",
         "fi": "Hevosen, joka karsii finaaliin, on osallistuttava finaaliin lauantaina 11. lokakuuta.",
         "en": "A horse that qualifies for the final is required to start in the final on Saturday 11 October."
+      }
+    },
+    {
+      "id": "entered-horse-cannot-enter-another-qualifier-until-run",
+      "types": ["EX"],
+      "template": "Häst som startanmälts till detta lopp kan inte anmälas till annat uttagningslopp förrän detta lopp körts.",
+      "render": {
+        "sv": "Häst som startanmälts till detta lopp kan inte anmälas till annat uttagningslopp förrän detta lopp körts.",
+        "fi": "Tähän lähtöön starttiin ilmoitettua hevosta ei voi ilmoittaa toiseen karsintalähtöön ennen kuin tämä lähtö on ajettu.",
+        "en": "A horse entered to start in this race cannot be entered in another qualifying race until this race has been run."
+      }
+    },
+    {
+      "id": "qualified-horse-not-starting-final-start-ban-period",
+      "types": ["EX"],
+      "template": "Häst som är inkvalad till finalen, men som inte startar där beläggs med startförbud under perioden {date_range_text}.",
+      "render": {
+        "sv": "Häst som är inkvalad till finalen, men som inte startar där beläggs med startförbud under perioden {date_range_text}.",
+        "fi": "Finaaliin kvalifioitunut hevonen, joka ei starttaa siinä, asetetaan kilpailukieltoon ajalle {date_range_text}.",
+        "en": "A horse qualified for the final that does not start there is subject to a starting ban during the period {date_range_text}."
+      }
+    },
+    {
+      "id": "qualified-horse-must-start-in-final-short",
+      "types": ["EX"],
+      "template": "Inkvalad häst är skyldig att starta i finalen.",
+      "render": {
+        "sv": "Inkvalad häst är skyldig att starta i finalen.",
+        "fi": "Finaaliin kvalifioituneen hevosen on startattava finaalissa.",
+        "en": "A horse qualified for the final is required to start in the final."
+      }
+    },
+    {
+      "id": "replacement-driver-if-qualified-driver-cannot-run-final",
+      "types": ["EX"],
+      "template": "Om körsven blir avstängd eller på annat sätt inte kan delta i finalen blir den körsven som placerat sig närmast efter i det uttagningslopp som den avstängde kvalificerat sig ifrån startberättigad.",
+      "render": {
+        "sv": "Om körsven blir avstängd eller på annat sätt inte kan delta i finalen blir den körsven som placerat sig närmast efter i det uttagningslopp som den avstängde kvalificerat sig ifrån startberättigad.",
+        "fi": "Jos ohjastaja saa ajokiellon tai ei muuten voi osallistua finaaliin, starttioikeuden saa se ohjastaja, joka sijoittui lähimmäksi seuraavaksi siinä karsintalähdössä, josta estynyt ohjastaja karsitui.",
+        "en": "If a driver is suspended or otherwise unable to take part in the final, the driver who finished next closest in the qualifying race from which the suspended driver qualified becomes eligible to start."
+      }
+    },
+    {
+      "id": "already-qualified-driver-no-more-qualifiers",
+      "types": ["EX"],
+      "template": "Redan kvalificerad körsven får ej delta i fler uttagningslopp.",
+      "render": {
+        "sv": "Redan kvalificerad körsven får ej delta i fler uttagningslopp.",
+        "fi": "Jo finaaliin kvalifioitunut ohjastaja ei saa osallistua useampiin karsintalähtöihin.",
+        "en": "A driver already qualified may not take part in more qualifying races."
+      }
+    },
+    {
+      "id": "see-final-qualified-horses-url",
+      "types": ["EX"],
+      "template": "Se finalklara hästar här: {standings_url}",
+      "render": {
+        "sv": "Se finalklara hästar här: {standings_url}",
+        "fi": "Katso finaaliin kvalifioituneet hevoset täältä: {standings_url}",
+        "en": "See the horses qualified for the final here: {standings_url}"
+      }
+    },
+    {
+      "id": "yesbox-offers-bale-of-deluxe-shavings",
+      "types": ["EX"],
+      "template": "YesBox bjuder alla startande hästar på en bal kutterspån de Luxe.",
+      "render": {
+        "sv": "YesBox bjuder alla startande hästar på en bal kutterspån de Luxe.",
+        "fi": "YesBox tarjoaa kaikille starttaaville hevosille paalin de Luxe -kutterspånia.",
+        "en": "YesBox offers all starting horses a bale of de Luxe wood shavings."
+      }
+    },
+    {
+      "id": "axevalla-monte-rider-series-eight-rounds-final-round-22-november",
+      "types": ["EX"],
+      "template": "Axevalla Travförenings Montéryttarserie: En serie med åtta omgångar och där sista omgången rids lördag 22 november.",
+      "render": {
+        "sv": "Axevalla Travförenings Montéryttarserie: En serie med åtta omgångar och där sista omgången rids lördag 22 november.",
+        "fi": "Axevalla Travföreningin Montératsastajasarja: sarja, jossa on kahdeksan osakilpailua ja jonka viimeinen osalähtö ratsastetaan lauantaina 22. marraskuuta.",
+        "en": "Axevalla Travförening's Monté Rider Series: a series with eight rounds where the final round is ridden on Saturday 22 November."
+      }
+    },
+    {
+      "id": "axevalla-prize-top-three-after-last-round-22-november",
+      "types": ["EX"],
+      "template": "Axevalla Travförenings pris till de tre första i serien efter den sista omgången 22 november.",
+      "render": {
+        "sv": "Axevalla Travförenings pris till de tre första i serien efter den sista omgången 22 november.",
+        "fi": "Axevalla Travföreningin palkinto sarjan kolmelle parhaalle viimeisen osakilpailun jälkeen 22. marraskuuta.",
+        "en": "Axevalla Travförening's prize goes to the top three in the series after the final round on 22 November."
+      }
+    },
+    {
+      "id": "gustafskorv-and-crispbread-to-winning-driver",
+      "types": ["EX"],
+      "template": "Gustafskorv och knäckebröd till segrande körsven.",
+      "render": {
+        "sv": "Gustafskorv och knäckebröd till segrande körsven.",
+        "fi": "Gustafskorvia ja näkkileipää voittaneelle ohjastajalle.",
+        "en": "Gustafskorv sausage and crispbread to the winning driver."
+      }
+    },
+    {
+      "id": "menhammar-live-foal-fee-owner-breeder",
+      "types": ["EX"],
+      "template": "Levande fölavgift från Menhammar Stuteri till segrande hästs ägare och uppfödare.",
+      "render": {
+        "sv": "Levande fölavgift från Menhammar Stuteri till segrande hästs ägare och uppfödare.",
+        "fi": "Menhammar Stuterin elävän varsan maksu voittaneen hevosen omistajalle ja kasvattajalle.",
+        "en": "A live foal fee from Menhammar Stud to the winning horse's owner and breeder."
+      }
+    },
+    {
+      "id": "norrlands-elitserie-final-bergsaker-8-11-first-prize-150k",
+      "types": ["EX"],
+      "template": "Norrlands Elitserie: Finalen i Norrlands Elitserie körs på Bergsåker 8/11 med 150 000 kr i förstapris.",
+      "render": {
+        "sv": "Norrlands Elitserie: Finalen i Norrlands Elitserie körs på Bergsåker 8/11 med 150 000 kr i förstapris.",
+        "fi": "Norrlands Elitserie: Norrlands Elitserien finaali ajetaan Bergsåkerissa 8/11, ja ensipalkinto on 150 000 kr.",
+        "en": "Norrlands Elitserie: The final of Norrlands Elitserie is run at Bergsåker on 8/11 with 150,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "axevalla-monte-rider-series-eight-rounds-2026",
+      "types": ["EX"],
+      "template": "Axevalla Travförenings Montéryttarserie: En serie med åtta omgångar under 2026.",
+      "render": {
+        "sv": "Axevalla Travförenings Montéryttarserie: En serie med åtta omgångar under 2026.",
+        "fi": "Axevalla Travföreningin Montératsastajasarja: sarja, jossa on kahdeksan osakilpailua vuonna 2026.",
+        "en": "Axevalla Travförening's Monté Rider Series: a series with eight rounds during 2026."
+      }
+    },
+    {
+      "id": "axevalla-prize-top-three-when-final-standings-clear",
+      "types": ["EX"],
+      "template": "Axevalla Travförenings pris till de tre första i serien när slutställningen är klar efter den sista omgången.",
+      "render": {
+        "sv": "Axevalla Travförenings pris till de tre första i serien när slutställningen är klar efter den sista omgången.",
+        "fi": "Axevalla Travföreningin palkinto sarjan kolmelle parhaalle, kun lopullinen järjestys on selvillä viimeisen osakilpailun jälkeen.",
+        "en": "Axevalla Travförening's prize goes to the top three in the series when the final standings are settled after the last round."
+      }
+    },
+    {
+      "id": "rider-max-four-races-this-day",
+      "types": ["EX"],
+      "template": "OBS! Ryttare får rida max fyra lopp denna dag.",
+      "render": {
+        "sv": "OBS! Ryttare får rida max fyra lopp denna dag.",
+        "fi": "HUOM! Ratsastaja saa ratsastaa enintään neljä lähtöä tämän päivän aikana.",
+        "en": "Note: A rider may ride a maximum of four races on this day."
+      }
+    },
+    {
+      "id": "solvalla-friends-veterans-gift-cards-and-flowers",
+      "types": ["EX"],
+      "template": "Presentkort från Solvalla Vänner & Veteraner till segrande hästs körsven, skötare och ägare samt blommor till segrande hästs kusk och ägare.",
+      "render": {
+        "sv": "Presentkort från Solvalla Vänner & Veteraner till segrande hästs körsven, skötare och ägare samt blommor till segrande hästs kusk och ägare.",
+        "fi": "Lahjakortit Solvalla Vänner & Veteranerilta voittaneen hevosen ohjastajalle, hoitajalle ja omistajalle sekä kukat voittaneen hevosen ohjastajalle ja omistajalle.",
+        "en": "Gift cards from Solvalla Vänner & Veteraner to the winning horse's driver, groom and owner, plus flowers to the winning horse's driver and owner."
+      }
+    },
+    {
+      "id": "vasterbo-stud-gift-card-and-blanket",
+      "types": ["EX"],
+      "template": "Västerbo Stuteris presentkort till segrande hästs uppfödare samt täcke till segrande häst.",
+      "render": {
+        "sv": "Västerbo Stuteris presentkort till segrande hästs uppfödare samt täcke till segrande häst.",
+        "fi": "Västerbo Stuterin lahjakortti voittaneen hevosen kasvattajalle sekä loimi voittaneelle hevoselle.",
+        "en": "A gift card from Västerbo Stud to the winning horse's breeder, plus a blanket to the winning horse."
       }
     },
     {
@@ -1566,6 +2497,46 @@
         "sv": "OBS! De tre bäst placerade i serien får välja startspår i finalen.",
         "fi": "Huom! Sarjan kolme parasta saavat valita lähtöratansa finaalissa.",
         "en": "Note: The three best-placed competitors in the series may choose their post positions in the final."
+      }
+    },
+    {
+      "id": "post-position-draw-competition-rule-84",
+      "types": ["EX"],
+      "template": "Spårlottning enligt tävlingsreglemente §84.",
+      "render": {
+        "sv": "Spårlottning enligt tävlingsreglemente §84.",
+        "fi": "Lähtöratojen arvonta kilpailusäännön §84 mukaisesti.",
+        "en": "Post-position draw according to competition rule §84."
+      }
+    },
+    {
+      "id": "compulsory-scratched-horses-no-entry-fee",
+      "types": ["EX"],
+      "template": "Tvångsstrukna hästar betalar ej anmälningsavgift.",
+      "render": {
+        "sv": "Tvångsstrukna hästar betalar ej anmälningsavgift.",
+        "fi": "Pakolla poisjääneet hevoset eivät maksa ilmoittautumismaksua.",
+        "en": "Compulsorily scratched horses do not pay the entry fee."
+      }
+    },
+    {
+      "id": "other-rules-see-breederscourse",
+      "types": ["EX"],
+      "template": "Övriga regler, se breederscourse.com.",
+      "render": {
+        "sv": "Övriga regler, se breederscourse.com.",
+        "fi": "Muut säännöt, katso breederscourse.com.",
+        "en": "For other rules, see breederscourse.com."
+      }
+    },
+    {
+      "id": "selected-driver-first-priority-own-trained-owned-horse",
+      "types": ["EX"],
+      "template": "Anmäls egentränad/egenägd häst ska uttagen kusk köra denne i första hand.",
+      "render": {
+        "sv": "Anmäls egentränad/egenägd häst ska uttagen kusk köra denne i första hand.",
+        "fi": "Jos ilmoitetaan itse valmennettu tai omistettu hevonen, valitun ohjastajan tulee ajaa sitä ensisijaisesti.",
+        "en": "If a self-trained or self-owned horse is entered, the selected driver must drive it as first priority."
       }
     },
     {
@@ -1616,6 +2587,16 @@
         "sv": "Körsven får ej tidigare innehaft A-licens.",
         "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
         "en": "The driver may not previously have held an A licence."
+      }
+    },
+    {
+      "id": "driver-may-not-have-held-a-licence-korsven-variant",
+      "types": ["EX"],
+      "template": "Körsven får ej innehaft A-licens.",
+      "render": {
+        "sv": "Körsven får ej innehaft A-licens.",
+        "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
+        "en": "The driver may not have held an A licence."
       }
     },
     {

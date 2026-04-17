@@ -3,6 +3,8 @@
 ## Goal
 Use the exported proposition-translation bundle to let Team Betting add deterministic translated proposition text in the Kotlin BFF without depending on the WinV75 laptop environment.
 
+For the larger delivery model and ownership boundaries, read the bundled Epic document `team-betting-translation-epic.md` together with this shorter handoff note.
+
 ## What to consume first
 Use these files in this order:
 
