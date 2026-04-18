@@ -1,5 +1,5 @@
 {
-  "version": 82,
+  "version": 88,
   "source": "MongoDB winv75.racedays.raceList.propTexts for all proposition text types",
   "languages": {
     "sv": "Svenska",
@@ -7272,6 +7272,474 @@
         "sv": "Således är det alltid två hästar från varje försök som går vidare.",
         "fi": "Näin ollen kustakin karsinnasta jatkaa aina kaksi hevosta.",
         "en": "Thus, there are always two horses from each qualifier that advance."
+      }
+    },
+    {
+      "id": "trainer-may-request-driver-from-qualified-drivers-ranked-at-completion",
+      "types": [
+        "EX"
+      ],
+      "template": "Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering.",
+      "render": {
+        "sv": "Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering.",
+        "fi": "Valmentaja voi toivoa ohjastajaa karsineiden ohjastajien joukosta, minkä jälkeen nämä vahvistavat ja asettavat ajonsa etusijajärjestykseen täydennyksen yhteydessä.",
+        "en": "A trainer may request a driver from among the qualified drivers, who then confirm and rank their drives when the field is completed."
+      }
+    },
+    {
+      "id": "exception-from-paragraph-41-of-swedish-trotting-rules",
+      "types": [
+        "EX"
+      ],
+      "template": "Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente.",
+      "render": {
+        "sv": "Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente.",
+        "fi": "Poikkeus Svensk Travsportin kilpailusäännön pykälästä 41.",
+        "en": "An exception from paragraph 41 of Svensk Travsport's Racing Regulations."
+      }
+    },
+    {
+      "id": "dead-heat-most-points-at-start-declaration-always-two-advance",
+      "types": [
+        "EX"
+      ],
+      "template": "Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare.",
+      "render": {
+        "sv": "Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare.",
+        "fi": "Tasatuloksessa karsinnasta etenee se hevonen tai ne hevoset, joilla on eniten pisteitä lopullisessa ilmoittautumisessa (sen jälkeen arvonta), joten jokaisesta karsinnasta etenee aina kaksi hevosta.",
+        "en": "In the event of a dead heat, the horse or horses with the most points at start declaration advance from the qualifier (drawing lots if needed), so there are always two horses from each qualifier that advance."
+      }
+    },
+    {
+      "id": "dead-heat-most-points-at-start-declaration-advance",
+      "types": [
+        "EX"
+      ],
+      "template": "Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning).",
+      "render": {
+        "sv": "Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning).",
+        "fi": "Tasatuloksessa karsinnasta etenee se hevonen tai ne hevoset, joilla on eniten pisteitä lopullisessa ilmoittautumisessa (sen jälkeen arvonta).",
+        "en": "In the event of a dead heat, the horse or horses with the most points at start declaration advance from the qualifier (drawing lots if needed)."
+      }
+    },
+    {
+      "id": "east-swedish-amateur-series-eskilstuna-solvalla-mantorp-2025",
+      "types": [
+        "EX"
+      ],
+      "template": "Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11.",
+      "render": {
+        "sv": "Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11.",
+        "fi": "Östsvenska amatöörisarja ajetaan Eskilstunassa 18/8, Solvallassa 12/9 ja Mantorpissa 23/11.",
+        "en": "The East Swedish Amateur Series is run at Eskilstuna on 18/8, Solvalla on 12/9 and Mantorp on 23/11."
+      }
+    },
+    {
+      "id": "owner-also-receives-inscription-in-challenge-trophy",
+      "types": [
+        "EX"
+      ],
+      "template": "Ägaren erhåller dessutom en inteckning i vandringspriset.",
+      "render": {
+        "sv": "Ägaren erhåller dessutom en inteckning i vandringspriset.",
+        "fi": "Omistaja saa lisäksi kaiverruksen kiertopalkintoon.",
+        "en": "The owner also receives an inscription on the challenge trophy."
+      }
+    },
+    {
+      "id": "remaining-twenty-horses-selected-by-start-points-and-seeded-into-three-qualifiers",
+      "types": [
+        "EX"
+      ],
+      "template": "Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning.",
+      "render": {
+        "sv": "Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning.",
+        "fi": "Loput 20 hevosta valitaan lähtöpisteiden perusteella ja jaetaan kolmeen karsintaosastoon ST:n seedausmenetelmän mukaisesti.",
+        "en": "The remaining 20 horses are selected based on start points and divided into three qualifying divisions according to ST's seeding method."
+      }
+    },
+    {
+      "id": "read-more-about-e-races-link",
+      "types": [
+        "EX"
+      ],
+      "template": "Läs mer om E-loppen på www.elitloppet.se/elitloppet/e-loppen",
+      "render": {
+        "sv": "Läs mer om E-loppen på www.elitloppet.se/elitloppet/e-loppen",
+        "fi": "Lue lisää E-lähdöistä osoitteessa www.elitloppet.se/elitloppet/e-loppen",
+        "en": "Read more about the E races at www.elitloppet.se/elitloppet/e-loppen"
+      }
+    },
+    {
+      "id": "seven-e-races-top-two-get-pink-ticket-to-elitloppet-31-may",
+      "types": [
+        "EX"
+      ],
+      "template": "Sju E-lopp körs där de två främsta i serien får en rosa biljett till Elitloppet 31 maj.",
+      "render": {
+        "sv": "Sju E-lopp körs där de två främsta i serien får en rosa biljett till Elitloppet 31 maj.",
+        "fi": "Ajetaan seitsemän E-lähtöä, joissa sarjan kaksi parasta saavat vaaleanpunaisen lipun 31. toukokuuta ajettavaan Elitloppetiin.",
+        "en": "Seven E races are run, where the two best in the series receive a pink ticket to Elitloppet on 31 May."
+      }
+    },
+    {
+      "id": "uet-elite-circuit-link",
+      "types": [
+        "EX"
+      ],
+      "template": "www.uet-trot.eu/en/uet-elite-circuit/",
+      "render": {
+        "sv": "www.uet-trot.eu/en/uet-elite-circuit/",
+        "fi": "www.uet-trot.eu/en/uet-elite-circuit/",
+        "en": "www.uet-trot.eu/en/uet-elite-circuit/"
+      }
+    },
+    {
+      "id": "surveillance-stable-rules-apply-bold-i-detta-lopp-paragraph-5",
+      "types": [
+        "EX"
+      ],
+      "template": "<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5.",
+      "render": {
+        "sv": "<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5.",
+        "fi": "<b>Tässä lähdössä sovelletaan valvontatallia koskevia määräyksiä Svensk Travsportin antidopingsäännöstön pykälän 5 mukaisesti.",
+        "en": "<b>In this race, the surveillance stable provisions in accordance with paragraph 5 of Svensk Travsport's Anti-Doping Regulations apply."
+      }
+    },
+    {
+      "id": "surveillance-stable-rules-apply-bold-i-detta-lopp-5-section",
+      "types": [
+        "EX"
+      ],
+      "template": "<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§.",
+      "render": {
+        "sv": "<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§.",
+        "fi": "<b>Tässä lähdössä sovelletaan valvontatallia koskevia määräyksiä Svensk Travsportin antidopingsäännöstön 5 §:n mukaisesti.",
+        "en": "<b>In this race, the surveillance stable provisions in accordance with section 5 of Svensk Travsport's Anti-Doping Regulations apply."
+      }
+    },
+    {
+      "id": "top-four-in-each-qualifier-qualified-for-elitloppet-final",
+      "types": [
+        "EX"
+      ],
+      "template": "De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final.",
+      "render": {
+        "sv": "De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final.",
+        "fi": "Jokaisen karsinnan neljä parasta hevosta kvalifioituvat Elitloppetin finaaliin.",
+        "en": "The four best-placed horses in each qualifier are qualified for the Elitloppet final."
+      }
+    },
+    {
+      "id": "dead-heat-elitloppet-invitation-goes-to-highest-start-points",
+      "types": [
+        "EX"
+      ],
+      "template": "Vid död löpning tillfaller inbjudan till Elitloppet den med högst startpoäng.",
+      "render": {
+        "sv": "Vid död löpning tillfaller inbjudan till Elitloppet den med högst startpoäng.",
+        "fi": "Tasatuloksessa Elitloppet-kutsu annetaan sille, jolla on korkeimmat lähtöpisteet.",
+        "en": "In the event of a dead heat, the Elitloppet invitation goes to the one with the highest start points."
+      }
+    },
+    {
+      "id": "sixteen-horses-divided-into-two-qualifiers-with-eight-each",
+      "types": [
+        "EX"
+      ],
+      "template": "16 hästar delas in i två försök med åtta hästar i varje försök.",
+      "render": {
+        "sv": "16 hästar delas in i två försök med åtta hästar i varje försök.",
+        "fi": "16 hevosta jaetaan kahteen karsintaan, joissa kummassakin on kahdeksan hevosta.",
+        "en": "16 horses are divided into two qualifiers with eight horses in each qualifier."
+      }
+    },
+    {
+      "id": "after-start-declaration-priority-given-to-top-twelve-ranked",
+      "types": [
+        "EX"
+      ],
+      "template": "After the start declaration, priority is given to the 12 highest ranked.",
+      "render": {
+        "sv": "After the start declaration, priority is given to the 12 highest ranked.",
+        "fi": "Lopullisen ilmoittautumisen jälkeen etusija annetaan 12 korkeimmalle sijoitetulle.",
+        "en": "After the start declaration, priority is given to the 12 highest ranked."
+      }
+    },
+    {
+      "id": "entry-fee-including-vat-six-percent",
+      "types": [
+        "EX"
+      ],
+      "template": "Anmälningsavgift {amount_kr} kr (inkl moms 6 %).",
+      "render": {
+        "sv": "Anmälningsavgift {amount_kr} kr (inkl moms 6 %).",
+        "fi": "Ilmoittautumismaksu {amount_kr} kr (sis. alv 6 %).",
+        "en": "Entry fee {amount_kr} SEK (incl. VAT 6 %)."
+      }
+    },
+    {
+      "id": "b-final-run-only-if-at-least-five-horses-entered",
+      "types": [
+        "EX"
+      ],
+      "template": "B-finalen körs endast om minst fem hästar är anmälda vid starttillfället.",
+      "render": {
+        "sv": "B-finalen körs endast om minst fem hästar är anmälda vid starttillfället.",
+        "fi": "B-finaali ajetaan vain, jos vähintään viisi hevosta on ilmoitettu starttihetkellä.",
+        "en": "The B final is run only if at least five horses are entered at the time of the start."
+      }
+    },
+    {
+      "id": "dead-heat-fifth-place-highest-start-points-at-final-entry-qualifies",
+      "types": [
+        "EX"
+      ],
+      "template": "Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen.",
+      "render": {
+        "sv": "Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen.",
+        "fi": "Jos viidennestä sijasta tulee tasatulos, finaaliin kvalifioituu se hevonen, jolla on korkeimmat lähtöpisteet finaaliin ilmoitettaessa.",
+        "en": "If there is a dead heat for fifth place, the horse with the highest start points at entry to the final qualifies."
+      }
+    },
+    {
+      "id": "dead-heat-sixth-place-highest-start-points-for-final-qualifies",
+      "types": [
+        "EX"
+      ],
+      "template": "Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final.",
+      "render": {
+        "sv": "Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final.",
+        "fi": "Jos kuudennesta sijasta tulee tasatulos, finaaliin kvalifioituu se hevonen, jolla on korkeimmat lähtöpisteet.",
+        "en": "If there is a dead heat for sixth place, the horse with the highest start points qualifies for the final."
+      }
+    },
+    {
+      "id": "dead-heat-seventh-place-highest-start-points-for-final-qualifies",
+      "types": [
+        "EX"
+      ],
+      "template": "Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final.",
+      "render": {
+        "sv": "Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final.",
+        "fi": "Jos seitsemännestä sijasta tulee tasatulos, finaaliin kvalifioituu se hevonen, jolla on korkeimmat lähtöpisteet.",
+        "en": "If there is a dead heat for seventh place, the horse with the highest start points qualifies for the final."
+      }
+    },
+    {
+      "id": "top-ten-start-points-at-start-declaration-in-a-final-500k",
+      "types": [
+        "EX"
+      ],
+      "template": "De tio hästar med högst startpoäng vid startanmälan deltar i A-finalen med ett förstapris på SEK 500 000.",
+      "render": {
+        "sv": "De tio hästar med högst startpoäng vid startanmälan deltar i A-finalen med ett förstapris på SEK 500 000.",
+        "fi": "Kymmenen hevosta, joilla on korkeimmat lähtöpisteet lopullisen ilmoittautumisen hetkellä, osallistuvat A-finaaliin, jonka ensipalkinto on 500 000 SEK.",
+        "en": "The ten horses with the highest start points at start declaration take part in the A final with SEK 500,000 to the winner."
+      }
+    },
+    {
+      "id": "top-fifteen-start-points-handicapped-by-solvalla-sports-manager",
+      "types": [
+        "EX"
+      ],
+      "template": "De 15 hästar med mest startpoäng handicapas av Solvallas sportchef.",
+      "render": {
+        "sv": "De 15 hästar med mest startpoäng handicapas av Solvallas sportchef.",
+        "fi": "Solvallan urheilujohtaja määrää tasoituksen 15 hevoselle, joilla on eniten lähtöpisteitä.",
+        "en": "The 15 horses with the most start points are handicapped by Solvalla's sports manager."
+      }
+    },
+    {
+      "id": "top-fifteen-points-2025-eligible-for-final-sixteenth-reserve",
+      "types": [
+        "EX"
+      ],
+      "template": "De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v.",
+      "render": {
+        "sv": "De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v.",
+        "fi": "Vuonna 2025 eniten pisteitä keränneet 15 hevosta ovat starttioikeutettuja finaaliin; peruutuksen sattuessa mukaan tulee 16:s hevonen ja niin edelleen.",
+        "en": "The 15 horses that collected the most points during 2025 are eligible to start in the final; in the event of a withdrawal, the 16th horse enters, and so on."
+      }
+    },
+    {
+      "id": "top-five-teams-qualified-for-final-later-in-evening-prop-10",
+      "types": [
+        "EX"
+      ],
+      "template": "De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10).",
+      "render": {
+        "sv": "De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10).",
+        "fi": "Viisi parhaiten sijoittunutta valjakkoa kvalifioituu finaaliin, joka ajetaan myöhemmin illalla (prop 10).",
+        "en": "The five best-placed teams are qualified for the final, which is run later in the evening (prop 10)."
+      }
+    },
+    {
+      "id": "top-six-teams-qualified-for-final-later-in-evening-proposition-11",
+      "types": [
+        "EX"
+      ],
+      "template": "De sex främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (se proposition 11).",
+      "render": {
+        "sv": "De sex främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (se proposition 11).",
+        "fi": "Kuusi parhaiten sijoittunutta valjakkoa kvalifioituu finaaliin, joka ajetaan myöhemmin illalla (katso proposition 11).",
+        "en": "The six best-placed teams are qualified for the final, which is run later in the evening (see proposition 11)."
+      }
+    },
+    {
+      "id": "top-seven-teams-qualified-for-final-later-in-day-prop-9",
+      "types": [
+        "EX"
+      ],
+      "template": "De sju främst placerade ekipagen är kvalificerade till finalen som körs senare under dagen (prop 9).",
+      "render": {
+        "sv": "De sju främst placerade ekipagen är kvalificerade till finalen som körs senare under dagen (prop 9).",
+        "fi": "Seitsemän parhaiten sijoittunutta valjakkoa kvalifioituu finaaliin, joka ajetaan myöhemmin saman päivän aikana (prop 9).",
+        "en": "The seven best-placed teams are qualified for the final, which is run later in the day (prop 9)."
+      }
+    },
+    {
+      "id": "top-seven-horses-definitively-entered-final-lyckseletravet-4-july-40k",
+      "types": [
+        "EX"
+      ],
+      "template": "De sju främst placerade hästarna räknas som definitivt startanmälda till finalen på Lyckseletravet 4 juli med ett förstapris på 40 000 kr.",
+      "render": {
+        "sv": "De sju främst placerade hästarna räknas som definitivt startanmälda till finalen på Lyckseletravet 4 juli med ett förstapris på 40 000 kr.",
+        "fi": "Seitsemän parhaiten sijoittunutta hevosta katsotaan lopullisesti starttiin ilmoitetuiksi Lyckseletravetin 4. heinäkuuta ajettavaan finaaliin, jonka ensipalkinto on 40 000 kr.",
+        "en": "The seven best-placed horses are considered definitively entered for the final at Lyckseletravet on 4 July with 40,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "top-seven-horses-qualified-for-lyckselepokalen-final-prop-9",
+      "types": [
+        "EX"
+      ],
+      "template": "De sju främst placerade hästarna är kvalificerade till Lyckselepokalens final (prop 9).",
+      "render": {
+        "sv": "De sju främst placerade hästarna är kvalificerade till Lyckselepokalens final (prop 9).",
+        "fi": "Seitsemän parhaiten sijoittunutta hevosta kvalifioituu Lyckselepokalenin finaaliin (prop 9).",
+        "en": "The seven best-placed horses are qualified for the Lyckselepokalen final (prop 9)."
+      }
+    },
+    {
+      "id": "next-ten-by-start-points-participate-in-b-final-150k",
+      "types": [
+        "EX"
+      ],
+      "template": "De tio hästar med startpoäng därefter deltar i B-finalen med ett förstapris på SEK 150 000.",
+      "render": {
+        "sv": "De tio hästar med startpoäng därefter deltar i B-finalen med ett förstapris på SEK 150 000.",
+        "fi": "Seuraavat kymmenen hevosta lähtöpistejärjestyksessä osallistuvat B-finaaliin, jonka ensipalkinto on 150 000 SEK.",
+        "en": "The next ten horses by start points take part in the B final with SEK 150,000 to the winner."
+      }
+    },
+    {
+      "id": "top-three-in-each-qualifier-qualified-and-obliged-start-final-jagersro-12-4-100k",
+      "types": [
+        "EX"
+      ],
+      "template": "De tre främsta hästarna i respektive försök är inkvalade och skyldiga att starta i finalen på Jägersro lördag 12/4 med ett förstapris på SEK 100 000.",
+      "render": {
+        "sv": "De tre främsta hästarna i respektive försök är inkvalade och skyldiga att starta i finalen på Jägersro lördag 12/4 med ett förstapris på SEK 100 000.",
+        "fi": "Kunkin karsinnan kolme parasta hevosta kvalifioituu ja on velvollinen starttaamaan Jägersrossa lauantaina 12/4 ajettavassa finaalissa, jonka ensipalkinto on 100 000 SEK.",
+        "en": "The three best horses in each qualifier are qualified and obliged to start in the final at Jägersro on Saturday 12/4 with SEK 100,000 to the winner."
+      }
+    },
+    {
+      "id": "top-three-in-each-qualifier-qualified-final-breeders-course-2-years-old-jagersro-4-october-700k",
+      "types": [
+        "EX"
+      ],
+      "template": "De tre främsta i varje uttagningslopp är kvalificerade till finalen i Breeders Course 2 years old på Jägersro onsdag 4 oktober med ett förstapris på SEK 700 000.",
+      "render": {
+        "sv": "De tre främsta i varje uttagningslopp är kvalificerade till finalen i Breeders Course 2 years old på Jägersro onsdag 4 oktober med ett förstapris på SEK 700 000.",
+        "fi": "Jokaisen karsintalähdön kolme parasta kvalifioituu Jägersrossa keskiviikkona 4. lokakuuta ajettavaan Breeders Course 2 years old -finaaliin, jonka ensipalkinto on 700 000 SEK.",
+        "en": "The top three in each qualifying race are qualified for the Breeders Course 2 years old final at Jägersro on Wednesday 4 October with SEK 700,000 to the winner."
+      }
+    },
+    {
+      "id": "three-qualifying-heats-run-about-four-minutes-apart",
+      "types": [
+        "EX"
+      ],
+      "template": "De tre försöksheaten körs med ca 4 minuters mellanrum.",
+      "render": {
+        "sv": "De tre försöksheaten körs med ca 4 minuters mellanrum.",
+        "fi": "Kolme karsintaerää ajetaan noin neljän minuutin välein.",
+        "en": "The three qualifying heats are run with approximately 4 minutes between them."
+      }
+    },
+    {
+      "id": "top-three-drivers-riders-most-points-after-two-races-honorary-prize",
+      "types": [
+        "EX"
+      ],
+      "template": "De tre kuskar/ryttare med flest poäng efter de två loppen erhåller hederspris.",
+      "render": {
+        "sv": "De tre kuskar/ryttare med flest poäng efter de två loppen erhåller hederspris.",
+        "fi": "Kolme ohjastajaa/ratsastajaa, joilla on eniten pisteitä kahden lähdön jälkeen, saavat kunniapalkinnon.",
+        "en": "The three drivers/riders with the most points after the two races receive an honorary prize."
+      }
+    },
+    {
+      "id": "top-two-horses-in-this-qualifier-qualified-for-three-year-old-elite-final-solvalla-25-may-1m",
+      "types": [
+        "EX"
+      ],
+      "template": "De två främsta hästarna i detta försök är kvalificerade till finalen (Treåringseliten på Solvalla 25 maj med ett förstapris på SEK 1 000 000).",
+      "render": {
+        "sv": "De två främsta hästarna i detta försök är kvalificerade till finalen (Treåringseliten på Solvalla 25 maj med ett förstapris på SEK 1 000 000).",
+        "fi": "Tämän karsinnan kaksi parasta hevosta kvalifioituu finaaliin (Treåringseliten Solvallassa 25. toukokuuta, ensipalkinto 1 000 000 SEK).",
+        "en": "The two best horses in this qualifier are qualified for the final (Treåringseliten at Solvalla on 25 May with SEK 1,000,000 to the winner)."
+      }
+    },
+    {
+      "id": "top-two-horses-in-solvalla-milano-jagersro-qualifiers-qualified-for-this-final",
+      "types": [
+        "EX"
+      ],
+      "template": "De två främsta hästarna i försöken på Solvalla 30/4, Milano 2/5 och Jägersro 7/5 är kvalificerade till denna final.",
+      "render": {
+        "sv": "De två främsta hästarna i försöken på Solvalla 30/4, Milano 2/5 och Jägersro 7/5 är kvalificerade till denna final.",
+        "fi": "Solvallassa 30/4, Milanossa 2/5 ja Jägersrossa 7/5 ajettujen karsintojen kaksi parasta hevosta kvalifioituu tähän finaaliin.",
+        "en": "The two best horses in the qualifiers at Solvalla on 30/4, Milano on 2/5 and Jägersro on 7/5 are qualified for this final."
+      }
+    },
+    {
+      "id": "remaining-six-horses-to-final-breeders-course-3-years-old-2025-selected-on-points",
+      "types": [
+        "EX"
+      ],
+      "template": "De övriga sex hästarna till finalen - anmälda i Breeders Course 3 years old 2025 - uttages på poäng.",
+      "render": {
+        "sv": "De övriga sex hästarna till finalen - anmälda i Breeders Course 3 years old 2025 - uttages på poäng.",
+        "fi": "Finaalin kuusi muuta hevosta - ilmoitettuina Breeders Course 3 years old 2025 - valitaan pisteiden perusteella.",
+        "en": "The remaining six horses for the final, entered in Breeders Course 3 years old 2025, are selected on points."
+      }
+    },
+    {
+      "id": "participating-driver-may-not-enter-own-owned-co-owned-or-trained-horse",
+      "types": [
+        "EX"
+      ],
+      "template": "Deltagande kusk får ej anmäla egen ägd/delägd eller tränad häst.",
+      "render": {
+        "sv": "Deltagande kusk får ej anmäla egen ägd/delägd eller tränad häst.",
+        "fi": "Osallistuva kuski ei saa ilmoittaa omaa omistamaansa, osaomistamaansa tai valmentamaansa hevosta.",
+        "en": "A participating driver may not enter a horse that they own, co-own, or train."
+      }
+    },
+    {
+      "id": "participating-drivers-drive-self-trained-or-owned-horse-first",
+      "types": [
+        "EX"
+      ],
+      "template": "Deltagande kuskar kör i första hand egentränad eller ägd häst.",
+      "render": {
+        "sv": "Deltagande kuskar kör i första hand egentränad eller ägd häst.",
+        "fi": "Osallistuvat kuskit ajavat ensisijaisesti itse valmentamaansa tai omistamaansa hevosta.",
+        "en": "Participating drivers drive a self-trained or owned horse in the first instance."
       }
     }
   ]

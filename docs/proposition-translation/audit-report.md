@@ -1,6 +1,6 @@
 # Proposition translation audit
 
-Generated: 2026-04-18T18:58:41.900Z
+Generated: 2026-04-18T19:17:43.589Z
 
 ## Scope
 
@@ -10,52 +10,52 @@ Generated: 2026-04-18T18:58:41.900Z
 
 ## Coverage
 
-- Racedays scanned: 957
-- Races scanned: 10092
-- Proposition text entries: 65450
-- Unique full texts: 14522
-- Sentence entries: 142796
-- Unique sentence templates: 1474
-- Matched sentence entries: 141650 (99.2%)
-- Matched unique sentence templates: 562 (38.13%)
+- Racedays scanned: 963
+- Races scanned: 10153
+- Proposition text entries: 65830
+- Unique full texts: 14587
+- Sentence entries: 143644
+- Unique sentence templates: 1477
+- Matched sentence entries: 142579 (99.26%)
+- Matched unique sentence templates: 601 (40.69%)
 
 ## Type summary
 
 | Type | Entries | Unique full texts | Sentence entries | Matched sentence entries | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| U | 9360 | 2 | 9360 | 9360 | 100% |
-| L | 10092 | 3987 | 18263 | 18263 | 100% |
-| V | 10092 | 7583 | 30050 | 30050 | 100% |
-| FX | 3435 | 111 | 4519 | 4519 | 100% |
-| T | 10092 | 1151 | 32292 | 32292 | 100% |
-| P | 10091 | 283 | 27514 | 27514 | 100% |
-| EX | 11071 | 1156 | 19581 | 18435 | 94.15% |
-| H | 1217 | 249 | 1217 | 1217 | 100% |
+| U | 9414 | 2 | 9414 | 9414 | 100% |
+| L | 10153 | 4000 | 18372 | 18372 | 100% |
+| V | 10153 | 7630 | 30242 | 30242 | 100% |
+| FX | 3456 | 111 | 4546 | 4546 | 100% |
+| T | 10153 | 1152 | 32487 | 32487 | 100% |
+| P | 10152 | 283 | 27681 | 27681 | 100% |
+| EX | 11131 | 1159 | 19684 | 18619 | 94.59% |
+| H | 1218 | 250 | 1218 | 1218 | 100% |
 
 ## Top matched templates
 
 | Rule | Template | Count |
 | --- | --- | ---: |
-| distance | `{distance_m} m.` | 10092 |
-| proposition-number | `Prop. {prop_number}.` | 10092 |
-| driver-born-before | `{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.` | 9885 |
-| breed-type | `{breed_type}` | 9360 |
-| driver-category-requirement | `Körsvenskrav kat. {driver_category}.` | 8949 |
-| minimum-prize-all | `Lägst {amount_kr} kr till alla tävlande.` | 8685 |
-| max-total-prize | `Prispengar max total: {amount_kr} kr.` | 8685 |
-| start-method | `{start_method}.` | 7377 |
-| race-title | `{race_title}` | 7140 |
-| prize-ladder-placed-count | `Pris: {prize_ladder} kr ({placed_count} prisplacerade).` | 6084 |
-| honorary-prize | `Hederspris till segrande hästs {honorary_prize_recipients}.` | 5941 |
-| runner-count | `{runner_count} startande.` | 5594 |
-| no-track-reservation | `Spårförbehåll ej tillåtet.` | 4094 |
-| prize-ladder | `Pris: {prize_ladder} kr.` | 3990 |
-| eligibility-earnings-range | `{age_min}-åriga och äldre {amount_min_kr} - {amount_max_kr} kr{points_limit}.` | 3639 |
-| sponsored-honorary-prize | `{sponsor_name} hederspris till segrande hästs {honorary_prize_recipients}.` | 2544 |
-| allowance-terms | `Tillägg {allowance_text}` | 2316 |
-| start-sum-track-order | `Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår {track_order}.` | 1879 |
-| eligibility-subject-range-earnings | `{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}.` | 1319 |
-| rule-point-applies | `Punkt {rule_point} tillämpas i detta lopp.` | 1263 |
+| distance | `{distance_m} m.` | 10153 |
+| proposition-number | `Prop. {prop_number}.` | 10153 |
+| driver-born-before | `{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.` | 9946 |
+| breed-type | `{breed_type}` | 9414 |
+| driver-category-requirement | `Körsvenskrav kat. {driver_category}.` | 9010 |
+| minimum-prize-all | `Lägst {amount_kr} kr till alla tävlande.` | 8738 |
+| max-total-prize | `Prispengar max total: {amount_kr} kr.` | 8738 |
+| start-method | `{start_method}.` | 7424 |
+| race-title | `{race_title}` | 7185 |
+| prize-ladder-placed-count | `Pris: {prize_ladder} kr ({placed_count} prisplacerade).` | 6114 |
+| honorary-prize | `Hederspris till segrande hästs {honorary_prize_recipients}.` | 5975 |
+| runner-count | `{runner_count} startande.` | 5628 |
+| no-track-reservation | `Spårförbehåll ej tillåtet.` | 4121 |
+| prize-ladder | `Pris: {prize_ladder} kr.` | 4021 |
+| eligibility-earnings-range | `{age_min}-åriga och äldre {amount_min_kr} - {amount_max_kr} kr{points_limit}.` | 3658 |
+| sponsored-honorary-prize | `{sponsor_name} hederspris till segrande hästs {honorary_prize_recipients}.` | 2553 |
+| allowance-terms | `Tillägg {allowance_text}` | 2328 |
+| start-sum-track-order | `Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår {track_order}.` | 1890 |
+| eligibility-subject-range-earnings | `{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}.` | 1327 |
+| rule-point-applies | `Punkt {rule_point} tillämpas i detta lopp.` | 1264 |
 
 ## Top unmatched templates
 
@@ -68,29 +68,29 @@ Generated: 2026-04-18T18:58:41.900Z
 | EX | `Regler Breeders' Crown-semifinaler: 1.` | 3 | Regler Breeders' Crown-semifinaler: 1. |
 | EX | `Startanmälningsvgift: {amount_kr} kr + moms.` | 3 | Startanmälningsvgift: 3.000 kr + moms. |
 | EX | `Tillägg {allowance_text}.` | 3 | Tillägg 20 meter för ston som deltagit i försök 2,4,6. |
-| EX | `Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering.` | 3 | Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering. |
-| EX | `Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente.` | 3 | Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente. |
-| EX | `Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare.` | 3 | Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare. |
-| EX | `Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning).` | 3 | Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning). |
-| EX | `www.uet-trot.eu/en/uet-elite-circuit/` | 3 | www.uet-trot.eu/en/uet-elite-circuit/ |
-| EX | `Ägaren erhåller dessutom en inteckning i vandringspriset.` | 3 | Ägaren erhåller dessutom en inteckning i vandringspriset. |
-| EX | `Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11.` | 3 | Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11. |
-| EX | `Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning.` | 3 | Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning. |
-| EX | `<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5.` | 2 | <b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5. |
-| EX | `<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§.` | 2 | <b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§. |
-| EX | `16 hästar delas in i två försök med åtta hästar i varje försök.` | 2 | 16 hästar delas in i två försök med åtta hästar i varje försök. |
-| EX | `After the start declaration, priority is given to the 12 highest ranked.` | 2 | After the start declaration, priority is given to the 12 highest ranked. |
-| EX | `Anmälningsavgift {amount_kr} kr (inkl moms 6 %).` | 2 | Anmälningsavgift 5.300 kr (inkl moms 6 %). |
-| EX | `B-finalen körs endast om minst fem hästar är anmälda vid starttillfället.` | 2 | B-finalen körs endast om minst fem hästar är anmälda vid starttillfället. |
-| EX | `Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen.` | 2 | Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen. |
-| EX | `Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final.` | 2 | Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final. |
-| EX | `Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final.` | 2 | Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final. |
 | EX | `Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S.` | 2 | Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S. |
 | EX | `Damklubbens hederspris till segrande häst körsven.` | 2 | Damklubbens hederspris till segrande häst körsven. |
-| EX | `De 15 hästar med mest startpoäng handicapas av Solvallas sportchef.` | 2 | De 15 hästar med mest startpoäng handicapas av Solvallas sportchef. |
-| EX | `De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v.` | 2 | De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v. |
-| EX | `De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10).` | 2 | De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10). |
-| EX | `De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final.` | 2 | De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final. |
+| EX | `De sex främsta hästarna är kvalificerade till Sommarduellens Final (prop.` | 2 | De sex främsta hästarna är kvalificerade till Sommarduellens Final (prop. |
+| EX | `Deltagande kuskar i poängordning: Anna Ek, Jenny A Björk, Fredrik Plassen, Alice Molin, Linus Lönn, Victor S Sundgren, Elias Strandberg, Tom Johansson, Felicia Molin, Julia Smedman, Hugo Metayer och Oskar Dahlman.` | 2 | Deltagande kuskar i poängordning: Anna Ek, Jenny A Björk, Fredrik Plassen, Alice Molin, Linus Lönn, Victor S Sundgren, Elias Strandberg, Tom Johansson, Felicia Molin, Julia Smedman, Hugo Metayer och Oskar Dahlman. |
+| EX | `Deltagande kuskar är: Jonathan Bardun, Julian Cordeau, Nick Elving, Malte Handfast, Wilma Karlsson, Anton Knutsson, Dante Kolgjini, Hannah Matikainen, Tyler Mifsud, Jonas M Oscarsson, Alex Persson, Valentin Prevost.` | 2 | Deltagande kuskar är: Jonathan Bardun, Julian Cordeau, Nick Elving, Malte Handfast, Wilma Karlsson, Anton Knutsson, Dante Kolgjini, Hannah Matikainen, Tyler Mifsud, Jonas M Oscarsson, Alex Persson, Valentin Prevost. |
+| EX | `Deltagande kuskar: Fredrik Plassen, Jenny A Björk, Henrik Kihle, Elias Strandberg, Hugo Metayer, Linus Lönn, Isabella Jansson Wiklund, Julia Smedman, Lovisa Wahlström, Tom Johansson, Simon Helm, Martina Jonsson.` | 2 | Deltagande kuskar: Fredrik Plassen, Jenny A Björk, Henrik Kihle, Elias Strandberg, Hugo Metayer, Linus Lönn, Isabella Jansson Wiklund, Julia Smedman, Lovisa Wahlström, Tom Johansson, Simon Helm, Martina Jonsson. |
+| EX | `Deltagande kuskar/ryttare är: Jonathan Carré, Tova Bengtsson, Sofia Adolfsson, Iina Aho, Henriette Larsen, Hilda Eskilsson, Linnea Djupdahl, Julia Jakobsson, Stephanie J Werder, Emilia Leo, Viktoria Berntsson och Ailin Berg-Almaas.` | 2 | Deltagande kuskar/ryttare är: Jonathan Carré, Tova Bengtsson, Sofia Adolfsson, Iina Aho, Henriette Larsen, Hilda Eskilsson, Linnea Djupdahl, Julia Jakobsson, Stephanie J Werder, Emilia Leo, Viktoria Berntsson och Ailin Berg-Almaas. |
+| EX | `Deltagande ryttare: Jonathan Carre, Lovisa Bernmark, Sofia Adolfsson, Elina Pakkanen, Julia Andersson, Agnes Larsson, Madelen Berås, Malin Andersson, Iina Aho, Saga Laursen` | 2 | Deltagande ryttare: Jonathan Carre, Lovisa Bernmark, Sofia Adolfsson, Elina Pakkanen, Julia Andersson, Agnes Larsson, Madelen Berås, Malin Andersson, Iina Aho, Saga Laursen |
+| EX | `Derbystoet körs på Östersundstravet lördag 9 augusti 2025.` | 2 | Derbystoet körs på Östersundstravet lördag 9 augusti 2025. |
+| EX | `Detta lopp körs av de tolv främsta kuskarna i serien under årets tio omgångar.` | 2 | Detta lopp körs av de tolv främsta kuskarna i serien under årets tio omgångar. |
+| EX | `Detta lopp startas med linjestart.` | 2 | Detta lopp startas med linjestart. |
+| EX | `En poäng tilldelas övriga tränare som deltar i loppen, även de som blir diskvalificerade eller inte fullföljer loppen.` | 2 | En poäng tilldelas övriga tränare som deltar i loppen, även de som blir diskvalificerade eller inte fullföljer loppen. |
+| EX | `Endast för hästar som ej segrat under 2025.` | 2 | Endast för hästar som ej segrat under 2025. |
+| EX | `Eskilstunas Montéserie 2026: Rids i fem försök (R30) under året där de tolv främsta ryttarna kvalificerar sig till final.` | 2 | Eskilstunas Montéserie 2026: Rids i fem försök (R30) under året där de tolv främsta ryttarna kvalificerar sig till final. |
+| EX | `Eventuell lottning av startspår mellan berörda hästar efter död löpning sker i samlingsvolten innan finalen.` | 2 | Eventuell lottning av startspår mellan berörda hästar efter död löpning sker i samlingsvolten innan finalen. |
+| EX | `Final på Solvalla 11 oktober.` | 2 | Final på Solvalla 11 oktober. |
+| EX | `Finalen körs ca 6 minuter efter sista försöksheatet.` | 2 | Finalen körs ca 6 minuter efter sista försöksheatet. |
+| EX | `Finalen körs på Solvalla 11/10 2025.` | 2 | Finalen körs på Solvalla 11/10 2025. |
+| EX | `Finalen körs på Solvalla lördag 14 oktober 2023.` | 2 | Finalen körs på Solvalla lördag 14 oktober 2023. |
+| EX | `Finalen är ett varmblodslopp med 100 000 kronor i förstapris.` | 2 | Finalen är ett varmblodslopp med 100 000 kronor i förstapris. |
+| EX | `Finalen: Startspåren till finalen lottas vid anmälan.` | 2 | Finalen: Startspåren till finalen lottas vid anmälan. |
+| EX | `Fjolårsvinnaren Borups Victory är kvalificerad att starta i finalen.` | 2 | Fjolårsvinnaren Borups Victory är kvalificerad att starta i finalen. |
+| EX | `For details about the flight transportation, please contact the office of UET (+33 1 49 77 14 06 ).` | 2 | For details about the flight transportation, please contact the office of UET (+33 1 49 77 14 06 ). |
 
 ## Confidence notes
 

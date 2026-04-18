@@ -1190,6 +1190,375 @@ test('uses explicit rules for the larger EX Breeders Crown and final-qualified b
   assert.equal(breedersCrownSemifinalRules.text, "Breeders' Crown -välierien säännöt, katso prop 4.")
 })
 
+test('uses explicit rules for the larger EX admin and tie-break follow-up bundle', async () => {
+  const requestedDriver = await translatePropositionText(
+    'Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering.',
+    'EX',
+    'en'
+  )
+  const paragraph41Exception = await translatePropositionText(
+    'Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente.',
+    'EX',
+    'fi'
+  )
+  const deadHeatAlwaysTwo = await translatePropositionText(
+    'Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare.',
+    'EX',
+    'en'
+  )
+  const deadHeatAdvance = await translatePropositionText(
+    'Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning).',
+    'EX',
+    'fi'
+  )
+  const eastSwedishSeries = await translatePropositionText(
+    'Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11.',
+    'EX',
+    'en'
+  )
+  const challengeTrophy = await translatePropositionText(
+    'Ägaren erhåller dessutom en inteckning i vandringspriset.',
+    'EX',
+    'fi'
+  )
+  const remainingTwenty = await translatePropositionText(
+    'Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning.',
+    'EX',
+    'en'
+  )
+
+  assert.equal(requestedDriver.translated, true)
+  assert.equal(requestedDriver.quality, 'rule-match')
+  assert.equal(requestedDriver.text, 'A trainer may request a driver from among the qualified drivers, who then confirm and rank their drives when the field is completed.')
+
+  assert.equal(paragraph41Exception.translated, true)
+  assert.equal(paragraph41Exception.quality, 'rule-match')
+  assert.equal(paragraph41Exception.text, 'Poikkeus Svensk Travsportin kilpailusäännön pykälästä 41.')
+
+  assert.equal(deadHeatAlwaysTwo.translated, true)
+  assert.equal(deadHeatAlwaysTwo.quality, 'rule-match')
+  assert.equal(deadHeatAlwaysTwo.text, 'In the event of a dead heat, the horse or horses with the most points at start declaration advance from the qualifier (drawing lots if needed), so there are always two horses from each qualifier that advance.')
+
+  assert.equal(deadHeatAdvance.translated, true)
+  assert.equal(deadHeatAdvance.quality, 'rule-match')
+  assert.equal(deadHeatAdvance.text, 'Tasatuloksessa karsinnasta etenee se hevonen tai ne hevoset, joilla on eniten pisteitä lopullisessa ilmoittautumisessa (sen jälkeen arvonta).')
+
+  assert.equal(eastSwedishSeries.translated, true)
+  assert.equal(eastSwedishSeries.quality, 'rule-match')
+  assert.equal(eastSwedishSeries.text, 'The East Swedish Amateur Series is run at Eskilstuna on 18/8, Solvalla on 12/9 and Mantorp on 23/11.')
+
+  assert.equal(challengeTrophy.translated, true)
+  assert.equal(challengeTrophy.quality, 'rule-match')
+  assert.equal(challengeTrophy.text, 'Omistaja saa lisäksi kaiverruksen kiertopalkintoon.')
+
+  assert.equal(remainingTwenty.translated, true)
+  assert.equal(remainingTwenty.quality, 'rule-match')
+  assert.equal(remainingTwenty.text, "The remaining 20 horses are selected based on start points and divided into three qualifying divisions according to ST's seeding method.")
+})
+
+test('uses explicit rules for the larger EX Elitloppet promo and surveillance follow-up bundle', async () => {
+  const eRacesLink = await translatePropositionText(
+    'Läs mer om E-loppen på www.elitloppet.se/elitloppet/e-loppen',
+    'EX',
+    'en'
+  )
+  const pinkTicket = await translatePropositionText(
+    'Sju E-lopp körs där de två främsta i serien får en rosa biljett till Elitloppet 31 maj.',
+    'EX',
+    'fi'
+  )
+  const uetLink = await translatePropositionText(
+    'www.uet-trot.eu/en/uet-elite-circuit/',
+    'EX',
+    'en'
+  )
+  const surveillanceParagraph = await translatePropositionText(
+    '<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5.',
+    'EX',
+    'en'
+  )
+  const surveillanceSection = await translatePropositionText(
+    '<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§.',
+    'EX',
+    'fi'
+  )
+  const topFourElitloppet = await translatePropositionText(
+    'De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final.',
+    'EX',
+    'en'
+  )
+  const deadHeatInvitation = await translatePropositionText(
+    'Vid död löpning tillfaller inbjudan till Elitloppet den med högst startpoäng.',
+    'EX',
+    'fi'
+  )
+
+  assert.equal(eRacesLink.translated, true)
+  assert.equal(eRacesLink.quality, 'rule-match')
+  assert.equal(eRacesLink.text, 'Read more about the E races at www.elitloppet.se/elitloppet/e-loppen')
+
+  assert.equal(pinkTicket.translated, true)
+  assert.equal(pinkTicket.quality, 'rule-match')
+  assert.equal(pinkTicket.text, 'Ajetaan seitsemän E-lähtöä, joissa sarjan kaksi parasta saavat vaaleanpunaisen lipun 31. toukokuuta ajettavaan Elitloppetiin.')
+
+  assert.equal(uetLink.translated, true)
+  assert.equal(uetLink.quality, 'rule-match')
+  assert.equal(uetLink.text, 'www.uet-trot.eu/en/uet-elite-circuit/')
+
+  assert.equal(surveillanceParagraph.translated, true)
+  assert.equal(surveillanceParagraph.quality, 'rule-match')
+  assert.equal(surveillanceParagraph.text, "<b>In this race, the surveillance stable provisions in accordance with paragraph 5 of Svensk Travsport's Anti-Doping Regulations apply.")
+
+  assert.equal(surveillanceSection.translated, true)
+  assert.equal(surveillanceSection.quality, 'rule-match')
+  assert.equal(surveillanceSection.text, '<b>Tässä lähdössä sovelletaan valvontatallia koskevia määräyksiä Svensk Travsportin antidopingsäännöstön 5 §:n mukaisesti.')
+
+  assert.equal(topFourElitloppet.translated, true)
+  assert.equal(topFourElitloppet.quality, 'rule-match')
+  assert.equal(topFourElitloppet.text, 'The four best-placed horses in each qualifier are qualified for the Elitloppet final.')
+
+  assert.equal(deadHeatInvitation.translated, true)
+  assert.equal(deadHeatInvitation.quality, 'rule-match')
+  assert.equal(deadHeatInvitation.text, 'Tasatuloksessa Elitloppet-kutsu annetaan sille, jolla on korkeimmat lähtöpisteet.')
+})
+
+test('uses explicit rules for the larger EX start-point and final-capacity admin bundle', async () => {
+  const splitIntoTwoQualifiers = await translatePropositionText(
+    '16 hästar delas in i två försök med åtta hästar i varje försök.',
+    'EX',
+    'en'
+  )
+  const topTwelvePriority = await translatePropositionText(
+    'After the start declaration, priority is given to the 12 highest ranked.',
+    'EX',
+    'fi'
+  )
+  const entryFeeVatSix = await translatePropositionText(
+    'Anmälningsavgift 5.300 kr (inkl moms 6 %).',
+    'EX',
+    'en'
+  )
+  const bFinalMinimumFive = await translatePropositionText(
+    'B-finalen körs endast om minst fem hästar är anmälda vid starttillfället.',
+    'EX',
+    'fi'
+  )
+  const deadHeatFifth = await translatePropositionText(
+    'Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen.',
+    'EX',
+    'en'
+  )
+  const deadHeatSixth = await translatePropositionText(
+    'Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final.',
+    'EX',
+    'fi'
+  )
+  const deadHeatSeventh = await translatePropositionText(
+    'Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final.',
+    'EX',
+    'en'
+  )
+  const topTenAFinal = await translatePropositionText(
+    'De tio hästar med högst startpoäng vid startanmälan deltar i A-finalen med ett förstapris på SEK 500 000.',
+    'EX',
+    'fi'
+  )
+  const topFifteenHandicapped = await translatePropositionText(
+    'De 15 hästar med mest startpoäng handicapas av Solvallas sportchef.',
+    'EX',
+    'en'
+  )
+
+  assert.equal(splitIntoTwoQualifiers.translated, true)
+  assert.equal(splitIntoTwoQualifiers.quality, 'rule-match')
+  assert.equal(splitIntoTwoQualifiers.text, '16 horses are divided into two qualifiers with eight horses in each qualifier.')
+
+  assert.equal(topTwelvePriority.translated, true)
+  assert.equal(topTwelvePriority.quality, 'rule-match')
+  assert.equal(topTwelvePriority.text, 'Lopullisen ilmoittautumisen jälkeen etusija annetaan 12 korkeimmalle sijoitetulle.')
+
+  assert.equal(entryFeeVatSix.translated, true)
+  assert.equal(entryFeeVatSix.quality, 'rule-match')
+  assert.equal(entryFeeVatSix.text, 'Entry fee 5.300 SEK (incl. VAT 6 %).')
+
+  assert.equal(bFinalMinimumFive.translated, true)
+  assert.equal(bFinalMinimumFive.quality, 'rule-match')
+  assert.equal(bFinalMinimumFive.text, 'B-finaali ajetaan vain, jos vähintään viisi hevosta on ilmoitettu starttihetkellä.')
+
+  assert.equal(deadHeatFifth.translated, true)
+  assert.equal(deadHeatFifth.quality, 'rule-match')
+  assert.equal(deadHeatFifth.text, 'If there is a dead heat for fifth place, the horse with the highest start points at entry to the final qualifies.')
+
+  assert.equal(deadHeatSixth.translated, true)
+  assert.equal(deadHeatSixth.quality, 'rule-match')
+  assert.equal(deadHeatSixth.text, 'Jos kuudennesta sijasta tulee tasatulos, finaaliin kvalifioituu se hevonen, jolla on korkeimmat lähtöpisteet.')
+
+  assert.equal(deadHeatSeventh.translated, true)
+  assert.equal(deadHeatSeventh.quality, 'rule-match')
+  assert.equal(deadHeatSeventh.text, 'If there is a dead heat for seventh place, the horse with the highest start points qualifies for the final.')
+
+  assert.equal(topTenAFinal.translated, true)
+  assert.equal(topTenAFinal.quality, 'rule-match')
+  assert.equal(topTenAFinal.text, 'Kymmenen hevosta, joilla on korkeimmat lähtöpisteet lopullisen ilmoittautumisen hetkellä, osallistuvat A-finaaliin, jonka ensipalkinto on 500 000 SEK.')
+
+  assert.equal(topFifteenHandicapped.translated, true)
+  assert.equal(topFifteenHandicapped.quality, 'rule-match')
+  assert.equal(topFifteenHandicapped.text, "The 15 horses with the most start points are handicapped by Solvalla's sports manager.")
+})
+
+test('uses explicit rules for the larger EX qualification and final follow-up bundle', async () => {
+  const topFifteenFinal = await translatePropositionText(
+    'De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v.',
+    'EX',
+    'en'
+  )
+  const topFiveEveningFinal = await translatePropositionText(
+    'De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10).',
+    'EX',
+    'fi'
+  )
+  const topSixEveningFinal = await translatePropositionText(
+    'De sex främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (se proposition 11).',
+    'EX',
+    'en'
+  )
+  const topSevenDayFinal = await translatePropositionText(
+    'De sju främst placerade ekipagen är kvalificerade till finalen som körs senare under dagen (prop 9).',
+    'EX',
+    'fi'
+  )
+  const topSevenLyckseleDeclared = await translatePropositionText(
+    'De sju främst placerade hästarna räknas som definitivt startanmälda till finalen på Lyckseletravet 4 juli med ett förstapris på 40 000 kr.',
+    'EX',
+    'en'
+  )
+  const topSevenLyckselepokalen = await translatePropositionText(
+    'De sju främst placerade hästarna är kvalificerade till Lyckselepokalens final (prop 9).',
+    'EX',
+    'en'
+  )
+
+  assert.equal(topFifteenFinal.translated, true)
+  assert.equal(topFifteenFinal.quality, 'rule-match')
+  assert.equal(topFifteenFinal.text, 'The 15 horses that collected the most points during 2025 are eligible to start in the final; in the event of a withdrawal, the 16th horse enters, and so on.')
+
+  assert.equal(topFiveEveningFinal.translated, true)
+  assert.equal(topFiveEveningFinal.quality, 'rule-match')
+  assert.equal(topFiveEveningFinal.text, 'Viisi parhaiten sijoittunutta valjakkoa kvalifioituu finaaliin, joka ajetaan myöhemmin illalla (prop 10).')
+
+  assert.equal(topSixEveningFinal.translated, true)
+  assert.equal(topSixEveningFinal.quality, 'rule-match')
+  assert.equal(topSixEveningFinal.text, 'The six best-placed teams are qualified for the final, which is run later in the evening (see proposition 11).')
+
+  assert.equal(topSevenDayFinal.translated, true)
+  assert.equal(topSevenDayFinal.quality, 'rule-match')
+  assert.equal(topSevenDayFinal.text, 'Seitsemän parhaiten sijoittunutta valjakkoa kvalifioituu finaaliin, joka ajetaan myöhemmin saman päivän aikana (prop 9).')
+
+  assert.equal(topSevenLyckseleDeclared.translated, true)
+  assert.equal(topSevenLyckseleDeclared.quality, 'rule-match')
+  assert.equal(topSevenLyckseleDeclared.text, 'The seven best-placed horses are considered definitively entered for the final at Lyckseletravet on 4 July with 40,000 SEK to the winner.')
+
+  assert.equal(topSevenLyckselepokalen.translated, true)
+  assert.equal(topSevenLyckselepokalen.quality, 'rule-match')
+  assert.equal(topSevenLyckselepokalen.text, 'The seven best-placed horses are qualified for the Lyckselepokalen final (prop 9).')
+})
+
+test('uses explicit rules for the larger EX short final-heat follow-up bundle', async () => {
+  const nextTenBFinal = await translatePropositionText(
+    'De tio hästar med startpoäng därefter deltar i B-finalen med ett förstapris på SEK 150 000.',
+    'EX',
+    'en'
+  )
+  const topThreeJagersroFinal = await translatePropositionText(
+    'De tre främsta hästarna i respektive försök är inkvalade och skyldiga att starta i finalen på Jägersro lördag 12/4 med ett förstapris på SEK 100 000.',
+    'EX',
+    'fi'
+  )
+  const topThreeBreedersCourse = await translatePropositionText(
+    'De tre främsta i varje uttagningslopp är kvalificerade till finalen i Breeders Course 2 years old på Jägersro onsdag 4 oktober med ett förstapris på SEK 700 000.',
+    'EX',
+    'en'
+  )
+  const threeHeatsFourMinutes = await translatePropositionText(
+    'De tre försöksheaten körs med ca 4 minuters mellanrum.',
+    'EX',
+    'fi'
+  )
+
+  assert.equal(nextTenBFinal.translated, true)
+  assert.equal(nextTenBFinal.quality, 'rule-match')
+  assert.equal(nextTenBFinal.text, 'The next ten horses by start points take part in the B final with SEK 150,000 to the winner.')
+
+  assert.equal(topThreeJagersroFinal.translated, true)
+  assert.equal(topThreeJagersroFinal.quality, 'rule-match')
+  assert.equal(topThreeJagersroFinal.text, 'Kunkin karsinnan kolme parasta hevosta kvalifioituu ja on velvollinen starttaamaan Jägersrossa lauantaina 12/4 ajettavassa finaalissa, jonka ensipalkinto on 100 000 SEK.')
+
+  assert.equal(topThreeBreedersCourse.translated, true)
+  assert.equal(topThreeBreedersCourse.quality, 'rule-match')
+  assert.equal(topThreeBreedersCourse.text, 'The top three in each qualifying race are qualified for the Breeders Course 2 years old final at Jägersro on Wednesday 4 October with SEK 700,000 to the winner.')
+
+  assert.equal(threeHeatsFourMinutes.translated, true)
+  assert.equal(threeHeatsFourMinutes.quality, 'rule-match')
+  assert.equal(threeHeatsFourMinutes.text, 'Kolme karsintaerää ajetaan noin neljän minuutin välein.')
+})
+
+test('uses explicit rules for the larger EX participant-admin and selection follow-up bundle', async () => {
+  const topThreePrize = await translatePropositionText(
+    'De tre kuskar/ryttare med flest poäng efter de två loppen erhåller hederspris.',
+    'EX',
+    'en'
+  )
+  const topTwoTrearingseliten = await translatePropositionText(
+    'De två främsta hästarna i detta försök är kvalificerade till finalen (Treåringseliten på Solvalla 25 maj med ett förstapris på SEK 1 000 000).',
+    'EX',
+    'fi'
+  )
+  const topTwoCrossTrackFinal = await translatePropositionText(
+    'De två främsta hästarna i försöken på Solvalla 30/4, Milano 2/5 och Jägersro 7/5 är kvalificerade till denna final.',
+    'EX',
+    'en'
+  )
+  const remainingSixByPoints = await translatePropositionText(
+    'De övriga sex hästarna till finalen - anmälda i Breeders Course 3 years old 2025 - uttages på poäng.',
+    'EX',
+    'fi'
+  )
+  const noOwnHorseEntry = await translatePropositionText(
+    'Deltagande kusk får ej anmäla egen ägd/delägd eller tränad häst.',
+    'EX',
+    'en'
+  )
+  const driveOwnedHorseFirst = await translatePropositionText(
+    'Deltagande kuskar kör i första hand egentränad eller ägd häst.',
+    'EX',
+    'fi'
+  )
+
+  assert.equal(topThreePrize.translated, true)
+  assert.equal(topThreePrize.quality, 'rule-match')
+  assert.equal(topThreePrize.text, 'The three drivers/riders with the most points after the two races receive an honorary prize.')
+
+  assert.equal(topTwoTrearingseliten.translated, true)
+  assert.equal(topTwoTrearingseliten.quality, 'rule-match')
+  assert.equal(topTwoTrearingseliten.text, 'Tämän karsinnan kaksi parasta hevosta kvalifioituu finaaliin (Treåringseliten Solvallassa 25. toukokuuta, ensipalkinto 1 000 000 SEK).')
+
+  assert.equal(topTwoCrossTrackFinal.translated, true)
+  assert.equal(topTwoCrossTrackFinal.quality, 'rule-match')
+  assert.equal(topTwoCrossTrackFinal.text, 'The two best horses in the qualifiers at Solvalla on 30/4, Milano on 2/5 and Jägersro on 7/5 are qualified for this final.')
+
+  assert.equal(remainingSixByPoints.translated, true)
+  assert.equal(remainingSixByPoints.quality, 'rule-match')
+  assert.equal(remainingSixByPoints.text, 'Finaalin kuusi muuta hevosta - ilmoitettuina Breeders Course 3 years old 2025 - valitaan pisteiden perusteella.')
+
+  assert.equal(noOwnHorseEntry.translated, true)
+  assert.equal(noOwnHorseEntry.quality, 'rule-match')
+  assert.equal(noOwnHorseEntry.text, 'A participating driver may not enter a horse that they own, co-own, or train.')
+
+  assert.equal(driveOwnedHorseFirst.translated, true)
+  assert.equal(driveOwnedHorseFirst.quality, 'rule-match')
+  assert.equal(driveOwnedHorseFirst.text, 'Osallistuvat kuskit ajavat ensisijaisesti itse valmentamaansa tai omistamaansa hevosta.')
+})
+
 test('uses explicit rules for the larger EX summer-series calendar and intro bundle', async () => {
   const talentsScheduleA = await translatePropositionText(
     'Summer Meeting Talents: Försök körs på Bjerke 27/5, Åby 10/7, Jägersro 22/7, Halmstad 25/7 och Charlottenlund 27/7.',
