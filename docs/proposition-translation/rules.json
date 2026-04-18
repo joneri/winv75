@@ -1,5 +1,5 @@
 {
-  "version": 60,
+  "version": 67,
   "source": "MongoDB winv75.racedays.raceList.propTexts for all proposition text types",
   "languages": {
     "sv": "Svenska",
@@ -5064,6 +5064,1026 @@
         "sv": "Vinnarbild till segrande hästs ägare.",
         "fi": "Voittajakuva voittaneen hevosen omistajalle.",
         "en": "Winner photo to the winning horse's owner."
+      }
+    },
+    {
+      "id": "follow-standings-hagmyren",
+      "types": [
+        "EX"
+      ],
+      "template": "Följ ställningen på hagmyren.se.",
+      "render": {
+        "sv": "Följ ställningen på hagmyren.se.",
+        "fi": "Seuraa tilannetta osoitteessa hagmyren.se.",
+        "en": "Follow the standings at hagmyren.se."
+      }
+    },
+    {
+      "id": "qualifiers-246-proposition-190001-amount-kr",
+      "types": [
+        "EX"
+      ],
+      "template": "Försök 2, 4 och 6 körs med proposition 190.001-{amount_kr} kr.",
+      "render": {
+        "sv": "Försök 2, 4 och 6 körs med proposition 190.001-{amount_kr} kr.",
+        "fi": "Karsinnat 2, 4 ja 6 ajetaan propositionilla 190.001-{amount_kr} kr.",
+        "en": "Qualifiers 2, 4 and 6 are run under the proposition 190.001-{amount_kr} kr."
+      }
+    },
+    {
+      "id": "honorary-prizes-plural",
+      "types": [
+        "EX"
+      ],
+      "template": "Hederspriser.",
+      "render": {
+        "sv": "Hederspriser.",
+        "fi": "Kunniapalkintoja.",
+        "en": "Honorary prizes."
+      }
+    },
+    {
+      "id": "lowest-seeding-number-ranked-first",
+      "types": [
+        "EX"
+      ],
+      "template": "Häst med lägsta seedningstal rankas som nr 1, den med näst lägsta som nr 2 osv.",
+      "render": {
+        "sv": "Häst med lägsta seedningstal rankas som nr 1, den med näst lägsta som nr 2 osv.",
+        "fi": "Hevonen, jolla on alin seedausluku, sijoitetaan numeroksi 1, seuraavaksi alin numeroksi 2 ja niin edelleen.",
+        "en": "The horse with the lowest seeding number is ranked no. 1, the next lowest no. 2, and so on."
+      }
+    },
+    {
+      "id": "qualifiers-246-final-distance-2160-started",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästar som startat startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter.",
+      "render": {
+        "sv": "Hästar som startat startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter.",
+        "fi": "Karsinnoissa 2, 4 ja 6 startanneet hevoset starttaavat finaalissa 2160 metrin matkalta.",
+        "en": "Horses that started in qualifiers 2, 4 and 6 start in the final from the 2160 metre distance."
+      }
+    },
+    {
+      "id": "jarvsofaks-youth-cup-1995-six-qualifiers-final-hagmyren-july-26",
+      "types": [
+        "EX"
+      ],
+      "template": "Järvsöfaks UngdomsCup: En kuskserie för ungdomar födda 1995 eller senare med sex försök och en final på Hagmyren 26 juli.",
+      "render": {
+        "sv": "Järvsöfaks UngdomsCup: En kuskserie för ungdomar födda 1995 eller senare med sex försök och en final på Hagmyren 26 juli.",
+        "fi": "Järvsöfaks UngdomsCup: nuorille vuonna 1995 tai myöhemmin syntyneille tarkoitettu ohjastajasarja, jossa on kuusi karsintaa ja finaali Hagmyrenissä 26. heinäkuuta.",
+        "en": "Järvsöfaks Youth Cup: a drivers' series for young people born in 1995 or later, with six qualifiers and a final at Hagmyren on 26 July."
+      }
+    },
+    {
+      "id": "race-only-open-to-european-bred-horses",
+      "types": [
+        "EX"
+      ],
+      "template": "Loppet är endast öppet för Europafödda hästar.",
+      "render": {
+        "sv": "Loppet är endast öppet för Europafödda hästar.",
+        "fi": "Lähtö on avoin vain Euroopassa syntyneille hevosille.",
+        "en": "The race is open only to European-bred horses."
+      }
+    },
+    {
+      "id": "if-13-24-horses-divided-by-seeding-rules",
+      "types": [
+        "EX"
+      ],
+      "template": "Om 13-24 hästar anmäls delas loppet enligt regler för Svensk Travsport regler för seedning av insatslopp.",
+      "render": {
+        "sv": "Om 13-24 hästar anmäls delas loppet enligt regler för Svensk Travsport regler för seedning av insatslopp.",
+        "fi": "Jos ilmoitetaan 13-24 hevosta, lähtö jaetaan Svensk Travsportin panoslähtöjen seedaussääntöjen mukaisesti.",
+        "en": "If 13-24 horses are entered, the race is divided according to Svensk Travsport's rules for seeding stake races."
+      }
+    },
+    {
+      "id": "if-7-12-horses-run-by-entry-list",
+      "types": [
+        "EX"
+      ],
+      "template": "Om 7-12 hästar anmäls körs loppet enligt anmälningslista.",
+      "render": {
+        "sv": "Om 7-12 hästar anmäls körs loppet enligt anmälningslista.",
+        "fi": "Jos ilmoitetaan 7-12 hevosta, lähtö ajetaan ilmoittautumislistan mukaan.",
+        "en": "If 7-12 horses are entered, the race is run according to the entry list."
+      }
+    },
+    {
+      "id": "if-13-24-horses-two-races-top-six-to-final",
+      "types": [
+        "EX"
+      ],
+      "template": "Om det anmäls 13-24 hästar blir det två lopp med de sex främsta i respektive avdelning till final.",
+      "render": {
+        "sv": "Om det anmäls 13-24 hästar blir det två lopp med de sex främsta i respektive avdelning till final.",
+        "fi": "Jos ilmoitetaan 13-24 hevosta, ajetaan kaksi lähtöä, joista kummankin osaston kuusi parasta etenee finaaliin.",
+        "en": "If 13-24 horses are entered, there will be two races with the top six in each division advancing to the final."
+      }
+    },
+    {
+      "id": "if-driver-suspended-at-final-new-representative-selected",
+      "types": [
+        "EX"
+      ],
+      "template": "Om en kusk är avstängd i samband med finalen väljer banan/landet ut en ny representant.",
+      "render": {
+        "sv": "Om en kusk är avstängd i samband med finalen väljer banan/landet ut en ny representant.",
+        "fi": "Jos ohjastaja on estynyt finaalin yhteydessä, rata/maa valitsee uuden edustajan.",
+        "en": "If a driver is suspended in connection with the final, the track/country selects a new representative."
+      }
+    },
+    {
+      "id": "if-third-already-qualified-fourth-gets-place",
+      "types": [
+        "EX"
+      ],
+      "template": "Om även trean är kvalificerad så erhåller fyran platsen osv.",
+      "render": {
+        "sv": "Om även trean är kvalificerad så erhåller fyran platsen osv.",
+        "fi": "Jos myös kolmanneksi sijoittunut on jo kvalifioitunut, saa neljäs paikan ja niin edelleen.",
+        "en": "If the horse in third place is also qualified, the fourth-placed horse gets the place, and so on."
+      }
+    },
+    {
+      "id": "rebuffs-mares-series-february-june-2025-six-races",
+      "types": [
+        "EX"
+      ],
+      "template": "Rebuff's Stoserie: En stoserie från februari till juni 2025 med totalt sex lopp.",
+      "render": {
+        "sv": "Rebuff's Stoserie: En stoserie från februari till juni 2025 med totalt sex lopp.",
+        "fi": "Rebuffin tammasarja: tammasarja helmikuusta kesäkuuhun 2025, yhteensä kuusi lähtöä.",
+        "en": "Rebuff's Mares' Series: a mares' series from February to June 2025 with a total of six races."
+      }
+    },
+    {
+      "id": "bollnas-mares-series-rules-six-qualifiers-dates",
+      "types": [
+        "EX"
+      ],
+      "template": "Regler Bollnästravets Stoserie: Stoserien körs i sex försök; 15/8, 22/8, 28/8, 23/9, 29/9 och 13/10.",
+      "render": {
+        "sv": "Regler Bollnästravets Stoserie: Stoserien körs i sex försök; 15/8, 22/8, 28/8, 23/9, 29/9 och 13/10.",
+        "fi": "Bollnästravetin tammasarjan säännöt: tammasarja ajetaan kuutena karsintana: 15/8, 22/8, 28/8, 23/9, 29/9 ja 13/10.",
+        "en": "Rules for Bollnästravet's Mares' Series: the mares' series is run in six qualifiers: 15/8, 22/8, 28/8, 23/9, 29/9 and 13/10."
+      }
+    },
+    {
+      "id": "winning-driver-study-trip-usa-marcus-melander-stable",
+      "types": [
+        "EX"
+      ],
+      "template": "Segrande kusk vinner en studieresa till USA sponsrad av Marcus Melander Stable.",
+      "render": {
+        "sv": "Segrande kusk vinner en studieresa till USA sponsrad av Marcus Melander Stable.",
+        "fi": "Voittava ohjastaja voittaa Marcus Melander Stablen sponsoroiman opintomatkan Yhdysvaltoihin.",
+        "en": "The winning driver wins a study trip to the USA sponsored by Marcus Melander Stable."
+      }
+    },
+    {
+      "id": "sleipner-cup-2026-calendar",
+      "types": [
+        "EX"
+      ],
+      "template": "Sleipner Cup 2026: Försök körs på Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 och Bs 27/5.",
+      "render": {
+        "sv": "Sleipner Cup 2026: Försök körs på Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 och Bs 27/5.",
+        "fi": "Sleipner Cup 2026: karsinnat ajetaan Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 ja Bs 27/5.",
+        "en": "Sleipner Cup 2026: Qualifiers are run at Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 and Bs 27/5."
+      }
+    },
+    {
+      "id": "post-choice-according-to-st-qualifier-rules",
+      "types": [
+        "EX"
+      ],
+      "template": "Spårval enligt Svensk Travsports regler för uttagningslopp.",
+      "render": {
+        "sv": "Spårval enligt Svensk Travsports regler för uttagningslopp.",
+        "fi": "Lähtöratavalinta Svensk Travsportin karsintalähtösääntöjen mukaan.",
+        "en": "Post choice according to Svensk Travsport's rules for qualifying races."
+      }
+    },
+    {
+      "id": "start-declaration-fee-6000-sek",
+      "types": [
+        "EX"
+      ],
+      "template": "Startanmälningsavgift: 6 000 SEK.",
+      "render": {
+        "sv": "Startanmälningsavgift: 6 000 SEK.",
+        "fi": "Lopullisen ilmoittautumisen maksu: 6 000 SEK.",
+        "en": "Start declaration fee: 6 000 SEK."
+      }
+    },
+    {
+      "id": "stayerserien-2025-six-qualifiers-final-26-september-3140-volt-150k",
+      "types": [
+        "EX"
+      ],
+      "template": "Stayerserien 2025: Körs under året som en serie med sex försök och final den 26 september över 3140 meter voltstart med 150 000 kr i förstapris.",
+      "render": {
+        "sv": "Stayerserien 2025: Körs under året som en serie med sex försök och final den 26 september över 3140 meter voltstart med 150 000 kr i förstapris.",
+        "fi": "Stayerserien 2025: ajetaan vuoden aikana kuuden karsinnan sarjana, ja finaali ajetaan 26. syyskuuta matkalla 3140 metriä volttilähdöllä, ensipalkintona 150 000 kr.",
+        "en": "Stayerserien 2025: run during the year as a series with six qualifiers and a final on 26 September over 3140 metres standing start with 150,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "if-qualifier-winners-do-not-start-reserve-up-to-five-meeting-3-gold-division-horses-by-stl-points",
+      "types": [
+        "EX"
+      ],
+      "template": "Om försöksvinnare inte kommer till start reserveras upp till fem platser för hästar som startat och samlat poäng i Gulddivisionens försök under meeting 3 enligt sedvanlig STL poängräkning.",
+      "render": {
+        "sv": "Om försöksvinnare inte kommer till start reserveras upp till fem platser för hästar som startat och samlat poäng i Gulddivisionens försök under meeting 3 enligt sedvanlig STL poängräkning.",
+        "fi": "Jos karsintavoittajat eivät tule starttiin, enintään viisi paikkaa varataan hevosille, jotka ovat startanneet ja keränneet pisteitä Gulddivisionenin meeting 3:n karsinnoissa tavanomaisen STL-pistelaskun mukaan.",
+        "en": "If qualifier winners do not come to the start, up to five places are reserved for horses that have started and collected points in the Gold Division qualifiers during meeting 3 according to the standard STL points calculation."
+      }
+    },
+    {
+      "id": "rules-gold-division-final-gavle-17-may-all-qualifier-winners-reserved-place",
+      "types": [
+        "EX"
+      ],
+      "template": "Regler Gulddivisionens Final på Gävle 17 maj: Alla försöksvinnare reserveras en plats.",
+      "render": {
+        "sv": "Regler Gulddivisionens Final på Gävle 17 maj: Alla försöksvinnare reserveras en plats.",
+        "fi": "Gulddivisionenin Gävlen 17. toukokuuta ajettavan finaalin säännöt: kaikille karsintavoittajille varataan paikka.",
+        "en": "Rules for the Gold Division Final at Gävle on 17 May: all qualifier winners are reserved a place."
+      }
+    },
+    {
+      "id": "svenska-travligan-honorary-prizes-owner-and-groom",
+      "types": [
+        "EX"
+      ],
+      "template": "Svenska Travligans hederspriser till segrande hästs ägare och hästskötare.",
+      "render": {
+        "sv": "Svenska Travligans hederspriser till segrande hästs ägare och hästskötare.",
+        "fi": "Svenska Travliganin kunniapalkinnot voittaneen hevosen omistajalle ja hoitajalle.",
+        "en": "Svenska Travligan's honorary prizes to the winning horse's owner and groom."
+      }
+    },
+    {
+      "id": "exception-from-paragraph-41-applies-in-broderna-djuses-utmaning",
+      "types": [
+        "EX"
+      ],
+      "template": "Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente gäller i Bröderna Djuses Utmaning.",
+      "render": {
+        "sv": "Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente gäller i Bröderna Djuses Utmaning.",
+        "fi": "Poikkeus Svensk Travsportin kilpailusäännön pykälästä 41 koskee Bröderna Djuses Utmaningia.",
+        "en": "An exception from paragraph 41 of Svensk Travsport's Racing Regulations applies in Bröderna Djuses Utmaning."
+      }
+    },
+    {
+      "id": "rank-distribution-to-qualifiers-in-serpentine-order",
+      "types": [
+        "EX"
+      ],
+      "template": "Vid fördelning av hästarna till uttagningsloppen går rank nr 1 till första avdelningen, nr 2 till andra osv i vändande ordning beroende på antalet uttagningslopp.",
+      "render": {
+        "sv": "Vid fördelning av hästarna till uttagningsloppen går rank nr 1 till första avdelningen, nr 2 till andra osv i vändande ordning beroende på antalet uttagningslopp.",
+        "fi": "Hevosia karsintalähtöihin jaettaessa sijoitus nro 1 menee ensimmäiseen osastoon, nro 2 toiseen ja niin edelleen vuorotellen karsintalähtöjen määrästä riippuen.",
+        "en": "When the horses are distributed to the qualifying races, rank no. 1 goes to the first division, no. 2 to the second, and so on in alternating order depending on the number of qualifying races."
+      }
+    },
+    {
+      "id": "e3-chansen-none-for-one-to-three-horses",
+      "types": [
+        "EX"
+      ],
+      "template": "1-3 hästar: Inga E3 Chansen körs.",
+      "render": {
+        "sv": "1-3 hästar: Inga E3 Chansen körs.",
+        "fi": "1-3 hevosta: E3 Chansen -lähtöjä ei ajeta.",
+        "en": "1-3 horses: No E3 Chansen races are run."
+      }
+    },
+    {
+      "id": "e3-chansen-one-race-for-four-to-thirteen-horses",
+      "types": [
+        "EX"
+      ],
+      "template": "4-13 hästar: Ett E3 Chansen (max {runner_count} startande) körs med {amount_kr} kr i förstapris.",
+      "render": {
+        "sv": "4-13 hästar: Ett E3 Chansen (max {runner_count} startande) körs med {amount_kr} kr i förstapris.",
+        "fi": "4-13 hevosta: ajetaan yksi E3 Chansen -lähtö (enintään {runner_count} starttaajaa), jonka ensipalkinto on {amount_kr} kr.",
+        "en": "4-13 horses: one E3 Chansen race (maximum {runner_count} starters) is run with {amount_kr} SEK to the winner."
+      }
+    },
+    {
+      "id": "e3-chansen-one-race-for-four-to-thirteen-horses-12-100k",
+      "types": [
+        "EX"
+      ],
+      "template": "4-13 hästar: Ett E3 Chansen (max 12 startande) körs med 100 000 kr i förstapris.",
+      "render": {
+        "sv": "4-13 hästar: Ett E3 Chansen (max 12 startande) körs med 100 000 kr i förstapris.",
+        "fi": "4-13 hevosta: ajetaan yksi E3 Chansen -lähtö (enintään 12 starttaajaa), jonka ensipalkinto on 100 000 kr.",
+        "en": "4-13 horses: one E3 Chansen race (maximum 12 starters) is run with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "swedish-breeders-crown-2025-qualifier-count-decides-finalists",
+      "types": [
+        "EX"
+      ],
+      "template": "Antal försök till uttagningarna i Svensk Uppfödningslöpning 2025 avgör hur många hästar som går till final.",
+      "render": {
+        "sv": "Antal försök till uttagningarna i Svensk Uppfödningslöpning 2025 avgör hur många hästar som går till final.",
+        "fi": "Svensk Uppfödningslöpning 2025 -karsintojen lukumäärä ratkaisee, kuinka monta hevosta etenee finaaliin.",
+        "en": "The number of qualifiers for Svensk Uppfödningslöpning 2025 determines how many horses advance to the final."
+      }
+    },
+    {
+      "id": "e3-chansen-two-races-for-fourteen-or-more-horses",
+      "types": [
+        "EX"
+      ],
+      "template": "Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen (max {runner_count} startande per lopp) körs med vardera {amount_kr} kr i förstapris.",
+      "render": {
+        "sv": "Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen (max {runner_count} startande per lopp) körs med vardera {amount_kr} kr i förstapris.",
+        "fi": "Lähtöjen lukumäärä hyväksyttyjen hevosten määrän mukaan lopullisen ilmoittautumisen hetkellä: 14 tai enemmän hevosta: ajetaan kaksi E3 Chansen -lähtöä (enintään {runner_count} starttaajaa per lähtö), joissa kummassakin ensipalkinto on {amount_kr} kr.",
+        "en": "Number of races depending on the number of approved horses at the time of start declaration: 14 or more horses: two E3 Chansen races (maximum {runner_count} starters per race) are run, each with {amount_kr} SEK to the winner."
+      }
+    },
+    {
+      "id": "e3-chansen-two-races-for-fourteen-or-more-horses-12-100k",
+      "types": [
+        "EX"
+      ],
+      "template": "Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen (max 12 startande per lopp) körs med vardera 100 000 kr i förstapris.",
+      "render": {
+        "sv": "Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen (max 12 startande per lopp) körs med vardera 100 000 kr i förstapris.",
+        "fi": "Lähtöjen lukumäärä hyväksyttyjen hevosten määrän mukaan lopullisen ilmoittautumisen hetkellä: 14 tai enemmän hevosta: ajetaan kaksi E3 Chansen -lähtöä (enintään 12 starttaajaa per lähtö), joissa kummassakin ensipalkinto on 100 000 kr.",
+        "en": "Number of races depending on the number of approved horses at the time of start declaration: 14 or more horses: two E3 Chansen races (maximum 12 starters per race) are run, each with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "top-fifteen-series-points-ladder-final-26-5-100k",
+      "types": [
+        "EX"
+      ],
+      "template": "De 15 hästar som samlar ihop mest poäng i serien är startberättigade i finalen som körs som en spårtrappa med 15 hästar tisdag 26/5 med ett förstapris på 100 000 kr.",
+      "render": {
+        "sv": "De 15 hästar som samlar ihop mest poäng i serien är startberättigade i finalen som körs som en spårtrappa med 15 hästar tisdag 26/5 med ett förstapris på 100 000 kr.",
+        "fi": "Sarjassa eniten pisteitä keränneet 15 hevosta ovat starttioikeutettuja finaalissa, joka ajetaan 15 hevosen spårtrappana tiistaina 26/5, ensipalkintona 100 000 kr.",
+        "en": "The 15 horses collecting the most points in the series are eligible to start in the final, which is run as a ladder race with 15 horses on Tuesday 26/5 with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "top-twenty-ranked-distributed-evenly-two-races-by-st-rules",
+      "types": [
+        "EX"
+      ],
+      "template": "De 20 bäst rankade fördelas jämnt på två lopp efter ST:s regler för insatslopp.",
+      "render": {
+        "sv": "De 20 bäst rankade fördelas jämnt på två lopp efter ST:s regler för insatslopp.",
+        "fi": "20 parhaiten rankattua jaetaan tasaisesti kahteen lähtöön ST:n panoslähtösääntöjen mukaisesti.",
+        "en": "The 20 best-ranked horses are distributed evenly across two races according to ST's rules for stake races."
+      }
+    },
+    {
+      "id": "twelve-highest-seeded-horses-get-place",
+      "types": [
+        "EX"
+      ],
+      "template": "De tolv högst seedade hästarna får en plats i loppet.",
+      "render": {
+        "sv": "De tolv högst seedade hästarna får en plats i loppet.",
+        "fi": "Kaksitoista korkeimmin seedattua hevosta saavat paikan lähtöön.",
+        "en": "The twelve highest-seeded horses receive a place in the race."
+      }
+    },
+    {
+      "id": "top-two-finishers-qualified-final-jagersro-6-9",
+      "types": [
+        "EX"
+      ],
+      "template": "De två främst placerade hästarna i försöken är inkvalade till finalen på Jägersro 6/9.",
+      "render": {
+        "sv": "De två främst placerade hästarna i försöken är inkvalade till finalen på Jägersro 6/9.",
+        "fi": "Karsintojen kaksi parasta hevosta kvalifioituvat Jägersrossa 6/9 ajettavaan finaaliin.",
+        "en": "The two best-placed horses in the qualifiers are qualified for the final at Jägersro on 6/9."
+      }
+    },
+    {
+      "id": "breeders-crown-nine-qualifiers-top-four-to-semifinals-solvalla-1-11",
+      "types": [
+        "EX"
+      ],
+      "template": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 1/11.",
+      "render": {
+        "sv": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 1/11.",
+        "fi": "Vuoden aikana ajetaan yhdeksän Breeders' Crown -karsintaa, ja jokaisen karsintalähdön neljä parasta hevosta etenevät Solvallan välieriin 1/11.",
+        "en": "Nine Breeders' Crown qualifiers are run during the year, and the four best horses from each qualifying race advance to the semifinals at Solvalla on 1/11."
+      }
+    },
+    {
+      "id": "breeders-crown-nine-qualifiers-top-four-to-semifinals-solvalla-2-11",
+      "types": [
+        "EX"
+      ],
+      "template": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 2/11.",
+      "render": {
+        "sv": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 2/11.",
+        "fi": "Vuoden aikana ajetaan yhdeksän Breeders' Crown -karsintaa, ja jokaisen karsintalähdön neljä parasta hevosta etenevät Solvallan välieriin 2/11.",
+        "en": "Nine Breeders' Crown qualifiers are run during the year, and the four best horses from each qualifying race advance to the semifinals at Solvalla on 2/11."
+      }
+    },
+    {
+      "id": "breeders-crown-nine-qualifiers-top-four-to-semifinals-solvalla-5-11",
+      "types": [
+        "EX"
+      ],
+      "template": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 5/11.",
+      "render": {
+        "sv": "Det körs nio Breeders' Crown-uttagningar under året och de fyra främsta hästarna från varje uttagningslopp går vidare till semifinalerna på Solvalla den 5/11.",
+        "fi": "Vuoden aikana ajetaan yhdeksän Breeders' Crown -karsintaa, ja jokaisen karsintalähdön neljä parasta hevosta etenevät Solvallan välieriin 5/11.",
+        "en": "Nine Breeders' Crown qualifiers are run during the year, and the four best horses from each qualifying race advance to the semifinals at Solvalla on 5/11."
+      }
+    },
+    {
+      "id": "team-driver-only-one-qualifier-foreign-amateur-driver-allowed",
+      "types": [
+        "EX"
+      ],
+      "template": "Ekipage/kusk får endast delta i ett uttagningslopp och utländsk kusk med amatörlicens får delta.",
+      "render": {
+        "sv": "Ekipage/kusk får endast delta i ett uttagningslopp och utländsk kusk med amatörlicens får delta.",
+        "fi": "Valjakko/kuski saa osallistua vain yhteen karsintalähtöön, ja ulkomainen amatöörilisenssin haltija saa osallistua.",
+        "en": "A horse-and-driver team may only participate in one qualifying race, and a foreign driver with an amateur licence is allowed to participate."
+      }
+    },
+    {
+      "id": "four-qualifiers-three-horses-from-each-to-final",
+      "types": [
+        "EX"
+      ],
+      "template": "Fyra försök, tre hästar från varje uttagning till final.",
+      "render": {
+        "sv": "Fyra försök, tre hästar från varje uttagning till final.",
+        "fi": "Neljä karsintaa, kolme hevosta jokaisesta karsinnasta finaaliin.",
+        "en": "Four qualifiers, three horses from each qualifying race to the final."
+      }
+    },
+    {
+      "id": "for-final-qualified-horses",
+      "types": [
+        "EX"
+      ],
+      "template": "För till finalen kvalificerade hästar.",
+      "render": {
+        "sv": "För till finalen kvalificerade hästar.",
+        "fi": "Finaaliin karsituille hevosille.",
+        "en": "For horses qualified for the final."
+      }
+    },
+    {
+      "id": "for-final-qualified-teams",
+      "types": [
+        "EX"
+      ],
+      "template": "För till finalen kvalificerade ekipage.",
+      "render": {
+        "sv": "För till finalen kvalificerade ekipage.",
+        "fi": "Finaaliin kvalifioituneille valjakoille.",
+        "en": "For teams qualified for the final."
+      }
+    },
+    {
+      "id": "for-final-qualified-mares",
+      "types": [
+        "EX"
+      ],
+      "template": "För till finalen kvalificerade ston.",
+      "render": {
+        "sv": "För till finalen kvalificerade ston.",
+        "fi": "Finaaliin kvalifioituneille tammoille.",
+        "en": "For mares qualified for the final."
+      }
+    },
+    {
+      "id": "for-final-qualified-drivers",
+      "types": [
+        "EX"
+      ],
+      "template": "För till finalen kvalificerade kuskar.",
+      "render": {
+        "sv": "För till finalen kvalificerade kuskar.",
+        "fi": "Finaaliin karsineille ohjastajille.",
+        "en": "For drivers qualified for the final."
+      }
+    },
+    {
+      "id": "for-final-qualified-riders",
+      "types": [
+        "EX"
+      ],
+      "template": "För till finalen kvalificerade ryttare.",
+      "render": {
+        "sv": "För till finalen kvalificerade ryttare.",
+        "fi": "Finaaliin kvalifioituneille ratsastajille.",
+        "en": "For riders qualified for the final."
+      }
+    },
+    {
+      "id": "rules-for-breeders-crown-semifinals-see-prop-4",
+      "types": [
+        "EX"
+      ],
+      "template": "Regler för Breeders' Crown-semifinaler se prop 4.",
+      "render": {
+        "sv": "Regler för Breeders' Crown-semifinaler se prop 4.",
+        "fi": "Breeders' Crown -välierien säännöt, katso prop 4.",
+        "en": "Rules for the Breeders' Crown semifinals, see prop 4."
+      }
+    },
+    {
+      "id": "summer-meeting-talents-qualifiers-bjerke-aby-jagersro-halmstad-charlottenlund",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Talents: Försök körs på Bjerke 27/5, Åby 10/7, Jägersro 22/7, Halmstad 25/7 och Charlottenlund 27/7.",
+      "render": {
+        "sv": "Summer Meeting Talents: Försök körs på Bjerke 27/5, Åby 10/7, Jägersro 22/7, Halmstad 25/7 och Charlottenlund 27/7.",
+        "fi": "Summer Meeting Talents: karsinnat ajetaan Bjerkessä 27/5, Åbyssä 10/7, Jägersrossa 22/7, Halmstadissa 25/7 ja Charlottenlundissa 27/7.",
+        "en": "Summer Meeting Talents: qualifiers are run at Bjerke 27/5, Åby 10/7, Jägersro 22/7, Halmstad 25/7 and Charlottenlund 27/7."
+      }
+    },
+    {
+      "id": "summer-meeting-talents-swedish-license-required-in-sweden",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Talents: I försök som körs i Sverige ska kuskarna ha svensk licens.",
+      "render": {
+        "sv": "Summer Meeting Talents: I försök som körs i Sverige ska kuskarna ha svensk licens.",
+        "fi": "Summer Meeting Talents: Ruotsissa ajettavissa karsinnoissa kuskeilla tulee olla ruotsalainen lisenssi.",
+        "en": "Summer Meeting Talents: in qualifiers run in Sweden, the drivers must hold a Swedish licence."
+      }
+    },
+    {
+      "id": "summer-meeting-talents-qualifiers-charlottenlund-halmstad-bjerke-jagersro-aby",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Talents: Försök körs på Charlottenlund 23/7, Halmstad 28/7, Bjerke 1/8, Jägersro 1/8 och Åby 3/8.",
+      "render": {
+        "sv": "Summer Meeting Talents: Försök körs på Charlottenlund 23/7, Halmstad 28/7, Bjerke 1/8, Jägersro 1/8 och Åby 3/8.",
+        "fi": "Summer Meeting Talents: karsinnat ajetaan Charlottenlundissa 23/7, Halmstadissa 28/7, Bjerkessä 1/8, Jägersrossa 1/8 ja Åbyssä 3/8.",
+        "en": "Summer Meeting Talents: qualifiers are run at Charlottenlund 23/7, Halmstad 28/7, Bjerke 1/8, Jägersro 1/8 and Åby 3/8."
+      }
+    },
+    {
+      "id": "summer-meeting-talents-third-driver-gets-place-if-already-qualified-av",
+      "types": [
+        "EX"
+      ],
+      "template": "Om en kusk redan har kvalat in till final så erhåller trean i respektive försök dennes plats i finalen av Summer Meeting Talents.",
+      "render": {
+        "sv": "Om en kusk redan har kvalat in till final så erhåller trean i respektive försök dennes plats i finalen av Summer Meeting Talents.",
+        "fi": "Jos kuski on jo kvalifioitunut finaaliin, saa kunkin karsinnan kolmanneksi sijoittunut kuski hänen paikkansa Summer Meeting Talents -finaalissa.",
+        "en": "If a driver has already qualified for the final, the third-placed driver in the respective qualifier receives that driver's place in the Summer Meeting Talents final."
+      }
+    },
+    {
+      "id": "summer-meeting-talents-third-driver-gets-place-if-already-qualified-for",
+      "types": [
+        "EX"
+      ],
+      "template": "Om en kusk redan har kvalat in till final så erhåller trean i respektive försök dennes plats i finalen för Summer Meeting Talents.",
+      "render": {
+        "sv": "Om en kusk redan har kvalat in till final så erhåller trean i respektive försök dennes plats i finalen för Summer Meeting Talents.",
+        "fi": "Jos kuski on jo kvalifioitunut finaaliin, saa kunkin karsinnan kolmanneksi sijoittunut kuski hänen paikkansa Summer Meeting Talents -finaalissa.",
+        "en": "If a driver has already qualified for the final, the third-placed driver in the respective qualifier receives that driver's place in the Summer Meeting Talents final."
+      }
+    },
+    {
+      "id": "summer-meeting-stayer-qualifiers-charlottenlund-aby-bjerke-halmstad-jagersro-29-7",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Stayer: Försök körs på Charlottenlund 11/5, Åby 28/5, Bjerke 8/6, Halmstad 3/7 och Jägersro 29/7.",
+      "render": {
+        "sv": "Summer Meeting Stayer: Försök körs på Charlottenlund 11/5, Åby 28/5, Bjerke 8/6, Halmstad 3/7 och Jägersro 29/7.",
+        "fi": "Summer Meeting Stayer: karsinnat ajetaan Charlottenlundissa 11/5, Åbyssä 28/5, Bjerkessä 8/6, Halmstadissa 3/7 ja Jägersrossa 29/7.",
+        "en": "Summer Meeting Stayer: qualifiers are run at Charlottenlund 11/5, Åby 28/5, Bjerke 8/6, Halmstad 3/7 and Jägersro 29/7."
+      }
+    },
+    {
+      "id": "summer-meeting-stayer-qualifiers-charlottenlund-aby-bjerke-halmstad-jagersro-25-7",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Stayer: Försök körs på Charlottenlund 14/5, Åby 25/5, Bjerke 11/6, Halmstad 6/7 och Jägersro 25/7.",
+      "render": {
+        "sv": "Summer Meeting Stayer: Försök körs på Charlottenlund 14/5, Åby 25/5, Bjerke 11/6, Halmstad 6/7 och Jägersro 25/7.",
+        "fi": "Summer Meeting Stayer: karsinnat ajetaan Charlottenlundissa 14/5, Åbyssä 25/5, Bjerkessä 11/6, Halmstadissa 6/7 ja Jägersrossa 25/7.",
+        "en": "Summer Meeting Stayer: qualifiers are run at Charlottenlund 14/5, Åby 25/5, Bjerke 11/6, Halmstad 6/7 and Jägersro 25/7."
+      }
+    },
+    {
+      "id": "kgbs-minne-qualifiers-charlottenlund-aby-bergsaker-solvalla-bjerke-jagersro-final-7-9-150k",
+      "types": [
+        "EX"
+      ],
+      "template": "Uttagningslopp i KGB:s Minne körs på Charlottenlund 27/7, Åby 7/8, Bergsåker 11/8, Solvalla 12/8, Bjerke 19/8 och Jägersro 19/8 och de två första ekipagen i vardera uttagningslopp är klara för final på Jägersro söndag 7/9 med ett förstapris på 150 000 kr.",
+      "render": {
+        "sv": "Uttagningslopp i KGB:s Minne körs på Charlottenlund 27/7, Åby 7/8, Bergsåker 11/8, Solvalla 12/8, Bjerke 19/8 och Jägersro 19/8 och de två första ekipagen i vardera uttagningslopp är klara för final på Jägersro söndag 7/9 med ett förstapris på 150 000 kr.",
+        "fi": "KGB:s Minnen karsintalähdöt ajetaan Charlottenlundissa 27/7, Åbyssä 7/8, Bergsåkerissa 11/8, Solvallassa 12/8, Bjerkessä 19/8 ja Jägersrossa 19/8, ja kunkin karsintalähdön kaksi parasta valjakkoa selviytyvät Jägersrossa sunnuntaina 7/9 ajettavaan finaaliin, jonka ensipalkinto on 150 000 kr.",
+        "en": "Qualifying races for KGB's Minne are run at Charlottenlund 27/7, Åby 7/8, Bergsåker 11/8, Solvalla 12/8, Bjerke 19/8 and Jägersro 19/8, and the first two teams in each qualifying race advance to the final at Jägersro on Sunday 7/9 with 150,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "kgbs-minne-qualifiers-bjerke-charlottenlund-jagersro-solvalla-aby-vermo-final-3-september-150k",
+      "types": [
+        "EX"
+      ],
+      "template": "Uttagningslopp i KGB:s Minne körs på Bjerke, Charlottenlund, Jägersro, Solvalla, Åby och Vermo och de två första ekipagen i vardera uttagningslopp är klara för final på Jägersro söndag den 3 september med ett förstapris på SEK 150 000.",
+      "render": {
+        "sv": "Uttagningslopp i KGB:s Minne körs på Bjerke, Charlottenlund, Jägersro, Solvalla, Åby och Vermo och de två första ekipagen i vardera uttagningslopp är klara för final på Jägersro söndag den 3 september med ett förstapris på SEK 150 000.",
+        "fi": "KGB:s Minnen karsintalähdöt ajetaan Bjerkessä, Charlottenlundissa, Jägersrossa, Solvallassa, Åbyssä ja Vermossa, ja kunkin karsintalähdön kaksi parasta valjakkoa selviytyvät Jägersrossa sunnuntaina 3. syyskuuta ajettavaan finaaliin, jonka ensipalkinto on 150 000 SEK.",
+        "en": "Qualifying races for KGB's Minne are run at Bjerke, Charlottenlund, Jägersro, Solvalla, Åby and Vermo, and the first two teams in each qualifying race advance to the final at Jägersro on Sunday 3 September with SEK 150,000 to the winner."
+      }
+    },
+    {
+      "id": "kalmarsundsmonten-2025-five-qualifiers-kalmar-tingsryd-final-22-june-75k",
+      "types": [
+        "EX"
+      ],
+      "template": "Kalmarsundsmontén 2025: Rids som en serie med fem försök (fyra på Kalmar - 1/2, 21/3, 6/4 samt 16/5 och ett på Tingsryd - 7/6 och final som rids på Kalmar den 22 juni med ett förstapris på 75 000 kr.",
+      "render": {
+        "sv": "Kalmarsundsmontén 2025: Rids som en serie med fem försök (fyra på Kalmar - 1/2, 21/3, 6/4 samt 16/5 och ett på Tingsryd - 7/6 och final som rids på Kalmar den 22 juni med ett förstapris på 75 000 kr.",
+        "fi": "Kalmarsundsmontén 2025: ajetaan viiden karsinnan sarjana (neljä Kalmarissa - 1/2, 21/3, 6/4 ja 16/5 sekä yksi Tingsrydissä - 7/6), ja finaali ratsastetaan Kalmarissa 22. kesäkuuta, ensipalkintona 75 000 kr.",
+        "en": "Kalmarsundsmontén 2025: run as a series with five qualifiers (four at Kalmar - 1/2, 21/3, 6/4 and 16/5, and one at Tingsryd - 7/6), with the final ridden at Kalmar on 22 June with 75,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "kalmarsundsmonten-2025-five-qualifiers-kalmar-tingsryd-later-dates-final-22-june-100k",
+      "types": [
+        "EX"
+      ],
+      "template": "Kalmarsundsmontén 2025: Rids som en serie med fem försök (fyra på Kalmar och ett på Tingsryd - övriga datum meddelas senare) och final som rids på Kalmar den 22 juni med ett förstapris på 100 000 kr.",
+      "render": {
+        "sv": "Kalmarsundsmontén 2025: Rids som en serie med fem försök (fyra på Kalmar och ett på Tingsryd - övriga datum meddelas senare) och final som rids på Kalmar den 22 juni med ett förstapris på 100 000 kr.",
+        "fi": "Kalmarsundsmontén 2025: ajetaan viiden karsinnan sarjana (neljä Kalmarissa ja yksi Tingsrydissä - muut päivämäärät ilmoitetaan myöhemmin), ja finaali ratsastetaan Kalmarissa 22. kesäkuuta, ensipalkintona 100 000 kr.",
+        "en": "Kalmarsundsmontén 2025: run as a series with five qualifiers (four at Kalmar and one at Tingsryd - the remaining dates will be announced later), with the final ridden at Kalmar on 22 June with 100,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "hedlunds-apprentice-series-2026-nine-qualifiers-two-final-divisions",
+      "types": [
+        "EX"
+      ],
+      "template": "Regler Hedlunds Åkeri AB:s Lärlingsserie 2026: Körs i nio försök under året där de tolv främsta kuskarna kvalificerar sig till två finalavdelningar 9 november.",
+      "render": {
+        "sv": "Regler Hedlunds Åkeri AB:s Lärlingsserie 2026: Körs i nio försök under året där de tolv främsta kuskarna kvalificerar sig till två finalavdelningar 9 november.",
+        "fi": "Hedlunds Åkeri AB:n oppilassarjan 2026 säännöt: sarja ajetaan vuoden aikana yhdeksänä karsintana, joissa kaksitoista parasta ohjastajaa kvalifioituu kahteen 9. marraskuuta ajettavaan finaalilähtöön.",
+        "en": "Rules for Hedlunds Åkeri AB's Apprentice Series 2026: the series is run over nine qualifiers during the year, and the twelve best drivers qualify for two final divisions on 9 November."
+      }
+    },
+    {
+      "id": "hedlunds-apprentice-series-2025-ten-qualifiers-two-final-divisions",
+      "types": [
+        "EX"
+      ],
+      "template": "Regler Hedlunds Åkeri AB:s Lärlingsserie 2025: Körs i tio försök under året där de tolv främsta kuskarna kvalificerar sig till två finalavdelningar 13 november.",
+      "render": {
+        "sv": "Regler Hedlunds Åkeri AB:s Lärlingsserie 2025: Körs i tio försök under året där de tolv främsta kuskarna kvalificerar sig till två finalavdelningar 13 november.",
+        "fi": "Hedlunds Åkeri AB:n oppilassarjan 2025 säännöt: sarja ajetaan vuoden aikana kymmenenä karsintana, joissa kaksitoista parasta ohjastajaa kvalifioituu kahteen 13. marraskuuta ajettavaan finaalilähtöön.",
+        "en": "Rules for Hedlunds Åkeri AB's Apprentice Series 2025: the series is run over ten qualifiers during the year, and the twelve best drivers qualify for two final divisions on 13 November."
+      }
+    },
+    {
+      "id": "fame-and-glorys-mares-series-six-qualifiers-february-may-2026",
+      "types": [
+        "EX"
+      ],
+      "template": "Fame and Glorys Stoserie: Stoserien körs i sex försök från februari-maj 2026.",
+      "render": {
+        "sv": "Fame and Glorys Stoserie: Stoserien körs i sex försök från februari-maj 2026.",
+        "fi": "Fame and Glorys Stoserie: tammasarja ajetaan kuutena karsintana helmi-toukokuussa 2026.",
+        "en": "Fame and Glory's Mares' Series: the mares' series is run in six qualifiers from February to May 2026."
+      }
+    },
+    {
+      "id": "fyraaringsserien-2025-five-qualifiers-final-28-11-2140-auto-150k",
+      "types": [
+        "EX"
+      ],
+      "template": "Fyraåringsserien 2025: Körs under året som en serie med fem försök och final den 28/11 över 2140 meter auto med ett förstapris på 150 000 kr.",
+      "render": {
+        "sv": "Fyraåringsserien 2025: Körs under året som en serie med fem försök och final den 28/11 över 2140 meter auto med ett förstapris på 150 000 kr.",
+        "fi": "Fyraåringsserien 2025: ajetaan vuoden aikana viiden karsinnan sarjana, jonka finaali ajetaan 28/11 matkalla 2140 metriä autolähdöllä, ensipalkintona 150 000 kr.",
+        "en": "Fyraåringsserien 2025: run during the year as a series with five qualifiers and a final on 28/11 over 2140 metres auto start with 150,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "most-points-after-five-qualifiers-directly-qualified-aby-stora-pris",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästen som har mest poäng efter de fem försöken är direktkvalificerad för finalen som är Åby Stora Pris*.",
+      "render": {
+        "sv": "Hästen som har mest poäng efter de fem försöken är direktkvalificerad för finalen som är Åby Stora Pris*.",
+        "fi": "Hevonen, jolla on eniten pisteitä viiden karsinnan jälkeen, on suoraan kvalifioitunut finaaliin, joka on Åby Stora Pris*.",
+        "en": "The horse with the most points after the five qualifiers is directly qualified for the final, Åby Stora Pris*."
+      }
+    },
+    {
+      "id": "valid-scratching-before-final-declaration-host-track-may-choose-from-qualifier-starters",
+      "types": [
+        "EX"
+      ],
+      "template": "Genom giltlig strykningsorsak (innan anmälan till finalen gått ut) kan finalbanan välja bland de hästar som startat i försöken.",
+      "render": {
+        "sv": "Genom giltlig strykningsorsak (innan anmälan till finalen gått ut) kan finalbanan välja bland de hästar som startat i försöken.",
+        "fi": "Jos hyväksyttävä poisjääntisyy ilmenee ennen kuin ilmoittautuminen finaaliin on päättynyt, finaalirata voi valita niiden hevosten joukosta, jotka ovat startanneet karsinnoissa.",
+        "en": "If there is a valid scratching reason before final declarations have closed, the host track for the final may choose from among the horses that have started in the qualifiers."
+      }
+    },
+    {
+      "id": "in-this-case-host-track-may-choose-horse-from-other-distance",
+      "types": [
+        "EX"
+      ],
+      "template": "I det här fallet kan finalbanan välja bland häst från annan distans som startat i försöken.",
+      "render": {
+        "sv": "I det här fallet kan finalbanan välja bland häst från annan distans som startat i försöken.",
+        "fi": "Tässä tapauksessa finaalirata voi valita karsinnoissa startanneen hevosen toiselta matkalta.",
+        "en": "In this case, the host track for the final may choose a horse from another distance that has started in the qualifiers."
+      }
+    },
+    {
+      "id": "final-tiebreak-draw-decides",
+      "types": [
+        "EX"
+      ],
+      "template": "I sista hand avgör lottning.",
+      "render": {
+        "sv": "I sista hand avgör lottning.",
+        "fi": "Viime kädessä ratkaisee arvonta.",
+        "en": "A draw decides as the final tiebreaker."
+      }
+    },
+    {
+      "id": "remaining-six-breeders-course-horses-selected-on-points",
+      "types": [
+        "EX"
+      ],
+      "template": "De övriga sex hästarna i finalen - anmälda i Breeders Course 3 years old 2025 - uttages på poäng.",
+      "render": {
+        "sv": "De övriga sex hästarna i finalen - anmälda i Breeders Course 3 years old 2025 - uttages på poäng.",
+        "fi": "Finaalin kuusi muuta hevosta, jotka on ilmoitettu Breeders Course 3 years old 2025 -sarjaan, valitaan pisteiden perusteella.",
+        "en": "The remaining six horses for the final, entered in Breeders Course 3 years old 2025, are selected on points."
+      }
+    },
+    {
+      "id": "horse-also-entered-in-e3-final-must-start-there-first",
+      "types": [
+        "EX"
+      ],
+      "template": "Häst som även anmäls i E3 Final ska starta i E3 Final i första hand.",
+      "render": {
+        "sv": "Häst som även anmäls i E3 Final ska starta i E3 Final i första hand.",
+        "fi": "Hevosen, joka ilmoitetaan myös E3-finaaliin, on ensisijaisesti startattava E3-finaalissa.",
+        "en": "A horse that is also entered in the E3 Final must start in the E3 Final in the first instance."
+      }
+    },
+    {
+      "id": "horses-ranked-eleven-and-lower-may-not-start",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästar rankade 11 och sämre får ej starta.",
+      "render": {
+        "sv": "Hästar rankade 11 och sämre får ej starta.",
+        "fi": "Sijalle 11 tai sitä heikommaksi rankatut hevoset eivät saa startata.",
+        "en": "Horses ranked 11th or lower may not start."
+      }
+    },
+    {
+      "id": "horses-selected-and-ranked-by-start-points",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästar uttages och rankas efter startpoäng.",
+      "render": {
+        "sv": "Hästar uttages och rankas efter startpoäng.",
+        "fi": "Hevoset valitaan ja asetetaan paremmuusjärjestykseen starttipisteiden perusteella.",
+        "en": "The horses are selected and ranked by start points."
+      }
+    },
+    {
+      "id": "horses-are-selected-after-start-points-tas-ut-variant",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästarna tas ut efter startpoäng.",
+      "render": {
+        "sv": "Hästarna tas ut efter startpoäng.",
+        "fi": "Hevoset valitaan starttipisteiden perusteella.",
+        "en": "The horses are selected by start points."
+      }
+    },
+    {
+      "id": "horses-selected-via-seeding-start-points-and-start-prize-money",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästarna tas ut via seedning (startpoäng + startprissumma).",
+      "render": {
+        "sv": "Hästarna tas ut via seedning (startpoäng + startprissumma).",
+        "fi": "Hevoset valitaan seedauksen perusteella (starttipisteet + starttipalkintosumma).",
+        "en": "The horses are selected via seeding (start points + start prize money)."
+      }
+    },
+    {
+      "id": "horses-seeded-and-distributed-into-qualifiers-by-stake-race-rules",
+      "types": [
+        "EX"
+      ],
+      "template": "Hästarna seedas enligt Svensk Travsports seedningssystem och fördelas i uttagningslopp enligt Svensk Travsports regler för insatslopp.",
+      "render": {
+        "sv": "Hästarna seedas enligt Svensk Travsports seedningssystem och fördelas i uttagningslopp enligt Svensk Travsports regler för insatslopp.",
+        "fi": "Hevoset sijoitetaan Svensk Travsportin sijoitusjärjestelmän mukaisesti ja jaetaan karsintalähtöihin Svensk Travsportin panoslähtösääntöjen mukaan.",
+        "en": "The horses are seeded according to Svensk Travsport's seeding system and distributed into qualifying races according to Svensk Travsport's rules for stake races."
+      }
+    },
+    {
+      "id": "this-horse-may-choose-post-first-others-drawn-on-remaining-posts",
+      "types": [
+        "EX"
+      ],
+      "template": "*Denna häst får välja startspår först, övriga hästar lottas på resterande lediga spår.",
+      "render": {
+        "sv": "*Denna häst får välja startspår först, övriga hästar lottas på resterande lediga spår.",
+        "fi": "*Tämä hevonen saa valita lähtöratansa ensin, muut hevoset arvotaan jäljellä oleville vapaille radoille.",
+        "en": "*This horse may choose its post position first; the remaining horses are drawn into the remaining vacant post positions."
+      }
+    },
+    {
+      "id": "driven-by-invited-drivers",
+      "types": [
+        "EX"
+      ],
+      "template": "Körda av inbjudna kuskar.",
+      "render": {
+        "sv": "Körda av inbjudna kuskar.",
+        "fi": "Ajetaan kutsuttujen ohjastajien ajamina.",
+        "en": "Run by invited drivers."
+      }
+    },
+    {
+      "id": "krafft-b-trainer-series-five-rounds-final-4-june",
+      "types": [
+        "EX"
+      ],
+      "template": "KRAFFT:s B-tränarserie: Körs i fem omgångar och därefter en final den 4 juni.",
+      "render": {
+        "sv": "KRAFFT:s B-tränarserie: Körs i fem omgångar och därefter en final den 4 juni.",
+        "fi": "KRAFFT:n B-valmentajasarja: ajetaan viitenä osalähtönä ja sen jälkeen finaali 4. kesäkuuta.",
+        "en": "KRAFFT's B-trainer series: run in five rounds followed by a final on 4 June."
+      }
+    },
+    {
+      "id": "lantmannen-krafft-b-trainer-series-points-four-rounds-30-14-10-7-5-4-3-2",
+      "types": [
+        "EX"
+      ],
+      "template": "Lantmännen KRAFFT:s B-tränarserie: Poängberäkning i de fyra omgångarna enligt följande 30-14-10-7-5-4-3(-2).",
+      "render": {
+        "sv": "Lantmännen KRAFFT:s B-tränarserie: Poängberäkning i de fyra omgångarna enligt följande 30-14-10-7-5-4-3(-2).",
+        "fi": "Lantmännen KRAFFT:n B-valmentajasarja: pisteet neljässä osalähdössä lasketaan seuraavasti 30-14-10-7-5-4-3(-2).",
+        "en": "Lantmännen KRAFFT's B-trainer series: points in the four rounds are awarded as follows: 30-14-10-7-5-4-3(-2)."
+      }
+    },
+    {
+      "id": "winning-horse-trainer-in-final-wins-honorary-prize-from-krafft",
+      "types": [
+        "EX"
+      ],
+      "template": "Segrande hästs tränare i finalen vinner hederspris från KRAFFT.",
+      "render": {
+        "sv": "Segrande hästs tränare i finalen vinner hederspris från KRAFFT.",
+        "fi": "Finaalin voittaneen hevosen valmentaja saa KRAFFT:n kunniapalkinnon.",
+        "en": "The trainer of the winning horse in the final receives an honorary prize from KRAFFT."
+      }
+    },
+    {
+      "id": "rider-who-wins-final-receives-gift-card-worth-amount",
+      "types": [
+        "EX"
+      ],
+      "template": "Den ryttare som vinner finalen erhåller ett presentkort till ett värde av {amount_kr} kr.",
+      "render": {
+        "sv": "Den ryttare som vinner finalen erhåller ett presentkort till ett värde av {amount_kr} kr.",
+        "fi": "Finaalin voittava ratsastaja saa {amount_kr} kr arvoisen lahjakortin.",
+        "en": "The rider who wins the final receives a gift card worth {amount_kr} SEK."
+      }
+    },
+    {
+      "id": "gavleborgs-monte-serie-2026-18-qualifiers-final-gavle-5-october",
+      "types": [
+        "EX"
+      ],
+      "template": "Regler Gävleborgs Montéserie 2026: 18 försök rids under året i Bollnäs, Gävle och på Hagmyren där de tolv främsta ryttarna kvalificerar sig till final på Gävle 5 oktober.",
+      "render": {
+        "sv": "Regler Gävleborgs Montéserie 2026: 18 försök rids under året i Bollnäs, Gävle och på Hagmyren där de tolv främsta ryttarna kvalificerar sig till final på Gävle 5 oktober.",
+        "fi": "Gävleborgin Monté-sarjan 2026 säännöt: vuoden aikana ratsastetaan 18 osalähtöä Bollnäsissä, Gävlessä ja Hagmyrenissä, ja kaksitoista parasta ratsastajaa karsii Gävlessä 5. lokakuuta ajettavaan finaaliin.",
+        "en": "Rules for Gävleborgs Montéserie 2026: 18 qualifying races are ridden during the year in Bollnäs, Gävle and Hagmyren, and the twelve best riders qualify for the final in Gävle on 5 October."
+      }
+    },
+    {
+      "id": "series-open-for-b-trained-horses-sweden-denmark-amateur-b-trained-norway",
+      "types": [
+        "EX"
+      ],
+      "template": "Serien är öppen för B-tränade hästar i Sverige och Danmark samt Amatör- och B-tränade hästar i Norge.",
+      "render": {
+        "sv": "Serien är öppen för B-tränade hästar i Sverige och Danmark samt Amatör- och B-tränade hästar i Norge.",
+        "fi": "Sarja on avoin B-valmennetuille hevosille Ruotsissa ja Tanskassa sekä amatööri- ja B-valmennetuille hevosille Norjassa.",
+        "en": "The series is open to B-trained horses in Sweden and Denmark, and to amateur- and B-trained horses in Norway."
+      }
+    },
+    {
+      "id": "norwegian-apprentices-momarken-at-least-18-max-150-sulky-races-2024",
+      "types": [
+        "EX"
+      ],
+      "template": "Även norska lärlingar tillhörande Momarken som fyllt 18 år med högst 150 sulkylopp under 2024.",
+      "render": {
+        "sv": "Även norska lärlingar tillhörande Momarken som fyllt 18 år med högst 150 sulkylopp under 2024.",
+        "fi": "Myös Momarkeniin kuuluvat norjalaiset oppilaat, jotka ovat täyttäneet 18 vuotta ja ajaneet enintään 150 sulkylähtöä vuonna 2024.",
+        "en": "Norwegian apprentices attached to Momarken are also eligible if they are at least 18 years old and have driven at most 150 sulky races during 2024."
+      }
+    },
+    {
+      "id": "stoserien-2025-six-qualifiers-final-26-september-2140-volt-150k",
+      "types": [
+        "EX"
+      ],
+      "template": "Stoserien 2025: Körs under året som en serie med sex försök och final den 26 september över 2140 meter voltstart med 150 000 kr i förstapris.",
+      "render": {
+        "sv": "Stoserien 2025: Körs under året som en serie med sex försök och final den 26 september över 2140 meter voltstart med 150 000 kr i förstapris.",
+        "fi": "Stoserien 2025: ajetaan vuoden aikana kuuden karsinnan sarjana, jonka finaali ajetaan 26. syyskuuta matkalla 2140 metriä volttilähdöllä, ensipalkintona 150 000 kr.",
+        "en": "Stoserien 2025: run during the year as a series with six qualifiers and a final on 26 September over 2140 metres volt start with 150,000 SEK to the winner."
+      }
+    },
+    {
+      "id": "summer-meeting-halmstad-qualifiers-halmstad-bjerke-aby-jagersro-charlottenlund",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Halmstad: Försök körs på Halmstad 26/5, Bjerke 7/6, Åby 12/6, Jägersro 17/6 och Charlottenlund 22/6.",
+      "render": {
+        "sv": "Summer Meeting Halmstad: Försök körs på Halmstad 26/5, Bjerke 7/6, Åby 12/6, Jägersro 17/6 och Charlottenlund 22/6.",
+        "fi": "Summer Meeting Halmstad: karsinnat ajetaan Halmstadissa 26/5, Bjerkessä 7/6, Åbyssä 12/6, Jägersrossa 17/6 ja Charlottenlundissa 22/6.",
+        "en": "Summer Meeting Halmstad: qualifiers are run at Halmstad 26/5, Bjerke 7/6, Åby 12/6, Jägersro 17/6 and Charlottenlund 22/6."
+      }
+    },
+    {
+      "id": "summer-meeting-mares-qualifiers-bjerke-halmstad-charlottenlund-aby-jagersro",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Mares: Försök körs på Bjerke 7/6, Halmstad 23/6, Charlottenlund 2/7, Åby 10/7 och Jägersro 15/7.",
+      "render": {
+        "sv": "Summer Meeting Mares: Försök körs på Bjerke 7/6, Halmstad 23/6, Charlottenlund 2/7, Åby 10/7 och Jägersro 15/7.",
+        "fi": "Summer Meeting Mares: karsinnat ajetaan Bjerkessä 7/6, Halmstadissa 23/6, Charlottenlundissa 2/7, Åbyssä 10/7 ja Jägersrossa 15/7.",
+        "en": "Summer Meeting Mares: qualifiers are run at Bjerke 7/6, Halmstad 23/6, Charlottenlund 2/7, Åby 10/7 and Jägersro 15/7."
+      }
+    },
+    {
+      "id": "summer-meeting-monte-qualifiers-charlottenlund-aby-bjerke-jagersro-halmstad",
+      "types": [
+        "EX"
+      ],
+      "template": "Summer Meeting Monté: Försök körs på Charlottenlund 3/8, Åby 7/8, Bjerke 19/8, Jägersro 19/8 och Halmstad 25/8.",
+      "render": {
+        "sv": "Summer Meeting Monté: Försök körs på Charlottenlund 3/8, Åby 7/8, Bjerke 19/8, Jägersro 19/8 och Halmstad 25/8.",
+        "fi": "Summer Meeting Monté: karsinnat ajetaan Charlottenlundissa 3/8, Åbyssä 7/8, Bjerkessä 19/8, Jägersrossa 19/8 ja Halmstadissa 25/8.",
+        "en": "Summer Meeting Monté: qualifiers are run at Charlottenlund 3/8, Åby 7/8, Bjerke 19/8, Jägersro 19/8 and Halmstad 25/8."
+      }
+    },
+    {
+      "id": "series-comprises-13-qualifying-races",
+      "types": [
+        "EX"
+      ],
+      "template": "Serien omfattar 13 försökslopp.",
+      "render": {
+        "sv": "Serien omfattar 13 försökslopp.",
+        "fi": "Sarjaan kuuluu 13 karsintalähtöä.",
+        "en": "The series comprises 13 qualifying races."
       }
     }
   ]

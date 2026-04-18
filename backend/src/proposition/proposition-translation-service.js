@@ -650,6 +650,8 @@ export function normalizeTemplate(sentence, propositionType = null) {
     .replace(/^För alla försök gäller att tvångsprissumman beräknas utifrån gällande regler för landet där försöket körs\.$/g, 'För alla försök gäller att tvångsprissumman beräknas ut ifrån gällande regler för landet där försöket körs.')
     .replace(/^Försök 1,3,5 körs med proposition 50\.001-([\d. ]+) kr\.$/g, 'Försök 1, 3 och 5 körs med proposition 50.001-{amount_kr} kr.')
     .replace(/^Försök 2,4,6 körs med proposition 170\.001-([\d. ]+) kr\.$/g, 'Försök 2, 4 och 6 körs med proposition 170.001-{amount_kr} kr.')
+    .replace(/^4-13 hästar: Ett E3 Chansen \(max (\d+) startande\) körs med ([\d. ]+) kr i förstapris\.$/g, '4-13 hästar: Ett E3 Chansen (max {runner_count} startande) körs med {amount_kr} kr i förstapris.')
+    .replace(/^Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen \(max (\d+) startande per lopp\) körs med vardera ([\d. ]+) kr i förstapris\.$/g, 'Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen (max {runner_count} startande per lopp) körs med vardera {amount_kr} kr i förstapris.')
     .replace(/^Final på (.+?) (\d+\/\d+)\.$/g, 'Final på {track_name} {date_text}.')
     .replace(/^Hästarna från försök 1 startar i finalen från distansen (\d{3,4})\s*m, hästar från försök 2 startar från distansen (\d{3,4})\s*m och hästar från försök 3 från distansen (\d{3,4})\s*m\.$/g, 'Hästarna från försök 1 startar i finalen från distansen {distance_m_1} m, hästar från försök 2 startar från distansen {distance_m_2} m och hästar från försök 3 från distansen {distance_m_3} m.')
     .replace(/^DubbelCupen Meeting (\d+): Försök körs på (.+)\.$/g, 'DubbelCupen Meeting {meeting_number}: Försök körs på {meeting_schedule}.')
@@ -818,6 +820,8 @@ function extractVariables(sentence, propositionType = null) {
   const entryFeeKrExcludingVat = text.match(/^Anmälningsavgift:\s*([\d. ]+) kr exkl moms\.$/i)
   const entryFeeExcludingVat = text.match(/^Anmälningsavgift\s+([\d. ]+) kr \(exkl moms\)\.$/i)
   const startEntryFeeIncludingVat = text.match(/^Startanmälningsavgiften till detta lopp är ([\d. ]+) kr inkl\.? moms\.$/i)
+  const e3ChansenOneRace = text.match(/^4-13 hästar: Ett E3 Chansen \(max (\d+) startande\) körs med ([\d. ]+) kr i förstapris\.$/i)
+  const e3ChansenTwoRaces = text.match(/^Antal lopp, beroende på antal godkända hästar vid tiden för startanmälan: 14 eller fler hästar: Två E3 Chansen \(max (\d+) startande per lopp\) körs med vardera ([\d. ]+) kr i förstapris\.$/i)
   const distance = text.match(/\b(\d{3,4})\s*m\b/)
   const otherHorsesDistance = text.match(/^Övriga hästar startar från distansen (\d{3,4}) meter\.$/i)
   const underAgeDriversDistance = text.match(/^Hästar som körs av kuskar som ännu inte fyllt (\d+) år startar på distansen (\d{3,4}) meter\.$/i)
@@ -885,6 +889,14 @@ function extractVariables(sentence, propositionType = null) {
     vars.distance_m_1 = threeQualifierFinalDistances[1]
     vars.distance_m_2 = threeQualifierFinalDistances[2]
     vars.distance_m_3 = threeQualifierFinalDistances[3]
+  }
+  if (e3ChansenOneRace) {
+    vars.runner_count = e3ChansenOneRace[1]
+    vars.amount_kr = e3ChansenOneRace[2]
+  }
+  if (e3ChansenTwoRaces) {
+    vars.runner_count = e3ChansenTwoRaces[1]
+    vars.amount_kr = e3ChansenTwoRaces[2]
   }
   if (dubbelCupMeetingIntro) {
     vars.meeting_number = dubbelCupMeetingIntro[1]

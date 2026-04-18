@@ -745,8 +745,8 @@ test('translates EX standalone series point-allocation and gift-card one-liners'
   )
 
   assert.equal(riderSeries.translated, true)
-  assert.equal(riderSeries.quality, 'partial-rule-match')
-  assert.equal(riderSeries.text, 'One point is awarded to the other riders taking part in the races. One point is also awarded to riders who are disqualified or do not complete the race. The rider with the most points in the main series receives a gift card worth 5,000 SEK. The rider who wins the final receives a gift card worth 10,000 SEK.')
+  assert.equal(riderSeries.quality, 'rule-match')
+  assert.equal(riderSeries.text, 'One point is awarded to the other riders taking part in the races. One point is also awarded to riders who are disqualified or do not complete the race. The rider with the most points in the main series receives a gift card worth 5,000 SEK. The rider who wins the final receives a gift card worth 10.000 SEK.')
 
   assert.equal(driverSeries.translated, true)
   assert.equal(driverSeries.quality, 'rule-match')

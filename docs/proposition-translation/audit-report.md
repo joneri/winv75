@@ -1,6 +1,6 @@
 # Proposition translation audit
 
-Generated: 2026-04-18T13:44:18.242Z
+Generated: 2026-04-18T17:51:12.746Z
 
 ## Scope
 
@@ -16,8 +16,8 @@ Generated: 2026-04-18T13:44:18.242Z
 - Unique full texts: 14522
 - Sentence entries: 142796
 - Unique sentence templates: 1474
-- Matched sentence entries: 140999 (98.74%)
-- Matched unique sentence templates: 384 (26.05%)
+- Matched sentence entries: 141314 (98.96%)
+- Matched unique sentence templates: 463 (31.41%)
 
 ## Type summary
 
@@ -29,7 +29,7 @@ Generated: 2026-04-18T13:44:18.242Z
 | FX | 3435 | 111 | 4519 | 4519 | 100% |
 | T | 10092 | 1151 | 32292 | 32292 | 100% |
 | P | 10091 | 283 | 27514 | 27514 | 100% |
-| EX | 11071 | 1156 | 19581 | 17784 | 90.82% |
+| EX | 11071 | 1156 | 19581 | 18099 | 92.43% |
 | H | 1217 | 249 | 1217 | 1217 | 100% |
 
 ## Top matched templates
@@ -64,33 +64,33 @@ Generated: 2026-04-18T13:44:18.242Z
 | EX | `{eligibility_subject}.` | 8 | 3-åriga och äldre svenska ston som tjänat 175 001 - 750 000 kr startar från distansen 2140 (STL Stodivisionen). |
 | EX | `- värde 10.000 USD).` | 6 | - värde 10.000 USD). |
 | EX | `(Hederspris till segrande hästs ägare i finalen den 31/12: Fri levande fölavgift 2026 i Ecurie D.` | 6 | (Hederspris till segrande hästs ägare i finalen den 31/12: Fri levande fölavgift 2026 i Ecurie D. |
-| EX | `Även norska lärlingar tillhörande Momarken som fyllt 18 år med högst 150 sulkylopp under 2024.` | 6 | Även norska lärlingar tillhörande Momarken som fyllt 18 år med högst 150 sulkylopp under 2024. |
-| EX | `Följ ställningen på hagmyren.se.` | 5 | Följ ställningen på hagmyren.se. |
-| EX | `Försök 2, 4 och 6 körs med proposition 190.001-{amount_kr} kr.` | 5 | Försök 2, 4 och 6 körs med proposition 190.001-475.000 kr. |
-| EX | `Hederspriser.` | 5 | Hederspriser. |
-| EX | `Häst med lägsta seedningstal rankas som nr 1, den med näst lägsta som nr 2 osv.` | 5 | Häst med lägsta seedningstal rankas som nr 1, den med näst lägsta som nr 2 osv. |
-| EX | `Hästar som startat startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter.` | 5 | Hästar som startat startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter. |
-| EX | `Järvsöfaks UngdomsCup: En kuskserie för ungdomar födda 1995 eller senare med sex försök och en final på Hagmyren 26 juli.` | 5 | Järvsöfaks UngdomsCup: En kuskserie för ungdomar födda 1995 eller senare med sex försök och en final på Hagmyren 26 juli. |
-| EX | `Loppet är endast öppet för Europafödda hästar.` | 5 | Loppet är endast öppet för Europafödda hästar. |
-| EX | `Om 13-24 hästar anmäls delas loppet enligt regler för Svensk Travsport regler för seedning av insatslopp.` | 5 | Om 13-24 hästar anmäls delas loppet enligt regler för Svensk Travsport regler för seedning av insatslopp. |
-| EX | `Om 7-12 hästar anmäls körs loppet enligt anmälningslista.` | 5 | Om 7-12 hästar anmäls körs loppet enligt anmälningslista. |
-| EX | `Om det anmäls 13-24 hästar blir det två lopp med de sex främsta i respektive avdelning till final.` | 5 | Om det anmäls 13-24 hästar blir det två lopp med de sex främsta i respektive avdelning till final. |
-| EX | `Om en kusk är avstängd i samband med finalen väljer banan/landet ut en ny representant.` | 5 | Om en kusk är avstängd i samband med finalen väljer banan/landet ut en ny representant. |
-| EX | `Om försöksvinnare inte kommer till start reserveras upp till fem platser för hästar som startat och samlat poäng i Gulddivisionens försök under meeting 3 enligt sedvanlig STL poängräkning.` | 5 | Om försöksvinnare inte kommer till start reserveras upp till fem platser för hästar som startat och samlat poäng i Gulddivisionens försök under meeting 3 enligt sedvanlig STL poängräkning. |
-| EX | `Om även trean är kvalificerad så erhåller fyran platsen osv.` | 5 | Om även trean är kvalificerad så erhåller fyran platsen osv. |
-| EX | `Rebuff's Stoserie: En stoserie från februari till juni 2025 med totalt sex lopp.` | 5 | Rebuff's Stoserie: En stoserie från februari till juni 2025 med totalt sex lopp. |
-| EX | `Regler Bollnästravets Stoserie: Stoserien körs i sex försök; 15/8, 22/8, 28/8, 23/9, 29/9 och 13/10.` | 5 | Regler Bollnästravets Stoserie: Stoserien körs i sex försök; 15/8, 22/8, 28/8, 23/9, 29/9 och 13/10. |
-| EX | `Regler Gulddivisionens Final på Gävle 17 maj: Alla försöksvinnare reserveras en plats.` | 5 | Regler Gulddivisionens Final på Gävle 17 maj: Alla försöksvinnare reserveras en plats. |
-| EX | `Segrande kusk vinner en studieresa till USA sponsrad av Marcus Melander Stable.` | 5 | Segrande kusk vinner en studieresa till USA sponsrad av Marcus Melander Stable. |
-| EX | `Sleipner Cup 2026: Försök körs på Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 och Bs 27/5.` | 5 | Sleipner Cup 2026: Försök körs på Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 och Bs 27/5. |
-| EX | `Spårval enligt Svensk Travsports regler för uttagningslopp.` | 5 | Spårval enligt Svensk Travsports regler för uttagningslopp. |
-| EX | `Startanmälningsavgift: 6 000 SEK.` | 5 | Startanmälningsavgift: 6 000 SEK. |
-| EX | `Stayerserien 2025: Körs under året som en serie med sex försök och final den 26 september över 3140 meter voltstart med 150 000 kr i förstapris.` | 5 | Stayerserien 2025: Körs under året som en serie med sex försök och final den 26 september över 3140 meter voltstart med 150 000 kr i förstapris. |
-| EX | `Svenska Travligans hederspriser till segrande hästs ägare och hästskötare.` | 5 | Svenska Travligans hederspriser till segrande hästs ägare och hästskötare. |
-| EX | `Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente gäller i Bröderna Djuses Utmaning.` | 5 | Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente gäller i Bröderna Djuses Utmaning. |
-| EX | `Vid fördelning av hästarna till uttagningsloppen går rank nr 1 till första avdelningen, nr 2 till andra osv i vändande ordning beroende på antalet uttagningslopp.` | 5 | Vid fördelning av hästarna till uttagningsloppen går rank nr 1 till första avdelningen, nr 2 till andra osv i vändande ordning beroende på antalet uttagningslopp. |
 | EX | `(Häst som inte väljer att starta i finalen beläggs med startförbud mellan 4/9-16/9).` | 4 | (Häst som inte väljer att starta i finalen beläggs med startförbud mellan 4/9-16/9). |
 | EX | `{start_method}.` | 4 | Autostart. |
+| EX | `Deltagande kuskar: Mattias Djuse, Mats E Djuse, Magnus A Djuse, Per Linderoth, Örjan Kihlström, Rikard N Skoglund, Marcus Lilius, Olli Koivunen, Tom Erik Solberg, Daniel Wäjersten, John Östman, Ulf Ohlsson.` | 4 | Deltagande kuskar: Mattias Djuse, Mats E Djuse, Magnus A Djuse, Per Linderoth, Örjan Kihlström, Rikard N Skoglund, Marcus Lilius, Olli Koivunen, Tom Erik Solberg, Daniel Wäjersten, John Östman, Ulf Ohlsson. |
+| EX | `Hästar som tjänat mellan 400.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 4 | Hästar som tjänat mellan 400.001-1.475.000 kr får ha obegränsat med startpoäng. |
+| EX | `Hästarna som kvalificerat sig från försök 1 startar från grunddistansen {distance_m} m, finalkvalificerade hästar från försök 2 startar från distansen {distance_m} m och från försök 3 från distansen {distance_m} m.` | 4 | Hästarna som kvalificerat sig från försök 1 startar från grunddistansen 2140m, finalkvalificerade hästar från försök 2 startar från distansen 2160m och från försök 3 från distansen 2180m. |
+| EX | `Kusk måste ha minst tio segrar i karriären och kusk som tidigare innehaft A-licens får ej delta.` | 4 | Kusk måste ha minst tio segrar i karriären och kusk som tidigare innehaft A-licens får ej delta. |
+| EX | `Lagerkrans till segrande häst.` | 4 | Lagerkrans till segrande häst. |
+| EX | `Loppet kan delas.` | 4 | Loppet kan delas. |
+| EX | `OBS! Gäller oavsett hur många hästar som anmäls till respektive bana.` | 4 | OBS! Gäller oavsett hur många hästar som anmäls till respektive bana. |
+| EX | `OBS! Loppet är endast för hästar tränade på Romme eller Rättvik.` | 4 | OBS! Loppet är endast för hästar tränade på Romme eller Rättvik. |
+| EX | `Om du anmäler till både prop 7 och prop 8 ska prop 7 vara i första hand och prop 8 i andra hand.` | 4 | Om du anmäler till både prop 7 och prop 8 ska prop 7 vara i första hand och prop 8 i andra hand. |
+| EX | `Om försök inte körs så kvalificerar sig de tre hästarna med mest poäng vid startanmälan sig för finalen.` | 4 | Om försök inte körs så kvalificerar sig de tre hästarna med mest poäng vid startanmälan sig för finalen. |
+| EX | `Om inkvalad häst inte startanmäls till finalen, kan finalbanan välja bland de hästar som har startat i försöken.` | 4 | Om inkvalad häst inte startanmäls till finalen, kan finalbanan välja bland de hästar som har startat i försöken. |
+| EX | `Priset ska erövras tre gånger av samma ägarkonstellation för att bli ständig egendom.` | 4 | Priset ska erövras tre gånger av samma ägarkonstellation för att bli ständig egendom. |
+| EX | `Regler UmåkerMästaren: Se prop 7.` | 4 | Regler UmåkerMästaren: Se prop 7. |
+| EX | `Skulle eventuellt fler än tolv hästar kvala in från samma distans så går de främsta från den distansen bland de inkvalade treorna med mest poäng vid anmälningstillfället vidare till finalen.` | 4 | Skulle eventuellt fler än tolv hästar kvala in från samma distans så går de främsta från den distansen bland de inkvalade treorna med mest poäng vid anmälningstillfället vidare till finalen. |
+| EX | `STL, Gulddivisionen).` | 4 | STL, Gulddivisionen). |
+| EX | `Svensk Uppfödningslöpning körs på Jägersro lördag 22/11 med ett förstapris på 800 000 kr.` | 4 | Svensk Uppfödningslöpning körs på Jägersro lördag 22/11 med ett förstapris på 800 000 kr. |
+| EX | `Således är det alltså alltid tre hästar från varje försök som går till final.` | 4 | Således är det alltså alltid tre hästar från varje försök som går till final. |
+| EX | `Tio hästar via inbjudningar från Åby.` | 4 | Tio hästar via inbjudningar från Åby. |
+| EX | `Tre försök, fyra hästar från varje uttagning till final.` | 4 | Tre försök, fyra hästar från varje uttagning till final. |
+| EX | `Två försök, sex hästar från varje uttagning till final.` | 4 | Två försök, sex hästar från varje uttagning till final. |
+| EX | `Vid 13-24 anmälda körs två uttagningslopp, vid 25-36 körs tre uttagningslopp, vid 37-48 körs fyra uttagningslopp o s v upp till sex uttagningslopp.` | 4 | Vid 13-24 anmälda körs två uttagningslopp, vid 25-36 körs tre uttagningslopp, vid 37-48 körs fyra uttagningslopp o s v upp till sex uttagningslopp. |
+| EX | `Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng vid startanmälan.` | 4 | Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng vid startanmälan. |
+| EX | `Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng.` | 4 | Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng. |
+| EX | `Vid dött lopp om andraplatsen går hästen med mest poäng (vid startanmälan till försöket) vidare till finalen.` | 4 | Vid dött lopp om andraplatsen går hästen med mest poäng (vid startanmälan till försöket) vidare till finalen. |
+| EX | `Vid eventuellt dött lopp går hästen/hästarna med mest poäng vid startanmälan i försöket vidare, därefter lottning.` | 4 | Vid eventuellt dött lopp går hästen/hästarna med mest poäng vid startanmälan i försöket vidare, därefter lottning. |
 
 ## Confidence notes
 
