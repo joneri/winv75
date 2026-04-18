@@ -2099,6 +2099,326 @@ test('uses explicit rules for the larger EX short admin, prize, and qualificatio
   assert.equal(finalSpecialPoints.text, 'The horses are eligible to start in the final according to a special points calculation; see kalmartravet.se - Sport - Statistik/serier.')
 })
 
+test('uses explicit rules for the larger EX prize, rider, and regulation bundle', async () => {
+  const prizesPlacesOneToThree = await translatePropositionText(
+    'Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare.',
+    'EX',
+    'en'
+  )
+  const blanketsPlacesOneToThree = await translatePropositionText('Hederstäcke till hästar plats 1-3.', 'EX', 'fi')
+  const bodenPriority = await translatePropositionText(
+    'Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng.',
+    'EX',
+    'en'
+  )
+  const extraPointAfterFiveStarts = await translatePropositionText(
+    'Hästar som gjort mer än fem starter på fått ytterligare 1 poäng.',
+    'EX',
+    'fi'
+  )
+  const ridersUnder18Distance = await translatePropositionText(
+    'Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter.',
+    'EX',
+    'en'
+  )
+  const drawPostsBehindGate = await translatePropositionText(
+    'Hästarna lottas till spår 1, 3 och 5 bakom startbilen.',
+    'EX',
+    'fi'
+  )
+  const bergsakerDrivers = await translatePropositionText(
+    'Hästarna ska köras av Bergsåkerslicensierade kuskar.',
+    'EX',
+    'en'
+  )
+  const requiredFinalStart = await translatePropositionText(
+    'Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).',
+    'EX',
+    'en'
+  )
+  const approvedMonte = await translatePropositionText(
+    'I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga.',
+    'EX',
+    'fi'
+  )
+  const sameDistanceJagersro = await translatePropositionText(
+    'I finalen på Jägersro startar inkvalad häst från samma distans som i försöket.',
+    'EX',
+    'en'
+  )
+  const regulationsApply = await translatePropositionText(
+    'I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd.',
+    'EX',
+    'fi'
+  )
+
+  assert.equal(prizesPlacesOneToThree.translated, true)
+  assert.equal(prizesPlacesOneToThree.quality, 'rule-match')
+  assert.equal(prizesPlacesOneToThree.text, "Honorary prizes for places 1-3 to the winning horse's driver, owner and groom.")
+
+  assert.equal(blanketsPlacesOneToThree.translated, true)
+  assert.equal(blanketsPlacesOneToThree.quality, 'rule-match')
+  assert.equal(blanketsPlacesOneToThree.text, 'Kunniapeitteet sijoille 1-3 sijoittuville hevosille.')
+
+  assert.equal(bodenPriority.translated, true)
+  assert.equal(bodenPriority.quality, 'rule-match')
+  assert.equal(bodenPriority.text, 'Horses trained since 1/10-2025 by trainers licensed at Bodentravet have priority in this race regardless of starting points.')
+
+  assert.equal(extraPointAfterFiveStarts.translated, true)
+  assert.equal(extraPointAfterFiveStarts.quality, 'rule-match')
+  assert.equal(extraPointAfterFiveStarts.text, 'Hevoset, jotka ovat tehneet enemmän kuin viisi starttia, saavat yhden lisäpisteen.')
+
+  assert.equal(ridersUnder18Distance.translated, true)
+  assert.equal(ridersUnder18Distance.quality, 'rule-match')
+  assert.equal(ridersUnder18Distance.text, 'Horses ridden by riders who have not yet turned 18 start from the 2140-metre distance.')
+
+  assert.equal(drawPostsBehindGate.translated, true)
+  assert.equal(drawPostsBehindGate.quality, 'rule-match')
+  assert.equal(drawPostsBehindGate.text, 'Hevoset arvotaan lähtöradoille 1, 3 ja 5 lähtöauton taakse.')
+
+  assert.equal(bergsakerDrivers.translated, true)
+  assert.equal(bergsakerDrivers.quality, 'rule-match')
+  assert.equal(bergsakerDrivers.text, 'The horses are to be driven by drivers licensed at Bergsåker.')
+
+  assert.equal(requiredFinalStart.translated, true)
+  assert.equal(requiredFinalStart.quality, 'rule-match')
+  assert.equal(requiredFinalStart.text, 'Horses qualifying for the final are required to start there (required means that the horse must start in the final and is otherwise subject to a starting ban during the period 22 June-4 July 2025).')
+
+  assert.equal(approvedMonte.translated, true)
+  assert.equal(approvedMonte.quality, 'rule-match')
+  assert.equal(approvedMonte.text, 'Tähän lähtöön osallistuminen edellyttää hyväksyttyä montésuoritusta (karsinta tai startti).')
+
+  assert.equal(sameDistanceJagersro.translated, true)
+  assert.equal(sameDistanceJagersro.quality, 'rule-match')
+  assert.equal(sameDistanceJagersro.text, 'In the final at Jägersro, a qualified horse starts from the same distance as in the qualifier.')
+
+  assert.equal(regulationsApply.translated, true)
+  assert.equal(regulationsApply.quality, 'rule-match')
+  assert.equal(regulationsApply.text, 'Muutoin lähdöt ajetaan Svensk Travsportin kilpailusääntöjen mukaisesti, ja mahdolliset sääntörikkomukset johtavat seuraamuksiin.')
+})
+
+test('uses explicit rules for the larger EX start-point threshold and short admin bundle', async () => {
+  const max500StartPoints = await translatePropositionText(
+    'Hästar som tjänat mellan 1.275.001-5.525.000 kr får ha högst 500 startpoäng.',
+    'EX',
+    'en'
+  )
+  const unlimited150 = await translatePropositionText(
+    'Hästar som tjänat mellan 150.001-400.000 kr får ha obegränsat med startpoäng.',
+    'EX',
+    'fi'
+  )
+  const unlimited225 = await translatePropositionText(
+    'Hästar som tjänat mellan 225.001-575.000 kr får ha obegränsat med startpoäng.',
+    'EX',
+    'en'
+  )
+  const unlimited65 = await translatePropositionText(
+    'Hästar som tjänat mellan 65.001-225.000 kr får ha obegränsat med startpoäng.',
+    'EX',
+    'fi'
+  )
+  const breedersCourseRules = await translatePropositionText('I övrigt se regler på breederscourse.com.', 'EX', 'en')
+  const noALicenceEarlier = await translatePropositionText('Kusk får ej tidigare haft A-licens.', 'EX', 'fi')
+  const ownTrainedHorseFirst = await translatePropositionText('Kusk kör i första hand egentränad häst.', 'EX', 'en')
+  const femaleDrivers = await translatePropositionText('Körda av kvinnliga kuskar.', 'EX', 'fi')
+  const invitedDrivers = await translatePropositionText(
+    'Körs av inbjudna kuskar från Visby, Solvalla och Frankrike.',
+    'EX',
+    'en'
+  )
+  const noALicenceKorsven = await translatePropositionText('Körsven får ej ha innehaft A-licens.', 'EX', 'fi')
+  const laurelWreathRider = await translatePropositionText('Lagerkrans till segrande ryttare.', 'EX', 'en')
+  const financedByPartners = await translatePropositionText(
+    'Loppet finansieras av Södra Hälsinglands Travsällskap och samarbetspartners.',
+    'EX',
+    'fi'
+  )
+  const resultLineAsOneRace = await translatePropositionText(
+    'Loppet kommer att noteras i hästens resultatrad som ett lopp (1:an, 2:an och 3:an i finalen - övriga oplacerade).',
+    'EX',
+    'en'
+  )
+  const bergsakerOnly = await translatePropositionText(
+    'Loppet är endast öppet för Bergsåkertränade hästar som varit i oavbruten Bergsåkersträning från minst 2025-11-01.',
+    'EX',
+    'fi'
+  )
+
+  assert.equal(max500StartPoints.translated, true)
+  assert.equal(max500StartPoints.quality, 'rule-match')
+  assert.equal(max500StartPoints.text, 'Horses that have earned between 1,275,001 and 5.525.000 kr may have at most 500 start points.')
+
+  assert.equal(unlimited150.translated, true)
+  assert.equal(unlimited150.quality, 'rule-match')
+  assert.equal(unlimited150.text, 'Hevosilla, jotka ovat ansainneet välillä 150.001-400.000 kr, saa olla rajoittamattomasti lähtöpisteitä.')
+
+  assert.equal(unlimited225.translated, true)
+  assert.equal(unlimited225.quality, 'rule-match')
+  assert.equal(unlimited225.text, 'Horses that have earned between 225,001 and 575.000 kr may have unlimited start points.')
+
+  assert.equal(unlimited65.translated, true)
+  assert.equal(unlimited65.quality, 'rule-match')
+  assert.equal(unlimited65.text, 'Hevosilla, jotka ovat ansainneet välillä 65.001-225.000 kr, saa olla rajoittamattomasti lähtöpisteitä.')
+
+  assert.equal(breedersCourseRules.translated, true)
+  assert.equal(breedersCourseRules.quality, 'rule-match')
+  assert.equal(breedersCourseRules.text, 'Otherwise, see the rules at breederscourse.com.')
+
+  assert.equal(noALicenceEarlier.translated, true)
+  assert.equal(noALicenceEarlier.quality, 'rule-match')
+  assert.equal(noALicenceEarlier.text, 'Ohjastajalla ei saa olla aiempaa A-lisenssiä.')
+
+  assert.equal(ownTrainedHorseFirst.translated, true)
+  assert.equal(ownTrainedHorseFirst.quality, 'rule-match')
+  assert.equal(ownTrainedHorseFirst.text, 'The driver drives a self-trained horse as first priority.')
+
+  assert.equal(femaleDrivers.translated, true)
+  assert.equal(femaleDrivers.quality, 'rule-match')
+  assert.equal(femaleDrivers.text, 'Naisten ohjastamia.')
+
+  assert.equal(invitedDrivers.translated, true)
+  assert.equal(invitedDrivers.quality, 'rule-match')
+  assert.equal(invitedDrivers.text, 'Driven by invited drivers from Visby, Solvalla and France.')
+
+  assert.equal(noALicenceKorsven.translated, true)
+  assert.equal(noALicenceKorsven.quality, 'rule-match')
+  assert.equal(noALicenceKorsven.text, 'Ohjastajalla ei saa olla aiempaa A-lisenssiä.')
+
+  assert.equal(laurelWreathRider.translated, true)
+  assert.equal(laurelWreathRider.quality, 'rule-match')
+  assert.equal(laurelWreathRider.text, 'Laurel wreath to the winning rider.')
+
+  assert.equal(financedByPartners.translated, true)
+  assert.equal(financedByPartners.quality, 'rule-match')
+  assert.equal(financedByPartners.text, 'Lähtö rahoitetaan Södra Hälsinglands Travsällskapin ja yhteistyökumppaneiden toimesta.')
+
+  assert.equal(resultLineAsOneRace.translated, true)
+  assert.equal(resultLineAsOneRace.quality, 'rule-match')
+  assert.equal(resultLineAsOneRace.text, "The race will be recorded in the horse's result line as one race (1st, 2nd and 3rd in the final - others unplaced).")
+
+  assert.equal(bergsakerOnly.translated, true)
+  assert.equal(bergsakerOnly.quality, 'rule-match')
+  assert.equal(bergsakerOnly.text, 'Lähtö on avoin vain Bergsåkerissa valmennetuille hevosille, jotka ovat olleet yhtäjaksoisessa Bergsåker-valmennuksessa vähintään 2025-11-01 alkaen.')
+})
+
+test('uses explicit rules for the larger EX roster, link, prize, and short admin bundle', async () => {
+  const qualifiedDriversRoster = await translatePropositionText(
+    'Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood.',
+    'EX',
+    'en'
+  )
+  const franceRoster = await translatePropositionText(
+    'Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike).',
+    'EX',
+    'fi'
+  )
+  const uetGrandPrixOfTheUet = await translatePropositionText(
+    'Kvarstående hästar finns att läsa på: www.uet-trot.eu/en/grand-prix-of-the-uet/',
+    'EX',
+    'en'
+  )
+  const uetGrandPrix = await translatePropositionText(
+    'Kvarstående hästar finns att läsa på: www.uet-trot.eu/en/races/uet-grand-prix',
+    'EX',
+    'fi'
+  )
+  const krafftPoints = await translatePropositionText(
+    'Lantmännen KRAFFT:s B-tränarserie: Poängberäkning i försöken är 25-15-10-8-6-4-3-2.',
+    'EX',
+    'en'
+  )
+  const ostersundOnly = await translatePropositionText(
+    'Loppet är endast öppet för Östersundstränade hästar som varit i oavbruten Östersundsträning från minst 2025-10-01.',
+    'EX',
+    'fi'
+  )
+  const travrondensGuldklocka = await translatePropositionText(
+    'Läs mer om regler gällande Travrondens Guldklocka under prop 7.',
+    'EX',
+    'en'
+  )
+  const solvallaRoster = await translatePropositionText(
+    'Mattias Eriksson, Johan Lasson, Alf Nordemo och Christer Otterström (från Solvalla).',
+    'EX',
+    'fi'
+  )
+  const trophyOwner = await translatePropositionText('Pokal till segrande hästs ägare.', 'EX', 'en')
+  const mainSeriesStandings = await translatePropositionText(
+    'Poängställning grundserien: https://www.gavletravet.se/sport-och-spel/serier-och-ligor/hedlunds-akeri-abs-korsvensserie-2021/',
+    'EX',
+    'fi'
+  )
+  const giftCardRestaurant = await translatePropositionText(
+    'Presentkort i Solvallas restaurang till segrande hästs ägare.',
+    'EX',
+    'en'
+  )
+  const prizeMoneyFinal = await translatePropositionText('Prispengarna avser finalen.', 'EX', 'fi')
+  const amateurSmRules = await translatePropositionText(
+    'Regler Amatör-SM: Häst som startanmälts till detta lopp kan inte anmälas till annat uttagningslopp förrän detta lopp körts.',
+    'EX',
+    'en'
+  )
+  const finalRulesProp10 = await translatePropositionText('Regler finalen: Se under proposition 10.', 'EX', 'fi')
+
+  assert.equal(qualifiedDriversRoster.translated, true)
+  assert.equal(qualifiedDriversRoster.quality, 'rule-match')
+  assert.equal(qualifiedDriversRoster.text, 'Qualified drivers: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum and André Bood.')
+
+  assert.equal(franceRoster.translated, true)
+  assert.equal(franceRoster.quality, 'rule-match')
+  assert.equal(franceRoster.text, 'Jean-Philippe Bazire, Constance Chazal, Benjamin Debris ja Jérémy Roux (Ranskasta).')
+
+  assert.equal(uetGrandPrixOfTheUet.translated, true)
+  assert.equal(uetGrandPrixOfTheUet.quality, 'rule-match')
+  assert.equal(uetGrandPrixOfTheUet.text, 'Remaining horses can be found at: www.uet-trot.eu/en/grand-prix-of-the-uet/')
+
+  assert.equal(uetGrandPrix.translated, true)
+  assert.equal(uetGrandPrix.quality, 'rule-match')
+  assert.equal(uetGrandPrix.text, 'Jäljellä olevat hevoset löytyvät osoitteesta: www.uet-trot.eu/en/races/uet-grand-prix')
+
+  assert.equal(krafftPoints.translated, true)
+  assert.equal(krafftPoints.quality, 'rule-match')
+  assert.equal(krafftPoints.text, "Lantmännen KRAFFT's B-trainers' series: the points calculation in the qualifiers is 25-15-10-8-6-4-3-2.")
+
+  assert.equal(ostersundOnly.translated, true)
+  assert.equal(ostersundOnly.quality, 'rule-match')
+  assert.equal(ostersundOnly.text, 'Lähtö on avoin vain Östersundissa valmennetuille hevosille, jotka ovat olleet yhtäjaksoisessa Östersund-valmennuksessa vähintään 2025-10-01 alkaen.')
+
+  assert.equal(travrondensGuldklocka.translated, true)
+  assert.equal(travrondensGuldklocka.quality, 'rule-match')
+  assert.equal(travrondensGuldklocka.text, 'Read more about the rules concerning Travrondens Guldklocka under prop 7.')
+
+  assert.equal(solvallaRoster.translated, true)
+  assert.equal(solvallaRoster.quality, 'rule-match')
+  assert.equal(solvallaRoster.text, 'Mattias Eriksson, Johan Lasson, Alf Nordemo ja Christer Otterström (Solvallasta).')
+
+  assert.equal(trophyOwner.translated, true)
+  assert.equal(trophyOwner.quality, 'rule-match')
+  assert.equal(trophyOwner.text, "Trophy to the winning horse's owner.")
+
+  assert.equal(mainSeriesStandings.translated, true)
+  assert.equal(mainSeriesStandings.quality, 'rule-match')
+  assert.equal(mainSeriesStandings.text, 'Perussarjan pistetilanne: https://www.gavletravet.se/sport-och-spel/serier-och-ligor/hedlunds-akeri-abs-korsvensserie-2021/')
+
+  assert.equal(giftCardRestaurant.translated, true)
+  assert.equal(giftCardRestaurant.quality, 'rule-match')
+  assert.equal(giftCardRestaurant.text, "A gift card in Solvalla's restaurant to the winning horse's owner.")
+
+  assert.equal(prizeMoneyFinal.translated, true)
+  assert.equal(prizeMoneyFinal.quality, 'rule-match')
+  assert.equal(prizeMoneyFinal.text, 'Palkintorahat koskevat finaalia.')
+
+  assert.equal(amateurSmRules.translated, true)
+  assert.equal(amateurSmRules.quality, 'rule-match')
+  assert.equal(amateurSmRules.text, 'Rules for Amatör-SM: a horse entered to this race cannot be entered in another qualifying race until this race has been run.')
+
+  assert.equal(finalRulesProp10.translated, true)
+  assert.equal(finalRulesProp10.quality, 'rule-match')
+  assert.equal(finalRulesProp10.text, 'Finaalin säännöt: katso proposition 10 kohdalta.')
+})
+
 test('uses explicit rules for the larger EX summer-series calendar and intro bundle', async () => {
   const talentsScheduleA = await translatePropositionText(
     'Summer Meeting Talents: Försök körs på Bjerke 27/5, Åby 10/7, Jägersro 22/7, Halmstad 25/7 och Charlottenlund 27/7.',

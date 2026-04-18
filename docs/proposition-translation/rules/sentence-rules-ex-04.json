@@ -3802,5 +3802,473 @@
       "fi": "Hevoset ovat finaalissa starttioikeutettuja erityisen pistelaskennan perusteella, katso kalmartravet.se - Sport - Statistik/serier.",
       "en": "The horses are eligible to start in the final according to a special points calculation; see kalmartravet.se - Sport - Statistik/serier."
     }
+  },
+  {
+    "id": "honorary-prizes-places-1-3-to-winning-horses-driver-owner-and-groom",
+    "types": [
+      "EX"
+    ],
+    "template": "Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare.",
+    "render": {
+      "sv": "Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare.",
+      "fi": "Kunniapalkinnot sijoille 1-3 voittaneen hevosen ohjastajalle, omistajalle ja hoitajalle.",
+      "en": "Honorary prizes for places 1-3 to the winning horse's driver, owner and groom."
+    }
+  },
+  {
+    "id": "honorary-blankets-to-horses-places-1-3",
+    "types": [
+      "EX"
+    ],
+    "template": "Hederstäcke till hästar plats 1-3.",
+    "render": {
+      "sv": "Hederstäcke till hästar plats 1-3.",
+      "fi": "Kunniapeitteet sijoille 1-3 sijoittuville hevosille.",
+      "en": "Honorary blankets to the horses finishing in places 1-3."
+    }
+  },
+  {
+    "id": "horses-trained-since-2025-10-01-by-bodentravet-licensed-trainers-have-priority",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng.",
+    "render": {
+      "sv": "Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng.",
+      "fi": "Hevosilla, jotka ovat olleet 1/10-2025 lähtien Bodentravetissa lisensoidun valmentajan valmennuksessa, on etusija tässä lähdössä lähtöpisteistä riippumatta.",
+      "en": "Horses trained since 1/10-2025 by trainers licensed at Bodentravet have priority in this race regardless of starting points."
+    }
+  },
+  {
+    "id": "horses-with-more-than-five-starts-get-one-additional-point",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar som gjort mer än fem starter på fått ytterligare 1 poäng.",
+    "render": {
+      "sv": "Hästar som gjort mer än fem starter på fått ytterligare 1 poäng.",
+      "fi": "Hevoset, jotka ovat tehneet enemmän kuin viisi starttia, saavat yhden lisäpisteen.",
+      "en": "Horses with more than five starts receive an additional point."
+    }
+  },
+  {
+    "id": "horses-ridden-by-riders-under-18-start-from-2140-metres",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter.",
+    "render": {
+      "sv": "Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter.",
+      "fi": "Hevoset, joita ratsastavat ratsastajat, jotka eivät ole vielä täyttäneet 18 vuotta, starttaavat 2140 metrin matkalta.",
+      "en": "Horses ridden by riders who have not yet turned 18 start from the 2140-metre distance."
+    }
+  },
+  {
+    "id": "horses-drawn-to-posts-1-3-and-5-behind-starting-gate",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästarna lottas till spår 1, 3 och 5 bakom startbilen.",
+    "render": {
+      "sv": "Hästarna lottas till spår 1, 3 och 5 bakom startbilen.",
+      "fi": "Hevoset arvotaan lähtöradoille 1, 3 ja 5 lähtöauton taakse.",
+      "en": "The horses are drawn to posts 1, 3 and 5 behind the starting gate."
+    }
+  },
+  {
+    "id": "horses-to-be-driven-by-drivers-licensed-at-bergsaker",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästarna ska köras av Bergsåkerslicensierade kuskar.",
+    "render": {
+      "sv": "Hästarna ska köras av Bergsåkerslicensierade kuskar.",
+      "fi": "Hevosia saavat ohjastaa Bergsåkerissa lisensoidut ohjastajat.",
+      "en": "The horses are to be driven by drivers licensed at Bergsåker."
+    }
+  },
+  {
+    "id": "horses-qualifying-for-final-are-required-to-start-with-ban-period-2025-06-22-2025-07-04",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).",
+    "render": {
+      "sv": "Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).",
+      "fi": "Finaaliin kvalifioituvien hevosten on startattava finaalissa (velvollisuus tarkoittaa, että hevosen on startattava finaalissa, ja muuten sille asetetaan kilpailukielto ajalle 22. kesäkuuta-4. heinäkuuta 2025).",
+      "en": "Horses qualifying for the final are required to start there (required means that the horse must start in the final and is otherwise subject to a starting ban during the period 22 June-4 July 2025)."
+    }
+  },
+  {
+    "id": "approved-monte-performance-required-to-participate-in-this-race",
+    "types": [
+      "EX"
+    ],
+    "template": "I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga.",
+    "render": {
+      "sv": "I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga.",
+      "fi": "Tähän lähtöön osallistuminen edellyttää hyväksyttyä montésuoritusta (karsinta tai startti).",
+      "en": "An approved monté performance (qualifier or start) is required to take part in this race."
+    }
+  },
+  {
+    "id": "qualified-horse-starts-from-same-distance-in-jagersro-final-as-in-qualifier",
+    "types": [
+      "EX"
+    ],
+    "template": "I finalen på Jägersro startar inkvalad häst från samma distans som i försöket.",
+    "render": {
+      "sv": "I finalen på Jägersro startar inkvalad häst från samma distans som i försöket.",
+      "fi": "Jägersron finaalissa karsinnasta selvinnyt hevonen starttaa samalta matkalta kuin karsinnassa.",
+      "en": "In the final at Jägersro, a qualified horse starts from the same distance as in the qualifier."
+    }
+  },
+  {
+    "id": "otherwise-races-run-according-to-svensk-travsport-rules-and-violations-penalized",
+    "types": [
+      "EX"
+    ],
+    "template": "I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd.",
+    "render": {
+      "sv": "I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd.",
+      "fi": "Muutoin lähdöt ajetaan Svensk Travsportin kilpailusääntöjen mukaisesti, ja mahdolliset sääntörikkomukset johtavat seuraamuksiin.",
+      "en": "Otherwise, the races are run according to Svensk Travsport's Rules of Racing, and any rule violations will result in penalties."
+    }
+  },
+  {
+    "id": "horses-earned-between-1275001-and-amount-max-500-start-points",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar som tjänat mellan 1.275.001-{amount_kr} kr får ha högst 500 startpoäng.",
+    "render": {
+      "sv": "Hästar som tjänat mellan 1.275.001-{amount_kr} kr får ha högst 500 startpoäng.",
+      "fi": "Hevosilla, jotka ovat ansainneet välillä 1.275.001-{amount_kr} kr, saa olla enintään 500 lähtöpistettä.",
+      "en": "Horses that have earned between 1,275,001 and {amount_kr} kr may have at most 500 start points."
+    }
+  },
+  {
+    "id": "horses-earned-between-150001-and-amount-unlimited-start-points",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar som tjänat mellan 150.001-{amount_kr} kr får ha obegränsat med startpoäng.",
+    "render": {
+      "sv": "Hästar som tjänat mellan 150.001-{amount_kr} kr får ha obegränsat med startpoäng.",
+      "fi": "Hevosilla, jotka ovat ansainneet välillä 150.001-{amount_kr} kr, saa olla rajoittamattomasti lähtöpisteitä.",
+      "en": "Horses that have earned between 150,001 and {amount_kr} kr may have unlimited start points."
+    }
+  },
+  {
+    "id": "horses-earned-between-225001-and-amount-unlimited-start-points",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar som tjänat mellan 225.001-{amount_kr} kr får ha obegränsat med startpoäng.",
+    "render": {
+      "sv": "Hästar som tjänat mellan 225.001-{amount_kr} kr får ha obegränsat med startpoäng.",
+      "fi": "Hevosilla, jotka ovat ansainneet välillä 225.001-{amount_kr} kr, saa olla rajoittamattomasti lähtöpisteitä.",
+      "en": "Horses that have earned between 225,001 and {amount_kr} kr may have unlimited start points."
+    }
+  },
+  {
+    "id": "horses-earned-between-65001-and-amount-unlimited-start-points",
+    "types": [
+      "EX"
+    ],
+    "template": "Hästar som tjänat mellan 65.001-{amount_kr} kr får ha obegränsat med startpoäng.",
+    "render": {
+      "sv": "Hästar som tjänat mellan 65.001-{amount_kr} kr får ha obegränsat med startpoäng.",
+      "fi": "Hevosilla, jotka ovat ansainneet välillä 65.001-{amount_kr} kr, saa olla rajoittamattomasti lähtöpisteitä.",
+      "en": "Horses that have earned between 65,001 and {amount_kr} kr may have unlimited start points."
+    }
+  },
+  {
+    "id": "otherwise-see-rules-at-breederscourse-com",
+    "types": [
+      "EX"
+    ],
+    "template": "I övrigt se regler på breederscourse.com.",
+    "render": {
+      "sv": "I övrigt se regler på breederscourse.com.",
+      "fi": "Muutoin, katso säännöt breederscourse.comista.",
+      "en": "Otherwise, see the rules at breederscourse.com."
+    }
+  },
+  {
+    "id": "driver-may-not-previously-have-had-a-licence",
+    "types": [
+      "EX"
+    ],
+    "template": "Kusk får ej tidigare haft A-licens.",
+    "render": {
+      "sv": "Kusk får ej tidigare haft A-licens.",
+      "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
+      "en": "The driver may not previously have held an A licence."
+    }
+  },
+  {
+    "id": "driver-first-priority-own-trained-horse",
+    "types": [
+      "EX"
+    ],
+    "template": "Kusk kör i första hand egentränad häst.",
+    "render": {
+      "sv": "Kusk kör i första hand egentränad häst.",
+      "fi": "Ohjastaja ajaa ensisijaisesti itse valmentamaansa hevosta.",
+      "en": "The driver drives a self-trained horse as first priority."
+    }
+  },
+  {
+    "id": "driven-by-female-drivers",
+    "types": [
+      "EX"
+    ],
+    "template": "Körda av kvinnliga kuskar.",
+    "render": {
+      "sv": "Körda av kvinnliga kuskar.",
+      "fi": "Naisten ohjastamia.",
+      "en": "Driven by female drivers."
+    }
+  },
+  {
+    "id": "driven-by-invited-drivers-from-visby-solvalla-and-france",
+    "types": [
+      "EX"
+    ],
+    "template": "Körs av inbjudna kuskar från Visby, Solvalla och Frankrike.",
+    "render": {
+      "sv": "Körs av inbjudna kuskar från Visby, Solvalla och Frankrike.",
+      "fi": "Ajetaan Visbystä, Solvallasta ja Ranskasta kutsuttujen ohjastajien voimin.",
+      "en": "Driven by invited drivers from Visby, Solvalla and France."
+    }
+  },
+  {
+    "id": "driver-may-not-have-held-a-licence-korsven-ha-variant",
+    "types": [
+      "EX"
+    ],
+    "template": "Körsven får ej ha innehaft A-licens.",
+    "render": {
+      "sv": "Körsven får ej ha innehaft A-licens.",
+      "fi": "Ohjastajalla ei saa olla aiempaa A-lisenssiä.",
+      "en": "The driver may not have held an A licence."
+    }
+  },
+  {
+    "id": "laurel-wreath-to-winning-rider",
+    "types": [
+      "EX"
+    ],
+    "template": "Lagerkrans till segrande ryttare.",
+    "render": {
+      "sv": "Lagerkrans till segrande ryttare.",
+      "fi": "Laakeriseppele voittaneelle ratsastajalle.",
+      "en": "Laurel wreath to the winning rider."
+    }
+  },
+  {
+    "id": "race-financed-by-sodra-halsinglands-travsallskap-and-partners",
+    "types": [
+      "EX"
+    ],
+    "template": "Loppet finansieras av Södra Hälsinglands Travsällskap och samarbetspartners.",
+    "render": {
+      "sv": "Loppet finansieras av Södra Hälsinglands Travsällskap och samarbetspartners.",
+      "fi": "Lähtö rahoitetaan Södra Hälsinglands Travsällskapin ja yhteistyökumppaneiden toimesta.",
+      "en": "The race is financed by Södra Hälsinglands Travsällskap and partner organizations."
+    }
+  },
+  {
+    "id": "race-recorded-in-horse-result-line-as-one-race-final-places-1-3-rest-unplaced",
+    "types": [
+      "EX"
+    ],
+    "template": "Loppet kommer att noteras i hästens resultatrad som ett lopp (1:an, 2:an och 3:an i finalen - övriga oplacerade).",
+    "render": {
+      "sv": "Loppet kommer att noteras i hästens resultatrad som ett lopp (1:an, 2:an och 3:an i finalen - övriga oplacerade).",
+      "fi": "Lähtö merkitään hevosen tulosriville yhtenä lähtönä (finaalin 1., 2. ja 3. - muut sijoittumattomia).",
+      "en": "The race will be recorded in the horse's result line as one race (1st, 2nd and 3rd in the final - others unplaced)."
+    }
+  },
+  {
+    "id": "race-only-open-to-bergsaker-trained-horses-in-uninterrupted-training-since-2025-11-01",
+    "types": [
+      "EX"
+    ],
+    "template": "Loppet är endast öppet för Bergsåkertränade hästar som varit i oavbruten Bergsåkersträning från minst 2025-11-01.",
+    "render": {
+      "sv": "Loppet är endast öppet för Bergsåkertränade hästar som varit i oavbruten Bergsåkersträning från minst 2025-11-01.",
+      "fi": "Lähtö on avoin vain Bergsåkerissa valmennetuille hevosille, jotka ovat olleet yhtäjaksoisessa Bergsåker-valmennuksessa vähintään 2025-11-01 alkaen.",
+      "en": "The race is open only to Bergsåker-trained horses that have been in uninterrupted Bergsåker training since at least 2025-11-01."
+    }
+  },
+  {
+    "id": "qualified-drivers-peter-zadel-julia-nilsson-jan-silven-malin-h-johansson-per-nilsson-andreas-andersson-andrezej-karasiewicz-micael-lindblom-marcus-linryd-ayse-konec-stig-christer-westrum-and-andre-bood",
+    "types": [
+      "EX"
+    ],
+    "template": "Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood.",
+    "render": {
+      "sv": "Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood.",
+      "fi": "Finaaliin kvalifioituneet ohjastajat: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum ja André Bood.",
+      "en": "Qualified drivers: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum and André Bood."
+    }
+  },
+  {
+    "id": "jean-philippe-bazire-constance-chazal-benjamin-debris-and-jeremy-roux-from-france",
+    "types": [
+      "EX"
+    ],
+    "template": "Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike).",
+    "render": {
+      "sv": "Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike).",
+      "fi": "Jean-Philippe Bazire, Constance Chazal, Benjamin Debris ja Jérémy Roux (Ranskasta).",
+      "en": "Jean-Philippe Bazire, Constance Chazal, Benjamin Debris and Jérémy Roux (from France)."
+    }
+  },
+  {
+    "id": "remaining-horses-can-be-read-at-uet-grand-prix-of-the-uet-url",
+    "types": [
+      "EX"
+    ],
+    "template": "Kvarstående hästar finns att läsa på: www.uet-trot.eu/en/grand-prix-of-the-uet/",
+    "render": {
+      "sv": "Kvarstående hästar finns att läsa på: www.uet-trot.eu/en/grand-prix-of-the-uet/",
+      "fi": "Jäljellä olevat hevoset löytyvät osoitteesta: www.uet-trot.eu/en/grand-prix-of-the-uet/",
+      "en": "Remaining horses can be found at: www.uet-trot.eu/en/grand-prix-of-the-uet/"
+    }
+  },
+  {
+    "id": "remaining-horses-can-be-read-at-uet-grand-prix-url",
+    "types": [
+      "EX"
+    ],
+    "template": "Kvarstående hästar finns att läsa på: www.uet-trot.eu/en/races/uet-grand-prix",
+    "render": {
+      "sv": "Kvarstående hästar finns att läsa på: www.uet-trot.eu/en/races/uet-grand-prix",
+      "fi": "Jäljellä olevat hevoset löytyvät osoitteesta: www.uet-trot.eu/en/races/uet-grand-prix",
+      "en": "Remaining horses can be found at: www.uet-trot.eu/en/races/uet-grand-prix"
+    }
+  },
+  {
+    "id": "lantmannen-krafft-b-trainers-series-points-in-qualifiers-25-15-10-8-6-4-3-2",
+    "types": [
+      "EX"
+    ],
+    "template": "Lantmännen KRAFFT:s B-tränarserie: Poängberäkning i försöken är 25-15-10-8-6-4-3-2.",
+    "render": {
+      "sv": "Lantmännen KRAFFT:s B-tränarserie: Poängberäkning i försöken är 25-15-10-8-6-4-3-2.",
+      "fi": "Lantmännen KRAFFTin B-valmentajasarja: pisteytys karsinnoissa on 25-15-10-8-6-4-3-2.",
+      "en": "Lantmännen KRAFFT's B-trainers' series: the points calculation in the qualifiers is 25-15-10-8-6-4-3-2."
+    }
+  },
+  {
+    "id": "race-only-open-to-ostersund-trained-horses-in-uninterrupted-training-since-2025-10-01",
+    "types": [
+      "EX"
+    ],
+    "template": "Loppet är endast öppet för Östersundstränade hästar som varit i oavbruten Östersundsträning från minst 2025-10-01.",
+    "render": {
+      "sv": "Loppet är endast öppet för Östersundstränade hästar som varit i oavbruten Östersundsträning från minst 2025-10-01.",
+      "fi": "Lähtö on avoin vain Östersundissa valmennetuille hevosille, jotka ovat olleet yhtäjaksoisessa Östersund-valmennuksessa vähintään 2025-10-01 alkaen.",
+      "en": "The race is open only to Östersund-trained horses that have been in uninterrupted Östersund training since at least 2025-10-01."
+    }
+  },
+  {
+    "id": "read-more-about-travrondens-guldklocka-rules-under-prop-7",
+    "types": [
+      "EX"
+    ],
+    "template": "Läs mer om regler gällande Travrondens Guldklocka under prop 7.",
+    "render": {
+      "sv": "Läs mer om regler gällande Travrondens Guldklocka under prop 7.",
+      "fi": "Lue lisää Travrondens Guldklockaa koskevista säännöistä prop 7:n kohdalla.",
+      "en": "Read more about the rules concerning Travrondens Guldklocka under prop 7."
+    }
+  },
+  {
+    "id": "mattias-eriksson-johan-lasson-alf-nordemo-and-christer-otterstrom-from-solvalla",
+    "types": [
+      "EX"
+    ],
+    "template": "Mattias Eriksson, Johan Lasson, Alf Nordemo och Christer Otterström (från Solvalla).",
+    "render": {
+      "sv": "Mattias Eriksson, Johan Lasson, Alf Nordemo och Christer Otterström (från Solvalla).",
+      "fi": "Mattias Eriksson, Johan Lasson, Alf Nordemo ja Christer Otterström (Solvallasta).",
+      "en": "Mattias Eriksson, Johan Lasson, Alf Nordemo and Christer Otterström (from Solvalla)."
+    }
+  },
+  {
+    "id": "trophy-to-winning-horses-owner",
+    "types": [
+      "EX"
+    ],
+    "template": "Pokal till segrande hästs ägare.",
+    "render": {
+      "sv": "Pokal till segrande hästs ägare.",
+      "fi": "Pokaali voittaneen hevosen omistajalle.",
+      "en": "Trophy to the winning horse's owner."
+    }
+  },
+  {
+    "id": "main-series-standings-url-gavletravet-hedlunds-korsvensserie-2021",
+    "types": [
+      "EX"
+    ],
+    "template": "Poängställning grundserien: https://www.gavletravet.se/sport-och-spel/serier-och-ligor/hedlunds-akeri-abs-korsvensserie-2021/",
+    "render": {
+      "sv": "Poängställning grundserien: https://www.gavletravet.se/sport-och-spel/serier-och-ligor/hedlunds-akeri-abs-korsvensserie-2021/",
+      "fi": "Perussarjan pistetilanne: https://www.gavletravet.se/sport-och-spel/serier-och-ligor/hedlunds-akeri-abs-korsvensserie-2021/",
+      "en": "Main-series standings: https://www.gavletravet.se/sport-och-spel/serier-och-ligor/hedlunds-akeri-abs-korsvensserie-2021/"
+    }
+  },
+  {
+    "id": "gift-card-in-solvalla-restaurant-to-winning-horses-owner",
+    "types": [
+      "EX"
+    ],
+    "template": "Presentkort i Solvallas restaurang till segrande hästs ägare.",
+    "render": {
+      "sv": "Presentkort i Solvallas restaurang till segrande hästs ägare.",
+      "fi": "Lahjakortti Solvallan ravintolaan voittaneen hevosen omistajalle.",
+      "en": "A gift card in Solvalla's restaurant to the winning horse's owner."
+    }
+  },
+  {
+    "id": "prize-money-refers-to-the-final",
+    "types": [
+      "EX"
+    ],
+    "template": "Prispengarna avser finalen.",
+    "render": {
+      "sv": "Prispengarna avser finalen.",
+      "fi": "Palkintorahat koskevat finaalia.",
+      "en": "The prize money refers to the final."
+    }
+  },
+  {
+    "id": "rules-amator-sm-horse-entered-to-this-race-cannot-enter-another-qualifier-before-run",
+    "types": [
+      "EX"
+    ],
+    "template": "Regler Amatör-SM: Häst som startanmälts till detta lopp kan inte anmälas till annat uttagningslopp förrän detta lopp körts.",
+    "render": {
+      "sv": "Regler Amatör-SM: Häst som startanmälts till detta lopp kan inte anmälas till annat uttagningslopp förrän detta lopp körts.",
+      "fi": "Amatör-SM:n säännöt: tähän lähtöön ilmoitettua hevosta ei voi ilmoittaa toiseen karsintalähtöön ennen kuin tämä lähtö on ajettu.",
+      "en": "Rules for Amatör-SM: a horse entered to this race cannot be entered in another qualifying race until this race has been run."
+    }
+  },
+  {
+    "id": "rules-for-the-final-see-under-proposition-10",
+    "types": [
+      "EX"
+    ],
+    "template": "Regler finalen: Se under proposition 10.",
+    "render": {
+      "sv": "Regler finalen: Se under proposition 10.",
+      "fi": "Finaalin säännöt: katso proposition 10 kohdalta.",
+      "en": "Rules for the final: see under proposition 10."
+    }
   }
 ]

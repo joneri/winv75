@@ -1,6 +1,6 @@
 # Proposition translation audit
 
-Generated: 2026-04-18T19:48:04.299Z
+Generated: 2026-04-18T20:02:39.085Z
 
 ## Scope
 
@@ -16,8 +16,8 @@ Generated: 2026-04-18T19:48:04.299Z
 - Unique full texts: 14587
 - Sentence entries: 143644
 - Unique sentence templates: 1477
-- Matched sentence entries: 142711 (99.35%)
-- Matched unique sentence templates: 667 (45.16%)
+- Matched sentence entries: 142789 (99.4%)
+- Matched unique sentence templates: 706 (47.8%)
 
 ## Type summary
 
@@ -29,7 +29,7 @@ Generated: 2026-04-18T19:48:04.299Z
 | FX | 3456 | 111 | 4546 | 4546 | 100% |
 | T | 10153 | 1152 | 32487 | 32487 | 100% |
 | P | 10152 | 283 | 27681 | 27681 | 100% |
-| EX | 11131 | 1159 | 19684 | 18751 | 95.26% |
+| EX | 11131 | 1159 | 19684 | 18829 | 95.66% |
 | H | 1218 | 250 | 1218 | 1218 | 100% |
 
 ## Top matched templates
@@ -71,26 +71,26 @@ Generated: 2026-04-18T19:48:04.299Z
 | EX | `Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S.` | 2 | Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S. |
 | EX | `Damklubbens hederspris till segrande häst körsven.` | 2 | Damklubbens hederspris till segrande häst körsven. |
 | EX | `De sex främsta hästarna är kvalificerade till Sommarduellens Final (prop.` | 2 | De sex främsta hästarna är kvalificerade till Sommarduellens Final (prop. |
-| EX | `Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare.` | 2 | Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare. |
-| EX | `Hederstäcke till hästar plats 1-3.` | 2 | Hederstäcke till hästar plats 1-3. |
-| EX | `Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng.` | 2 | Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng. |
-| EX | `Hästar som gjort mer än fem starter på fått ytterligare 1 poäng.` | 2 | Hästar som gjort mer än fem starter på fått ytterligare 1 poäng. |
-| EX | `Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter.` | 2 | Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter. |
-| EX | `Hästar som tjänat mellan 1.275.001-{amount_kr} kr får ha högst 500 startpoäng.` | 2 | Hästar som tjänat mellan 1.275.001-1.875.000 kr får ha högst 500 startpoäng. |
-| EX | `Hästar som tjänat mellan 150.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 2 | Hästar som tjänat mellan 150.001-1.485.000 kr får ha obegränsat med startpoäng. |
-| EX | `Hästar som tjänat mellan 225.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 2 | Hästar som tjänat mellan 225.001-800.000 kr får ha obegränsat med startpoäng. |
-| EX | `Hästar som tjänat mellan 65.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 2 | Hästar som tjänat mellan 65.001-240.000 kr får ha obegränsat med startpoäng. |
-| EX | `Hästarna lottas till spår 1, 3 och 5 bakom startbilen.` | 2 | Hästarna lottas till spår 1, 3 och 5 bakom startbilen. |
-| EX | `Hästarna ska köras av Bergsåkerslicensierade kuskar.` | 2 | Hästarna ska köras av Bergsåkerslicensierade kuskar. |
-| EX | `Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).` | 2 | Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025). |
-| EX | `I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga.` | 2 | I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga. |
-| EX | `I finalen på Jägersro startar inkvalad häst från samma distans som i försöket.` | 2 | I finalen på Jägersro startar inkvalad häst från samma distans som i försöket. |
-| EX | `I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd.` | 2 | I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd. |
-| EX | `I övrigt se regler på breederscourse.com.` | 2 | I övrigt se regler på breederscourse.com. |
-| EX | `Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood.` | 2 | Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood. |
-| EX | `Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike).` | 2 | Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike). |
 | EX | `Kalmarsundsmontén 2026: Rids som en serie med fem försök (fyra på Kalmar - 1/3, 10/4, 24/4 samt 22/5 och ett på Tingsryd - 16/5 och final som rids på Kalmar den 21 juni med ett förstapris på 75 000 kr.` | 2 | Kalmarsundsmontén 2026: Rids som en serie med fem försök (fyra på Kalmar - 1/3, 10/4, 24/4 samt 22/5 och ett på Tingsryd - 16/5 och final som rids på Kalmar den 21 juni med ett förstapris på 75 000 kr. |
-| EX | `Kusk får ej tidigare haft A-licens.` | 2 | Kusk får ej tidigare haft A-licens. |
+| EX | `Maximalt {runner_count} startande uppdelat i två lopp.` | 2 | Maximalt 24 startande uppdelat i två lopp. |
+| EX | `Meddela vid anmälan där tre valda startspår ska rangordnas.` | 2 | Meddela vid anmälan där tre valda startspår ska rangordnas. |
+| EX | `OBS! Loppet är endast för Bollnästränade hästar och hästarna ska köras av kuskar med Bollnäslicens.` | 2 | OBS! Loppet är endast för Bollnästränade hästar och hästarna ska köras av kuskar med Bollnäslicens. |
+| EX | `OBS! Om loppet ej blir fullt tas kuskarna ut i den ordning de har placerat sig efter grundseriens samtliga försök.` | 2 | OBS! Om loppet ej blir fullt tas kuskarna ut i den ordning de har placerat sig efter grundseriens samtliga försök. |
+| EX | `Om 25 eller flera hästar: De 24 högst rankande efter Svensk Travsports regler för seedning får starta.` | 2 | Om 25 eller flera hästar: De 24 högst rankande efter Svensk Travsports regler för seedning får starta. |
+| EX | `Om det inte sker, fonderas pengarna till nästkommande år.` | 2 | Om det inte sker, fonderas pengarna till nästkommande år. |
+| EX | `Om du även anmäler till prop 1-7 ska det loppet vara i första hand och detta lopp i andra hand.` | 2 | Om du även anmäler till prop 1-7 ska det loppet vara i första hand och detta lopp i andra hand. |
+| EX | `Om loppet delas blir prissumman i varje lopp följande: 150.000-75.000-37.500-18.000-12.000-7.500.` | 2 | Om loppet delas blir prissumman i varje lopp följande: 150.000-75.000-37.500-18.000-12.000-7.500. |
+| EX | `Om loppet ej blir fullt tas kuskarna ut i den ordning de har placerat sig efter grundseriens försök.` | 2 | Om loppet ej blir fullt tas kuskarna ut i den ordning de har placerat sig efter grundseriens försök. |
+| EX | `Regler Sweden International Yearling Sales Auktionslopp: För treåriga ston sålda eller återropade och som har betalt insatserna därtill på Sweden International Yearling Sales ettåringsauktioner på Solvalla och Åby under 2021.` | 2 | Regler Sweden International Yearling Sales Auktionslopp: För treåriga ston sålda eller återropade och som har betalt insatserna därtill på Sweden International Yearling Sales ettåringsauktioner på Solvalla och Åby under 2021. |
+| EX | `Regler Värmlands Folkblads Amerikaresa Final: Finalkuskarna lottas på respektive häst, en A- respektive B-häst (ranking enligt ST:s seedningsbestämmelser) per kusk i prop 6 och prop 8.` | 2 | Regler Värmlands Folkblads Amerikaresa Final: Finalkuskarna lottas på respektive häst, en A- respektive B-häst (ranking enligt ST:s seedningsbestämmelser) per kusk i prop 6 och prop 8. |
+| EX | `Regler: Tre försöksheat med tre hästar i varje.` | 2 | Regler: Tre försöksheat med tre hästar i varje. |
+| EX | `Ridna av de tolv segerrikaste montéryttarna med svensk licens.` | 2 | Ridna av de tolv segerrikaste montéryttarna med svensk licens. |
+| EX | `satte på Bollnästravet den 14 augusti 2015 på tiden 1.08,6.` | 2 | satte på Bollnästravet den 14 augusti 2015 på tiden 1.08,6. |
+| EX | `Se poängställning på kalmartravet.se - Sport - Statistik/serier.` | 2 | Se poängställning på kalmartravet.se - Sport - Statistik/serier. |
+| EX | `Se poängställning på solvalla.se.` | 2 | Se poängställning på solvalla.se. |
+| EX | `Segrande hästs ägare får en inteckning i Spelarnas Pokal.` | 2 | Segrande hästs ägare får en inteckning i Spelarnas Pokal. |
+| EX | `Serien omfattar 14 försökslopp för treåringar och 14 försökslopp för fyraåringar.` | 2 | Serien omfattar 14 försökslopp för treåringar och 14 försökslopp för fyraåringar. |
+| EX | `Sex ekipage uttages av respektive amatörklubb oavsett startpoäng eller halvrad.` | 2 | Sex ekipage uttages av respektive amatörklubb oavsett startpoäng eller halvrad. |
 
 ## Confidence notes
 
