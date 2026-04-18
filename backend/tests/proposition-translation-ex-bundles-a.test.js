@@ -35,10 +35,10 @@ test('translates EX series snippets that previously leaked Swedish sentences', a
   )
 
   assert.equal(result.translated, true)
-  assert.equal(result.quality, 'partial-rule-match')
+  assert.equal(result.quality, 'rule-match')
   assert.match(result.text, /Axevalla Travförening B-trainer Series: a series with ten rounds during 2026\./)
   assert.match(result.text, /Points scale in the series: 12-8-6-5-4-3-2-1\./)
-  assert.match(result.text, /The overall winner of the series after ten rounds receives a gift card worth 15,000 SEK for a cart\/sulky\./)
+  assert.match(result.text, /The overall winner of the series after ten rounds receives a gift card for a cart\/sulky worth 15\.000 SEK\./)
   assert.doesNotMatch(result.text, /En serie med tio omgångar|Slutsegraren av serien/i)
 })
 

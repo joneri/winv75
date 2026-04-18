@@ -1,6 +1,6 @@
 # Proposition translation audit
 
-Generated: 2026-04-18T17:51:12.746Z
+Generated: 2026-04-18T18:58:41.900Z
 
 ## Scope
 
@@ -16,8 +16,8 @@ Generated: 2026-04-18T17:51:12.746Z
 - Unique full texts: 14522
 - Sentence entries: 142796
 - Unique sentence templates: 1474
-- Matched sentence entries: 141314 (98.96%)
-- Matched unique sentence templates: 463 (31.41%)
+- Matched sentence entries: 141650 (99.2%)
+- Matched unique sentence templates: 562 (38.13%)
 
 ## Type summary
 
@@ -29,7 +29,7 @@ Generated: 2026-04-18T17:51:12.746Z
 | FX | 3435 | 111 | 4519 | 4519 | 100% |
 | T | 10092 | 1151 | 32292 | 32292 | 100% |
 | P | 10091 | 283 | 27514 | 27514 | 100% |
-| EX | 11071 | 1156 | 19581 | 18099 | 92.43% |
+| EX | 11071 | 1156 | 19581 | 18435 | 94.15% |
 | H | 1217 | 249 | 1217 | 1217 | 100% |
 
 ## Top matched templates
@@ -62,35 +62,35 @@ Generated: 2026-04-18T17:51:12.746Z
 | Type | Template | Count | Example |
 | --- | --- | ---: | --- |
 | EX | `{eligibility_subject}.` | 8 | 3-åriga och äldre svenska ston som tjänat 175 001 - 750 000 kr startar från distansen 2140 (STL Stodivisionen). |
-| EX | `- värde 10.000 USD).` | 6 | - värde 10.000 USD). |
-| EX | `(Hederspris till segrande hästs ägare i finalen den 31/12: Fri levande fölavgift 2026 i Ecurie D.` | 6 | (Hederspris till segrande hästs ägare i finalen den 31/12: Fri levande fölavgift 2026 i Ecurie D. |
-| EX | `(Häst som inte väljer att starta i finalen beläggs med startförbud mellan 4/9-16/9).` | 4 | (Häst som inte väljer att starta i finalen beläggs med startförbud mellan 4/9-16/9). |
 | EX | `{start_method}.` | 4 | Autostart. |
-| EX | `Deltagande kuskar: Mattias Djuse, Mats E Djuse, Magnus A Djuse, Per Linderoth, Örjan Kihlström, Rikard N Skoglund, Marcus Lilius, Olli Koivunen, Tom Erik Solberg, Daniel Wäjersten, John Östman, Ulf Ohlsson.` | 4 | Deltagande kuskar: Mattias Djuse, Mats E Djuse, Magnus A Djuse, Per Linderoth, Örjan Kihlström, Rikard N Skoglund, Marcus Lilius, Olli Koivunen, Tom Erik Solberg, Daniel Wäjersten, John Östman, Ulf Ohlsson. |
-| EX | `Hästar som tjänat mellan 400.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 4 | Hästar som tjänat mellan 400.001-1.475.000 kr får ha obegränsat med startpoäng. |
-| EX | `Hästarna som kvalificerat sig från försök 1 startar från grunddistansen {distance_m} m, finalkvalificerade hästar från försök 2 startar från distansen {distance_m} m och från försök 3 från distansen {distance_m} m.` | 4 | Hästarna som kvalificerat sig från försök 1 startar från grunddistansen 2140m, finalkvalificerade hästar från försök 2 startar från distansen 2160m och från försök 3 från distansen 2180m. |
-| EX | `Kusk måste ha minst tio segrar i karriären och kusk som tidigare innehaft A-licens får ej delta.` | 4 | Kusk måste ha minst tio segrar i karriären och kusk som tidigare innehaft A-licens får ej delta. |
-| EX | `Lagerkrans till segrande häst.` | 4 | Lagerkrans till segrande häst. |
-| EX | `Loppet kan delas.` | 4 | Loppet kan delas. |
-| EX | `OBS! Gäller oavsett hur många hästar som anmäls till respektive bana.` | 4 | OBS! Gäller oavsett hur många hästar som anmäls till respektive bana. |
-| EX | `OBS! Loppet är endast för hästar tränade på Romme eller Rättvik.` | 4 | OBS! Loppet är endast för hästar tränade på Romme eller Rättvik. |
-| EX | `Om du anmäler till både prop 7 och prop 8 ska prop 7 vara i första hand och prop 8 i andra hand.` | 4 | Om du anmäler till både prop 7 och prop 8 ska prop 7 vara i första hand och prop 8 i andra hand. |
-| EX | `Om försök inte körs så kvalificerar sig de tre hästarna med mest poäng vid startanmälan sig för finalen.` | 4 | Om försök inte körs så kvalificerar sig de tre hästarna med mest poäng vid startanmälan sig för finalen. |
-| EX | `Om inkvalad häst inte startanmäls till finalen, kan finalbanan välja bland de hästar som har startat i försöken.` | 4 | Om inkvalad häst inte startanmäls till finalen, kan finalbanan välja bland de hästar som har startat i försöken. |
-| EX | `Priset ska erövras tre gånger av samma ägarkonstellation för att bli ständig egendom.` | 4 | Priset ska erövras tre gånger av samma ägarkonstellation för att bli ständig egendom. |
-| EX | `Regler UmåkerMästaren: Se prop 7.` | 4 | Regler UmåkerMästaren: Se prop 7. |
-| EX | `Skulle eventuellt fler än tolv hästar kvala in från samma distans så går de främsta från den distansen bland de inkvalade treorna med mest poäng vid anmälningstillfället vidare till finalen.` | 4 | Skulle eventuellt fler än tolv hästar kvala in från samma distans så går de främsta från den distansen bland de inkvalade treorna med mest poäng vid anmälningstillfället vidare till finalen. |
-| EX | `STL, Gulddivisionen).` | 4 | STL, Gulddivisionen). |
-| EX | `Svensk Uppfödningslöpning körs på Jägersro lördag 22/11 med ett förstapris på 800 000 kr.` | 4 | Svensk Uppfödningslöpning körs på Jägersro lördag 22/11 med ett förstapris på 800 000 kr. |
-| EX | `Således är det alltså alltid tre hästar från varje försök som går till final.` | 4 | Således är det alltså alltid tre hästar från varje försök som går till final. |
-| EX | `Tio hästar via inbjudningar från Åby.` | 4 | Tio hästar via inbjudningar från Åby. |
-| EX | `Tre försök, fyra hästar från varje uttagning till final.` | 4 | Tre försök, fyra hästar från varje uttagning till final. |
-| EX | `Två försök, sex hästar från varje uttagning till final.` | 4 | Två försök, sex hästar från varje uttagning till final. |
-| EX | `Vid 13-24 anmälda körs två uttagningslopp, vid 25-36 körs tre uttagningslopp, vid 37-48 körs fyra uttagningslopp o s v upp till sex uttagningslopp.` | 4 | Vid 13-24 anmälda körs två uttagningslopp, vid 25-36 körs tre uttagningslopp, vid 37-48 körs fyra uttagningslopp o s v upp till sex uttagningslopp. |
-| EX | `Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng vid startanmälan.` | 4 | Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng vid startanmälan. |
-| EX | `Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng.` | 4 | Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng. |
-| EX | `Vid dött lopp om andraplatsen går hästen med mest poäng (vid startanmälan till försöket) vidare till finalen.` | 4 | Vid dött lopp om andraplatsen går hästen med mest poäng (vid startanmälan till försöket) vidare till finalen. |
-| EX | `Vid eventuellt dött lopp går hästen/hästarna med mest poäng vid startanmälan i försöket vidare, därefter lottning.` | 4 | Vid eventuellt dött lopp går hästen/hästarna med mest poäng vid startanmälan i försöket vidare, därefter lottning. |
+| EX | `OBS! Om inkvalad häst anmäls till lopp med högre förstapris än 100 000 kr (försök och/eller eventuell final) gäller ej skrivelsen skyldig.Spåren i finalen lottas som vanligt.` | 3 | OBS! Om inkvalad häst anmäls till lopp med högre förstapris än 100 000 kr (försök och/eller eventuell final) gäller ej skrivelsen skyldig.Spåren i finalen lottas som vanligt. |
+| EX | `Om loppet delas blir prissumman i varje lopp följande: 125.000-62.500-31.250-15.000-10.000-6.250 Om 25 eller flera hästar: De 24 högst rankande efter Svensk Travsports regler för seedning får starta.` | 3 | Om loppet delas blir prissumman i varje lopp följande: 125.000-62.500-31.250-15.000-10.000-6.250 Om 25 eller flera hästar: De 24 högst rankande efter Svensk Travsports regler för seedning får starta. |
+| EX | `Regler Breeders' Crown-semifinaler: 1.` | 3 | Regler Breeders' Crown-semifinaler: 1. |
+| EX | `Startanmälningsvgift: {amount_kr} kr + moms.` | 3 | Startanmälningsvgift: 3.000 kr + moms. |
+| EX | `Tillägg {allowance_text}.` | 3 | Tillägg 20 meter för ston som deltagit i försök 2,4,6. |
+| EX | `Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering.` | 3 | Tränare kan önska körsven av de inkvalade körsvennerna som därefter bekräftar och rangordnar uppsittning vid komplettering. |
+| EX | `Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente.` | 3 | Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente. |
+| EX | `Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare.` | 3 | Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning), således är det alltid två hästar från varje försök som går vidare. |
+| EX | `Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning).` | 3 | Vid dött lopp går hästen/hästarna med mest poäng vid startanmälan till försöket vidare (därefter lottning). |
+| EX | `www.uet-trot.eu/en/uet-elite-circuit/` | 3 | www.uet-trot.eu/en/uet-elite-circuit/ |
+| EX | `Ägaren erhåller dessutom en inteckning i vandringspriset.` | 3 | Ägaren erhåller dessutom en inteckning i vandringspriset. |
+| EX | `Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11.` | 3 | Östsvenska Amatörserien körs på Eskilstuna 18/8, Solvalla 12/9 och Mantorp 23/11. |
+| EX | `Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning.` | 3 | Övriga 20 hästar tas ut efter startpoäng och delas in i tre försöksavdelningar, enligt ST:s metod för seedning. |
+| EX | `<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5.` | 2 | <b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementes paragraf 5. |
+| EX | `<b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§.` | 2 | <b>I detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§. |
+| EX | `16 hästar delas in i två försök med åtta hästar i varje försök.` | 2 | 16 hästar delas in i två försök med åtta hästar i varje försök. |
+| EX | `After the start declaration, priority is given to the 12 highest ranked.` | 2 | After the start declaration, priority is given to the 12 highest ranked. |
+| EX | `Anmälningsavgift {amount_kr} kr (inkl moms 6 %).` | 2 | Anmälningsavgift 5.300 kr (inkl moms 6 %). |
+| EX | `B-finalen körs endast om minst fem hästar är anmälda vid starttillfället.` | 2 | B-finalen körs endast om minst fem hästar är anmälda vid starttillfället. |
+| EX | `Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen.` | 2 | Blir det dött lopp om femteplatsen kvalificerar sig den häst med högst startpoäng vid anmälan till finalen. |
+| EX | `Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final.` | 2 | Blir det dött lopp om sjundeplatsen kvalificerar sig den häst med högst startpoäng för final. |
+| EX | `Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final.` | 2 | Blir det dött lopp om sjätteplatsen kvalificerar sig den häst med högst startpoäng för final. |
+| EX | `Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S.` | 2 | Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S. |
+| EX | `Damklubbens hederspris till segrande häst körsven.` | 2 | Damklubbens hederspris till segrande häst körsven. |
+| EX | `De 15 hästar med mest startpoäng handicapas av Solvallas sportchef.` | 2 | De 15 hästar med mest startpoäng handicapas av Solvallas sportchef. |
+| EX | `De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v.` | 2 | De 15 hästar som samlat flest poäng under 2025 är startberättigade i finalen, vid förfall går 16:e häst in o.s.v. |
+| EX | `De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10).` | 2 | De fem främst placerade ekipagen är kvalificerade till finalen som körs senare under kvällen (prop 10). |
+| EX | `De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final.` | 2 | De fyra främst placerade hästarna i varje försök är kvalificerade för Elitloppets final. |
 
 ## Confidence notes
 
