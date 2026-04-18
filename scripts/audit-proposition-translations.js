@@ -2,10 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import dotenv from '../backend/node_modules/dotenv/lib/main.js'
 import mongoose from '../backend/node_modules/mongoose/index.js'
+import { loadPropositionTranslationRules } from '../backend/src/proposition/proposition-translation-rules-loader.js'
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname)
 const OUTPUT_DIR = path.join(REPO_ROOT, 'docs', 'proposition-translation')
-const RULES_PATH = path.join(OUTPUT_DIR, 'rules.json')
 const JSON_REPORT_PATH = path.join(OUTPUT_DIR, 'audit-report.json')
 const MD_REPORT_PATH = path.join(OUTPUT_DIR, 'audit-report.md')
 const TARGET_TYPES = null
@@ -198,8 +198,10 @@ function normalizeTemplate(sentence, propositionType = null) {
     .replace(/^Försök 1,3,5 körs med proposition 50\.001-([\d. ]+) kr\.$/g, 'Försök 1, 3 och 5 körs med proposition 50.001-{amount_kr} kr.')
     .replace(/^Försök 2,4,6 körs med proposition 170\.001-([\d. ]+) kr\.$/g, 'Försök 2, 4 och 6 körs med proposition 170.001-{amount_kr} kr.')
     .replace(/^Final på (.+?) (\d+\/\d+)\.$/g, 'Final på {track_name} {date_text}.')
+    .replace(/^Hästarna från försök 1 startar i finalen från distansen (\d{3,4})\s*m, hästar från försök 2 startar från distansen (\d{3,4})\s*m och hästar från försök 3 från distansen (\d{3,4})\s*m\.$/g, 'Hästarna från försök 1 startar i finalen från distansen {distance_m_1} m, hästar från försök 2 startar från distansen {distance_m_2} m och hästar från försök 3 från distansen {distance_m_3} m.')
     .replace(/^DubbelCupen Meeting (\d+): Försök körs på (.+)\.$/g, 'DubbelCupen Meeting {meeting_number}: Försök körs på {meeting_schedule}.')
     .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr.')
+    .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m vid vunna ([\d. ]+) kr,\s+tv h\/v\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m vid vunna {amount_kr_2} kr, tv h/v.')
     .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m vid vunna ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m vid vunna {amount_kr_2} kr.')
     .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr.')
     .replace(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m ([\d. ]+) kr,\s+20 m h\/v\.$/g, 'Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr_1} kr, 40 m {amount_kr_2} kr, 20 m h/v.')
@@ -329,8 +331,10 @@ function extractVariables(sentence, propositionType = null) {
   const text = normalizeWhitespace(sentence)
   const vars = {}
   const shortFinalNotice = text.match(/^Final på (.+?) (\d+\/\d+)\.$/i)
+  const threeQualifierFinalDistances = text.match(/^Hästarna från försök 1 startar i finalen från distansen (\d{3,4})\s*m, hästar från försök 2 startar från distansen (\d{3,4})\s*m och hästar från försök 3 från distansen (\d{3,4})\s*m\.$/i)
   const dubbelCupMeetingIntro = text.match(/^DubbelCupen Meeting (\d+): Försök körs på (.+)\.$/i)
   const distance = text.match(/\b(\d{3,4})\s*m\b/)
+  const finalPropositionTwoThresholdsRepeatedHv = text.match(/^Finalproposition:\s*(\d{3,4})\s+m\s+voltstart,\s+20 m vid vunna ([\d. ]+) kr,\s+40 m vid vunna ([\d. ]+) kr,\s+tv h\/v\.$/i)
   const otherHorsesDistance = text.match(/^Övriga hästar startar från distansen (\d{3,4}) meter\.$/i)
   const underAgeDriversDistance = text.match(/^Hästar som körs av kuskar som ännu inte fyllt (\d+) år startar på distansen (\d{3,4}) meter\.$/i)
   const breedType = text.match(/^(Varmblodiga|Kallblodiga)$/)
@@ -392,11 +396,21 @@ function extractVariables(sentence, propositionType = null) {
     vars.track_name = shortFinalNotice[1]
     vars.date_text = shortFinalNotice[2]
   }
+  if (threeQualifierFinalDistances) {
+    vars.distance_m_1 = Number(threeQualifierFinalDistances[1])
+    vars.distance_m_2 = Number(threeQualifierFinalDistances[2])
+    vars.distance_m_3 = Number(threeQualifierFinalDistances[3])
+  }
   if (dubbelCupMeetingIntro) {
     vars.meeting_number = Number(dubbelCupMeetingIntro[1])
     vars.meeting_schedule = dubbelCupMeetingIntro[2]
   }
   if (distance) vars.distance_m = Number(distance[1])
+  if (finalPropositionTwoThresholdsRepeatedHv) {
+    vars.distance_m = Number(finalPropositionTwoThresholdsRepeatedHv[1])
+    vars.amount_kr_1 = finalPropositionTwoThresholdsRepeatedHv[2]
+    vars.amount_kr_2 = finalPropositionTwoThresholdsRepeatedHv[3]
+  }
   if (otherHorsesDistance) vars.distance_m = Number(otherHorsesDistance[1])
   if (underAgeDriversDistance) {
     vars.driver_age_limit = Number(underAgeDriversDistance[1])
@@ -731,8 +745,7 @@ function buildMarkdown(report) {
 }
 
 async function loadRules() {
-  const raw = await fs.readFile(RULES_PATH, 'utf8')
-  return JSON.parse(raw)
+  return loadPropositionTranslationRules()
 }
 
 async function main() {

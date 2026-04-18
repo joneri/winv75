@@ -10,7 +10,7 @@ The same bundle can also be downloaded from the GUI on `/propositioner/oversattn
 - `Ladda ner JSON-bundle`
 - `Ladda ner ZIP-paket`
 
-The export script reads the canonical rule catalog from `docs/proposition-translation/rules.json`, the latest full-corpus audit from `docs/proposition-translation/audit-report.json`, and the local MongoDB raceday corpus. It then writes a shareable bundle under `docs/proposition-translation/export-bundle/latest/`.
+The export script reads the merged rule catalog through the shared loader. The editable rule source lives in `docs/proposition-translation/rules/`, while the exported bundle still emits the same merged `rules.json` contract together with the latest full-corpus audit from `docs/proposition-translation/audit-report.json` and the local MongoDB raceday corpus. It then writes a shareable bundle under `docs/proposition-translation/export-bundle/latest/`.
 
 The bundle includes:
 - `proposition-translation-bundle.json`: one single-file export that contains everything below in one downloadable JSON payload
@@ -26,7 +26,7 @@ The bundle includes:
 - `manifest.json`: bundle metadata, file descriptions, and consumer guidance
 
 ## Key decisions
-- Keep `rules.json` as the canonical explicit-rule contract.
+- Keep `rules.json` as the exported explicit-rule contract while allowing the repository source to live in smaller rule shards under `docs/proposition-translation/rules/`.
 - Provide one single downloadable JSON file for handoff to external teams that do not have access to the local laptop environment.
 - Provide one ZIP package that combines the single-file bundle and the split artifacts in one deliverable.
 - Export both contract data and runtime-shaped sample payloads so downstream teams do not need to reverse-engineer frontend expectations.
@@ -39,7 +39,8 @@ The bundle includes:
 ## Inputs/outputs
 - Inputs:
   - local MongoDB `winv75` data
-  - `docs/proposition-translation/rules.json`
+  - `docs/proposition-translation/rules/`
+  - generated `docs/proposition-translation/rules.json`
   - `docs/proposition-translation/audit-report.json`
 - Output directory:
   - `docs/proposition-translation/export-bundle/latest/`
@@ -59,6 +60,8 @@ The bundle includes:
 
 ## Related files
 - `scripts/export-proposition-translation-bundle.mjs`
+- `backend/src/proposition/proposition-translation-rules-loader.js`
+- `docs/proposition-translation/rules/`
 - `docs/proposition-translation/rules.json`
 - `docs/proposition-translation/audit-report.json`
 - `backend/src/proposition/proposition-translation-service.js`

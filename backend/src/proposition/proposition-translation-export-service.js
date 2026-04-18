@@ -8,10 +8,10 @@ import {
   translatePropositionText,
   translateRacedayPropositions
 } from './proposition-translation-service.js'
+import { loadPropositionTranslationRules } from './proposition-translation-rules-loader.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..')
-const RULES_PATH = path.join(REPO_ROOT, 'docs', 'proposition-translation', 'rules.json')
 const AUDIT_PATH = path.join(REPO_ROOT, 'docs', 'proposition-translation', 'audit-report.json')
 const TEAM_BETTING_README_PATH = path.join(REPO_ROOT, 'docs', 'features', 'proposition-translation-team-betting-readme.md')
 const HANDOFF_SPEC_PATH = path.join(REPO_ROOT, 'docs', 'features', 'proposition-translation-team-betting-handoff.md')
@@ -81,11 +81,10 @@ async function buildRacedaySamples(limit = 3) {
 }
 
 export async function buildPropositionTranslationBundle() {
-  const [rulesRaw, auditRaw] = await Promise.all([
-    fs.readFile(RULES_PATH, 'utf8'),
+  const [rules, auditRaw] = await Promise.all([
+    loadPropositionTranslationRules(),
     fs.readFile(AUDIT_PATH, 'utf8')
   ])
-  const rules = JSON.parse(rulesRaw)
   const audit = JSON.parse(auditRaw)
 
   const [overviewFi, overviewEn, goldenCases, racedaySamples] = await Promise.all([

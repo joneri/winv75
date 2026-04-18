@@ -1,0 +1,338 @@
+[
+  {
+    "id": "uet-eligible-horses-2023",
+    "types": [
+      "EX"
+    ],
+    "template": "Eligible horses in the UET Elite Circuit Finale 2023: All horses that have participated in at least 1 of the 15 stages of the UET Elite Circuit 2023 are invited to participate in the finale.",
+    "render": {
+      "sv": "Eligible horses in the UET Elite Circuit Finale 2023: All horses that have participated in at least 1 of the 15 stages of the UET Elite Circuit 2023 are invited to participate in the finale.",
+      "fi": "UET Elite Circuit Finale 2023 -finaaliin kutsutaan kaikki hevoset, jotka ovat osallistuneet vähintään yhteen UET Elite Circuit 2023:n 15 osakilpailusta.",
+      "en": "Eligible horses in the UET Elite Circuit Finale 2023: All horses that have participated in at least one of the 15 stages of the UET Elite Circuit 2023 are invited to participate in the finale."
+    }
+  },
+  {
+    "id": "uet-eligible-starters-2023",
+    "types": [
+      "EX"
+    ],
+    "template": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2023.",
+    "render": {
+      "sv": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2023.",
+      "fi": "Hevosille, jotka ovat startanneet vähintään yhdessä UET Elite Circuit 2023 -sarjaan kuuluvassa lähdössä.",
+      "en": "For horses that have started in at least one of the races included in UET Elite Circuit 2023."
+    }
+  },
+  {
+    "id": "uet-eligible-starters-2025",
+    "types": [
+      "EX"
+    ],
+    "template": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2025.",
+    "render": {
+      "sv": "För hästar som startat i minst ett av loppen ingående i UET Elite Circuit 2025.",
+      "fi": "Hevosille, jotka ovat startanneet vähintään yhdessä UET Elite Circuit 2025 -sarjaan kuuluvassa lähdössä.",
+      "en": "For horses that have started in at least one of the races included in UET Elite Circuit 2025."
+    }
+  },
+  {
+    "id": "uet-starting-positions-choice-2023",
+    "types": [
+      "EX"
+    ],
+    "template": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2023 have the option of self-choice starting positions, if the trainer decides to participate in the Finale.",
+    "render": {
+      "sv": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2023 have the option of self-choice starting positions, if the trainer decides to participate in the Finale.",
+      "fi": "Lähtöpaikat: UET Elite Circuit 2023 -sarjassa sijoille 1-5 sijoittuneilla hevosilla on mahdollisuus valita lähtöpaikka itse, jos valmentaja päättää osallistua finaaliin.",
+      "en": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2023 may choose their own starting positions if the trainer decides to participate in the Finale."
+    }
+  },
+  {
+    "id": "uet-starting-positions-choice-2025",
+    "types": [
+      "EX"
+    ],
+    "template": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2025 have the option of self-choice starting positions, if the trainer decides to participate in the Final.",
+    "render": {
+      "sv": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2025 have the option of self-choice starting positions, if the trainer decides to participate in the Final.",
+      "fi": "Lähtöpaikat: UET Elite Circuit 2025 -sarjassa sijoille 1-5 sijoittuneilla hevosilla on mahdollisuus valita lähtöpaikka itse, jos valmentaja päättää osallistua finaaliin.",
+      "en": "Starting positions: The horses ranked 1-5 in UET Elite Circuit 2025 may choose their own starting positions if the trainer decides to participate in the Final."
+    }
+  },
+  {
+    "id": "uet-starting-positions-ranked-horse-2023",
+    "types": [
+      "EX"
+    ],
+    "template": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2023 after the last stage will be declared to start in the Finale, the trainer can choose starting position in order of ranking.",
+    "render": {
+      "sv": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2023 after the last stage will be declared to start in the Finale, the trainer can choose starting position in order of ranking.",
+      "fi": "Jos UET Elite Circuit 2023 -sarjassa viimeisen osakilpailun jälkeen sijoilla 1, 2, 3, 4 tai 5 oleva hevonen ilmoitetaan finaaliin, valmentaja voi valita lähtöpaikan sijoitusjärjestyksessä.",
+      "en": "If a horse ranked 1, 2, 3, 4 or 5 in UET Elite Circuit 2023 after the last stage is declared for the Finale, the trainer may choose the starting position in ranking order."
+    }
+  },
+  {
+    "id": "uet-starting-positions-ranked-horse-2025",
+    "types": [
+      "EX"
+    ],
+    "template": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2025 after the last stage will be declared to start in the Final, the trainer can choose starting position in order of ranking.",
+    "render": {
+      "sv": "If an individual horse ranked 1, 2, 3, 4 or 5 in the UET Elite Circuit 2025 after the last stage will be declared to start in the Final, the trainer can choose starting position in order of ranking.",
+      "fi": "Jos UET Elite Circuit 2025 -sarjassa viimeisen osakilpailun jälkeen sijoilla 1, 2, 3, 4 tai 5 oleva hevonen ilmoitetaan finaaliin, valmentaja voi valita lähtöpaikan sijoitusjärjestyksessä.",
+      "en": "If a horse ranked 1, 2, 3, 4 or 5 in UET Elite Circuit 2025 after the last stage is declared for the Final, the trainer may choose the starting position in ranking order."
+    }
+  },
+  {
+    "id": "uet-starting-positions-remaining-2023",
+    "types": [
+      "EX"
+    ],
+    "template": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2023 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+    "render": {
+      "sv": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2023 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+      "fi": "Muille hevosille, jotka ovat UET Elite Circuit 2023 -sarjassa sijalla 6 tai alempana viimeisen osakilpailun jälkeen, kaikki jäljellä olevat lähtöpaikat 1-12 arvotaan kokonaan.",
+      "en": "For the remaining horses, ranked 6 or lower in UET Elite Circuit 2023 after the last stage, all remaining starting positions 1-12 are allocated by a full draw."
+    }
+  },
+  {
+    "id": "uet-starting-positions-remaining-2025",
+    "types": [
+      "EX"
+    ],
+    "template": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2025 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+    "render": {
+      "sv": "For the remaining horses (ranked 6 or below in the UET Elite Circuit 2025 after the last stage) all positions are allocated by full draw within the remaining available starting positions 1-12.",
+      "fi": "Muille hevosille, jotka ovat UET Elite Circuit 2025 -sarjassa sijalla 6 tai alempana viimeisen osakilpailun jälkeen, kaikki jäljellä olevat lähtöpaikat 1-12 arvotaan kokonaan.",
+      "en": "For the remaining horses, ranked 6 or lower in UET Elite Circuit 2025 after the last stage, all remaining starting positions 1-12 are allocated by a full draw."
+    }
+  },
+  {
+    "id": "uet-preliminary-start-nomination-2025-october-3",
+    "types": [
+      "EX"
+    ],
+    "template": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 3th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+    "render": {
+      "sv": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 3th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+      "fi": "Alustava lähtöilmoitus ja lopullinen ilmoittautuminen (kansainväliset hevoset): Ruotsin ulkopuolella valmennettujen hevosten alustava lähtöilmoitus tulee tehdä Svensk Travsportille viimeistään perjantaina 3. lokakuuta klo 09.00 sähköpostitse osoitteeseen startdeclaration@travsport.se tai puhelimitse numeroon +46 8 475 27 50.",
+      "en": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden must be made to the Swedish Trotting Association no later than Friday October 3rd at 09.00, by email to startdeclaration@travsport.se or by telephone +46 8 475 27 50."
+    }
+  },
+  {
+    "id": "uet-preliminary-start-nomination-2023-october-6",
+    "types": [
+      "EX"
+    ],
+    "template": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 6th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+    "render": {
+      "sv": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden should be made to the Swedish Trotting Association no later than Friday October 6th, at 09.00, by email to startdeclaration@travsport.se , or by telephone +46 8 475 27 50.",
+      "fi": "Alustava lähtöilmoitus ja lopullinen ilmoittautuminen (kansainväliset hevoset): Ruotsin ulkopuolella valmennettujen hevosten alustava lähtöilmoitus tulee tehdä Svensk Travsportille viimeistään perjantaina 6. lokakuuta klo 09.00 sähköpostitse osoitteeseen startdeclaration@travsport.se tai puhelimitse numeroon +46 8 475 27 50.",
+      "en": "Preliminary start nomination and start declaration (international horses): The preliminary start nominations of horses not trained in Sweden must be made to the Swedish Trotting Association no later than Friday October 6th at 09.00, by email to startdeclaration@travsport.se or by telephone +46 8 475 27 50."
+    }
+  },
+  {
+    "id": "uet-transport-final-2025",
+    "types": [
+      "EX"
+    ],
+    "template": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Final and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+    "render": {
+      "sv": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Final and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+      "fi": "Kuljetus hevosille Solvallaan: UET Elite Circuit Final- ja UET Grand Prix -hevosille järjestetään lentokuljetus Deauvillesta Solvallaan ja takaisin.",
+      "en": "Transport for horses to Solvalla: Flight transport for UET Elite Circuit Final and UET Grand Prix horses will be arranged from Deauville to Solvalla and back."
+    }
+  },
+  {
+    "id": "uet-transport-finale-2023",
+    "types": [
+      "EX"
+    ],
+    "template": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Finale and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+    "render": {
+      "sv": "Transport for horses to Solvalla: A flight transport for UET Elite Circuit Finale and UET Grand Prix horses will be arranged from Deauville, to Solvalla and back.",
+      "fi": "Kuljetus hevosille Solvallaan: UET Elite Circuit Finale- ja UET Grand Prix -hevosille järjestetään lentokuljetus Deauvillesta Solvallaan ja takaisin.",
+      "en": "Transport for horses to Solvalla: Flight transport for UET Elite Circuit Finale and UET Grand Prix horses will be arranged from Deauville to Solvalla and back."
+    }
+  },
+  {
+    "id": "world-record-bonus-1640-autostart",
+    "types": [
+      "EX"
+    ],
+    "template": "Slås det aktuella världsrekordet över distansen 1640 meter autostart för antingen hingstar/valacker eller för ston tillfaller en extra prissumma på {amount_kr} kr till segrande häst.",
+    "render": {
+      "sv": "Slås det aktuella världsrekordet över distansen 1640 meter autostart för antingen hingstar/valacker eller för ston tillfaller en extra prissumma på {amount_kr} kr till segrande häst.",
+      "fi": "Jos nykyinen maailmanennätys 1640 metrin autolähdössä joko oriille/ruunille tai tammoille lyödään, voittaneelle hevoselle maksetaan ylimääräinen palkintosumma {amount_kr} kr.",
+      "en": "If the current world record over 1640 metres auto start for either stallions/geldings or mares is broken, an extra prize of {amount_kr} SEK is awarded to the winning horse."
+    }
+  },
+  {
+    "id": "world-record-mares-short-standing-3yo",
+    "types": [
+      "EX"
+    ],
+    "template": "Världsrekordet för 3-åriga ston över kort distans med voltstart på 800-metersbana är 1.16,0.",
+    "render": {
+      "sv": "Världsrekordet för 3-åriga ston över kort distans med voltstart på 800-metersbana är 1.16,0.",
+      "fi": "800 metrin radalla voltista lyhyellä matkalla 3-vuotiaiden tammojen maailmanennätys on 1.16,0.",
+      "en": "The world record for 3-year-old mares over a short distance with a standing start on an 800-metre track is 1.16,0."
+    }
+  },
+  {
+    "id": "world-record-mares-short-standing-4yo",
+    "types": [
+      "EX"
+    ],
+    "template": "För 4-åriga ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.14,8.",
+    "render": {
+      "sv": "För 4-åriga ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.14,8.",
+      "fi": "4-vuotiaiden tammojen maailmanennätys lyhyellä matkalla voltista 800 metrin radalla on 1.14,8.",
+      "en": "For 4-year-old mares over a short distance with a standing start on an 800-metre track, the world record is 1.14,8."
+    }
+  },
+  {
+    "id": "world-record-mares-short-standing-5yo-plus",
+    "types": [
+      "EX"
+    ],
+    "template": "För 5-åriga och äldre ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.11,1 och sattes av Betting Pacer i detta lopp ifjol.",
+    "render": {
+      "sv": "För 5-åriga och äldre ston över kort distans på 800-metersbana med voltstart är världsrekordet 1.11,1 och sattes av Betting Pacer i detta lopp ifjol.",
+      "fi": "5-vuotiaiden ja vanhempien tammojen maailmanennätys lyhyellä matkalla voltista 800 metrin radalla on 1.11,1, ja sen teki Betting Pacer tässä lähdössä viime vuonna.",
+      "en": "For 5-year-old and older mares over a short distance with a standing start on an 800-metre track, the world record is 1.11,1, set by Betting Pacer in this race last year."
+    }
+  },
+  {
+    "id": "world-record-mares-long-4yo",
+    "types": [
+      "EX"
+    ],
+    "template": "Världsrekordet för 4-åriga ston över lång distans på 800-metersbana är 1.22,2.",
+    "render": {
+      "sv": "Världsrekordet för 4-åriga ston över lång distans på 800-metersbana är 1.22,2.",
+      "fi": "800 metrin radalla pitkällä matkalla 4-vuotiaiden tammojen maailmanennätys on 1.22,2.",
+      "en": "The world record for 4-year-old mares over a long distance on an 800-metre track is 1.22,2."
+    }
+  },
+  {
+    "id": "world-record-mares-long-5yo-plus",
+    "types": [
+      "EX"
+    ],
+    "template": "För 5-åriga och äldre ston över lång distans på 800-metersbana är världsrekordet 1.15,4 och rekordet sattes i detta lopp ifjol av Daniel Redén-tränade Mahala.",
+    "render": {
+      "sv": "För 5-åriga och äldre ston över lång distans på 800-metersbana är världsrekordet 1.15,4 och rekordet sattes i detta lopp ifjol av Daniel Redén-tränade Mahala.",
+      "fi": "5-vuotiaiden ja vanhempien tammojen maailmanennätys pitkällä matkalla 800 metrin radalla on 1.15,4, ja ennätys tehtiin tässä lähdössä viime vuonna Daniel Redénin valmentamalla Mahalalla.",
+      "en": "For 5-year-old and older mares over a long distance on an 800-metre track, the world record is 1.15,4, set in this race last year by Daniel Redén-trained Mahala."
+    }
+  },
+  {
+    "id": "world-record-mares-long-3yo-none",
+    "types": [
+      "EX"
+    ],
+    "template": "För 3-åriga ston finns inget världsrekord noterat över aktuell bana och distans.",
+    "render": {
+      "sv": "För 3-åriga ston finns inget världsrekord noterat över aktuell bana och distans.",
+      "fi": "3-vuotiaille tammoille ei ole merkitty maailmanennätystä tällä radalla ja matkalla.",
+      "en": "For 3-year-old mares, no world record is listed for the current track and distance."
+    }
+  },
+  {
+    "id": "track-ladder-allocation",
+    "types": [
+      "EX"
+    ],
+    "template": "Spårtilldelning enligt spårtrappa.",
+    "render": {
+      "sv": "Spårtilldelning enligt spårtrappa.",
+      "fi": "Lähtöradat jaetaan voittosumman mukaisen ratajärjestyksen mukaan.",
+      "en": "Post positions allocated by post-position ladder."
+    }
+  },
+  {
+    "id": "post-by-ladder",
+    "types": [
+      "EX"
+    ],
+    "template": "Spår efter spårtrappa.",
+    "render": {
+      "sv": "Spår efter spårtrappa.",
+      "fi": "Lähtöradat voittosumman mukaisen ratajärjestyksen mukaan.",
+      "en": "Post positions by post-position ladder."
+    }
+  },
+  {
+    "id": "split-by-earnings-max-twelve",
+    "types": [
+      "EX"
+    ],
+    "template": "Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp.",
+    "render": {
+      "sv": "Anmälda hästar delas upp efter startprissumma med högst tolv startande per lopp.",
+      "fi": "Ilmoitetut hevoset jaetaan voittosumman mukaan, enintään kaksitoista osallistujaa lähtöä kohti.",
+      "en": "Entered horses are split by earnings, with at most twelve starters per race."
+    }
+  },
+  {
+    "id": "split-by-earnings-max-runners",
+    "types": [
+      "EX"
+    ],
+    "template": "Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst {runner_count} startande i vardera lopp.",
+    "render": {
+      "sv": "Anmälda hästar delas upp efter startprissumma i lämpligt antal lopp, med högst {runner_count} startande i vardera lopp.",
+      "fi": "Ilmoitetut hevoset jaetaan voittosumman mukaan sopivaan määrään lähtöjä, enintään {runner_count} osallistujaa lähtöä kohti.",
+      "en": "Entered horses are split by earnings into a suitable number of races, with at most {runner_count} starters in each race."
+    }
+  },
+  {
+    "id": "too-many-horses-by-points",
+    "types": [
+      "EX"
+    ],
+    "template": "Om fler än 72 hästar anmäls tas startande hästar ut i startpoängordning.",
+    "render": {
+      "sv": "Om fler än 72 hästar anmäls tas startande hästar ut i startpoängordning.",
+      "fi": "Jos ilmoitetaan yli 72 hevosta, starttaavat hevoset valitaan lähtöpistejärjestyksessä.",
+      "en": "If more than 72 horses are entered, starters are selected by start points."
+    }
+  },
+  {
+    "id": "same-points-lottery",
+    "types": [
+      "EX"
+    ],
+    "template": "Har två hästar samma startpoäng tillämpas lottning.",
+    "render": {
+      "sv": "Har två hästar samma startpoäng tillämpas lottning.",
+      "fi": "Jos kahdella hevosella on samat lähtöpisteet, ratkaisu tehdään arvonnalla.",
+      "en": "If two horses have the same start points, a draw is used."
+    }
+  },
+  {
+    "id": "gift-card-owner",
+    "types": [
+      "EX"
+    ],
+    "template": "Presentkort till segrande hästs ägare.",
+    "render": {
+      "sv": "Presentkort till segrande hästs ägare.",
+      "fi": "Lahjakortti voittaneen hevosen omistajalle.",
+      "en": "Gift card to the winning horse's owner."
+    }
+  },
+  {
+    "id": "winner-photo-owner",
+    "types": [
+      "EX"
+    ],
+    "template": "Vinnarbild till segrande hästs ägare.",
+    "render": {
+      "sv": "Vinnarbild till segrande hästs ägare.",
+      "fi": "Voittajakuva voittaneen hevosen omistajalle.",
+      "en": "Winner photo to the winning horse's owner."
+    }
+  }
+]

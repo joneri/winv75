@@ -1,0 +1,438 @@
+{
+  "distance_m": {
+    "description": "Race distance in meters, for example 2140.",
+    "type": "number"
+  },
+  "distance_m_1": {
+    "description": "First final distance in meters when separate qualifier groups feed different starts.",
+    "type": "number"
+  },
+  "distance_m_2": {
+    "description": "Second final distance in meters when separate qualifier groups feed different starts.",
+    "type": "number"
+  },
+  "distance_m_3": {
+    "description": "Third final distance in meters when separate qualifier groups feed different starts.",
+    "type": "number"
+  },
+  "driver_age_limit": {
+    "description": "Maximum driver age used in youth-driver distance conditions, for example 18.",
+    "type": "number"
+  },
+  "start_method": {
+    "description": "Start method from the Swedish source text.",
+    "type": "enum",
+    "values": {
+      "Autostart": {
+        "sv": "Autostart",
+        "fi": "Autolähtö",
+        "en": "Auto start"
+      },
+      "Voltstart": {
+        "sv": "Voltstart",
+        "fi": "Volttilähtö",
+        "en": "Standing start"
+      },
+      "Linjestart": {
+        "sv": "Linjestart",
+        "fi": "Linjastartti",
+        "en": "Line start"
+      }
+    }
+  },
+  "breed_type": {
+    "description": "Race breed/category heading from proposition type U.",
+    "type": "enum",
+    "values": {
+      "Varmblodiga": {
+        "sv": "Varmblodiga",
+        "fi": "Lämminveriset",
+        "en": "Standardbreds"
+      },
+      "Kallblodiga": {
+        "sv": "Kallblodiga",
+        "fi": "Kylmäveriset",
+        "en": "Cold-blooded trotters"
+      }
+    }
+  },
+  "prop_number": {
+    "description": "Proposition number from type L.",
+    "type": "string"
+  },
+  "prop_title": {
+    "description": "Optional proposition title, usually a proper race or series name.",
+    "type": "string"
+  },
+  "date_text": {
+    "description": "Source date wording for half-row allowance notices.",
+    "type": "string"
+  },
+  "date_range_text": {
+    "description": "Source date-range wording used in final start-ban notices.",
+    "type": "string"
+  },
+  "track_name": {
+    "description": "Track name used in short final and obligation notices.",
+    "type": "string"
+  },
+  "meeting_number": {
+    "description": "Meeting number used in recurring DubbelCupen intros.",
+    "type": "number"
+  },
+  "meeting_schedule": {
+    "description": "Comma-separated qualifier calendar used in recurring series intro rows.",
+    "type": "string"
+  },
+  "rule_point": {
+    "description": "Svensk Travsport rule point number.",
+    "type": "number"
+  },
+  "selection_count": {
+    "description": "Count used in short priority clauses such as '2 enligt punkt 21'.",
+    "type": "number"
+  },
+  "priority_group": {
+    "description": "Priority group text for FX priority notices.",
+    "type": "string"
+  },
+  "home_horse_count": {
+    "description": "Number of home-track horses with priority.",
+    "type": "number"
+  },
+  "home_track_aliases": {
+    "description": "Additional tracks that also count as home tracks in FX priority sentences.",
+    "type": "string"
+  },
+  "selection_limit": {
+    "description": "Horse-count threshold used in EX selection-order sentences.",
+    "type": "number"
+  },
+  "selection_order_basis": {
+    "description": "Selection basis used when too many horses are entered in an EX race.",
+    "type": "enum",
+    "values": {
+      "P21-ordning": {
+        "sv": "P21-ordning",
+        "fi": "P21-järjestyksessä",
+        "en": "P21 order"
+      },
+      "startpoängordning": {
+        "sv": "startpoängordning",
+        "fi": "lähtöpistejärjestyksessä",
+        "en": "start-points order"
+      },
+      "poängordning": {
+        "sv": "poängordning",
+        "fi": "pistejärjestyksessä",
+        "en": "points order"
+      }
+    }
+  },
+  "stl_division": {
+    "description": "STL division label embedded in recurring start-point allocation clauses.",
+    "type": "string"
+  },
+  "standings_url": {
+    "description": "Series standings URL used in short standings notices.",
+    "type": "string"
+  },
+  "wildcard_authority": {
+    "description": "Track or organizer named in a wildcard clause.",
+    "type": "string"
+  },
+  "wildcard_action": {
+    "description": "Authority verb phrase used in wildcard clauses.",
+    "type": "enum",
+    "values": {
+      "kan utdela": {
+        "sv": "kan utdela",
+        "fi": "voi myöntää",
+        "en": "may award"
+      },
+      "kan i samråd utdela": {
+        "sv": "kan i samråd utdela",
+        "fi": "voi yhteisymmärryksessä myöntää",
+        "en": "may in consultation award"
+      },
+      "har möjlighet att dela ut": {
+        "sv": "har möjlighet att dela ut",
+        "fi": "voi myöntää",
+        "en": "may award"
+      },
+      "har även möjlighet att dela ut": {
+        "sv": "har även möjlighet att dela ut",
+        "fi": "voi myös myöntää",
+        "en": "may also award"
+      },
+      "har möjligheten att dela ut": {
+        "sv": "har möjligheten att dela ut",
+        "fi": "voi myöntää",
+        "en": "may award"
+      },
+      "förbehåller sig rätten att dela ut": {
+        "sv": "förbehåller sig rätten att dela ut",
+        "fi": "pidättää oikeuden myöntää",
+        "en": "reserves the right to award"
+      }
+    }
+  },
+  "wildcard_award_phrase": {
+    "description": "Wildcard quantity phrase from the source text.",
+    "type": "enum",
+    "values": {
+      "ett wildcard": {
+        "sv": "ett wildcard",
+        "fi": "yhden wildcardin",
+        "en": "one wildcard"
+      },
+      "två wildcard": {
+        "sv": "två wildcard",
+        "fi": "kaksi wildcardia",
+        "en": "two wildcards"
+      },
+      "två wildcards": {
+        "sv": "två wildcards",
+        "fi": "kaksi wildcardia",
+        "en": "two wildcards"
+      },
+      "högst två wildcards": {
+        "sv": "högst två wildcards",
+        "fi": "enintään kaksi wildcardia",
+        "en": "up to two wildcards"
+      },
+      "tre wildcards": {
+        "sv": "tre wildcards",
+        "fi": "kolme wildcardia",
+        "en": "three wildcards"
+      },
+      "wildcards": {
+        "sv": "wildcards",
+        "fi": "wildcardeja",
+        "en": "wildcards"
+      }
+    }
+  },
+  "wildcard_context": {
+    "description": "Optional trailing context in wildcard clauses.",
+    "type": "enum",
+    "values": {
+      ".": {
+        "sv": ".",
+        "fi": ".",
+        "en": "."
+      },
+      " i detta lopp.": {
+        "sv": " i detta lopp.",
+        "fi": " tässä lähdössä.",
+        "en": " in this race."
+      },
+      " i loppet.": {
+        "sv": " i loppet.",
+        "fi": " lähdössä.",
+        "en": " in the race."
+      },
+      " i detta lopp, företrädesvis till häst i träning i utlandet.": {
+        "sv": " i detta lopp, företrädesvis till häst i träning i utlandet.",
+        "fi": " tässä lähdössä, ensisijaisesti ulkomailla valmennuksessa olevalle hevoselle.",
+        "en": " in this race, preferably to a horse trained abroad."
+      },
+      " i detta lopp, företrädesvis till häst i utländsk träning.": {
+        "sv": " i detta lopp, företrädesvis till häst i utländsk träning.",
+        "fi": " tässä lähdössä, ensisijaisesti ulkomailla valmennetulle hevoselle.",
+        "en": " in this race, preferably to a horse in foreign training."
+      },
+      " i detta lopp, i första hand till utländska ekipage.": {
+        "sv": " i detta lopp, i första hand till utländska ekipage.",
+        "fi": " tässä lähdössä, ensisijaisesti ulkomaisille valjakoille.",
+        "en": " in this race, primarily to foreign entries."
+      },
+      " i detta lopp oavsett startpoäng.": {
+        "sv": " i detta lopp oavsett startpoäng.",
+        "fi": " tässä lähdössä lähtöpisteistä riippumatta.",
+        "en": " in this race regardless of start points."
+      }
+    }
+  },
+  "wildcard_recipients": {
+    "description": "Named horses or entries that received a wildcard.",
+    "type": "string"
+  },
+  "sponsor_name": {
+    "description": "Sponsor or race organizer name in honorary prize text.",
+    "type": "string"
+  },
+  "honorary_prize_recipients": {
+    "description": "Recipients in honorary prize text.",
+    "type": "list"
+  },
+  "race_title": {
+    "description": "Short proposition title.",
+    "type": "string"
+  },
+  "title_prefix": {
+    "description": "Free-form branded or series prefix that precedes a reusable L race-title chain.",
+    "type": "string"
+  },
+  "title_year": {
+    "description": "Four-digit year suffix used by recurring L title families such as branded B-trainer series names.",
+    "type": "number"
+  },
+  "presented_by_name": {
+    "description": "Name shown in short L title rows that only say Presenteras av ...",
+    "type": "string"
+  },
+  "driver_category": {
+    "description": "Driver requirement category.",
+    "type": "number"
+  },
+  "driver_birth_date": {
+    "description": "Compact YYMMDD birth date threshold for drivers.",
+    "type": "string"
+  },
+  "driver_race_limit": {
+    "description": "Optional driver race-count limit phrase.",
+    "type": "rendered_text"
+  },
+  "secondary_driver_race_limit": {
+    "description": "Second driver/rider race-count limit phrase used by malformed joined V clauses.",
+    "type": "rendered_text"
+  },
+  "participant_role": {
+    "description": "Eligible V participant group for driver/rider birth rules.",
+    "type": "enum",
+    "values": {
+      "Körsvenner": {
+        "sv": "Körsvenner",
+        "fi": "Ohjastajat",
+        "en": "Drivers"
+      },
+      "Ryttare": {
+        "sv": "Ryttare",
+        "fi": "Ratsastajat",
+        "en": "Riders"
+      }
+    }
+  },
+  "driver_birth_date_start": {
+    "description": "Start of a compact YYMMDD birth date interval for V participants.",
+    "type": "string"
+  },
+  "driver_birth_date_end": {
+    "description": "End of a compact YYMMDD birth date interval for V participants.",
+    "type": "string"
+  },
+  "trainer_start_limit": {
+    "description": "Maximum number of starts made by a trainer during the referenced year.",
+    "type": "number"
+  },
+  "trainer_start_year": {
+    "description": "Year used in trainer activity limit clauses.",
+    "type": "number"
+  },
+  "training_code": {
+    "description": "Training code used in uninterrupted training clauses, usually A or B.",
+    "type": "string"
+  },
+  "training_since_date": {
+    "description": "Compact YYMMDD date from uninterrupted training clauses.",
+    "type": "string"
+  },
+  "eligibility_subject": {
+    "description": "General V eligibility subject phrase such as '2-åriga svenska (ej mockinländare)'.",
+    "type": "string"
+  },
+  "eligibility_subject_secondary": {
+    "description": "Second V eligibility subject in compound range clauses joined by 'samt'.",
+    "type": "string"
+  },
+  "eligibility_suffix": {
+    "description": "Eligibility suffix after a max/min/range clause, for example non-winner or licence-holder restrictions.",
+    "type": "rendered_text"
+  },
+  "secondary_clause_suffix": {
+    "description": "Extra condition attached to the second clause in a compound V range sentence.",
+    "type": "rendered_text"
+  },
+  "age_exact": {
+    "description": "Exact horse age for V clauses that apply to one age only.",
+    "type": "number"
+  },
+  "age_min": {
+    "description": "Minimum horse age.",
+    "type": "number"
+  },
+  "amount_min_kr": {
+    "description": "Minimum earnings amount.",
+    "type": "money"
+  },
+  "amount_max_kr": {
+    "description": "Maximum earnings amount.",
+    "type": "money"
+  },
+  "amount_secondary_min_kr": {
+    "description": "Minimum earnings amount for the second subject in a compound V range clause.",
+    "type": "money"
+  },
+  "amount_secondary_max_kr": {
+    "description": "Maximum earnings amount for the second subject in a compound V range clause.",
+    "type": "money"
+  },
+  "amount_secondary_kr": {
+    "description": "Single earnings amount used by the second clause in a compound V sentence.",
+    "type": "money"
+  },
+  "points_limit": {
+    "description": "Optional maximum points condition.",
+    "type": "rendered_text"
+  },
+  "runner_count": {
+    "description": "Maximum number of starters.",
+    "type": "number"
+  },
+  "prize_ladder": {
+    "description": "Ordered prize amounts exactly as sourced, including parenthesized optional prizes.",
+    "type": "money_ladder"
+  },
+  "amount_kr": {
+    "description": "Swedish krona amount exactly as sourced.",
+    "type": "money"
+  },
+  "amount_kr_1": {
+    "description": "First Swedish krona threshold amount in a multi-threshold rule.",
+    "type": "money"
+  },
+  "amount_kr_2": {
+    "description": "Second Swedish krona threshold amount in a multi-threshold rule.",
+    "type": "money"
+  },
+  "amount_kr_3": {
+    "description": "Third Swedish krona threshold amount in a multi-threshold rule.",
+    "type": "money"
+  },
+  "placed_count": {
+    "description": "Number of explicitly placed prize recipients.",
+    "type": "number"
+  },
+  "premium_chance_percent": {
+    "description": "Extra prize percentage for premium-chance horses.",
+    "type": "number"
+  },
+  "track_order": {
+    "description": "Comma-separated track draw order exactly as sourced.",
+    "type": "string"
+  },
+  "allowance_text": {
+    "description": "Rendered allowance text built from parsed allowance segments.",
+    "type": "rendered_text"
+  },
+  "allowance_segments": {
+    "description": "Structured allowance segments parsed from Tillägg terms.",
+    "type": "array",
+    "segmentKinds": [
+      "earnings",
+      "points",
+      "category"
+    ]
+  }
+}

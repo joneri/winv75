@@ -1,0 +1,11 @@
+{
+  "metaFile": "meta.json",
+  "variablesFile": "variables.json",
+  "sentenceRuleFiles": [
+    "sentence-rules-non-ex.json",
+    "sentence-rules-ex-01.json",
+    "sentence-rules-ex-02.json",
+    "sentence-rules-ex-03.json",
+    "sentence-rules-ex-04.json"
+  ]
+}

@@ -10,6 +10,7 @@
     "update-ratings": "node src/horse/update-elo-ratings.js",
     "build-drivers": "node src/driver/build-driver-collection.js",
     "update-driver-elo": "node src/driver/update-driver-elo-ratings.js",
+    "build-proposition-rules": "node ../scripts/build-proposition-translation-rules.mjs",
     "test": "node --test",
     "export-proposition-translation-bundle": "node ../scripts/export-proposition-translation-bundle.mjs"
   },

@@ -1,6 +1,6 @@
 # Proposition translation audit
 
-Generated: 2026-04-17T20:06:19.792Z
+Generated: 2026-04-18T13:44:18.242Z
 
 ## Scope
 
@@ -16,8 +16,8 @@ Generated: 2026-04-17T20:06:19.792Z
 - Unique full texts: 14522
 - Sentence entries: 142796
 - Unique sentence templates: 1474
-- Matched sentence entries: 140456 (98.36%)
-- Matched unique sentence templates: 294 (19.95%)
+- Matched sentence entries: 140999 (98.74%)
+- Matched unique sentence templates: 384 (26.05%)
 
 ## Type summary
 
@@ -29,7 +29,7 @@ Generated: 2026-04-17T20:06:19.792Z
 | FX | 3435 | 111 | 4519 | 4519 | 100% |
 | T | 10092 | 1151 | 32292 | 32292 | 100% |
 | P | 10091 | 283 | 27514 | 27514 | 100% |
-| EX | 11071 | 1156 | 19581 | 17241 | 88.05% |
+| EX | 11071 | 1156 | 19581 | 17784 | 90.82% |
 | H | 1217 | 249 | 1217 | 1217 | 100% |
 
 ## Top matched templates
@@ -61,36 +61,36 @@ Generated: 2026-04-17T20:06:19.792Z
 
 | Type | Template | Count | Example |
 | --- | --- | ---: | --- |
-| EX | `Finalproposition: {distance_m} m voltstart, 20 m vid vunna {amount_kr} kr, 40 m vid vunna {amount_kr} kr, tv h/v.` | 9 | Finalproposition: 2140 m voltstart, 20 m vid vunna 875.001 kr, 40 m vid vunna 1.175.001 kr, tv h/v. |
 | EX | `{eligibility_subject}.` | 8 | 3-åriga och äldre svenska ston som tjänat 175 001 - 750 000 kr startar från distansen 2140 (STL Stodivisionen). |
-| EX | `<b>Vid detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§.` | 7 | <b>Vid detta lopp tillämpas bestämmelserna om Övervakningsstall i enlighet med Svensk Travsports Antidopningsreglementets 5§. |
-| EX | `De 15 hästar som samlar ihop mest poäng i serien är startberättigade i finalen som körs onsdag 31/12 med ett förstapris på 100 000 kr.` | 7 | De 15 hästar som samlar ihop mest poäng i serien är startberättigade i finalen som körs onsdag 31/12 med ett förstapris på 100 000 kr. |
-| EX | `Finalen körs som en Spårtrappa med 12 hästar och ett förstapris på 100 000 kr och 8 fasta priser.` | 7 | Finalen körs som en Spårtrappa med 12 hästar och ett förstapris på 100 000 kr och 8 fasta priser. |
-| EX | `Försök 2, 4 och 6 körs med proposition 160.001-{amount_kr} kr.` | 7 | Försök 2, 4 och 6 körs med proposition 160.001-400.000 kr. |
-| EX | `Försök körs på Färjestad 4/4, Eskilstuna 29/4, Bergsåker 8/5, Örebro 15/5, Romme 30/5, Kalmar 6/6 och Gävle 16/6.` | 7 | Försök körs på Färjestad 4/4, Eskilstuna 29/4, Bergsåker 8/5, Örebro 15/5, Romme 30/5, Kalmar 6/6 och Gävle 16/6. |
-| EX | `Häst måste ha deltagit i minst ett försök för att vara startberättigad i finalen som körs i Gävle 9 oktober.` | 7 | Häst måste ha deltagit i minst ett försök för att vara startberättigad i finalen som körs i Gävle 9 oktober. |
-| EX | `Hästar som startat i försök 1, 3 och 5 startar i finalen från distansen 2140 meter, hästar som startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter.` | 7 | Hästar som startat i försök 1, 3 och 5 startar i finalen från distansen 2140 meter, hästar som startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter. |
-| EX | `Hästarna från försök 1 startar i finalen från distansen {distance_m} m, hästar från försök 2 startar från distansen {distance_m} m och hästar från försök 3 från distansen {distance_m} m.` | 7 | Hästarna från försök 1 startar i finalen från distansen 2140m, hästar från försök 2 startar från distansen 2160m och hästar från försök 3 från distansen 2180m. |
-| EX | `I finalen lottas de sex vinnarna på spår 1-6 och tvåorna (eller övriga) lottas på spår 7-12.` | 7 | I finalen lottas de sex vinnarna på spår 1-6 och tvåorna (eller övriga) lottas på spår 7-12. |
-| EX | `Kusk som döms för drivningsförseelse fråntas 30 poäng.` | 7 | Kusk som döms för drivningsförseelse fråntas 30 poäng. |
-| EX | `Kuskar erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10.` | 7 | Kuskar erhåller poäng i serien enligt prisplaceringsskalan 150-80-50-40-30-20-10-10. |
-| EX | `Ladugårdsinredes Lärlings-/Amatörserie 2026 är en serie för B- och K-licensinnehavare med 10 lopp på Axevalla och 10 lopp på Åby från januari till december.` | 7 | Ladugårdsinredes Lärlings-/Amatörserie 2026 är en serie för B- och K-licensinnehavare med 10 lopp på Axevalla och 10 lopp på Åby från januari till december. |
-| EX | `Lärlingsserien är för kuskar med B- eller K-licens som är registrerad som anställd hos A- eller B-tränare och som körde högst 400 lopp 2024.` | 7 | Lärlingsserien är för kuskar med B- eller K-licens som är registrerad som anställd hos A- eller B-tränare och som körde högst 400 lopp 2024. |
-| EX | `Maharajahs Stoserie består av sex uttagningslopp i Gävle under 2025 där de 15 ston som samlat flest poäng är kvalificerade för final, därefter 16:e o.s.v.` | 7 | Maharajahs Stoserie består av sex uttagningslopp i Gävle under 2025 där de 15 ston som samlat flest poäng är kvalificerade för final, därefter 16:e o.s.v. |
-| EX | `Max fem startande per distans.` | 7 | Max fem startande per distans. |
-| EX | `Poäng till deltagande hästar i försöken utdelas enligt skalan: 25-15-10-8-6-4-3-2.` | 7 | Poäng till deltagande hästar i försöken utdelas enligt skalan: 25-15-10-8-6-4-3-2. |
-| EX | `Pris i finalen: Segrande hästs ägare i finalen erhåller en fri levande fölavgift för betäckningsåret 2026 med avelshingsten Maharajah.` | 7 | Pris i finalen: Segrande hästs ägare i finalen erhåller en fri levande fölavgift för betäckningsåret 2026 med avelshingsten Maharajah. |
-| EX | `Päskägg till segrande hästs skötare.` | 7 | Päskägg till segrande hästs skötare. |
-| EX | `Regler E30: De två främst placerade kuskarna är skyldiga att deltaga i finalen på Eskilstuna den 28 juni.` | 7 | Regler E30: De två främst placerade kuskarna är skyldiga att deltaga i finalen på Eskilstuna den 28 juni. |
-| EX | `Regler Ecurie D.s Stoserie: Stoserien körs i sex försök; 7/10, 28/10, 4/11, 22/11, 28/11 och 9/12.` | 7 | Regler Ecurie D.s Stoserie: Stoserien körs i sex försök; 7/10, 28/10, 4/11, 22/11, 28/11 och 9/12. |
-| EX | `Regler Gävletravets Amatörserie 2025: Körs i nio försök under året för B-tränade hästar och kuskar med B- eller K-licens licens (som körde högst 30 eller 150 lopp 2024 beroende på vilket försök det gäller) där de tolv främsta kuskarna kvalificerar sig till finalen 17 oktober.` | 7 | Regler Gävletravets Amatörserie 2025: Körs i nio försök under året för B-tränade hästar och kuskar med B- eller K-licens licens (som körde högst 30 eller 150 lopp 2024 beroende på vilket försök det gäller) där de tolv främsta kuskarna kvalificerar sig till finalen 17 oktober. |
-| EX | `Segrande hästs uppfödare i finalen erhåller en fri levande fölavgift med avelshingsten Who's Who.` | 7 | Segrande hästs uppfödare i finalen erhåller en fri levande fölavgift med avelshingsten Who's Who. |
-| EX | `Sleipner Bollnäs Stoserie 2025: Sleipner Bollnäs Stoserie är en serie med sju försök och en final som körs 22 augusti med 100 000 kr till vinnaren.` | 7 | Sleipner Bollnäs Stoserie 2025: Sleipner Bollnäs Stoserie är en serie med sju försök och en final som körs 22 augusti med 100 000 kr till vinnaren. |
-| EX | `Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng vid anmälan till försöket.` | 7 | Vid död löpning om sista kvalificeringsplats i försöksavdelning går den häst till final som har högst antal startpoäng vid anmälan till försöket. |
-| EX | `Vid förfall blir trean i mål tillfrågad att starta osv.` | 7 | Vid förfall blir trean i mål tillfrågad att starta osv. |
-| EX | `Vid lika poängtal avgör aktuella startpoäng.` | 7 | Vid lika poängtal avgör aktuella startpoäng. |
-| EX | `Ägare till den häst som blir tvåa i finalen erhåller en fri levande fölavgift med avelshingsten From Above.` | 7 | Ägare till den häst som blir tvåa i finalen erhåller en fri levande fölavgift med avelshingsten From Above. |
-| EX | `Övriga platser i finalen tillsätts genom vanlig anmälan där de med högst startpoäng är startberättigade.` | 7 | Övriga platser i finalen tillsätts genom vanlig anmälan där de med högst startpoäng är startberättigade. |
+| EX | `- värde 10.000 USD).` | 6 | - värde 10.000 USD). |
+| EX | `(Hederspris till segrande hästs ägare i finalen den 31/12: Fri levande fölavgift 2026 i Ecurie D.` | 6 | (Hederspris till segrande hästs ägare i finalen den 31/12: Fri levande fölavgift 2026 i Ecurie D. |
+| EX | `Även norska lärlingar tillhörande Momarken som fyllt 18 år med högst 150 sulkylopp under 2024.` | 6 | Även norska lärlingar tillhörande Momarken som fyllt 18 år med högst 150 sulkylopp under 2024. |
+| EX | `Följ ställningen på hagmyren.se.` | 5 | Följ ställningen på hagmyren.se. |
+| EX | `Försök 2, 4 och 6 körs med proposition 190.001-{amount_kr} kr.` | 5 | Försök 2, 4 och 6 körs med proposition 190.001-475.000 kr. |
+| EX | `Hederspriser.` | 5 | Hederspriser. |
+| EX | `Häst med lägsta seedningstal rankas som nr 1, den med näst lägsta som nr 2 osv.` | 5 | Häst med lägsta seedningstal rankas som nr 1, den med näst lägsta som nr 2 osv. |
+| EX | `Hästar som startat startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter.` | 5 | Hästar som startat startat i försök 2, 4 och 6 startar i finalen från distansen 2160 meter. |
+| EX | `Järvsöfaks UngdomsCup: En kuskserie för ungdomar födda 1995 eller senare med sex försök och en final på Hagmyren 26 juli.` | 5 | Järvsöfaks UngdomsCup: En kuskserie för ungdomar födda 1995 eller senare med sex försök och en final på Hagmyren 26 juli. |
+| EX | `Loppet är endast öppet för Europafödda hästar.` | 5 | Loppet är endast öppet för Europafödda hästar. |
+| EX | `Om 13-24 hästar anmäls delas loppet enligt regler för Svensk Travsport regler för seedning av insatslopp.` | 5 | Om 13-24 hästar anmäls delas loppet enligt regler för Svensk Travsport regler för seedning av insatslopp. |
+| EX | `Om 7-12 hästar anmäls körs loppet enligt anmälningslista.` | 5 | Om 7-12 hästar anmäls körs loppet enligt anmälningslista. |
+| EX | `Om det anmäls 13-24 hästar blir det två lopp med de sex främsta i respektive avdelning till final.` | 5 | Om det anmäls 13-24 hästar blir det två lopp med de sex främsta i respektive avdelning till final. |
+| EX | `Om en kusk är avstängd i samband med finalen väljer banan/landet ut en ny representant.` | 5 | Om en kusk är avstängd i samband med finalen väljer banan/landet ut en ny representant. |
+| EX | `Om försöksvinnare inte kommer till start reserveras upp till fem platser för hästar som startat och samlat poäng i Gulddivisionens försök under meeting 3 enligt sedvanlig STL poängräkning.` | 5 | Om försöksvinnare inte kommer till start reserveras upp till fem platser för hästar som startat och samlat poäng i Gulddivisionens försök under meeting 3 enligt sedvanlig STL poängräkning. |
+| EX | `Om även trean är kvalificerad så erhåller fyran platsen osv.` | 5 | Om även trean är kvalificerad så erhåller fyran platsen osv. |
+| EX | `Rebuff's Stoserie: En stoserie från februari till juni 2025 med totalt sex lopp.` | 5 | Rebuff's Stoserie: En stoserie från februari till juni 2025 med totalt sex lopp. |
+| EX | `Regler Bollnästravets Stoserie: Stoserien körs i sex försök; 15/8, 22/8, 28/8, 23/9, 29/9 och 13/10.` | 5 | Regler Bollnästravets Stoserie: Stoserien körs i sex försök; 15/8, 22/8, 28/8, 23/9, 29/9 och 13/10. |
+| EX | `Regler Gulddivisionens Final på Gävle 17 maj: Alla försöksvinnare reserveras en plats.` | 5 | Regler Gulddivisionens Final på Gävle 17 maj: Alla försöksvinnare reserveras en plats. |
+| EX | `Segrande kusk vinner en studieresa till USA sponsrad av Marcus Melander Stable.` | 5 | Segrande kusk vinner en studieresa till USA sponsrad av Marcus Melander Stable. |
+| EX | `Sleipner Cup 2026: Försök körs på Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 och Bs 27/5.` | 5 | Sleipner Cup 2026: Försök körs på Bs 15/3, Bs 15/3, B 31/3, B 31/3, Bs 10/4, G 14/4, Ro 20/4, U 21/4, H 22/4, B 7/5, B 7/5, H 17/5, Sk 19/5, År 21/5 och Bs 27/5. |
+| EX | `Spårval enligt Svensk Travsports regler för uttagningslopp.` | 5 | Spårval enligt Svensk Travsports regler för uttagningslopp. |
+| EX | `Startanmälningsavgift: 6 000 SEK.` | 5 | Startanmälningsavgift: 6 000 SEK. |
+| EX | `Stayerserien 2025: Körs under året som en serie med sex försök och final den 26 september över 3140 meter voltstart med 150 000 kr i förstapris.` | 5 | Stayerserien 2025: Körs under året som en serie med sex försök och final den 26 september över 3140 meter voltstart med 150 000 kr i förstapris. |
+| EX | `Svenska Travligans hederspriser till segrande hästs ägare och hästskötare.` | 5 | Svenska Travligans hederspriser till segrande hästs ägare och hästskötare. |
+| EX | `Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente gäller i Bröderna Djuses Utmaning.` | 5 | Undantag från paragraf 41 i Svensk Travsports Tävlingsreglemente gäller i Bröderna Djuses Utmaning. |
+| EX | `Vid fördelning av hästarna till uttagningsloppen går rank nr 1 till första avdelningen, nr 2 till andra osv i vändande ordning beroende på antalet uttagningslopp.` | 5 | Vid fördelning av hästarna till uttagningsloppen går rank nr 1 till första avdelningen, nr 2 till andra osv i vändande ordning beroende på antalet uttagningslopp. |
+| EX | `(Häst som inte väljer att starta i finalen beläggs med startförbud mellan 4/9-16/9).` | 4 | (Häst som inte väljer att starta i finalen beläggs med startförbud mellan 4/9-16/9). |
+| EX | `{start_method}.` | 4 | Autostart. |
 
 ## Confidence notes
 

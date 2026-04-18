@@ -1,0 +1,686 @@
+[
+  {
+    "id": "breed-type",
+    "types": [
+      "U"
+    ],
+    "template": "{breed_type}",
+    "render": {
+      "sv": "{breed_type}",
+      "fi": "{breed_type}",
+      "en": "{breed_type}"
+    }
+  },
+  {
+    "id": "proposition-number",
+    "types": [
+      "L"
+    ],
+    "template": "Prop. {prop_number}.",
+    "render": {
+      "sv": "Prop. {prop_number}.",
+      "fi": "Prop. {prop_number}.",
+      "en": "Prop. {prop_number}."
+    }
+  },
+  {
+    "id": "proposition-number-title",
+    "types": [
+      "L"
+    ],
+    "template": "Prop. {prop_number}. {prop_title}",
+    "render": {
+      "sv": "Prop. {prop_number}. {prop_title}",
+      "fi": "Prop. {prop_number}. {prop_title}",
+      "en": "Prop. {prop_number}. {prop_title}"
+    }
+  },
+  {
+    "id": "race-title",
+    "types": [
+      "L"
+    ],
+    "template": "{race_title}",
+    "render": {
+      "sv": "{race_title}",
+      "fi": "{race_title}",
+      "en": "{race_title}"
+    }
+  },
+  {
+    "id": "prefixed-race-title",
+    "types": [
+      "L"
+    ],
+    "template": "{title_prefix} - {race_title}",
+    "render": {
+      "sv": "{title_prefix} - {race_title}",
+      "fi": "{title_prefix} - {race_title}",
+      "en": "{title_prefix} - {race_title}"
+    }
+  },
+  {
+    "id": "year-suffixed-race-title",
+    "types": [
+      "L"
+    ],
+    "template": "{title_prefix} {race_title} {title_year}",
+    "render": {
+      "sv": "{title_prefix} {race_title} {title_year}",
+      "fi": "{title_prefix} {race_title} {title_year}",
+      "en": "{title_prefix} {race_title} {title_year}"
+    }
+  },
+  {
+    "id": "presented-by-title-row",
+    "types": [
+      "L"
+    ],
+    "template": "Presenteras av {presented_by_name}.",
+    "render": {
+      "sv": "Presenteras av {presented_by_name}.",
+      "fi": "Esittelee {presented_by_name}.",
+      "en": "Presented by {presented_by_name}."
+    }
+  },
+  {
+    "id": "presented-by-title-row-no-period",
+    "types": [
+      "L"
+    ],
+    "template": "Presenteras av {presented_by_name}",
+    "render": {
+      "sv": "Presenteras av {presented_by_name}",
+      "fi": "Esittelee {presented_by_name}",
+      "en": "Presented by {presented_by_name}"
+    }
+  },
+  {
+    "id": "half-row-allowed-through",
+    "types": [
+      "H"
+    ],
+    "template": "Halvrad tillåts t.o.m {date_text}",
+    "render": {
+      "sv": "Halvrad tillåts t.o.m {date_text}",
+      "fi": "Puolikas rivi sallitaan {date_text} asti",
+      "en": "Half row allowed through {date_text}"
+    }
+  },
+  {
+    "id": "priority-rule-applies",
+    "types": [
+      "FX"
+    ],
+    "template": "Företrädesregeln gäller.",
+    "render": {
+      "sv": "Företrädesregeln gäller.",
+      "fi": "Etusijasääntö on voimassa.",
+      "en": "The priority rule applies."
+    }
+  },
+  {
+    "id": "rule-point-applies",
+    "types": [
+      "FX"
+    ],
+    "template": "Punkt {rule_point} tillämpas i detta lopp.",
+    "render": {
+      "sv": "Punkt {rule_point} tillämpas i detta lopp.",
+      "fi": "Kohtaa {rule_point} sovelletaan tässä lähdössä.",
+      "en": "Rule point {rule_point} applies in this race."
+    }
+  },
+  {
+    "id": "home-horse-priority",
+    "types": [
+      "FX"
+    ],
+    "template": "{home_horse_count} hemmahästar har företräde.",
+    "render": {
+      "sv": "{home_horse_count} hemmahästar har företräde.",
+      "fi": "{home_horse_count} kotiradan hevosta on etusijalla.",
+      "en": "{home_horse_count} home-track horses have priority."
+    }
+  },
+  {
+    "id": "home-horse-priority-no-count",
+    "types": [
+      "FX"
+    ],
+    "template": "Hemmahästar har företräde.",
+    "render": {
+      "sv": "Hemmahästar har företräde.",
+      "fi": "Kotiradan hevoset ovat etusijalla.",
+      "en": "Home-track horses have priority."
+    }
+  },
+  {
+    "id": "home-horse-priority-with-aliases",
+    "types": [
+      "FX"
+    ],
+    "template": "{home_horse_count} hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+    "render": {
+      "sv": "{home_horse_count} hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+      "fi": "{home_horse_count} kotiradan hevosta on etusijalla, ja kotiradoiksi lasketaan myös {home_track_aliases}.",
+      "en": "{home_horse_count} home-track horses have priority, and {home_track_aliases} also count as home tracks."
+    }
+  },
+  {
+    "id": "home-horse-priority-no-count-with-aliases",
+    "types": [
+      "FX"
+    ],
+    "template": "Hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+    "render": {
+      "sv": "Hemmahästar har företräde, som hemmabana räknas även {home_track_aliases}.",
+      "fi": "Kotiradan hevoset ovat etusijalla, ja kotiradoiksi lasketaan myös {home_track_aliases}.",
+      "en": "Home-track horses have priority, and {home_track_aliases} also count as home tracks."
+    }
+  },
+  {
+    "id": "priority-nearest-up-through",
+    "types": [
+      "FX"
+    ],
+    "template": "Närmast upp t.o.m {amount_kr} kr.",
+    "render": {
+      "sv": "Närmast upp t.o.m {amount_kr} kr.",
+      "fi": "Seuraavana enintään {amount_kr} kr.",
+      "en": "Next up to and including {amount_kr} SEK."
+    }
+  },
+  {
+    "id": "selection-count-according-to-point",
+    "types": [
+      "FX"
+    ],
+    "template": "{selection_count} enligt punkt {rule_point}.",
+    "render": {
+      "sv": "{selection_count} enligt punkt {rule_point}.",
+      "fi": "{selection_count} kohdan {rule_point} mukaan.",
+      "en": "{selection_count} according to point {rule_point}."
+    }
+  },
+  {
+    "id": "driver-category-requirement",
+    "types": [
+      "V"
+    ],
+    "template": "Körsvenskrav kat. {driver_category}.",
+    "render": {
+      "sv": "Körsvenskrav kat. {driver_category}.",
+      "fi": "Ohjastajavaatimus, kategoria {driver_category}.",
+      "en": "Driver requirement category {driver_category}."
+    }
+  },
+  {
+    "id": "driver-born-before",
+    "types": [
+      "V"
+    ],
+    "template": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.",
+    "render": {
+      "sv": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.",
+      "fi": "{participant_role} syntyneet {driver_birth_date} tai aiemmin{driver_race_limit}.",
+      "en": "{participant_role} born {driver_birth_date} or earlier{driver_race_limit}."
+    }
+  },
+  {
+    "id": "driver-born-range",
+    "types": [
+      "V"
+    ],
+    "template": "{participant_role} födda {driver_birth_date_start} till {driver_birth_date_end}{driver_race_limit}.",
+    "render": {
+      "sv": "{participant_role} födda {driver_birth_date_start} till {driver_birth_date_end}{driver_race_limit}.",
+      "fi": "{participant_role} syntyneet {driver_birth_date_start} - {driver_birth_date_end}{driver_race_limit}.",
+      "en": "{participant_role} born {driver_birth_date_start} to {driver_birth_date_end}{driver_race_limit}."
+    }
+  },
+  {
+    "id": "driver-born-before-merged-driver-limit",
+    "types": [
+      "V"
+    ],
+    "template": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.{amount_min_kr}-{amount_max_kr} kr {secondary_driver_race_limit}.",
+    "render": {
+      "sv": "{participant_role} födda {driver_birth_date} eller tidigare{driver_race_limit}.{amount_min_kr}-{amount_max_kr} kr {secondary_driver_race_limit}.",
+      "fi": "{participant_role} syntyneet {driver_birth_date} tai aiemmin{driver_race_limit}. {amount_min_kr}-{amount_max_kr} kr {secondary_driver_race_limit}.",
+      "en": "{participant_role} born {driver_birth_date} or earlier{driver_race_limit}. {amount_min_kr}-{amount_max_kr} SEK {secondary_driver_race_limit}."
+    }
+  },
+  {
+    "id": "all-horses",
+    "types": [
+      "V"
+    ],
+    "template": "Alla.",
+    "render": {
+      "sv": "Alla.",
+      "fi": "Kaikki.",
+      "en": "All."
+    }
+  },
+  {
+    "id": "eligibility-compound-range-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr.",
+    "render": {
+      "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr.",
+      "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr ja {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} kr.",
+      "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK and {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} SEK."
+    }
+  },
+  {
+    "id": "eligibility-compound-range-secondary-suffix",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr{secondary_clause_suffix}.",
+    "render": {
+      "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} {amount_secondary_min_kr} - {amount_secondary_max_kr} kr{secondary_clause_suffix}.",
+      "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr ja {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} kr{secondary_clause_suffix}.",
+      "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK and {eligibility_subject_secondary}, {amount_secondary_min_kr} - {amount_secondary_max_kr} SEK{secondary_clause_suffix}."
+    }
+  },
+  {
+    "id": "eligibility-compound-range-secondary-min-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} lägst {amount_secondary_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr samt {eligibility_subject_secondary} lägst {amount_secondary_kr} kr{points_limit}.",
+      "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr ja {eligibility_subject_secondary}, vähintään {amount_secondary_kr} kr{points_limit}.",
+      "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK and {eligibility_subject_secondary}, at least {amount_secondary_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "eligibility-exact-age-range-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{age_exact}-åriga {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{age_exact}-åriga {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "fi": "{age_exact}-vuotiaat, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "en": "{age_exact}-year-olds, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "continuous-training-since-date",
+    "types": [
+      "V"
+    ],
+    "template": "I oavbruten {training_code}-träning fr.o.m. {training_since_date}{eligibility_suffix}.",
+    "render": {
+      "sv": "I oavbruten {training_code}-träning fr.o.m. {training_since_date}{eligibility_suffix}.",
+      "fi": "Yhtäjaksoisesti {training_code}-valmennuksessa alkaen {training_since_date}{eligibility_suffix}.",
+      "en": "In uninterrupted {training_code} training since {training_since_date}{eligibility_suffix}."
+    }
+  },
+  {
+    "id": "trainer-start-limit",
+    "types": [
+      "V"
+    ],
+    "template": "Hos tränare som gjort högst {trainer_start_limit} starter under {trainer_start_year}.",
+    "render": {
+      "sv": "Hos tränare som gjort högst {trainer_start_limit} starter under {trainer_start_year}.",
+      "fi": "Valmentajilta, joilla oli enintään {trainer_start_limit} starttia vuonna {trainer_start_year}.",
+      "en": "From trainers with at most {trainer_start_limit} starts during {trainer_start_year}."
+    }
+  },
+  {
+    "id": "eligibility-subject-only",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject}.",
+    "render": {
+      "sv": "{eligibility_subject}.",
+      "fi": "{eligibility_subject}.",
+      "en": "{eligibility_subject}."
+    }
+  },
+  {
+    "id": "eligibility-subject-max-earnings-suffix",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} högst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+    "render": {
+      "sv": "{eligibility_subject} högst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+      "fi": "{eligibility_subject}, enintään {amount_kr} kr{points_limit}{eligibility_suffix}.",
+      "en": "{eligibility_subject}, at most {amount_kr} SEK{points_limit}{eligibility_suffix}."
+    }
+  },
+  {
+    "id": "eligibility-subject-max-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} högst {amount_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{eligibility_subject} högst {amount_kr} kr{points_limit}.",
+      "fi": "{eligibility_subject}, enintään {amount_kr} kr{points_limit}.",
+      "en": "{eligibility_subject}, at most {amount_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "eligibility-subject-min-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} lägst {amount_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{eligibility_subject} lägst {amount_kr} kr{points_limit}.",
+      "fi": "{eligibility_subject}, vähintään {amount_kr} kr{points_limit}.",
+      "en": "{eligibility_subject}, at least {amount_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "eligibility-subject-min-earnings-suffix",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} lägst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+    "render": {
+      "sv": "{eligibility_subject} lägst {amount_kr} kr{points_limit}{eligibility_suffix}.",
+      "fi": "{eligibility_subject}, vähintään {amount_kr} kr{points_limit}{eligibility_suffix}.",
+      "en": "{eligibility_subject}, at least {amount_kr} SEK{points_limit}{eligibility_suffix}."
+    }
+  },
+  {
+    "id": "eligibility-subject-range-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "eligibility-subject-range-earnings-suffix",
+    "types": [
+      "V"
+    ],
+    "template": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}{eligibility_suffix}.",
+    "render": {
+      "sv": "{eligibility_subject} {amount_min_kr} - {amount_max_kr} kr{points_limit}{eligibility_suffix}.",
+      "fi": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} kr{points_limit}{eligibility_suffix}.",
+      "en": "{eligibility_subject}, {amount_min_kr} - {amount_max_kr} SEK{points_limit}{eligibility_suffix}."
+    }
+  },
+  {
+    "id": "eligibility-max-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{age_min}-åriga och äldre högst {amount_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{age_min}-åriga och äldre högst {amount_kr} kr{points_limit}.",
+      "fi": "{age_min}-vuotiaat ja vanhemmat, enintään {amount_kr} kr{points_limit}.",
+      "en": "{age_min}-year-olds and older, at most {amount_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "eligibility-min-earnings",
+    "types": [
+      "V"
+    ],
+    "template": "{age_min}-åriga och äldre lägst {amount_kr} kr.",
+    "render": {
+      "sv": "{age_min}-åriga och äldre lägst {amount_kr} kr.",
+      "fi": "{age_min}-vuotiaat ja vanhemmat, vähintään {amount_kr} kr.",
+      "en": "{age_min}-year-olds and older, at least {amount_kr} SEK."
+    }
+  },
+  {
+    "id": "eligibility-earnings-range",
+    "types": [
+      "V"
+    ],
+    "template": "{age_min}-åriga och äldre {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+    "render": {
+      "sv": "{age_min}-åriga och äldre {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "fi": "{age_min}-vuotiaat ja vanhemmat, {amount_min_kr} - {amount_max_kr} kr{points_limit}.",
+      "en": "{age_min}-year-olds and older, {amount_min_kr} - {amount_max_kr} SEK{points_limit}."
+    }
+  },
+  {
+    "id": "premium-race-result-removes-chance",
+    "types": [
+      "V"
+    ],
+    "template": "Häst som får godkänt resultat i premielopp stryks därmed från premiechansen.",
+    "render": {
+      "sv": "Häst som får godkänt resultat i premielopp stryks därmed från premiechansen.",
+      "fi": "Hevonen, joka saa hyväksytyn tuloksen preemiolähdössä, poistetaan samalla premie-mahdollisuudesta.",
+      "en": "A horse with an approved result in a premium race is thereby removed from the premium-chance program."
+    }
+  },
+  {
+    "id": "no-limited-rights-horse",
+    "types": [
+      "V"
+    ],
+    "template": "Ej häst med begränsade rättigheter.",
+    "render": {
+      "sv": "Ej häst med begränsade rättigheter.",
+      "fi": "Ei hevosille, joilla on rajoitetut oikeudet.",
+      "en": "Not for horses with limited rights."
+    }
+  },
+  {
+    "id": "distance",
+    "types": [
+      "T"
+    ],
+    "template": "{distance_m} m.",
+    "render": {
+      "sv": "{distance_m} m.",
+      "fi": "{distance_m} m.",
+      "en": "{distance_m} m."
+    }
+  },
+  {
+    "id": "start-method",
+    "types": [
+      "T"
+    ],
+    "template": "{start_method}.",
+    "render": {
+      "sv": "{start_method}.",
+      "fi": "{start_method}.",
+      "en": "{start_method}."
+    }
+  },
+  {
+    "id": "runner-count",
+    "types": [
+      "T"
+    ],
+    "template": "{runner_count} startande.",
+    "render": {
+      "sv": "{runner_count} startande.",
+      "fi": "{runner_count} osallistujaa.",
+      "en": "{runner_count} starters."
+    }
+  },
+  {
+    "id": "prize-ladder",
+    "types": [
+      "P"
+    ],
+    "template": "Pris: {prize_ladder} kr.",
+    "render": {
+      "sv": "Pris: {prize_ladder} kr.",
+      "fi": "Palkinnot: {prize_ladder} kr.",
+      "en": "Prizes: {prize_ladder} SEK."
+    }
+  },
+  {
+    "id": "prize-ladder-placed-count",
+    "types": [
+      "P"
+    ],
+    "template": "Pris: {prize_ladder} kr ({placed_count} prisplacerade).",
+    "render": {
+      "sv": "Pris: {prize_ladder} kr ({placed_count} prisplacerade).",
+      "fi": "Palkinnot: {prize_ladder} kr ({placed_count} palkintosijaa).",
+      "en": "Prizes: {prize_ladder} SEK ({placed_count} prize placings)."
+    }
+  },
+  {
+    "id": "prize-ladder-other-finishers",
+    "types": [
+      "P"
+    ],
+    "template": "Pris: {prize_ladder} samt {amount_kr} kr till övriga ej distanserade och ej diskvalificerade som fullföljer loppet.",
+    "render": {
+      "sv": "Pris: {prize_ladder} samt {amount_kr} kr till övriga ej distanserade och ej diskvalificerade som fullföljer loppet.",
+      "fi": "Palkinnot: {prize_ladder} sekä {amount_kr} kr muille maaliin tulleille, joita ei ole hylätty eikä tuomittu distanseeratuiksi.",
+      "en": "Prizes: {prize_ladder}, plus {amount_kr} SEK to other finishers who are not distanced or disqualified."
+    }
+  },
+  {
+    "id": "minimum-prize-all",
+    "types": [
+      "P"
+    ],
+    "template": "Lägst {amount_kr} kr till alla tävlande.",
+    "render": {
+      "sv": "Lägst {amount_kr} kr till alla tävlande.",
+      "fi": "Vähintään {amount_kr} kr kaikille osallistujille.",
+      "en": "At least {amount_kr} SEK to all competitors."
+    }
+  },
+  {
+    "id": "max-total-prize",
+    "types": [
+      "P"
+    ],
+    "template": "Prispengar max total: {amount_kr} kr.",
+    "render": {
+      "sv": "Prispengar max total: {amount_kr} kr.",
+      "fi": "Palkintorahojen enimmäissumma yhteensä: {amount_kr} kr.",
+      "en": "Maximum total prize money: {amount_kr} SEK."
+    }
+  },
+  {
+    "id": "no-track-reservation",
+    "types": [
+      "T"
+    ],
+    "template": "Spårförbehåll ej tillåtet.",
+    "render": {
+      "sv": "Spårförbehåll ej tillåtet.",
+      "fi": "Rata-/lähtöpaikkatoivetta ei sallita.",
+      "en": "Track-position reservations are not allowed."
+    }
+  },
+  {
+    "id": "allowance-terms",
+    "types": [
+      "T"
+    ],
+    "template": "Tillägg {allowance_text}",
+    "render": {
+      "sv": "Tillägg {allowance_text}",
+      "fi": "Tasoitus: {allowance_text}",
+      "en": "Handicap: {allowance_text}"
+    }
+  },
+  {
+    "id": "allowance-terms-period",
+    "types": [
+      "T"
+    ],
+    "template": "Tillägg {allowance_text}.",
+    "render": {
+      "sv": "Tillägg {allowance_text}.",
+      "fi": "Tasoitus: {allowance_text}.",
+      "en": "Handicap: {allowance_text}."
+    }
+  },
+  {
+    "id": "allowance-continuation",
+    "types": [
+      "T"
+    ],
+    "template": "{allowance_text}",
+    "render": {
+      "sv": "{allowance_text}",
+      "fi": "{allowance_text}",
+      "en": "{allowance_text}"
+    }
+  },
+  {
+    "id": "allowance-continuation-period",
+    "types": [
+      "T"
+    ],
+    "template": "{allowance_text}.",
+    "render": {
+      "sv": "{allowance_text}.",
+      "fi": "{allowance_text}.",
+      "en": "{allowance_text}."
+    }
+  },
+  {
+    "id": "start-sum-track-order",
+    "types": [
+      "T"
+    ],
+    "template": "Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår {track_order}.",
+    "render": {
+      "sv": "Spår efter startsumma där häst med lägst startprissumma får spår 1 osv, enligt följande ordning spår {track_order}.",
+      "fi": "Lähtöradat voittosumman mukaan; pienimmän voittosumman hevonen saa radan 1 jne., järjestys {track_order}.",
+      "en": "Post positions by earnings; the horse with the lowest earnings gets post 1, etc., in this order: {track_order}."
+    }
+  },
+  {
+    "id": "mounted-race",
+    "types": [
+      "T"
+    ],
+    "template": "Monté.",
+    "render": {
+      "sv": "Monté.",
+      "fi": "Monté.",
+      "en": "Mounted race."
+    }
+  },
+  {
+    "id": "premium-chance-extra-prize",
+    "types": [
+      "P"
+    ],
+    "template": "För premiechansad häst adderas {premium_chance_percent} % extra prispengar.",
+    "render": {
+      "sv": "För premiechansad häst adderas {premium_chance_percent} % extra prispengar.",
+      "fi": "Premiechansad-hevoselle lisätään {premium_chance_percent} % ylimääräistä palkintorahaa.",
+      "en": "A premium-chance horse receives {premium_chance_percent}% extra prize money."
+    }
+  },
+  {
+    "id": "premium-chance-double-prize",
+    "types": [
+      "P"
+    ],
+    "template": "Premiechansad häst får dubbla prispengar.",
+    "render": {
+      "sv": "Premiechansad häst får dubbla prispengar.",
+      "fi": "Premiechansad-hevonen saa kaksinkertaiset palkintorahat.",
+      "en": "A premium-chance horse receives double prize money."
+    }
+  }
+]
