@@ -1,6 +1,6 @@
 # Proposition translation audit
 
-Generated: 2026-04-18T19:17:43.589Z
+Generated: 2026-04-18T19:48:04.299Z
 
 ## Scope
 
@@ -16,8 +16,8 @@ Generated: 2026-04-18T19:17:43.589Z
 - Unique full texts: 14587
 - Sentence entries: 143644
 - Unique sentence templates: 1477
-- Matched sentence entries: 142579 (99.26%)
-- Matched unique sentence templates: 601 (40.69%)
+- Matched sentence entries: 142711 (99.35%)
+- Matched unique sentence templates: 667 (45.16%)
 
 ## Type summary
 
@@ -29,7 +29,7 @@ Generated: 2026-04-18T19:17:43.589Z
 | FX | 3456 | 111 | 4546 | 4546 | 100% |
 | T | 10153 | 1152 | 32487 | 32487 | 100% |
 | P | 10152 | 283 | 27681 | 27681 | 100% |
-| EX | 11131 | 1159 | 19684 | 18619 | 94.59% |
+| EX | 11131 | 1159 | 19684 | 18751 | 95.26% |
 | H | 1218 | 250 | 1218 | 1218 | 100% |
 
 ## Top matched templates
@@ -71,26 +71,26 @@ Generated: 2026-04-18T19:17:43.589Z
 | EX | `Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S.` | 2 | Bollnästravet har instiftat Världsrekordloppet - Bollnäsloppet över distansen 1640 meter autostart efter det världsrekord för ston som Delicious U.S. |
 | EX | `Damklubbens hederspris till segrande häst körsven.` | 2 | Damklubbens hederspris till segrande häst körsven. |
 | EX | `De sex främsta hästarna är kvalificerade till Sommarduellens Final (prop.` | 2 | De sex främsta hästarna är kvalificerade till Sommarduellens Final (prop. |
-| EX | `Deltagande kuskar i poängordning: Anna Ek, Jenny A Björk, Fredrik Plassen, Alice Molin, Linus Lönn, Victor S Sundgren, Elias Strandberg, Tom Johansson, Felicia Molin, Julia Smedman, Hugo Metayer och Oskar Dahlman.` | 2 | Deltagande kuskar i poängordning: Anna Ek, Jenny A Björk, Fredrik Plassen, Alice Molin, Linus Lönn, Victor S Sundgren, Elias Strandberg, Tom Johansson, Felicia Molin, Julia Smedman, Hugo Metayer och Oskar Dahlman. |
-| EX | `Deltagande kuskar är: Jonathan Bardun, Julian Cordeau, Nick Elving, Malte Handfast, Wilma Karlsson, Anton Knutsson, Dante Kolgjini, Hannah Matikainen, Tyler Mifsud, Jonas M Oscarsson, Alex Persson, Valentin Prevost.` | 2 | Deltagande kuskar är: Jonathan Bardun, Julian Cordeau, Nick Elving, Malte Handfast, Wilma Karlsson, Anton Knutsson, Dante Kolgjini, Hannah Matikainen, Tyler Mifsud, Jonas M Oscarsson, Alex Persson, Valentin Prevost. |
-| EX | `Deltagande kuskar: Fredrik Plassen, Jenny A Björk, Henrik Kihle, Elias Strandberg, Hugo Metayer, Linus Lönn, Isabella Jansson Wiklund, Julia Smedman, Lovisa Wahlström, Tom Johansson, Simon Helm, Martina Jonsson.` | 2 | Deltagande kuskar: Fredrik Plassen, Jenny A Björk, Henrik Kihle, Elias Strandberg, Hugo Metayer, Linus Lönn, Isabella Jansson Wiklund, Julia Smedman, Lovisa Wahlström, Tom Johansson, Simon Helm, Martina Jonsson. |
-| EX | `Deltagande kuskar/ryttare är: Jonathan Carré, Tova Bengtsson, Sofia Adolfsson, Iina Aho, Henriette Larsen, Hilda Eskilsson, Linnea Djupdahl, Julia Jakobsson, Stephanie J Werder, Emilia Leo, Viktoria Berntsson och Ailin Berg-Almaas.` | 2 | Deltagande kuskar/ryttare är: Jonathan Carré, Tova Bengtsson, Sofia Adolfsson, Iina Aho, Henriette Larsen, Hilda Eskilsson, Linnea Djupdahl, Julia Jakobsson, Stephanie J Werder, Emilia Leo, Viktoria Berntsson och Ailin Berg-Almaas. |
-| EX | `Deltagande ryttare: Jonathan Carre, Lovisa Bernmark, Sofia Adolfsson, Elina Pakkanen, Julia Andersson, Agnes Larsson, Madelen Berås, Malin Andersson, Iina Aho, Saga Laursen` | 2 | Deltagande ryttare: Jonathan Carre, Lovisa Bernmark, Sofia Adolfsson, Elina Pakkanen, Julia Andersson, Agnes Larsson, Madelen Berås, Malin Andersson, Iina Aho, Saga Laursen |
-| EX | `Derbystoet körs på Östersundstravet lördag 9 augusti 2025.` | 2 | Derbystoet körs på Östersundstravet lördag 9 augusti 2025. |
-| EX | `Detta lopp körs av de tolv främsta kuskarna i serien under årets tio omgångar.` | 2 | Detta lopp körs av de tolv främsta kuskarna i serien under årets tio omgångar. |
-| EX | `Detta lopp startas med linjestart.` | 2 | Detta lopp startas med linjestart. |
-| EX | `En poäng tilldelas övriga tränare som deltar i loppen, även de som blir diskvalificerade eller inte fullföljer loppen.` | 2 | En poäng tilldelas övriga tränare som deltar i loppen, även de som blir diskvalificerade eller inte fullföljer loppen. |
-| EX | `Endast för hästar som ej segrat under 2025.` | 2 | Endast för hästar som ej segrat under 2025. |
-| EX | `Eskilstunas Montéserie 2026: Rids i fem försök (R30) under året där de tolv främsta ryttarna kvalificerar sig till final.` | 2 | Eskilstunas Montéserie 2026: Rids i fem försök (R30) under året där de tolv främsta ryttarna kvalificerar sig till final. |
-| EX | `Eventuell lottning av startspår mellan berörda hästar efter död löpning sker i samlingsvolten innan finalen.` | 2 | Eventuell lottning av startspår mellan berörda hästar efter död löpning sker i samlingsvolten innan finalen. |
-| EX | `Final på Solvalla 11 oktober.` | 2 | Final på Solvalla 11 oktober. |
-| EX | `Finalen körs ca 6 minuter efter sista försöksheatet.` | 2 | Finalen körs ca 6 minuter efter sista försöksheatet. |
-| EX | `Finalen körs på Solvalla 11/10 2025.` | 2 | Finalen körs på Solvalla 11/10 2025. |
-| EX | `Finalen körs på Solvalla lördag 14 oktober 2023.` | 2 | Finalen körs på Solvalla lördag 14 oktober 2023. |
-| EX | `Finalen är ett varmblodslopp med 100 000 kronor i förstapris.` | 2 | Finalen är ett varmblodslopp med 100 000 kronor i förstapris. |
-| EX | `Finalen: Startspåren till finalen lottas vid anmälan.` | 2 | Finalen: Startspåren till finalen lottas vid anmälan. |
-| EX | `Fjolårsvinnaren Borups Victory är kvalificerad att starta i finalen.` | 2 | Fjolårsvinnaren Borups Victory är kvalificerad att starta i finalen. |
-| EX | `For details about the flight transportation, please contact the office of UET (+33 1 49 77 14 06 ).` | 2 | For details about the flight transportation, please contact the office of UET (+33 1 49 77 14 06 ). |
+| EX | `Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare.` | 2 | Hederspriser plats 1-3 till segrande hästs körsven, ägare och hästskötare. |
+| EX | `Hederstäcke till hästar plats 1-3.` | 2 | Hederstäcke till hästar plats 1-3. |
+| EX | `Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng.` | 2 | Hästar i träning sedan 1/10-2025 hos tränare med licens på Bodentravet har företräde i detta lopp oavsett startpoäng. |
+| EX | `Hästar som gjort mer än fem starter på fått ytterligare 1 poäng.` | 2 | Hästar som gjort mer än fem starter på fått ytterligare 1 poäng. |
+| EX | `Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter.` | 2 | Hästar som rids av ryttare som ännu inte fyllt 18 år startar på distansen 2140 meter. |
+| EX | `Hästar som tjänat mellan 1.275.001-{amount_kr} kr får ha högst 500 startpoäng.` | 2 | Hästar som tjänat mellan 1.275.001-1.875.000 kr får ha högst 500 startpoäng. |
+| EX | `Hästar som tjänat mellan 150.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 2 | Hästar som tjänat mellan 150.001-1.485.000 kr får ha obegränsat med startpoäng. |
+| EX | `Hästar som tjänat mellan 225.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 2 | Hästar som tjänat mellan 225.001-800.000 kr får ha obegränsat med startpoäng. |
+| EX | `Hästar som tjänat mellan 65.001-{amount_kr} kr får ha obegränsat med startpoäng.` | 2 | Hästar som tjänat mellan 65.001-240.000 kr får ha obegränsat med startpoäng. |
+| EX | `Hästarna lottas till spår 1, 3 och 5 bakom startbilen.` | 2 | Hästarna lottas till spår 1, 3 och 5 bakom startbilen. |
+| EX | `Hästarna ska köras av Bergsåkerslicensierade kuskar.` | 2 | Hästarna ska köras av Bergsåkerslicensierade kuskar. |
+| EX | `Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025).` | 2 | Hästarna som kvalar in till finalen är skyldiga att starta (med skyldig menas att hästen måste starta i finalen och beläggs annars med startförbud under perioden 22 juni- 4 juli 2025). |
+| EX | `I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga.` | 2 | I detta lopp krävs godkänd montéprestation (kval eller start) för att deltaga. |
+| EX | `I finalen på Jägersro startar inkvalad häst från samma distans som i försöket.` | 2 | I finalen på Jägersro startar inkvalad häst från samma distans som i försöket. |
+| EX | `I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd.` | 2 | I övrigt körs loppen enligt Tävlingsreglemente för Svensk Travsport, och eventuella regelöverträdelser kommer att medföra påföljd. |
+| EX | `I övrigt se regler på breederscourse.com.` | 2 | I övrigt se regler på breederscourse.com. |
+| EX | `Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood.` | 2 | Inkvalade körsvenner: Peter Zadel, Julia Nilsson, Jan Silvén, Malin H Johansson, Per Nilsson, Andreas Andersson, Andrezej Karasiewicz, Micael Lindblom, Marcus Linryd, Ayse Könec, Stig-Christer Westrum och André Bood. |
+| EX | `Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike).` | 2 | Jean-Philippe Bazire, Constance Chazal, Benjamin Debris och Jérémy Roux (från Frankrike). |
+| EX | `Kalmarsundsmontén 2026: Rids som en serie med fem försök (fyra på Kalmar - 1/3, 10/4, 24/4 samt 22/5 och ett på Tingsryd - 16/5 och final som rids på Kalmar den 21 juni med ett förstapris på 75 000 kr.` | 2 | Kalmarsundsmontén 2026: Rids som en serie med fem försök (fyra på Kalmar - 1/3, 10/4, 24/4 samt 22/5 och ett på Tingsryd - 16/5 och final som rids på Kalmar den 21 juni med ett förstapris på 75 000 kr. |
+| EX | `Kusk får ej tidigare haft A-licens.` | 2 | Kusk får ej tidigare haft A-licens. |
 
 ## Confidence notes
 
