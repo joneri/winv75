@@ -113,6 +113,12 @@ En mall bestämmer grundstrukturen på kupongen, till exempel:
 - var bredare garderingar ska hamna
 - hur många hästar som normalt tas i varje avdelning
 
+Ett exempel på en specialmall i V85 är `Stalstomme (900-2000 kr)`:
+- den bygger en stomme med exakt 4 spikar
+- den använder bred gardering i de 4 återstående loppen
+- den har ett eget budgetfönster och använder `2000 kr` som standardtak om användaren inte anger maxkostnad
+- den returnerar fel om användaren försöker generera den utanför sitt budgetkontrakt
+
 Varianter ändrar inte hela motorn. De flyttar eller vrider samma grundstruktur:
 - `default`
 - `shift-forward`
@@ -130,6 +136,8 @@ Systemet kan:
 - minska antal streck i lopp som ser mindre känsliga ut
 - lägga tillbaka streck i öppna lopp om budgeten tillåter det
 - aldrig gå under användarlåsta hästar
+
+Specialmallar kan också lägga på egna budgetregler ovanpå grundmotorn. `Stalstomme` i V85 är ett sådant fall: den är avsedd för ett större system inom `900-2000 kr` och får inte fyllas upp eller bantas på ett sätt som bryter dess 4-spikstruktur.
 
 Radpris:
 - V85: `0.5 kr`
@@ -176,6 +184,8 @@ Det betyder:
 - DD använder marknaden mycket mer direkt än V85, V86 och V5
 - `Värdejakt` i DD letar aktivt efter fall där modellen tror mer än oddsmarknaden
 - kombinationsodds hjälper systemet att förstå vilka dubbelkombinationer marknaden redan gillar
+
+DD-varianter är strukturella. En ojämn mall som `1x3` kan därför ge både `1x3` och en speglad `3x1`, så systemet kan testa om pressen ska ligga i första eller andra DD-loppet. Maxkostnaden räknas med `10 kr` per rad och svaret visar hur mycket av budgeten som användes och återstår.
 
 ## Vad användaren själv styr
 Användaren kan påverka spelförslaget mest genom:
@@ -261,3 +271,4 @@ Ett bra sätt att läsa ett spelförslag är:
 ## Change log
 - 2026-04-08: Added an easy-to-understand guide for how spelförslag works and how the main inputs are weighed.
 - 2026-04-08: Added a dedicated guide view in the UI so the guide is easy to reach from the app.
+- 2026-04-22: Clarified that DD variants can mirror uneven templates and explicitly report budget usage.

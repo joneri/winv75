@@ -304,5 +304,22 @@ test('V5 and DD suggestion endpoints return playable live suggestions', async ()
   assert.equal(ddSuggestion?.gameType, 'DD')
   assert.equal(Number(ddSuggestion?.stakePerRow), 10)
   assert.equal(ddSuggestion?.legs?.length, 2)
+  assert.ok(Number(ddSuggestion?.totalCost) <= 120, 'Expected DD suggestion to honor maxCost')
+  assert.equal(Number(ddSuggestion?.budget?.maxCost), 120)
+  assert.equal(Number(ddSuggestion?.budget?.rowCost), 10)
   assert.ok(Array.isArray(ddSuggestion?.metadata?.comboInsights), 'Expected DD combo insights')
+
+  const { response: ddMirrorResponse, body: ddMirrorBody } = await postJson(`/api/raceday/${ddRaceday._id}/dd`, {
+    templateKey: 'value-cover',
+    multi: true,
+    modes: ['balanced'],
+    variantCount: 2,
+    maxCost: 120
+  })
+  assert.equal(ddMirrorResponse.status, 200)
+  const ddVariants = Array.isArray(ddMirrorBody?.suggestions) ? ddMirrorBody.suggestions : []
+  assert.ok(ddVariants.length >= 2, 'Expected multiple DD variants')
+  const ddStructures = new Set(ddVariants.map((item) => (item?.legs || []).map((leg) => Number(leg.count)).join('x')))
+  assert.ok(ddStructures.has('1x3'), 'Expected 1x3 DD variant')
+  assert.ok(ddStructures.has('3x1'), 'Expected mirrored 3x1 DD variant')
 })

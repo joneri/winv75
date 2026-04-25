@@ -14,7 +14,8 @@ import {
   createSuggestionTemplateMap,
   describeSpikeSummary,
   normalizeUserSeeds,
-  resolveVariantDescriptors
+  resolveVariantDescriptors,
+  VARIANT_STRATEGY_LABELS
 } from './betting-suggestion-support.js'
 
 const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
@@ -41,7 +42,12 @@ export const V85_TEMPLATES = cloneSuggestionTemplates(BASE_SUGGESTION_TEMPLATES)
 const templateMap = createSuggestionTemplateMap(V85_TEMPLATES)
 const MODE_CONFIGS = createModeConfigs()
 
-export const listV85Templates = () => V85_TEMPLATES.map(t => ({ key: t.key, label: t.label, counts: t.counts }))
+export const listV85Templates = () => V85_TEMPLATES.map(t => ({
+  key: t.key,
+  label: t.label,
+  counts: t.counts,
+  budget: t.budget ? { ...t.budget } : null
+}))
 
 const toNumber = (value, fallback = 0) => {
   const num = Number(value)
@@ -486,8 +492,25 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
     const template = templateMap.get(templateKey) || V85_TEMPLATES[0]
     const modeKey = typeof mode === 'string' ? mode : 'balanced'
     const resolvedVariantStrategy = variantStrategy || (modeKey === 'mix' ? 'chaos' : 'default')
-    const budgetInput = [maxCost, maxBudget, stake].map(v => toNumber(v, NaN)).find(val => Number.isFinite(val))
-    const budgetLimit = Number.isFinite(budgetInput) && budgetInput > 0 ? budgetInput : DEFAULT_MAX_BUDGET
+    const templateBudget = template?.budget || {}
+    const templateConstraints = template?.constraints || {}
+    const requestedBudget = [maxCost, maxBudget, stake].map(v => toNumber(v, NaN)).find(val => Number.isFinite(val))
+    const templateMinCost = toNumber(templateBudget.minCost, NaN)
+    const templateMaxCost = toNumber(templateBudget.maxCost, NaN)
+    const templateDefaultMaxCost = toNumber(templateBudget.defaultMaxCost, NaN)
+
+    if (Number.isFinite(requestedBudget) && requestedBudget > 0) {
+      if (Number.isFinite(templateMinCost) && requestedBudget < templateMinCost) {
+        throw new Error(`Mall ${template.label} kräver minst ${templateMinCost} kr i maxkostnad.`)
+      }
+      if (Number.isFinite(templateMaxCost) && requestedBudget > templateMaxCost) {
+        throw new Error(`Mall ${template.label} tillåter högst ${templateMaxCost} kr i maxkostnad.`)
+      }
+    }
+
+    const budgetLimit = Number.isFinite(requestedBudget) && requestedBudget > 0
+      ? requestedBudget
+      : (Number.isFinite(templateDefaultMaxCost) && templateDefaultMaxCost > 0 ? templateDefaultMaxCost : DEFAULT_MAX_BUDGET)
     const stakePerRow = ROW_COST
 
     const context = await buildSuggestionContext(racedayId, sharedContext || null)
@@ -560,6 +583,7 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
         metrics: leg.metrics,
         ranking: leg.ranking,
         distribution: leg.distribution,
+        assignedCount,
         count,
         forcedCount
       }
@@ -576,7 +600,12 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
         throw new Error('Angivet maxbelopp är för lågt – minst 0,5 kr krävs.')
       }
 
-      const minCountFor = (leg) => Math.max(1, leg.forcedCount || 0)
+      const minCountFor = (leg) => {
+        const forcedMin = Math.max(1, leg.forcedCount || 0)
+        if (!templateConstraints.preserveAssignedSpikes) return forcedMin
+        const structuralMin = leg.assignedCount <= 1 ? 1 : 2
+        return Math.max(forcedMin, structuralMin)
+      }
       const canReduce = () => copy.some(l => l.count > minCountFor(l))
       const chooseTarget = () => copy
         .filter(l => l.count > minCountFor(l))
@@ -620,6 +649,7 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
       while (rows < maxRows - SCORE_EPSILON && iterations < maxIterations) {
         let best = null
         for (const leg of adjustedLegs) {
+          if (templateConstraints.preserveAssignedSpikes && leg.assignedCount <= 1) continue
           const maxPoolSize = sizeByLeg.get(leg.leg) || leg.count
           const cap = Math.max(leg.count, Math.min(MAX_SELECTIONS_PER_LEG, maxPoolSize))
           if (leg.count >= cap) continue
@@ -689,6 +719,10 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
 
     const totalCost = rows * stakePerRow
 
+    if (Number.isFinite(templateMinCost) && totalCost + 1e-6 < templateMinCost) {
+      throw new Error(`Mall ${template.label} kräver minst ${templateMinCost} kr men landade på ${totalCost.toFixed(2)} kr.`)
+    }
+
     if (Number.isFinite(budgetLimit) && totalCost > budgetLimit + 1e-6) {
       throw new Error(`Kupongen kostar ${totalCost.toFixed(2)} kr vilket överstiger max ${budgetLimit.toFixed(2)} kr.`)
     }
@@ -742,6 +776,7 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
 
     const budgetSummary = Number.isFinite(budgetLimit)
       ? {
+          minCost: Number.isFinite(templateMinCost) ? templateMinCost : null,
           maxCost: budgetLimit,
           rowCost: stakePerRow,
           rows,
@@ -749,6 +784,7 @@ export const buildV85Suggestion = async (racedayId, options = {}, sharedContext 
           remaining: Number(Math.max(0, budgetLimit - totalCost).toFixed(2))
         }
       : {
+          minCost: Number.isFinite(templateMinCost) ? templateMinCost : null,
           maxCost: null,
           rowCost: stakePerRow,
           rows,

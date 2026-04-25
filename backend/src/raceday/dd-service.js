@@ -4,9 +4,11 @@ import gameService from '../game/game-service.js'
 import horseService from '../horse/horse-service.js'
 import {
   DEFAULT_SUGGESTION_MODES,
+  MAX_VARIANTS_PER_MODE,
   clamp,
   createModeConfigs,
-  createRng
+  createRng,
+  resolveVariantDescriptors
 } from './betting-suggestion-support.js'
 
 const ATG_BASE_URL = 'https://www.atg.se/services/racinginfo/v1/api'
@@ -22,13 +24,19 @@ const DD_DEFAULT_MAX_BUDGET = Number.isFinite(Number(process.env.DD_DEFAULT_MAX_
 const DD_PWIN_WEIGHT = Number.isFinite(Number(process.env.DD_PWIN_WEIGHT))
   ? Number(process.env.DD_PWIN_WEIGHT)
   : 30
+const DD_DEFAULT_VARIANTS_PER_MODE = Number.isFinite(Number(process.env.DD_VARIANTS_PER_MODE))
+  ? Math.min(MAX_VARIANTS_PER_MODE, Number(process.env.DD_VARIANTS_PER_MODE))
+  : 2
 
 const DD_TEMPLATES = [
   { key: 'single', label: 'Rak DD', counts: [1, 1] },
   { key: 'front-press', label: '1x2', counts: [1, 2] },
   { key: 'back-press', label: '2x1', counts: [2, 1] },
   { key: 'combo-cover', label: '2x2', counts: [2, 2] },
-  { key: 'value-cover', label: '1x3', counts: [1, 3] }
+  { key: 'value-cover', label: '1x3', counts: [1, 3] },
+  { key: 'value-cover-front', label: '3x1', counts: [3, 1] },
+  { key: 'wide-cover', label: '2x3', counts: [2, 3] },
+  { key: 'wide-cover-front', label: '3x2', counts: [3, 2] }
 ]
 
 const MODE_CONFIGS = createModeConfigs()
@@ -39,6 +47,21 @@ export const listDdTemplates = () => DD_TEMPLATES.map(template => ({ key: templa
 const toNumber = (value, fallback = 0) => {
   const num = Number(value)
   return Number.isFinite(num) ? num : fallback
+}
+
+const applyDdVariantStrategy = (counts = [], strategy = 'default', rng = null) => {
+  const [first = 1, second = 1] = counts.map(count => Math.max(1, Number(count) || 1))
+  if (strategy === 'mirror' || strategy === 'shift-forward' || strategy === 'shift-back') {
+    return [second, first]
+  }
+  if (strategy === 'spread') {
+    return first === second ? [first, second] : [Math.max(first, second), Math.min(first, second)]
+  }
+  if (strategy === 'chaos') {
+    const shouldMirror = typeof rng === 'function' ? rng() >= 0.5 : false
+    return shouldMirror ? [second, first] : [first, second]
+  }
+  return [first, second]
 }
 
 const normalizeTrackName = (value) => String(value || '')
@@ -353,7 +376,10 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
     maxBudget,
     mode = 'balanced',
     variantKey = null,
-    variantLabel = null
+    variantLabel = null,
+    variantStrategy = 'default',
+    variantStrategyLabel = null,
+    variantSeed = null
   } = options || {}
 
   try {
@@ -375,8 +401,15 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
     const budgetInput = [maxCost, maxBudget, stake].map(v => toNumber(v, NaN)).find(val => Number.isFinite(val))
     const budgetLimit = Number.isFinite(budgetInput) && budgetInput > 0 ? budgetInput : DD_DEFAULT_MAX_BUDGET
     const maxRows = budgetLimit === Infinity ? Infinity : Math.floor(budgetLimit / DD_ROW_COST)
+    if (maxRows !== Infinity && maxRows < 1) {
+      throw new Error(`Angivet maxbelopp är för lågt – minst ${DD_ROW_COST} kr krävs.`)
+    }
 
-    const desiredCounts = template.counts.map(count => Math.min(DD_MAX_SELECTIONS_PER_LEG, Math.max(1, count)))
+    const variantId = variantKey || `${modeKey}-${template.key}-${variantStrategy || 'default'}`
+    const seedBase = variantSeed || `${racedayId}:${template.key}:${modeKey}:${variantId}`
+    const rng = createRng(seedBase)
+    const desiredCounts = applyDdVariantStrategy(template.counts, variantStrategy, rng)
+      .map(count => Math.min(DD_MAX_SELECTIONS_PER_LEG, Math.max(1, count)))
     let rows = desiredCounts[0] * desiredCounts[1]
     while (maxRows !== Infinity && rows > maxRows) {
       const targetIndex = desiredCounts[0] >= desiredCounts[1] ? 0 : 1
@@ -387,11 +420,11 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
       rows = desiredCounts[0] * desiredCounts[1]
     }
 
-    const rng = createRng(`${racedayId}:${template.key}:${modeKey}`)
+    const pickRng = createRng(`${seedBase}:pick`)
     const enrichedLegs = legBase.map((leg, index) => {
       const comboSupport = Object.fromEntries(comboSupportByLeg[index]?.entries?.() || [])
       const ranking = (leg.ranking || []).map(horse => toHorseEntry(horse, leg.startMap, comboSupport))
-      const selections = pickDdSelections({ ...leg, ranking }, desiredCounts[index], modeKey, rng)
+      const selections = pickDdSelections({ ...leg, ranking }, desiredCounts[index], modeKey, pickRng)
       return {
         leg: leg.leg,
         raceId: leg.raceId,
@@ -418,6 +451,21 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
     const rowsCount = enrichedLegs.reduce((acc, leg) => acc * Math.max(1, leg.count), 1)
     const totalCost = rowsCount * DD_ROW_COST
     const comboInsights = buildComboInsights(enrichedLegs, comboOddsMap)
+    const budgetSummary = Number.isFinite(budgetLimit)
+      ? {
+          maxCost: budgetLimit,
+          rowCost: DD_ROW_COST,
+          used: totalCost,
+          maxRows,
+          remaining: Number(Math.max(0, budgetLimit - totalCost).toFixed(2))
+        }
+      : {
+          maxCost: null,
+          rowCost: DD_ROW_COST,
+          used: totalCost,
+          maxRows: null,
+          remaining: null
+        }
 
     return {
       gameType: 'DD',
@@ -425,10 +473,10 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
       mode: modeKey,
       modeLabel: modeCfg.label,
       variant: {
-        key: variantKey || `${modeKey}-${template.key}`,
+        key: variantId,
         label: variantLabel || null,
-        strategy: modeKey,
-        strategyLabel: modeCfg.label,
+        strategy: variantStrategy || 'default',
+        strategyLabel: variantStrategyLabel || null,
         summary: comboInsights[0]?.comboOdds != null
           ? `Toppkombo ${comboInsights[0].programs.join('-')} till ${comboInsights[0].comboOdds.toFixed(2)}`
           : 'Välj två vinnare'
@@ -437,6 +485,7 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
       rows: rowsCount,
       totalCost,
       maxBudget: Number.isFinite(budgetLimit) ? budgetLimit : null,
+      budget: budgetSummary,
       generatedAt: new Date().toISOString(),
       dd: {
         used: true,
@@ -465,24 +514,38 @@ export const buildDdSuggestion = async (racedayId, options = {}) => {
 }
 
 export const buildDdSuggestions = async (racedayId, options = {}) => {
-  const { modes, ...rest } = options || {}
+  const { modes, variantCount, ...rest } = options || {}
   const modeCandidates = Array.isArray(modes) && modes.length ? modes : DEFAULT_SUGGESTION_MODES
   const uniqueModes = [...new Set(modeCandidates.filter(Boolean))]
+  const variantsPerMode = clamp(
+    Number.isFinite(Number(variantCount)) ? Number(variantCount) : DD_DEFAULT_VARIANTS_PER_MODE,
+    1,
+    MAX_VARIANTS_PER_MODE
+  )
 
   const suggestions = []
   const errors = []
   for (const mode of uniqueModes) {
-    const result = await buildDdSuggestion(racedayId, {
-      ...rest,
-      mode,
-      variantKey: `${mode}-${rest.templateKey || 'single'}`,
-      variantLabel: mode
+    const descriptors = resolveVariantDescriptors(mode, variantsPerMode, {
+      defaultVariantsPerMode: DD_DEFAULT_VARIANTS_PER_MODE,
+      maxVariantsPerMode: MAX_VARIANTS_PER_MODE
     })
-    if (result?.error) {
-      errors.push({ mode, error: result.error })
-      continue
+    for (const descriptor of descriptors) {
+      const result = await buildDdSuggestion(racedayId, {
+        ...rest,
+        mode,
+        variantStrategy: descriptor.strategy,
+        variantLabel: descriptor.label,
+        variantStrategyLabel: descriptor.strategyLabel,
+        variantKey: `${mode}-${rest.templateKey || 'single'}-${descriptor.key}`,
+        variantSeed: `${racedayId}:${mode}:${rest.templateKey || 'single'}:${descriptor.seedSuffix}`
+      })
+      if (result?.error) {
+        errors.push({ mode, variant: descriptor.key, variantLabel: descriptor.label, error: result.error })
+        continue
+      }
+      suggestions.push(result)
     }
-    suggestions.push(result)
   }
 
   if (!suggestions.length) {

@@ -1,0 +1,8 @@
+{
+  "name": "winv75",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bash scripts/dev.sh"
+  }
+}

@@ -7,7 +7,7 @@ Extend the betting engine with live, playable support for V5 and Dagens Dubbel s
 From the raceday page, users can update V5 percentages, open V5 suggestions, and open Dagens Dubbel suggestions for the current day. Generated tickets remain selectable in the session and can be saved explicitly to suggestion history.
 
 ## How it works
-V5 reuses the Elo-driven ranking flow but adds V5 market percentages from ATG, a five-leg template set, row cost `1 kr`, and a conservative structure with template-specific caps for spikar and lås. The baseline V5 templates stay defensive, but the engine now also supports explicit `2 spikar` and `2 spikar 1 lås` layouts. DD resolves the active double game for the raceday date, builds two-leg tickets from horse rankings, winner odds, and DD combo odds, then returns a `10 kr` row-cost ticket plus combo insights.
+V5 reuses the Elo-driven ranking flow but adds V5 market percentages from ATG, a five-leg template set, row cost `1 kr`, and a conservative structure with template-specific caps for spikar and lås. The baseline V5 templates stay defensive, but the engine now also supports explicit `2 spikar` and `2 spikar 1 lås` layouts. DD resolves the active double game for the raceday date, builds two-leg tickets from horse rankings, winner odds, and DD combo odds, then returns `10 kr` row-cost tickets plus combo insights. DD can generate multiple variants per selected style and can mirror uneven templates such as `1x3` into `3x1`.
 
 ## Inputs and outputs
 - Inputs:
@@ -24,6 +24,8 @@ V5 reuses the Elo-driven ranking flow but adds V5 market percentages from ATG, a
 ## Key decisions
 - V5 is more defensive than V85/V86: broad guards are still preferred, but the cap on spikar and lås is now controlled by the selected template instead of one hardcoded global rule.
 - DD treats winner odds and most-played combinations as support signals, not a replacement for the Elo ranking.
+- DD variants are deliberately structural: mirrored variants move pressure from DD-2 to DD-1, so `1x3` and `3x1` can both be evaluated from the same starting template.
+- DD responses include a budget summary and must keep total cost at or below the selected max cost.
 - `dd` from stored game data is normalized to `DD` in the frontend so the shell and badges stay coherent.
 
 ## Defaults and fallbacks
@@ -38,7 +40,7 @@ V5 reuses the Elo-driven ranking flow but adds V5 market percentages from ATG, a
 
 ## Debugging
 - Primary logs: `Failed to build suggestion`, `Failed to load DD game view`, and `Failed to update distribution`.
-- What "good" looks like: V5 returns five legs with `stakePerRow = 1`, honors the selected template structure such as `2 spikar` or `2 spikar 1 lås`, DD returns two legs with `stakePerRow = 10`, and the raceday page exposes the new cards only when the games exist.
+- What "good" looks like: V5 returns five legs with `stakePerRow = 1`, honors the selected template structure such as `2 spikar` or `2 spikar 1 lås`, DD returns two legs with `stakePerRow = 10`, DD `totalCost` stays within `budget.maxCost`, and the raceday page exposes the new cards only when the games exist.
 
 ## Related files
 - `backend/src/raceday/v5-service.js`
@@ -52,3 +54,4 @@ V5 reuses the Elo-driven ranking flow but adds V5 market percentages from ATG, a
 
 ## Change log
 - 2026-04-05: Initial feature documentation for V5 and Dagens Dubbel suggestion support.
+- 2026-04-22: Added DD mirrored variants, visible multi-style generation, and explicit max-cost budget reporting.

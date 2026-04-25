@@ -4,7 +4,7 @@ const MODE_PICK_WEIGHTS = {
   value: { composite: 0.6, rank: 0.3, distribution: 0.15 }
 }
 
-const VARIANT_STRATEGY_LABELS = {
+export const VARIANT_STRATEGY_LABELS = {
   default: 'Original',
   'shift-forward': 'Skifta fram',
   'shift-back': 'Skifta bak',
@@ -61,12 +61,28 @@ export const BASE_SUGGESTION_TEMPLATES = [
     label: 'Inga spikar',
     counts: [3, 3, 4, 4, 4, 5, 5, 5],
     assignment: 'worstToBest'
+  },
+  {
+    key: 'stalstomme',
+    label: 'Stalstomme (900-2000 kr)',
+    counts: [1, 1, 1, 1, 6, 7, 7, 7],
+    assignment: 'bestToWorst',
+    budget: {
+      minCost: 900,
+      maxCost: 2000,
+      defaultMaxCost: 2000
+    },
+    constraints: {
+      preserveAssignedSpikes: true
+    }
   }
 ]
 
 export const cloneSuggestionTemplates = (templates = BASE_SUGGESTION_TEMPLATES) => templates.map(template => ({
   ...template,
-  counts: [...template.counts]
+  counts: [...template.counts],
+  budget: template.budget ? { ...template.budget } : undefined,
+  constraints: template.constraints ? { ...template.constraints } : undefined
 }))
 
 export const createSuggestionTemplateMap = (templates = []) => new Map(templates.map(template => [template.key, template]))
