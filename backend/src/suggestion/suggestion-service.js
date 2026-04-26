@@ -979,7 +979,7 @@ export async function getSuggestionAnalytics(filters = {}) {
   })
   const versionStats = [...versionGroups.entries()].map(([label, items]) => summarizeSnapshotGroup(items, label))
 
-  const markers = await SuggestionMarker.find().sort({ occurredAt: 1 }).lean()
+  const markers = (await SuggestionMarker.find().sort({ occurredAt: 1 }).lean()).filter((marker) => !isSmokeTestMarker(marker))
   const overall = summarizeSnapshotGroup(docs, 'Alla förslag')
 
   return {
@@ -994,7 +994,7 @@ export async function getSuggestionAnalytics(filters = {}) {
 }
 
 export async function listMarkers() {
-  return SuggestionMarker.find().sort({ occurredAt: 1 }).lean()
+  return (await SuggestionMarker.find().sort({ occurredAt: 1 }).lean()).filter((marker) => !isSmokeTestMarker(marker))
 }
 
 export async function createMarker(payload = {}) {
@@ -1005,6 +1005,12 @@ export async function createMarker(payload = {}) {
     category: payload?.category || 'other'
   })
   return marker.toObject()
+}
+
+function isSmokeTestMarker(marker = {}) {
+  const label = String(marker?.label || '').trim()
+  const description = String(marker?.description || '').trim()
+  return /^smoke marker\b/i.test(label) || /created by smoke test/i.test(description)
 }
 
 export default {

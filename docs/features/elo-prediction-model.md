@@ -104,7 +104,8 @@ Lane bias is now context feature #3:
 - Newer races get higher weight through explicit half-life based recency weights.
 - Stored career and form ratings now decay between races using different half-life profiles instead of being tied to `Date.now()` at rebuild time.
 - Form decays back toward career much faster than career decays toward its seed/base.
-- When the latest real start is older than the prediction lookback window, runtime form no longer keeps a "hot" stored form untouched. It first reverts toward `careerElo`, then applies inactivity on the actual latest known race date.
+- When the latest real start is older than the prediction lookback window, runtime form no longer keeps a "hot" stored form untouched. It first cools an over-heated stored form back toward `careerElo`, then applies inactivity on the actual latest known race date.
+- The stale fallback is one-sided: if stored form already sits below `careerElo`, stale reversion does not lift it upward without any fresh starts.
 
 ## Outputs
 Race and horse prediction payloads now expose:
@@ -163,6 +164,7 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 - `backend/src/suggestion/suggestion-service.js`
 
 ## Change log
+- 2026-04-25: Changed stale-form fallback to only cool over-hot stored form toward career Elo, so inactive horses do not get artificial positive trend from stale reversion.
 - 2026-04-10: Fixed stale-form handling so inactive horses revert toward career Elo before inactivity is applied, and exposed separate trend-vs-stored-form plus gap-vs-career metrics.
 - 2026-04-05: Added explicit career/form/driver/effective Elo prediction model with debug and field-normalized probabilities.
 - 2026-04-05: Unified rebuild, direct update, and runtime prediction around shared Elo result and recency policies.

@@ -65,9 +65,9 @@
             Inga avgjorda förslag finns ännu att rita ut.
           </div>
 
-          <div v-if="analytics.markers?.length" class="marker-list">
+          <div v-if="visibleMarkers.length" class="marker-list">
             <div
-              v-for="marker in analytics.markers"
+              v-for="marker in visibleMarkers"
               :key="marker._id || marker.id || `${marker.label}-${marker.occurredAt}`"
               class="marker-row"
             >
@@ -225,6 +225,12 @@ export default {
       occurredAt: new Date().toISOString().slice(0, 16)
     })
 
+    const isSmokeTestMarker = (marker) => {
+      const label = String(marker?.label || '').trim()
+      const description = String(marker?.description || '').trim()
+      return /^smoke marker\b/i.test(label) || /created by smoke test/i.test(description)
+    }
+
     const load = async () => {
       try {
         loading.value = true
@@ -292,8 +298,10 @@ export default {
 
     const pointString = computed(() => timelinePoints.value.map((point) => `${point.x},${point.y}`).join(' '))
 
+    const visibleMarkers = computed(() => (analytics.value?.markers || []).filter((marker) => !isSmokeTestMarker(marker)))
+
     const chartMarkers = computed(() => {
-      return (analytics.value?.markers || [])
+      return visibleMarkers.value
         .map((marker) => {
           const time = new Date(marker.occurredAt).getTime()
           if (!Number.isFinite(time)) return null
@@ -343,6 +351,7 @@ export default {
       formatDateTime,
       timelinePoints,
       pointString,
+      visibleMarkers,
       chartMarkers,
       timelineStartLabel,
       timelineEndLabel,

@@ -192,6 +192,36 @@ test('stale horses revert form back toward career and still track real inactivit
   assert.ok((prediction.debug.formTrendDelta || 0) < 0, 'Expected stale form trend to point downward from stored form')
 })
 
+test('stale horses with already-cold stored form do not get an artificial upward trend from stale reversion', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 78,
+      results: [
+        {
+          raceInformation: { raceId: 702, date: daysAgo(925) },
+          placement: { sortValue: 0, displayValue: '0' },
+          startMethod: 'Autostart',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1693,
+      formRating: 1572
+    },
+    raceContext: {
+      raceDate: new Date()
+    }
+  })
+
+  assert.equal(prediction.debug.weightSum, 0, 'Expected no recent races inside the active form window')
+  assert.ok((prediction.debug.daysSinceLast || 0) > 900, 'Expected very stale inactivity to be measured from the latest known race')
+  assert.equal(prediction.debug.staleReversionElo, 1572, 'Expected stale reversion not to lift a stored form signal that already sits below class Elo')
+  assert.ok(prediction.formElo < 1572, 'Expected inactivity to push stale form below the stored form baseline')
+  assert.ok((prediction.debug.formTrendDelta || 0) < 0, 'Expected no positive trend for a horse without any recent starts')
+})
+
 test('fresh wins can produce a positive form trend even when form still sits below career level', () => {
   const prediction = buildHorseEloPrediction({
     horse: {

@@ -7,6 +7,7 @@ import { config } from 'dotenv'
 
 import connectDB from '../src/config/db.js'
 import createApp from '../src/app.js'
+import SuggestionMarker from '../src/suggestion/suggestion-marker-model.js'
 
 config()
 
@@ -52,6 +53,15 @@ before(async () => {
 })
 
 after(async () => {
+  if (mongoose.connection.readyState !== 0) {
+    await SuggestionMarker.deleteMany({
+      $or: [
+        { label: { $regex: '^Smoke marker\\b', $options: 'i' } },
+        { description: { $regex: 'Created by smoke test', $options: 'i' } }
+      ]
+    })
+  }
+
   if (server) {
     await new Promise((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()))
@@ -229,6 +239,20 @@ test('suggestion history endpoints persist and expose saved snapshots', async ()
   })
   assert.equal(markerResponse.status, 201)
   assert.equal(markerBody?.label, markerLabel)
+
+  const { response: hiddenMarkersResponse, body: hiddenMarkersBody } = await getJson('/api/suggestions/markers')
+  assert.equal(hiddenMarkersResponse.status, 200)
+  assert.ok(
+    !Array.isArray(hiddenMarkersBody?.items) || !hiddenMarkersBody.items.some((item) => String(item?.label || '').startsWith('Smoke marker')),
+    'Expected smoke markers to be hidden from marker listing'
+  )
+
+  const { response: hiddenAnalyticsResponse, body: hiddenAnalyticsBody } = await getJson('/api/suggestions/analytics')
+  assert.equal(hiddenAnalyticsResponse.status, 200)
+  assert.ok(
+    !Array.isArray(hiddenAnalyticsBody?.markers) || !hiddenAnalyticsBody.markers.some((item) => String(item?.label || '').startsWith('Smoke marker')),
+    'Expected smoke markers to be hidden from analytics markers'
+  )
 
   for (const suggestionId of savedIds.filter((id) => id !== String(savedItem.id))) {
     const { response } = await deleteJson(`/api/suggestions/${suggestionId}`)

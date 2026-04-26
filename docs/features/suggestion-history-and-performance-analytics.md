@@ -54,6 +54,7 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - Missing results keep the snapshot in `pending_results` or `partial_results`.
 - Missing version markers are allowed and surfaced as unknown instead of blocking snapshot creation.
 - Timeline markers are optional metadata and do not affect settlement or analytics math.
+- Smoke-test markers are filtered out from analytics and marker list responses so automated test noise does not pollute the UI.
 - Result refresh uses a grace window after planned start time before it assumes a race should be finished. `resultsReady` from the source can still activate a race earlier.
 
 ## Edge cases
@@ -66,6 +67,7 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - Deleting a saved suggestion removes the stored snapshot only. It does not touch raceday, race, horse, Elo or result data.
 - A saved ticket refresh may legitimately do nothing if every leg is still in the future or already has a stored winner. That is treated as a correct no-op, not a failed refresh.
 - A V86 ticket can span two tracks. Result refresh therefore cannot assume that every leg belongs to the snapshot's primary raceday document.
+- Smoke markers created by automated backend smoke tests are treated as test noise and are hidden from analytics surfaces even if older rows still exist in the marker collection.
 
 ## Data correctness and trust
 - The snapshot is immutable historical input.
@@ -113,3 +115,4 @@ Turn generated V85 and V86 tickets into a persistent evaluation surface by savin
 - 2026-04-05: Changed manual result refresh to wait for horse-result storage refresh before settlement is re-read, so the button updates real stored winners rather than only the raceday shell.
 - 2026-04-08: Changed saved-ticket result refresh to target only the relevant races and report Elo follow-up explicitly.
 - 2026-04-08: Changed saved-ticket result refresh to skip future or already-settled races and only fetch results for ticket legs that should be finished.
+- 2026-04-25: Hid automated smoke-test markers from analytics responses and added smoke-test cleanup so marker lists stay usable.

@@ -14,7 +14,7 @@ Horse and driver Elo services process historical race placements with configurab
 - driver `elo` as driver form Elo
 
 Horse rebuild, direct race update, and runtime prediction now share the same result-code and recency policy layer. At read time, the prediction layer rebuilds a race-time `formElo`, adds controlled driver support, applies race context, applies start-method affinity when the horse has enough auto/volt history, applies start-position affinity when the horse has enough history from the active start position within the active start method, applies distance affinity when the horse has enough bucket history, applies track x distance affinity when the horse has enough exact joint-context history, applies same-track affinity when the sample is strong enough, applies shoe signal when the shoe taxonomy is trustworthy, applies driver-horse affinity when the active driver has real shared history with the horse, applies lane bias through hierarchical shrinkage, and produces `effectiveElo` plus field-normalized `modelProbability`.
-If a horse has no results inside the active runtime lookback window, the prediction layer now uses the latest known completed race date anyway to compute inactivity and reverts stale stored form back toward career Elo instead of preserving an old hot form signal.
+If a horse has no results inside the active runtime lookback window, the prediction layer now uses the latest known completed race date anyway to compute inactivity and cools stale stored form back toward career Elo only when the stored form is hotter than class Elo. It does not lift an already-cold stored form upward without fresh starts.
 
 ## Inputs and outputs
 - Inputs:
@@ -92,6 +92,7 @@ That means stored rating freshness and runtime prediction freshness are related,
 - `backend/src/race/race-read-service.js`
 
 ## Change log
+- 2026-04-25: Changed stale-form fallback so inactive horses with already-cold stored form no longer get artificial upward trend from stale reversion.
 - 2026-04-10: Added stale-form fallback logic for horses with only old starts and split trend-vs-stored-form from gap-vs-career in horse detail payloads.
 - 2026-02-27: Initial feature documentation.
 - 2026-04-04: Removed references to the deleted admin frontend surface.

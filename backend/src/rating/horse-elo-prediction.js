@@ -386,7 +386,10 @@ const computeFormDelta = ({
   const staleReversionRatio = weightSum > 0
     ? 0
     : clamp((staleOverflowDays ?? FORM_STALE_REVERSION_DAYS) / FORM_STALE_REVERSION_DAYS, 0, 1)
-  const staleReversionElo = storedFormElo + ((careerElo - storedFormElo) * staleReversionRatio)
+  // Stale reversion should cool down an over-hot stored form signal, not improve a cold one
+  // in the absence of any recent starts.
+  const staleReversionTargetElo = storedFormElo > careerElo ? careerElo : storedFormElo
+  const staleReversionElo = storedFormElo + ((staleReversionTargetElo - storedFormElo) * staleReversionRatio)
   const baseFormBeforeInactivity = weightSum > 0 ? anchoredForm : staleReversionElo
 
   const inactivity = computeInactivityPenalty(lastKnownRaceDate, targetRaceDate)
