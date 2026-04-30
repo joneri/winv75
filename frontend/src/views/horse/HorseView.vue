@@ -471,6 +471,9 @@ function normalizeResult(res: HorseResult) {
     return null
   }
 
+  const routeRacedayId = info?.racedayId ?? res?.racedayId ?? null
+  const externalRaceDayId = info?.externalRaceDayId ?? res?.externalRaceDayId ?? info?.raceDayId ?? res?.raceDayId ?? null
+
   return {
     raceId: info?.raceId ?? res.raceId ?? null,
     track: resolveTrack() || '–',
@@ -488,7 +491,8 @@ function normalizeResult(res: HorseResult) {
     startNumber: res?.startNumber ?? null,
     pending: !Number.isFinite(placement) && Number.isFinite(rawPlacement) && rawPlacement >= 900,
     withdrawn: res?.withdrawn === true,
-    racedayId: info?.raceDayId ?? res?.raceDayId ?? null
+    racedayId: routeRacedayId,
+    externalRaceDayId
   }
 }
 

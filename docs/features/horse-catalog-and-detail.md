@@ -22,6 +22,7 @@ Backend list endpoint supports query and cursor pagination and now computes both
 - Cursor uses the runtime tuple `formRating -> rating -> id` so both pagination and visible rows follow the same ordering.
 - Visible list metrics should match horse detail for the same horse.
 - Detail view separates completed vs upcoming results with local normalization.
+- Clickable result rows route through the stored raceday document `_id` exposed as `racedayId`; the external Travsport `raceDayId` remains separate as `externalRaceDayId`.
 - Legacy fields stay available for compatibility, but `careerElo`, `formElo`, `effectiveElo` and `eloDebug` are the canonical runtime prediction fields.
 - Stored Elo freshness is shown separately from runtime prediction so users can distinguish persisted rating age from read-time prediction recomputation.
 
@@ -33,6 +34,7 @@ Backend list endpoint supports query and cursor pagination and now computes both
 ## Edge cases
 - Rate fields may arrive as strings/percentages and are normalized in UI.
 - Result entries without race metadata still render with fallback labels.
+- Result entries with only an external `raceDayId` are not used for `/raceday/:racedayId` links unless backend can match the result `raceId` to a stored raceday.
 
 ## Data correctness and trust
 - Elo outputs come from backend prediction logic, not frontend approximation.
@@ -40,11 +42,13 @@ Backend list endpoint supports query and cursor pagination and now computes both
 - Horse detail uses the same runtime prediction chain as race ranking so the model is explainable across views.
 - External refresh is explicit via `PUT` endpoint.
 - Horse detail also shows stored Elo freshness from backend rating rows, not guessed frontend timestamps.
+- Horse result race links use the internal raceday route id so Race view can load props, game context, and the raceday back-link from the same stored raceday document.
 
 ## Debugging
 - Primary log: `Error listing horses` / `Error fetching horse data` in horse routes/service.
 - What "good" looks like: infinite scroll advances and detail page renders both metrics and results.
 - What "bad" looks like: repeated cursor loops or missing `nextCursor` while `hasMore=true`.
+- For result navigation, inspect `GET /api/horses/:horseId`: linked rows should include `raceInformation.racedayId` as a Mongo id and `raceInformation.externalRaceDayId` as the Travsport id.
 
 ## Related files
 - `backend/src/horse/horse-routes.js`
@@ -57,6 +61,7 @@ Backend list endpoint supports query and cursor pagination and now computes both
 ## Change log
 - 2026-04-10: Switched horse catalog cursor ordering to the same runtime prediction tuple that is rendered in the list.
 - 2026-04-10: Aligned horse catalog row metrics with horse detail runtime prediction so form Elo and trend no longer disagree between the two views.
+- 2026-04-30: Added internal raceday route ids to horse detail results so result-row race links load the full raceday/race context.
 - 2026-02-27: Initial feature documentation.
 - 2026-04-05: Switched horse detail from legacy form metrics to explicit Elo prediction fields and debug.
 - 2026-04-08: Added stored Elo freshness fields to horse detail.

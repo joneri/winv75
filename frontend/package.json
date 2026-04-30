@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "axios": "^1.11.0",
+    "axios": "1.15.2",
     "vue": "^3.5.21",
     "vue-router": "5",
     "vuetify": "^3.5.15",
@@ -25,5 +25,9 @@
     "typescript": "^6.0.2",
     "vite": "^8.0.8",
     "vue-tsc": "^3.2.4"
+  },
+  "overrides": {
+    "follow-redirects": "1.16.0",
+    "postcss": "8.5.12"
   }
 }

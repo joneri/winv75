@@ -133,6 +133,63 @@ const loadRaceContext = async (raceId) => {
     }
 }
 
+const getResultRaceId = (result = {}) => {
+    const value = result?.raceInformation?.raceId ?? result?.raceId
+    const numeric = Number(value)
+    return Number.isFinite(numeric) ? numeric : null
+}
+
+const attachRacedayRouteIds = async (results = []) => {
+    if (!Array.isArray(results) || !results.length) return results
+
+    const raceIds = [...new Set(results.map(getResultRaceId).filter(Number.isFinite))]
+    if (!raceIds.length) return results
+    const raceIdSet = new Set(raceIds)
+
+    const racedays = await Raceday.find(
+        { 'raceList.raceId': { $in: raceIds } },
+        { _id: 1, raceDayId: 1, 'raceList.raceId': 1 }
+    ).lean()
+
+    const routeIdsByRaceId = new Map()
+    for (const raceday of racedays) {
+        const routeId = raceday?._id ? String(raceday._id) : null
+        if (!routeId) continue
+
+        for (const race of raceday.raceList || []) {
+            const raceId = Number(race?.raceId)
+            if (Number.isFinite(raceId) && raceIdSet.has(raceId)) {
+                routeIdsByRaceId.set(raceId, {
+                    racedayId: routeId,
+                    externalRaceDayId: raceday.raceDayId ?? null
+                })
+            }
+        }
+    }
+
+    return results.map((result) => {
+        const raceId = getResultRaceId(result)
+        const route = routeIdsByRaceId.get(raceId)
+        if (!route) return result
+
+        const externalRaceDayId = result?.raceInformation?.raceDayId
+            ?? result?.raceDayId
+            ?? route.externalRaceDayId
+            ?? null
+
+        return {
+            ...result,
+            racedayId: route.racedayId,
+            externalRaceDayId,
+            raceInformation: {
+                ...(result?.raceInformation || {}),
+                racedayId: route.racedayId,
+                externalRaceDayId
+            }
+        }
+    })
+}
+
 const buildDriverPayload = (baseDriver, driverDoc) => {
     if (!driverDoc) return baseDriver
 
@@ -194,6 +251,7 @@ const getHorseData = async (horseId) => {
             obj.formLastUpdated = ratingDoc.formLastUpdated ?? null
             obj.formLastRaceDate = ratingDoc.formLastRaceDate ?? null
         }
+        obj.results = await attachRacedayRouteIds(obj.results)
         const laneBiasStore = await getLaneBiasStore()
         const prediction = buildHorseEloPrediction({
             horse: obj,
