@@ -161,9 +161,9 @@ const aggregateHorses = async (raceId, weights = getWeights()) => {
         },
         {
             $addFields: {
-                firstPlace: { $toInt: { $arrayElemAt: ["$splitPlacements", 0] } },
-                secondPlace: { $toInt: { $arrayElemAt: ["$splitPlacements", 1] } },
-                thirdPlace: { $toInt: { $arrayElemAt: ["$splitPlacements", 2] } }
+                firstPlace: { $convert: { input: { $arrayElemAt: ["$splitPlacements", 0] }, to: "int", onError: 0, onNull: 0 } },
+                secondPlace: { $convert: { input: { $arrayElemAt: ["$splitPlacements", 1] }, to: "int", onError: 0, onNull: 0 } },
+                thirdPlace: { $convert: { input: { $arrayElemAt: ["$splitPlacements", 2] }, to: "int", onError: 0, onNull: 0 } }
             }
         },
         {

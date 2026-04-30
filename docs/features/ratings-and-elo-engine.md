@@ -72,12 +72,12 @@ That means stored rating freshness and runtime prediction freshness are related,
 - Race and horse payloads expose `eloDebug` so suspicious rankings can be traced to specific recent results, context signals, shrink values and weights.
 - Horse detail now separates trend movement (`formTrendDelta`, versus stored form) from gap to class (`formGapToCareer`, versus career Elo) so the UI does not present those as the same thing.
 - Stored horse ratings keep `lastUpdated`, `formLastUpdated`, `lastRaceDate`, `formLastRaceDate` and `eloVersion`.
-- The app now exposes a simple Elo status surface through `GET /api/rating/status`, a start-page update action, and horse-detail freshness fields.
+- The app now exposes a simple Elo status surface through `GET /api/rating/status`, a start-page update action, horse-detail freshness status, and per-horse race-table freshness labels.
 
 ## Debugging
 - Primary log: route-level failures (`Manual rating update failed`, `Elo evaluation failed`, `Failed to start auto-tune`).
 - What "good" looks like: race and horse payloads include `effectiveElo`, `eloVersion`, `eloWeights`, `eloDebug.contextAdjustments.startMethodAffinity`, `eloDebug.contextAdjustments.startPositionAffinity`, `eloDebug.contextAdjustments.distanceAffinity`, `eloDebug.contextAdjustments.trackDistanceAffinity`, `eloDebug.contextAdjustments.trackAffinity`, `eloDebug.contextAdjustments.shoeSignal`, `eloDebug.contextAdjustments.driverHorseAffinity`, `eloDebug.contextAdjustments.laneBias`, and `eloDebug.effectiveEloBreakdown`; context features show sample sizes plus capped deltas; evaluation returns baseline and upgraded RMSE.
-- What "good" looks like for freshness: `GET /api/rating/status` returns `lastProcessedRaceDate`, latest rating timestamps, stored Elo version and rated horse count; horse detail shows stored Elo freshness alongside runtime prediction data.
+- What "good" looks like for freshness: `GET /api/rating/status` returns `lastProcessedRaceDate`, latest rating timestamps, stored Elo version and rated horse count; horse detail and race view show stored Elo freshness alongside runtime prediction data.
 - What "bad" looks like: auto-tune stuck with no processed combinations.
 
 ## Related files
@@ -107,3 +107,4 @@ That means stored rating freshness and runtime prediction freshness are related,
 - 2026-04-05: Added capped driver-horse affinity based on horse-relative shared-driver history.
 - 2026-04-05: Added lane bias as context feature #3 with hierarchical shrinkage and capped runtime impact.
 - 2026-04-08: Added Elo status endpoint, start-page Elo update action and horse-detail Elo freshness fields.
+- 2026-04-30: Added user-facing Elo freshness labels in horse detail and race view using stored rating timestamps, processed race dates and stored Elo version.

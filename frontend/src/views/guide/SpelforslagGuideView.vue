@@ -264,17 +264,26 @@
             <article class="save-card">
               <div class="save-title">Hur vet man att en häst är uppdaterad?</div>
               <p class="save-copy">
-                Tekniskt finns svaret i backend, men appen visar ännu inte en enkel färskhetsstatus.
-                I dag kan man se prediction-data som <code>effectiveElo</code>, <code>eloVersion</code>
-                och <code>eloDebug</code>, men inte en tydlig användarsignal för senaste Elo-körning.
+                Hästvyn visar nu en tydlig <strong>Elo-status</strong> med senaste Elo-körning,
+                bearbetat resultatdatum och lagrad version. Statusen bygger på ratingradens
+                <code>lastUpdated</code>, <code>formLastUpdated</code>, <code>lastRaceDate</code>,
+                <code>formLastRaceDate</code> och <code>eloVersion</code>.
               </p>
             </article>
             <article class="save-card">
-              <div class="save-title">Trolig nästa feature</div>
+              <div class="save-title">Var syns statusen?</div>
               <p class="save-copy">
-                Visa Elo-färskhet direkt i hästvyn och loppvyn med senaste Elo-uppdatering,
-                senaste resultatdatum och version. Det skulle göra modellen lättare att lita på och
-                lättare att felsöka.
+                I hästvyn syns den som en större statusruta. I loppvyn syns den som en kompakt
+                Elo-status per häst, så äldre eller okänd lagrad Elo går att upptäcka innan man
+                granskar raden djupare.
+              </p>
+            </article>
+            <article class="save-card">
+              <div class="save-title">Vad betyder statusen?</div>
+              <p class="save-copy">
+                Statusen beskriver lagrad Elo-färskhet. Runtime-prediktionen kan fortfarande vara
+                nyberäknad när sidan läses, men den bygger på den lagrade Elo-radens senaste
+                uppdatering och hästens resultatdata.
               </p>
             </article>
           </div>

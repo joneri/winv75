@@ -244,13 +244,11 @@ Det som redan finns:
 - backend sparar också `lastRaceDate`, `formLastRaceDate` och `eloVersion`
 - häst- och racepayloads visar prediction-data som `effectiveElo`, `eloVersion` och `eloDebug`
 
-Det som saknas i appen idag:
-- en tydlig status som säger när lagrad Elo senast uppdaterades
-- en enkel markering som visar om predictionen bygger på färska resultat eller äldre ratingdata
+Det appen visar nu:
+- hästvyn visar en tydlig Elo-status med senaste Elo-körning, bearbetat resultatdatum och lagrad version
+- loppvyn visar en kompakt Elo-status per häst så äldre eller okänd lagrad Elo syns innan man granskar raden djupare
 
-Det här är därför en rimlig nästa feature:
-- visa Elo-färskhet direkt i hästvyn och gärna också i loppvyn
-- till exempel med `eloVersion`, senaste Elo-uppdatering och senaste resultatdatum
+Viktigt: statusen beskriver lagrad Elo-färskhet. Runtime-prediktionen kan fortfarande vara nyberäknad i läsögonblicket, men den bygger på den lagrade Elo-radens senaste uppdatering och hästens resultatdata.
 
 ## Hur man ska läsa ett förslag
 Ett bra sätt att läsa ett spelförslag är:

@@ -103,6 +103,20 @@
                                 </span>
                               </div>
                             </template>
+                            <template v-slot:[`item.eloFreshness`]="slotProps">
+                              <div class="freshness-cell" :title="eloFreshnessTooltip(slotRow(slotProps))">
+                                <v-chip
+                                  size="x-small"
+                                  variant="tonal"
+                                  :color="eloFreshnessColor(slotRow(slotProps))"
+                                >
+                                  {{ eloFreshnessLabel(slotRow(slotProps)) }}
+                                </v-chip>
+                                <span class="freshness-detail">
+                                  {{ eloFreshnessDetail(slotRow(slotProps)) }}
+                                </span>
+                              </div>
+                            </template>
                             <template v-slot:[`item.driverName`]="slotProps">
                               <template v-if="driverLink(slotRow(slotProps))">
                                 <router-link
@@ -388,6 +402,7 @@ export default {
           { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
           { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
           { title: 'Form Elo', key: 'formRating', sortable: true, align: 'end', width: 110 },
+          { title: 'Elo-status', key: 'eloFreshness', sortable: false, width: 170 },
           { title: 'Kusk', key: 'driverName', sortable: false, width: 160 },
           { title: 'Kusk Form Elo', key: 'driverElo', sortable: true, align: 'end', width: 130 },
           { title: 'Stats', key: 'statsScore', sortable: true, width: 220 },
@@ -523,6 +538,11 @@ export default {
               name: h0.name || rm.name || h0.name,
               programNumber: h0.programNumber ?? rm.programNumber ?? h0.programNumber,
               driver: mergedDriver || h0.driver || rm.driver,
+              ratingLastUpdated: h0.ratingLastUpdated ?? rm.ratingLastUpdated ?? null,
+              formRatingLastUpdated: h0.formRatingLastUpdated ?? rm.formRatingLastUpdated ?? null,
+              ratingLastRaceDate: h0.ratingLastRaceDate ?? rm.ratingLastRaceDate ?? null,
+              formRatingLastRaceDate: h0.formRatingLastRaceDate ?? rm.formRatingLastRaceDate ?? null,
+              storedEloVersion: h0.storedEloVersion ?? rm.storedEloVersion ?? null,
             }
             const statsDetails = getStatsDetails(merged)
             return {
@@ -531,6 +551,7 @@ export default {
               formRating: getFormEloFor(merged),
               formDelta: getFormDeltaFor(merged),
               driverElo: getDriverEloFor(merged),
+              eloFreshness: getEloFreshness(merged).sortValue,
               driverName: merged?.driver?.name || '—',
               v85Percent: Number.isFinite(Number(merged?.v85Percent)) ? Number(merged.v85Percent) : null,
               v86Percent: Number.isFinite(Number(merged?.v86Percent)) ? Number(merged.v86Percent) : null,
@@ -541,6 +562,83 @@ export default {
             }
           })
         })
+
+        const latestDate = (...values) => {
+          const timestamps = values
+            .map(value => {
+              if (!value) return null
+              const time = new Date(value).getTime()
+              return Number.isNaN(time) ? null : time
+            })
+            .filter(value => value != null)
+
+          if (!timestamps.length) return null
+          return new Date(Math.max(...timestamps)).toISOString()
+        }
+
+        const daysSince = (value) => {
+          if (!value) return null
+          const time = new Date(value).getTime()
+          if (Number.isNaN(time)) return null
+          return Math.max(0, Math.floor((Date.now() - time) / (1000 * 60 * 60 * 24)))
+        }
+
+        const formatShortDate = (value) => {
+          if (!value) return ''
+          const date = new Date(value)
+          if (Number.isNaN(date.getTime())) return ''
+          return new Intl.DateTimeFormat('sv-SE', { month: 'short', day: 'numeric' }).format(date)
+        }
+
+        const getEloFreshness = (horse) => {
+          const updatedAt = latestDate(horse?.ratingLastUpdated, horse?.formRatingLastUpdated)
+          const raceDate = latestDate(horse?.ratingLastRaceDate, horse?.formRatingLastRaceDate)
+          const age = daysSince(updatedAt)
+          const version = horse?.storedEloVersion || null
+
+          if (!updatedAt && !raceDate && !version) {
+            return {
+              label: 'Okänd',
+              color: 'grey',
+              detail: 'saknar datum',
+              tooltip: 'Ingen lagrad Elo-färskhet hittades för hästen.',
+              sortValue: 9999
+            }
+          }
+
+          if (age != null && age <= 7) {
+            return {
+              label: 'Färsk',
+              color: 'success',
+              detail: raceDate ? `t.o.m. ${formatShortDate(raceDate)}` : 'ny körning',
+              tooltip: `Senaste Elo-körning: ${updatedAt ? new Date(updatedAt).toLocaleString('sv-SE') : 'okänd'}${raceDate ? `. Bearbetad t.o.m: ${new Date(raceDate).toLocaleDateString('sv-SE')}` : ''}${version ? `. Version: ${version}` : ''}`,
+              sortValue: age
+            }
+          }
+
+          if (age != null && age <= 30) {
+            return {
+              label: 'Varning',
+              color: 'warning',
+              detail: `${age} dagar`,
+              tooltip: `Senaste Elo-körning: ${new Date(updatedAt).toLocaleString('sv-SE')}${raceDate ? `. Bearbetad t.o.m: ${new Date(raceDate).toLocaleDateString('sv-SE')}` : ''}${version ? `. Version: ${version}` : ''}`,
+              sortValue: age
+            }
+          }
+
+          return {
+            label: 'Äldre',
+            color: 'warning',
+            detail: age != null ? `${age} dagar` : (raceDate ? `t.o.m. ${formatShortDate(raceDate)}` : 'delvis känt'),
+            tooltip: `${updatedAt ? `Senaste Elo-körning: ${new Date(updatedAt).toLocaleString('sv-SE')}. ` : ''}${raceDate ? `Bearbetad t.o.m: ${new Date(raceDate).toLocaleDateString('sv-SE')}. ` : ''}${version ? `Version: ${version}.` : ''}`,
+            sortValue: age ?? 999
+          }
+        }
+
+        const eloFreshnessLabel = (horse) => getEloFreshness(horse).label
+        const eloFreshnessColor = (horse) => getEloFreshness(horse).color
+        const eloFreshnessDetail = (horse) => getEloFreshness(horse).detail
+        const eloFreshnessTooltip = (horse) => getEloFreshness(horse).tooltip
 
         // Helpers: past results source resolution and starts threshold
         const recentFromExtended = (horseOrId) => {
@@ -1057,6 +1155,10 @@ export default {
             getFormDeltaFor,
             hasFormDelta,
             formatFormDelta,
+            eloFreshnessLabel,
+            eloFreshnessColor,
+            eloFreshnessDetail,
+            eloFreshnessTooltip,
             raceMetaString,
             trackMetaString,
             raceGames,
@@ -1091,6 +1193,8 @@ export default {
 .elo-cell { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
 .elo-main { font-weight: 600; }
 .elo-delta { font-size: 0.75rem; color: #16a34a; }
+.freshness-cell { display: grid; gap: 3px; align-items: start; }
+.freshness-detail { color: #6b7280; font-size: 0.75rem; line-height: 1.1; }
 .race-header .games { display: flex; gap: 6px; }
 .ai-coverage { font-size: 0.85rem; }
 .coverage-bar { position: relative; height: 6px; width: 120px; background: #e5e7eb; border-radius: 999px; margin-top: 4px; }

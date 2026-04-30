@@ -27,37 +27,45 @@
             </v-chip>
           </div>
           <div class="meta-grid">
-            <div class="meta-item">
-              <span class="label">Class ELO</span>
-              <span class="value">{{ formatNumber(horse.rating) }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">Form ELO</span>
-              <span class="value">{{ formatNumber(horse.formRating ?? horse.rawFormRating) }}</span>
-            </div>
-            <div class="meta-item" v-if="isFiniteNumber(horse.formTrendDelta)">
-              <span class="label">Trend Δ</span>
-              <span class="value">{{ formatSigned(horse.formTrendDelta) }}</span>
-            </div>
-            <div class="meta-item" v-if="isFiniteNumber(horse.winProbability)">
-              <span class="label">Vinstchans</span>
-              <span class="value">{{ formatProbability(horse.winProbability) }}</span>
-            </div>
-            <div class="meta-item" v-if="hasGapMetric">
-              <span class="label">Vilodagar</span>
-              <span class="value">{{ formatGapDays(horse.formComponents?.daysSinceLast ?? horse.formGapMetric) }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">Score</span>
-              <span class="value">{{ formatNumber(horse.score) }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">Seger%</span>
-              <span class="value">{{ formatPercent(horse.winningRate) }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">Plats%</span>
-              <span class="value">{{ formatPercent(horse.placementRate) }}</span>
+            <div
+              v-for="item in kpiItems"
+              :key="item.key"
+              class="meta-item"
+            >
+              <div class="meta-label-row">
+                <span class="label">{{ item.label }}</span>
+                <v-dialog max-width="460">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      icon="mdi-help-circle-outline"
+                      size="x-small"
+                      variant="text"
+                      class="kpi-help-button"
+                      :aria-label="`Förklara ${item.label}`"
+                    />
+                  </template>
+                  <v-card class="kpi-help-dialog">
+                    <v-card-title>{{ item.help.title }}</v-card-title>
+                    <v-card-text>
+                      <p class="kpi-help-copy">{{ item.help.description }}</p>
+                      <div class="kpi-help-section">
+                        <div class="kpi-help-label">Siffran kommer från</div>
+                        <div>{{ item.help.source }}</div>
+                      </div>
+                      <div v-if="item.help.note" class="kpi-help-section">
+                        <div class="kpi-help-label">Att tänka på</div>
+                        <div>{{ item.help.note }}</div>
+                      </div>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn color="primary" variant="text" text="Stäng" />
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </div>
+              <span class="value">{{ item.value }}</span>
             </div>
           </div>
         </v-col>
@@ -70,16 +78,16 @@
           </v-alert>
 
           <v-alert
-            v-if="horse.ratingLastUpdated || horse.formRatingLastUpdated || horse.storedEloVersion"
-            type="info"
+            v-if="eloFreshness.hasSignal"
+            :type="eloFreshness.alertType"
             variant="tonal"
             class="mt-3"
           >
             <div class="text-caption text-uppercase mb-1">Elo-status</div>
-            <div v-if="horse.storedEloVersion">Lagrad version: {{ horse.storedEloVersion }}</div>
-            <div v-if="horse.ratingLastUpdated">Class Elo uppdaterad: {{ formatDateTime(horse.ratingLastUpdated) }}</div>
-            <div v-if="horse.formRatingLastUpdated">Form Elo uppdaterad: {{ formatDateTime(horse.formRatingLastUpdated) }}</div>
-            <div v-if="horse.ratingLastRaceDate">Senast bearbetade loppdatum: {{ formatDate(horse.ratingLastRaceDate) }}</div>
+            <div class="text-body-1 font-weight-medium">{{ eloFreshness.label }}</div>
+            <div v-if="eloFreshness.updatedAt">Senaste Elo-körning: {{ formatDateTime(eloFreshness.updatedAt) }}</div>
+            <div v-if="eloFreshness.raceDate">Bearbetad t.o.m: {{ formatDate(eloFreshness.raceDate) }}</div>
+            <div v-if="horse.storedEloVersion">Version: {{ horse.storedEloVersion }}</div>
           </v-alert>
         </v-col>
       </v-row>
@@ -218,6 +226,57 @@ let upcomingObserver: IntersectionObserver | null = null
 
 let controller: AbortController | null = null
 
+const kpiHelp = {
+  classElo: {
+    title: 'Class ELO',
+    description: 'Hästens långsammare klassignal. Den beskriver grundnivån över tid och rör sig mindre snabbt än form-Elo.',
+    source: 'Visas från horse.rating/careerElo i hästdetaljens backendpayload, baserat på lagrad rating och runtime prediction.',
+    note: 'Bra för att jämföra hästens nivå mot fältet, men säger inte ensam hur dagsformen ser ut.'
+  },
+  formElo: {
+    title: 'Form ELO',
+    description: 'Den snabbare Elo-signalen som reagerar mer på färska prestationer.',
+    source: 'Visas från horse.formRating, med rawFormRating som fallback om formRating saknas.',
+    note: 'Kan avvika från Class ELO när hästen är på väg upp eller ner i form.'
+  },
+  trendDelta: {
+    title: 'Trend Δ',
+    description: 'Skillnaden mellan aktuell form-Elo och lagrad formnivå. Positivt tal betyder att runtime-modellen ser en starkare aktuell trend.',
+    source: 'Visas från horse.formTrendDelta, beräknad i prediction layer och skickad via hästdetaljens payload.',
+    note: 'Används som riktning, inte som en egen vinstprocent.'
+  },
+  winProbability: {
+    title: 'Vinstchans',
+    description: 'Modellens normaliserade uppskattning av hästens vinstsannolikhet i aktuellt sammanhang.',
+    source: 'Visas från horse.winProbability när backend skickar fältet.',
+    note: 'Saknas ofta i ren hästdetalj utan ett specifikt lopp, eftersom sannolikheten beror på motståndet.'
+  },
+  restDays: {
+    title: 'Vilodagar',
+    description: 'Antal dagar sedan hästens senast bearbetade start i formmodellen.',
+    source: 'Visas från formComponents.daysSinceLast, med formGapMetric som fallback.',
+    note: 'Långa uppehåll kan göra formen mer osäker även om Class ELO fortfarande är hög.'
+  },
+  score: {
+    title: 'Score',
+    description: 'Samlad score för listning och jämförelse i hästvyn. Den används som ett praktiskt sorterings- och rankingvärde.',
+    source: 'Visas från horse.score i hästdetaljens payload.',
+    note: 'Score är inte samma sak som vinstchans; den är ett jämförelsevärde.'
+  },
+  winRate: {
+    title: 'Seger%',
+    description: 'Andelen starter där hästen har vunnit.',
+    source: 'Visas från horse.winningRate och normaliseras till procent i frontend.',
+    note: 'Historisk statistik tar inte automatiskt hänsyn till dagens motstånd eller distans.'
+  },
+  placeRate: {
+    title: 'Plats%',
+    description: 'Andelen starter där hästen slutat på plats.',
+    source: 'Visas från horse.placementRate och normaliseras till procent i frontend.',
+    note: 'Hög platsprocent kan betyda jämnhet även när segerchansen är lägre.'
+  }
+}
+
 const horseId = computed(() => route.params.horseId as string | number | undefined)
 
 function abortOngoing() {
@@ -315,6 +374,72 @@ const hasGapMetric = computed(() => {
   }
   return isFiniteNumber(horse.value?.formGapMetric)
 })
+
+const kpiItems = computed(() => {
+  const current = horse.value || {}
+  const items = [
+    {
+      key: 'class-elo',
+      label: 'Class ELO',
+      value: formatNumber(current.rating),
+      help: kpiHelp.classElo,
+      visible: true
+    },
+    {
+      key: 'form-elo',
+      label: 'Form ELO',
+      value: formatNumber(current.formRating ?? current.rawFormRating),
+      help: kpiHelp.formElo,
+      visible: true
+    },
+    {
+      key: 'trend-delta',
+      label: 'Trend Δ',
+      value: formatSigned(current.formTrendDelta),
+      help: kpiHelp.trendDelta,
+      visible: isFiniteNumber(current.formTrendDelta)
+    },
+    {
+      key: 'win-probability',
+      label: 'Vinstchans',
+      value: formatProbability(current.winProbability),
+      help: kpiHelp.winProbability,
+      visible: isFiniteNumber(current.winProbability)
+    },
+    {
+      key: 'rest-days',
+      label: 'Vilodagar',
+      value: formatGapDays(current.formComponents?.daysSinceLast ?? current.formGapMetric),
+      help: kpiHelp.restDays,
+      visible: hasGapMetric.value
+    },
+    {
+      key: 'score',
+      label: 'Score',
+      value: formatNumber(current.score),
+      help: kpiHelp.score,
+      visible: true
+    },
+    {
+      key: 'win-rate',
+      label: 'Seger%',
+      value: formatPercent(current.winningRate),
+      help: kpiHelp.winRate,
+      visible: true
+    },
+    {
+      key: 'place-rate',
+      label: 'Plats%',
+      value: formatPercent(current.placementRate),
+      help: kpiHelp.placeRate,
+      visible: true
+    }
+  ]
+
+  return items.filter(item => item.visible)
+})
+
+const eloFreshness = computed(() => buildEloFreshness(horse.value || {}))
 
 const recentResults = computed(() => {
   const list = Array.isArray(horse.value?.results) ? horse.value?.results : []
@@ -609,6 +734,81 @@ function formatDateTime(value: string | undefined | null) {
   }).format(dt)
 }
 
+function latestDate(...values: Array<string | Date | null | undefined>) {
+  const timestamps = values
+    .map(value => {
+      if (!value) return null
+      const time = new Date(value).getTime()
+      return Number.isNaN(time) ? null : time
+    })
+    .filter((value): value is number => value != null)
+
+  if (!timestamps.length) return null
+  return new Date(Math.max(...timestamps)).toISOString()
+}
+
+function daysSince(value: string | null) {
+  if (!value) return null
+  const time = new Date(value).getTime()
+  if (Number.isNaN(time)) return null
+  return Math.max(0, Math.floor((Date.now() - time) / (1000 * 60 * 60 * 24)))
+}
+
+function buildEloFreshness(source: any) {
+  const updatedAt = latestDate(source?.ratingLastUpdated, source?.formRatingLastUpdated)
+  const raceDate = latestDate(source?.ratingLastRaceDate, source?.formRatingLastRaceDate)
+  const age = daysSince(updatedAt)
+  const hasSignal = Boolean(updatedAt || raceDate || source?.storedEloVersion)
+
+  if (!hasSignal) {
+    return {
+      hasSignal,
+      alertType: 'warning',
+      label: 'Elo-färskhet saknas',
+      updatedAt,
+      raceDate
+    }
+  }
+
+  if (age == null) {
+    return {
+      hasSignal,
+      alertType: 'info',
+      label: 'Elo-datum delvis känt',
+      updatedAt,
+      raceDate
+    }
+  }
+
+  if (age <= 7) {
+    return {
+      hasSignal,
+      alertType: 'success',
+      label: 'Elo uppdaterad nyligen',
+      updatedAt,
+      raceDate
+    }
+  }
+
+  if (age <= 30) {
+    return {
+      hasSignal,
+      alertType: 'warning',
+      label: `Elo uppdaterad för ${age} dagar sedan`,
+      updatedAt,
+      raceDate
+    }
+  }
+
+  return {
+    hasSignal,
+    alertType: 'warning',
+    label: `Elo äldre än 30 dagar`,
+    updatedAt,
+    raceDate
+  }
+}
+
 function placementClass(value: number | null) {
   if (value === 1) return 'placement-first'
   if (value && value <= 3) return 'placement-podium'
@@ -788,6 +988,43 @@ onBeforeUnmount(() => {
   letter-spacing: 0.04em;
   color: #4b5563;
   display: block;
+}
+
+.meta-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.kpi-help-button {
+  color: inherit;
+  opacity: 0.78;
+  flex: 0 0 auto;
+}
+
+.kpi-help-button:hover,
+.kpi-help-button:focus-visible {
+  opacity: 1;
+}
+
+.kpi-help-copy {
+  margin-bottom: 14px;
+}
+
+.kpi-help-section {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.kpi-help-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
 }
 
 .meta-item .value {
