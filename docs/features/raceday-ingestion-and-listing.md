@@ -42,6 +42,7 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - Invalid/missing date on fetch request returns `400`.
 - Invalid missing-raceday ranges return `400`; future scan is capped to 14 days ahead.
 - Partial external API failures skip problematic raceday instead of failing all ingestion.
+- Travsport can return `500` for individual startlist IDs even when the date listing includes them; those IDs are skipped and logged as concise provider/status summaries.
 
 ## Data correctness and trust
 - `raceCount` and `hasResults` are computed from stored `raceList` state.
@@ -49,12 +50,13 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - Earliest horse update timestamp is recomputed after the horse refresh loop with one save for all affected races.
 
 ## Debugging
-- Primary log: backend logs in raceday service/routes during fetch/upsert/update loops. Raceday upsert, ATG comment persistence, full save pipeline, and horse refresh duration are timed separately.
+- Primary log: backend logs in raceday service/routes during fetch/upsert/update loops. Raceday upsert, ATG comment persistence, full save pipeline, and horse refresh duration are timed separately. Travsport fetch failures should appear as short warnings with `status`, `code`, and provider response message, not full Axios request/response dumps.
 - What "good" looks like: new racedays appear in summary list, sorted by `firstStart`, completed racedays show an obvious green status, and stale past days can be refreshed into a result-ready state.
 - What "bad" looks like: empty summary after fetch, nearly invisible result status in dark mode, or repeated refresh failures for stale racedays.
 
 ## Related files
 - `backend/src/raceday/raceday-routes.js`
+- `backend/src/raceday/raceday-atg-client.js`
 - `backend/src/raceday/raceday-service.js`
 - `backend/src/raceday/raceday-query-service.js`
 - `backend/src/raceday/raceday-import-service.js`
@@ -71,3 +73,4 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - 2026-04-10: Added dark-mode-safe result badges and stale past-raceday refresh support.
 - 2026-04-30: Added missing-date scan and one-click date import.
 - 2026-04-30: Added queued full-raceday horse refresh, 200 ms default start interval, bulk ATG comment persistence, and single-save earliest timestamp recomputation.
+- 2026-04-30: Changed Travsport fetch failures to concise warnings and kept per-raceday startlist failures non-fatal during date import.

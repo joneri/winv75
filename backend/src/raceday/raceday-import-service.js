@@ -13,7 +13,10 @@ export async function fetchAndStoreByDate(date) {
       const raceDay = await upsertStartlistData(startlist)
       stored.push(raceDay)
     } catch (error) {
-      console.error(`Skipping racedayId ${info.raceDayId} due to fetch error:`, error.message)
+      const details = error.externalFetch
+      const status = details?.status ? ` status=${details.status}` : ''
+      const responseMessage = details?.responseMessage ? ` response="${details.responseMessage}"` : ''
+      console.warn(`Skipping racedayId ${info.raceDayId} due to startlist fetch failure:${status}${responseMessage}`)
     }
   }
 
