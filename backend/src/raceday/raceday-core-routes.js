@@ -2,6 +2,7 @@ import express from 'express'
 import {
   fetchAndStoreByDate,
   getAllRacedays,
+  getMissingRacedays,
   getRacedayById,
   getRacedaysPaged,
   refreshStaleRacedayResults,
@@ -25,6 +26,37 @@ router.post('/fetch', async (req, res) => {
   } catch (error) {
     console.error('Error fetching raceday data from external API:', error)
     res.status(500).send('Failed to fetch raceday data')
+  }
+})
+
+router.get('/missing', async (req, res) => {
+  try {
+    const from = typeof req.query.from === 'string' ? req.query.from : '2022-01-01'
+    const to = typeof req.query.to === 'string' ? req.query.to : new Date().toISOString().slice(0, 10)
+    const result = await getMissingRacedays({ from, to })
+    res.json(result)
+  } catch (error) {
+    const message = error?.message || 'Failed to fetch missing racedays'
+    if (message.includes('must be') || message.includes('may not')) {
+      return res.status(400).json({ error: message })
+    }
+    console.error('Error fetching missing racedays:', error)
+    res.status(500).json({ error: 'Failed to fetch missing racedays' })
+  }
+})
+
+router.post('/missing/import', async (req, res) => {
+  const date = typeof req.query.date === 'string' ? req.query.date : ''
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'date must be YYYY-MM-DD' })
+  }
+
+  try {
+    const result = await fetchAndStoreByDate(date)
+    res.json({ date, importedCount: Array.isArray(result) ? result.length : 0, items: result })
+  } catch (error) {
+    console.error(`Error importing missing raceday date ${date}:`, error)
+    res.status(500).json({ error: 'Failed to import missing raceday date' })
   }
 })
 

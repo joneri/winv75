@@ -10,6 +10,7 @@ import SuggestionDetailView from '@/views/suggestion/SuggestionDetailView.vue'
 import SuggestionAnalyticsView from '@/views/suggestion/SuggestionAnalyticsView.vue'
 import SpelforslagGuideView from '@/views/guide/SpelforslagGuideView.vue'
 import PropositionTranslationOverview from '@/views/proposition-translation/PropositionTranslationOverview.vue'
+import MissingRacedaysView from '@/views/raceday-missing/MissingRacedaysView.vue'
 
 const routes = [
   {
@@ -35,6 +36,18 @@ const routes = [
         label: route.meta?.breadcrumbLabel || `Tävlingsdag ${route.params?.racedayId ?? ''}`,
         to: { name: 'Raceday', params: { racedayId: route.params?.racedayId } }
       })
+    }
+  },
+  {
+    path: '/racedays/missing',
+    name: 'MissingRacedays',
+    component: MissingRacedaysView,
+    meta: {
+      parent: 'RacedayInput',
+      breadcrumb: {
+        label: 'Saknade tävlingsdagar',
+        to: { name: 'MissingRacedays' }
+      }
     }
   },
   {

@@ -26,6 +26,7 @@ Backend list endpoint supports query and cursor pagination and now computes both
 - Legacy fields stay available for compatibility, but `careerElo`, `formElo`, `effectiveElo` and `eloDebug` are the canonical runtime prediction fields.
 - Stored Elo freshness is shown as a simple status, latest Elo run, latest processed result date and version so users can distinguish persisted rating age from read-time prediction recomputation.
 - Horse detail KPI cards include help overlays that explain what the number means and which payload field or model layer it comes from.
+- The `Score` KPI is an internal weighted score. It includes Svensk Travsport points as one input, but it is not the official start-points value.
 
 ## Defaults and fallbacks
 - Invalid cursor returns `400`.

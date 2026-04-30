@@ -29,6 +29,9 @@
             <v-btn @click="fetchRacedays" color="secondary" variant="elevated" :loading="loading">
               Hämta tävlingsdagar
             </v-btn>
+            <v-btn :to="{ name: 'MissingRacedays' }" color="primary" variant="tonal">
+              Hitta saknade dagar
+            </v-btn>
           </div>
           <v-alert v-if="error" type="error" variant="tonal" class="mt-3">{{ error }}</v-alert>
         </div>

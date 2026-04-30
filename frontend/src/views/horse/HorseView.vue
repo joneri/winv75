@@ -38,31 +38,36 @@
                   <template #activator="{ props }">
                     <v-btn
                       v-bind="props"
-                      icon="mdi-help-circle-outline"
                       size="x-small"
                       variant="text"
                       class="kpi-help-button"
                       :aria-label="`Förklara ${item.label}`"
-                    />
+                    >
+                      ?
+                    </v-btn>
                   </template>
-                  <v-card class="kpi-help-dialog">
-                    <v-card-title>{{ item.help.title }}</v-card-title>
-                    <v-card-text>
-                      <p class="kpi-help-copy">{{ item.help.description }}</p>
-                      <div class="kpi-help-section">
-                        <div class="kpi-help-label">Siffran kommer från</div>
-                        <div>{{ item.help.source }}</div>
-                      </div>
-                      <div v-if="item.help.note" class="kpi-help-section">
-                        <div class="kpi-help-label">Att tänka på</div>
-                        <div>{{ item.help.note }}</div>
-                      </div>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer />
-                      <v-btn color="primary" variant="text" text="Stäng" />
-                    </v-card-actions>
-                  </v-card>
+                  <template #default="{ isActive }">
+                    <v-card class="kpi-help-dialog">
+                      <v-card-title>{{ item.help.title }}</v-card-title>
+                      <v-card-text>
+                        <p class="kpi-help-copy">{{ item.help.description }}</p>
+                        <div class="kpi-help-section">
+                          <div class="kpi-help-label">Siffran kommer från</div>
+                          <div>{{ item.help.source }}</div>
+                        </div>
+                        <div v-if="item.help.note" class="kpi-help-section">
+                          <div class="kpi-help-label">Att tänka på</div>
+                          <div>{{ item.help.note }}</div>
+                        </div>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer />
+                        <v-btn color="primary" variant="text" @click="isActive.value = false">
+                          Stäng
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </template>
                 </v-dialog>
               </div>
               <span class="value">{{ item.value }}</span>
@@ -259,9 +264,9 @@ const kpiHelp = {
   },
   score: {
     title: 'Score',
-    description: 'Samlad score för listning och jämförelse i hästvyn. Den används som ett praktiskt sorterings- och rankingvärde.',
-    source: 'Visas från horse.score i hästdetaljens payload.',
-    note: 'Score är inte samma sak som vinstchans; den är ett jämförelsevärde.'
+    description: 'Appens eget viktade jämförelsevärde för hästen. Det är inte Svensk Travsports startpoäng rakt av.',
+    source: 'Beräknas i backend från hästens ST-poäng, jämnhetsvärde, segerprocent och platsprocent. Standardvikter: 30 % poäng, 30 % jämnhet, 25 % segerprocent och 15 % platsprocent.',
+    note: 'ST-poäng är alltså en del av Score, men Score är ett internt rankingvärde och ska inte läsas som officiella startpoäng.'
   },
   winRate: {
     title: 'Seger%',
@@ -999,14 +1004,16 @@ onBeforeUnmount(() => {
 }
 
 .kpi-help-button {
-  color: inherit;
-  opacity: 0.78;
+  color: #e5edff;
+  background: rgba(148, 163, 184, 0.14);
+  opacity: 1;
   flex: 0 0 auto;
 }
 
 .kpi-help-button:hover,
 .kpi-help-button:focus-visible {
-  opacity: 1;
+  background: rgba(148, 163, 184, 0.24);
+  color: #ffffff;
 }
 
 .kpi-help-copy {

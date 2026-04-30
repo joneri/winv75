@@ -19,7 +19,7 @@ export const primaryNavigation: NavigationTarget[] = [
     icon: 'mdi-calendar-blank-outline',
     to: { name: 'RacedayInput' },
     description: 'Start, överblick och hämtning av tävlingsdagar.',
-    matchRoutes: ['RacedayInput', 'Raceday', 'RacedayRace', 'race']
+    matchRoutes: ['RacedayInput', 'MissingRacedays', 'Raceday', 'RacedayRace', 'race']
   },
   {
     title: 'Hästar',
