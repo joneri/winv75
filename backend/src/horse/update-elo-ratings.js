@@ -39,13 +39,7 @@ const updateRatings = async (
         horseId: '$id',
         raceId: '$results.raceInformation.raceId',
         raceDate: '$results.raceInformation.date',
-        placement: {
-          $cond: [
-            { $eq: ['$results.placement.sortValue', 99] },
-            null,
-            '$results.placement.sortValue'
-          ]
-        },
+        placement: '$results.placement.sortValue',
         withdrawn: '$results.withdrawn',
         prize: '$results.prizeMoney.sortValue'
     } },

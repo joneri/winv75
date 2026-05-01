@@ -65,6 +65,16 @@ const fetchRaceFromRaceId = async (raceId) => {
     }
 }
 
+const fetchRaceProfile = async (raceId) => {
+    try {
+        const response = await axios.get(resolveApiUrl(`/api/race/profile/${raceId}`))
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch race profile", error)
+        throw error
+    }
+}
+
 const fetchHorseRankings = async (raceId) => {
     try {
         const response = await axios.get(resolveApiUrl(`/api/horses/rankings/${raceId}`))
@@ -110,6 +120,7 @@ export {
     updateHorse,
     checkIfUpdatedRecently,
     fetchRaceFromRaceId,
+    fetchRaceProfile,
     fetchHorseRankings,
     setEarliestUpdatedHorseTimestamp,
     fetchHorseScores,

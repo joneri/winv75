@@ -7,6 +7,7 @@ import {
   buildLaneBiasStoreFromRows
 } from '../src/rating/horse-elo-prediction.js'
 import { ELO_PROFILES, processRace } from '../src/rating/elo-engine.js'
+import { getResultSignal } from '../src/rating/elo-policy.js'
 
 const daysAgo = (days) => {
   const date = new Date()
@@ -161,6 +162,95 @@ test('gallop hurts form but does not erase a strong recent profile, and withdraw
   assert.ok(prediction.debug.recentRaces.some((race) => race.code === 'gallop'), 'Expected gallop to be visible in debug')
   assert.ok(!prediction.debug.recentRaces.some((race) => race.code === 'withdrawn'), 'Expected withdrawn result to be ignored')
   assert.ok(prediction.formElo > prediction.careerElo - 50, 'Expected one gallop to hurt without collapsing form completely')
+})
+
+test('zero-result starts are treated as weak active form results', () => {
+  const signal = getResultSignal({
+    raceInformation: { raceId: 31, date: daysAgo(12) },
+    placement: { sortValue: 99, displayValue: '0' },
+    withdrawn: false
+  })
+
+  assert.equal(signal.code, 'unplaced')
+  assert.ok(signal.outcomeScore < -0.8, 'Expected a zero-result start to carry a clear negative form signal')
+})
+
+test('zero-result with explicit external withdrawal comment is ignored as withdrawn', () => {
+  const signal = getResultSignal({
+    raceInformation: { raceId: 32, date: daysAgo(9) },
+    placement: { sortValue: 99, displayValue: '0' },
+    comment: 'str, banforhallande',
+    withdrawn: false
+  })
+
+  assert.equal(signal.code, 'withdrawn')
+  assert.equal(signal.outcomeScore, null)
+})
+
+test('recent weak zero-result form cools an over-hot stored form rating', () => {
+  const targetRaceDate = new Date('2026-05-01T12:00:00.000Z')
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 758703,
+      results: [
+        {
+          raceInformation: { raceId: 1291418, date: new Date('2026-04-26T00:00:00.000Z') },
+          placement: { sortValue: 6, displayValue: '6' },
+          startMethod: 'V',
+          distance: { sortValue: 2160 },
+          trackCode: 'Ös'
+        },
+        {
+          raceInformation: { raceId: 1286719, date: new Date('2026-01-15T00:00:00.000Z') },
+          placement: { sortValue: 99, displayValue: '0' },
+          startMethod: 'A',
+          distance: { sortValue: 2640 },
+          trackCode: 'Bs'
+        },
+        {
+          raceInformation: { raceId: 1286358, date: new Date('2026-01-04T00:00:00.000Z') },
+          placement: { sortValue: 99, displayValue: '0' },
+          startMethod: 'A',
+          distance: { sortValue: 2140 },
+          trackCode: 'B'
+        },
+        {
+          raceInformation: { raceId: 1285109, date: new Date('2025-12-03T00:00:00.000Z') },
+          placement: { sortValue: 99, displayValue: '0' },
+          startMethod: 'A',
+          distance: { sortValue: 2140 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 1284350, date: new Date('2025-11-19T00:00:00.000Z') },
+          placement: { sortValue: 4, displayValue: '4' },
+          startMethod: 'A',
+          distance: { sortValue: 1640 },
+          trackCode: 'S'
+        },
+        {
+          raceInformation: { raceId: 1281126, date: new Date('2025-09-28T00:00:00.000Z') },
+          placement: { sortValue: 1, displayValue: '1' },
+          startMethod: 'V',
+          distance: { sortValue: 1640 },
+          trackCode: 'D'
+        }
+      ]
+    },
+    ratingDoc: {
+      rating: 1254,
+      formRating: 1336
+    },
+    raceContext: {
+      raceDate: targetRaceDate,
+      distance: 1640,
+      startMethod: 'A'
+    }
+  })
+
+  assert.ok(prediction.debug.recentRaces.filter((race) => race.code === 'unplaced').length >= 3, 'Expected zero-result starts to be visible in Form Elo debug')
+  assert.ok(prediction.debug.weightedOutcome < -0.5, 'Expected weak recent results to dominate the weighted outcome')
+  assert.ok(prediction.formElo < 1290, `Expected weak recent form to cool runtime formElo materially, got ${prediction.formElo}`)
 })
 
 test('stale horses revert form back toward career and still track real inactivity outside the recency window', () => {
@@ -1169,4 +1259,34 @@ test('driver-horse affinity stays inactive when the current driver has too littl
   assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.sampleSize, 1)
   assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.deltaElo, 0)
   assert.equal(prediction.debug.contextAdjustments.driverHorseAffinity.reason, 'insufficient_sample')
+})
+
+test('handicap distance penalizes horses starting longer than the race base distance', () => {
+  const prediction = buildHorseEloPrediction({
+    horse: {
+      id: 11,
+      actualDistance: 2160,
+      results: []
+    },
+    ratingDoc: {
+      rating: 1000,
+      formRating: 1000
+    },
+    raceContext: {
+      startMethod: 'Voltstart',
+      distance: 2140,
+      trackCode: 'S',
+      raceDate: new Date()
+    },
+    laneBiasStore: buildLaneBiasStoreFromRows([])
+  })
+
+  assert.equal(prediction.debug.contextAdjustments.handicapDistance.baseDistance, 2140)
+  assert.equal(prediction.debug.contextAdjustments.handicapDistance.actualDistance, 2160)
+  assert.equal(prediction.debug.contextAdjustments.handicapDistance.distanceDelta, 20)
+  assert.ok(prediction.debug.contextAdjustments.handicapDistance.deltaElo < 0, 'Expected handicap distance to lower effective Elo')
+  assert.equal(
+    prediction.debug.effectiveEloBreakdown.handicapDistanceDelta,
+    prediction.debug.contextAdjustments.handicapDistance.deltaElo
+  )
 })

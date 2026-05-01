@@ -31,6 +31,7 @@ const DRIVER_SHRINK_K = Number(process.env.ELO_DRIVER_SHRINK_K || 8)
 const DRIVER_SUPPORT_CAP = Number(process.env.ELO_DRIVER_SUPPORT_CAP || 42)
 
 const RESULT_SAMPLE_TARGET = Number(process.env.ELO_RESULT_SAMPLE_TARGET || 5)
+const RESULT_COUNT_CONFIDENCE_WEIGHT = Number(process.env.ELO_RESULT_COUNT_CONFIDENCE_WEIGHT || 0.5)
 const RESULT_ANCHOR_MULTIPLIER = Number(process.env.ELO_RESULT_ANCHOR_MULTIPLIER || 92)
 const RESULT_TREND_MULTIPLIER = Number(process.env.ELO_RESULT_TREND_MULTIPLIER || 18)
 const FORM_ANCHOR_BLEND = Number(process.env.ELO_FORM_ANCHOR_BLEND || 0.52)
@@ -70,6 +71,9 @@ const DRIVER_HORSE_AFFINITY_WEIGHT = Number(process.env.ELO_DRIVER_HORSE_AFFINIT
 const DRIVER_HORSE_AFFINITY_MIN_SAMPLE = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_MIN_SAMPLE || 3)
 const DRIVER_HORSE_AFFINITY_SHRINK_K = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_SHRINK_K || 6)
 const DRIVER_HORSE_AFFINITY_CAP = Number(process.env.ELO_DRIVER_HORSE_AFFINITY_CAP || 12)
+const HANDICAP_DISTANCE_WEIGHT = Number(process.env.ELO_HANDICAP_DISTANCE_WEIGHT || 8)
+const HANDICAP_DISTANCE_PENALTY_CAP = Number(process.env.ELO_HANDICAP_DISTANCE_PENALTY_CAP || 40)
+const HANDICAP_DISTANCE_BONUS_CAP = Number(process.env.ELO_HANDICAP_DISTANCE_BONUS_CAP || 16)
 const LANE_BIAS_WEIGHT = Number(process.env.ELO_LANE_BIAS_WEIGHT || 16)
 const LANE_BIAS_CAP = Number(process.env.ELO_LANE_BIAS_CAP || 10)
 const LANE_BIAS_EXACT_MIN_SAMPLE = Number(process.env.ELO_LANE_BIAS_EXACT_MIN_SAMPLE || 10)
@@ -90,6 +94,7 @@ const buildRaceContext = (raceContext = {}, fallbackDate = new Date()) => ({
   raceDate: toDate(raceContext?.raceDate ?? raceContext?.startDateTime ?? fallbackDate) || new Date(),
   startMethod: normalizeStartMethod(raceContext?.startMethod ?? raceContext?.raceType?.text),
   distanceBucket: getDistanceBucket(raceContext?.distance),
+  distance: safeNumber(raceContext?.distance, NaN),
   track: normalizeTrack(raceContext?.trackCode ?? raceContext?.trackName)
 })
 
@@ -374,7 +379,8 @@ const computeFormDelta = ({
     : 0
 
   const resultAnchorElo = careerElo + (weightedOutcome * RESULT_ANCHOR_MULTIPLIER) + (recentTrend * RESULT_TREND_MULTIPLIER)
-  const sampleWeight = clamp(weightSum / RESULT_SAMPLE_TARGET, 0, 1)
+  const sampleConfidence = weightSum + (relevantResults.length * RESULT_COUNT_CONFIDENCE_WEIGHT)
+  const sampleWeight = clamp(sampleConfidence / RESULT_SAMPLE_TARGET, 0, 1)
   const anchorBlend = clamp(FORM_ANCHOR_BLEND * sampleWeight, 0, FORM_ANCHOR_BLEND)
   const anchoredForm = storedFormElo + ((resultAnchorElo - storedFormElo) * anchorBlend)
 
@@ -405,6 +411,7 @@ const computeFormDelta = ({
     weightedOutcome: Number(weightedOutcome.toFixed(4)),
     recentTrend: Number(recentTrend.toFixed(4)),
     weightSum: Number(weightSum.toFixed(4)),
+    sampleConfidence: Number(sampleConfidence.toFixed(4)),
     anchorBlend: Number(anchorBlend.toFixed(4)),
     inactivityPenalty: Number(inactivity.penalty.toFixed(2)),
     daysSinceLast: inactivity.daysSinceLast == null ? null : Number(inactivity.daysSinceLast.toFixed(1)),
@@ -1049,6 +1056,52 @@ const computeLaneBias = ({
   }
 }
 
+const computeHandicapDistance = ({ horse, raceContext }) => {
+  const baseDistance = safeNumber(raceContext?.distance, NaN)
+  const actualDistance = safeNumber(horse?.actualDistance, baseDistance)
+
+  if (!Number.isFinite(baseDistance) || !Number.isFinite(actualDistance)) {
+    return buildInactiveContextFeature({
+      baseDistance: Number.isFinite(baseDistance) ? baseDistance : null,
+      actualDistance: Number.isFinite(actualDistance) ? actualDistance : null,
+      distanceDelta: null,
+      reason: 'missing_distance_context'
+    })
+  }
+
+  const distanceDelta = actualDistance - baseDistance
+  if (!distanceDelta) {
+    return buildInactiveContextFeature({
+      baseDistance,
+      actualDistance,
+      distanceDelta: 0,
+      reason: 'no_handicap'
+    })
+  }
+
+  const rawMeasurement = Number((distanceDelta / 20).toFixed(2))
+  const rawDelta = distanceDelta > 0
+    ? -rawMeasurement * HANDICAP_DISTANCE_WEIGHT
+    : Math.abs(rawMeasurement) * HANDICAP_DISTANCE_WEIGHT * 0.6
+  const deltaElo = Number(clamp(
+    rawDelta,
+    -HANDICAP_DISTANCE_PENALTY_CAP,
+    HANDICAP_DISTANCE_BONUS_CAP
+  ).toFixed(2))
+
+  return {
+    rawMeasurement,
+    sampleSize: 1,
+    confidence: 1,
+    deltaElo,
+    baseDistance,
+    actualDistance,
+    distanceDelta,
+    cappedBy: distanceDelta > 0 ? HANDICAP_DISTANCE_PENALTY_CAP : HANDICAP_DISTANCE_BONUS_CAP,
+    reason: distanceDelta > 0 ? 'handicap_penalty' : 'distance_advantage'
+  }
+}
+
 const computeContextAdjustments = ({
   relevantResults,
   raceContext,
@@ -1059,6 +1112,7 @@ const computeContextAdjustments = ({
   trackAffinity,
   shoeSignal,
   driverHorseAffinity,
+  handicapDistance,
   laneBias
 }) => {
   const total = Number((
@@ -1069,6 +1123,7 @@ const computeContextAdjustments = ({
     trackAffinity.deltaElo +
     shoeSignal.deltaElo +
     driverHorseAffinity.deltaElo +
+    handicapDistance.deltaElo +
     laneBias.deltaElo
   ).toFixed(2))
 
@@ -1081,6 +1136,7 @@ const computeContextAdjustments = ({
     trackAffinity,
     shoeSignal,
     driverHorseAffinity,
+    handicapDistance,
     laneBias
   }
 }
@@ -1175,6 +1231,11 @@ export const buildHorseEloPrediction = ({
     baselineOutcome: form.weightedOutcome
   })
 
+  const handicapDistance = computeHandicapDistance({
+    horse,
+    raceContext: targetContext
+  })
+
   const laneBias = computeLaneBias({
     laneBiasStore,
     horse,
@@ -1191,6 +1252,7 @@ export const buildHorseEloPrediction = ({
     trackAffinity,
     shoeSignal,
     driverHorseAffinity,
+    handicapDistance,
     laneBias
   })
 
@@ -1214,6 +1276,7 @@ export const buildHorseEloPrediction = ({
     trackAffinityDelta: trackAffinity.deltaElo,
     shoeSignalDelta: shoeSignal.deltaElo,
     driverHorseAffinityDelta: driverHorseAffinity.deltaElo,
+    handicapDistanceDelta: handicapDistance.deltaElo,
     laneBiasDelta: laneBias.deltaElo,
     contextTotal: contextAdjustments.total,
     effectiveElo
@@ -1238,6 +1301,7 @@ export const buildHorseEloPrediction = ({
       trackAffinity: TRACK_AFFINITY_WEIGHT,
       shoeSignal: SHOE_SIGNAL_WEIGHT,
       driverHorseAffinity: DRIVER_HORSE_AFFINITY_WEIGHT,
+      handicapDistance: HANDICAP_DISTANCE_WEIGHT,
       laneBias: LANE_BIAS_WEIGHT
     },
     recencyProfiles: {
@@ -1262,6 +1326,7 @@ export const buildHorseEloPrediction = ({
       weightedOutcome: form.weightedOutcome,
       recentTrend: form.recentTrend,
       weightSum: form.weightSum,
+      sampleConfidence: form.sampleConfidence,
       anchorBlend: form.anchorBlend,
       resultAnchorElo: form.resultAnchorElo,
       inactivityPenalty: form.inactivityPenalty,
@@ -1312,6 +1377,7 @@ export const buildHorseEloPrediction = ({
         trackAffinity: TRACK_AFFINITY_WEIGHT,
         shoeSignal: SHOE_SIGNAL_WEIGHT,
         driverHorseAffinity: DRIVER_HORSE_AFFINITY_WEIGHT,
+        handicapDistance: HANDICAP_DISTANCE_WEIGHT,
         laneBias: LANE_BIAS_WEIGHT
       }
     }

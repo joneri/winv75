@@ -27,6 +27,7 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - Queue full-raceday horse refresh globally so importing several racedays cannot start unlimited concurrent background refresh loops.
 - Start horse refreshes at a configurable interval, defaulting to 200 ms, while allowing bounded per-raceday concurrency.
 - Recompute earliest horse timestamps for affected races in one raceday save instead of saving once per race.
+- Recompute winner-derived track stats once per touched track after a refresh batch, not once per horse.
 - Provide lightweight summary projection for list performance.
 - Treat a date as present when at least one local `Raceday` has that `raceDayDate`; the import action then asks Travsport for all race days on that date.
 
@@ -43,6 +44,7 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - Invalid missing-raceday ranges return `400`; future scan is capped to 14 days ahead.
 - Partial external API failures skip problematic raceday instead of failing all ingestion.
 - Travsport can return `500` for individual startlist IDs even when the date listing includes them; those IDs are skipped and logged as concise provider/status summaries.
+- Some Travsport horse statistics omit `points`, and some historical result rows omit valid start positions. Those are normal data gaps and should not create warning noise during import.
 
 ## Data correctness and trust
 - `raceCount` and `hasResults` are computed from stored `raceList` state.
@@ -63,6 +65,8 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - `backend/src/raceday/raceday-result-refresh-service.js`
 - `backend/src/raceday/raceday-refresh-service.js`
 - `backend/src/raceday/raceday-model.js`
+- `backend/src/horse/horse-service.js`
+- `backend/src/track/track-service.js`
 - `frontend/src/views/raceday-input/RacedayInputView.vue`
 - `frontend/src/views/raceday-missing/MissingRacedaysView.vue`
 - `frontend/src/views/raceday-input/store.js`
@@ -74,3 +78,4 @@ Backend fetches raceday and startlist payloads, upserts `Raceday`, persists ATG 
 - 2026-04-30: Added missing-date scan and one-click date import.
 - 2026-04-30: Added queued full-raceday horse refresh, 200 ms default start interval, bulk ATG comment persistence, and single-save earliest timestamp recomputation.
 - 2026-04-30: Changed Travsport fetch failures to concise warnings and kept per-raceday startlist failures non-fatal during date import.
+- 2026-04-30: Batched winner-derived track-stat recomputation after horse refresh and stopped warning for normal missing horse points/start-position data gaps.

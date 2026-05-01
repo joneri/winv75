@@ -13,6 +13,7 @@ export const DRIVER_FORM_HALF_LIFE_DAYS = Number(process.env.DRIVER_FORM_HALF_LI
 export const CAREER_RECENCY_HALF_LIFE_DAYS = Number(process.env.ELO_CAREER_RECENCY_HALF_LIFE_DAYS || 240)
 export const FORM_RECENCY_HALF_LIFE_DAYS = Number(process.env.ELO_FORM_RECENCY_HALF_LIFE_DAYS || 45)
 export const RESULT_WINDOW_DAYS = Number(process.env.ELO_RESULT_WINDOW_DAYS || 220)
+const UNPLACED_FIELD_SCORE = Number(process.env.ELO_UNPLACED_FIELD_SCORE || 0.06)
 
 const SHOE_STATE_BY_CODE = Object.freeze({
   '1': 'barefoot_all',
@@ -90,6 +91,64 @@ const resolvePlacementDisplay = (result = {}) =>
     ''
   ).trim()
 
+const normalizeReasonText = (value) =>
+  String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const resolveResultReasonText = (result = {}) => {
+  const fields = [
+    result?.comment,
+    result?.reason,
+    result?.statusReason,
+    result?.withdrawalReason,
+    result?.note,
+    result?.result?.comment,
+    result?.result?.reason,
+    result?.raceInformation?.comment,
+    result?.placement?.displayValue,
+    result?.placement?.display,
+    result?.trackCondition
+  ]
+
+  return normalizeReasonText(fields.filter(Boolean).join(' | '))
+}
+
+const hasExternalWithdrawalSignal = (result = {}) => {
+  const text = resolveResultReasonText(result)
+  if (!text) return false
+
+  const hasWithdrawalToken = /\b(str|struken|withdrawn?|scratch(?:ed)?|dns)\b/.test(text)
+  if (!hasWithdrawalToken) return false
+
+  const hasExternalCauseToken =
+    text.includes('banforhallande') ||
+    text.includes('transporthinder') ||
+    text.includes('transportproblem')
+
+  return hasExternalCauseToken
+}
+
+const isUnplacedResult = (result = {}) => {
+  const display = resolvePlacementDisplay(result).toLowerCase()
+  if (display === '0') return true
+
+  const rawValue = result?.placement?.sortValue ??
+    result?.placement?.numericalValue ??
+    result?.placement?.value ??
+    result?.placementValue ??
+    result?.finishPosition ??
+    result?.result?.placement?.sortValue ??
+    result?.result?.placement?.numericalValue ??
+    result?.result?.placement?.value ??
+    result?.result?.placement
+  const numeric = Number(rawValue)
+  return Number.isFinite(numeric) && numeric === 99
+}
+
 const isPendingResult = (resultDate, referenceDate = new Date()) => {
   const date = toDate(resultDate)
   const reference = toDate(referenceDate)
@@ -104,9 +163,13 @@ const resolveResultCode = (result = {}, referenceDate = new Date()) => {
   if (isPendingResult(raceDate, referenceDate)) return 'pending'
 
   const display = resolvePlacementDisplay(result).toLowerCase()
+  const unplaced = isUnplacedResult(result)
+
+  if (unplaced && hasExternalWithdrawalSignal(result)) return 'withdrawn'
   if (['g', 'gal', 'galopp'].includes(display)) return 'gallop'
   if (['d', 'disk', 'diskad', 'dq', 'dist'].includes(display)) return 'disqualified'
   if (['s', 'str', 'struken'].includes(display)) return 'withdrawn'
+  if (unplaced) return 'unplaced'
 
   const placement = resolvePlacement(result)
   if (placement != null) return 'placed'
@@ -167,6 +230,16 @@ const getResultSignal = (result = {}, { referenceDate = new Date(), fieldSize = 
       code,
       fieldScore,
       outcomeScore: Number((((fieldScore) - 0.5) * 2).toFixed(4))
+    }
+  }
+
+  if (code === 'unplaced') {
+    const fieldScore = UNPLACED_FIELD_SCORE
+    return {
+      placement,
+      code,
+      fieldScore,
+      outcomeScore: Number(((fieldScore - 0.5) * 2).toFixed(4))
     }
   }
 

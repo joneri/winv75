@@ -1,7 +1,7 @@
 # Track metadata and stats
 
 ## Purpose
-Provide track-specific metadata and statistics for race context (track length, open stretch, favorite start position, records).
+Provide track-specific metadata and statistics for race context (track length, open stretch, fastest winning start position, favorite start position, records).
 
 ## User experience
 Race pages can display track characteristics even when DB metadata is incomplete.
@@ -14,7 +14,7 @@ Track service resolves DB row by track code and merges missing fields from seede
   - `GET /api/track/:trackCode`
   - Internal updates from horse/race refresh flows.
 - Outputs:
-  - Track metadata payload with normalized keys (`trackLengthMeters`, `hasOpenStretch`, `openStretchLanes`).
+  - Track metadata payload with normalized keys (`trackLengthMeters`, `hasOpenStretch`, `openStretchLanes`) and lane stats (`fastestStartingPosition`, `favouriteStartingPosition`, `trackRecord`).
 
 ## Key decisions
 - Seeded defaults are returned when DB row is missing (not `404`).

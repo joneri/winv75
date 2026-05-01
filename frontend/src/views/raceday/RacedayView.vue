@@ -45,6 +45,42 @@
         </div>
       </section>
 
+      <section class="page-panel raceday-profile-panel">
+        <div class="section-head">
+          <div>
+            <div class="panel-title">Dagens profil</div>
+            <h2 class="section-title">KPI:er och läsning av tävlingsdagen</h2>
+          </div>
+          <div class="section-meta">
+            <span v-if="racedayKpis?.generatedAt">Uppdaterad {{ formatDateTime(racedayKpis.generatedAt) }}</span>
+          </div>
+        </div>
+
+        <div v-if="racedayKpisLoading" class="profile-loading">
+          <v-skeleton-loader type="paragraph, actions" />
+        </div>
+        <v-alert v-else-if="racedayKpisError" type="warning" variant="tonal">
+          {{ racedayKpisError }}
+        </v-alert>
+        <template v-else-if="racedayKpis">
+          <p class="profile-narrative">{{ racedayKpis.narrative }}</p>
+          <div v-if="racedayKpis.tags?.length" class="profile-tags">
+            <span v-for="tag in racedayKpis.tags" :key="tag" class="profile-tag">{{ tag }}</span>
+          </div>
+          <div class="profile-kpi-grid">
+            <article
+              v-for="kpi in profileKpis"
+              :key="kpi.key"
+              class="profile-kpi-card"
+            >
+              <span>{{ kpi.label }}</span>
+              <strong>{{ formatKpiValue(kpi) }}</strong>
+              <small>{{ formatKpiUnit(kpi) }}</small>
+            </article>
+          </div>
+        </template>
+      </section>
+
       <section class="raceday-layout">
         <div class="raceday-main">
           <section class="page-panel race-stage">
@@ -580,6 +616,9 @@ export default {
     const v85UpdateMessage = ref('')
     const v86UpdateMessage = ref('')
     const selectedPropLanguage = ref('sv')
+    const racedayKpis = ref(null)
+    const racedayKpisLoading = ref(false)
+    const racedayKpisError = ref('')
     const propLanguageOptions = [
       { label: 'Svenska', value: 'sv' },
       { label: 'Finska', value: 'fi' },
@@ -611,6 +650,7 @@ export default {
       try {
         loading.value = true
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId, selectedPropLanguage.value)
+        await loadRacedayKpis()
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
         await loadDdGameView()
         await loadV86GameView()
@@ -656,6 +696,7 @@ export default {
     const refreshRaceday = async () => {
       try {
         racedayDetails.value = await RacedayService.fetchRacedayDetails(route.params.racedayId, selectedPropLanguage.value)
+        await loadRacedayKpis()
         spelformer.value = await RacedayService.fetchSpelformer(route.params.racedayId)
         await loadDdGameView()
         await loadV86GameView()
@@ -681,6 +722,20 @@ export default {
         savedSuggestionsError.value = error?.response?.data?.error || 'Kunde inte hämta sparade spelförslag.'
       } finally {
         savedSuggestionsLoading.value = false
+      }
+    }
+
+    const loadRacedayKpis = async () => {
+      try {
+        racedayKpisLoading.value = true
+        racedayKpisError.value = ''
+        racedayKpis.value = await RacedayService.fetchRacedayKpis(route.params.racedayId)
+      } catch (error) {
+        console.error('Failed to load raceday KPI profile', error)
+        racedayKpis.value = null
+        racedayKpisError.value = 'Kunde inte hämta tävlingsdagens KPI-profil.'
+      } finally {
+        racedayKpisLoading.value = false
       }
     }
 
@@ -991,6 +1046,41 @@ export default {
       }).format(numeric)
     }
 
+    const profileKpis = computed(() => {
+      const preferred = [
+        'classIndex',
+        'formTemperature',
+        'competitiveness',
+        'singleCandidateCount',
+        'upsetRisk',
+        'fieldSize',
+        'driverStrength',
+        'driverChangeCount',
+        'shoeChangeRate',
+        'withdrawnCount',
+        'dominantDistance',
+        'ratingCoverage'
+      ]
+      const items = Array.isArray(racedayKpis.value?.kpis) ? racedayKpis.value.kpis : []
+      const byKey = new Map(items.map((item) => [item.key, item]))
+      return preferred.map((key) => byKey.get(key)).filter(Boolean)
+    })
+
+    const formatKpiValue = (kpi) => {
+      const value = Number(kpi?.value)
+      if (!Number.isFinite(value)) return '–'
+      if (String(kpi?.unit || '').includes('%')) {
+        return `${value.toLocaleString('sv-SE', { maximumFractionDigits: 1 })} %`
+      }
+      return value.toLocaleString('sv-SE', {
+        maximumFractionDigits: Number.isInteger(value) ? 0 : 1
+      })
+    }
+
+    const formatKpiUnit = (kpi) => {
+      return String(kpi?.unit || '') === '%' ? 'andel' : kpi?.unit
+    }
+
     const formatSavedDateTime = (value) => {
       if (!value) return ''
       return new Intl.DateTimeFormat('sv-SE', {
@@ -1172,6 +1262,12 @@ export default {
       v86UpdateMessage,
       selectedPropLanguage,
       propLanguageOptions,
+      racedayKpis,
+      racedayKpisLoading,
+      racedayKpisError,
+      profileKpis,
+      formatKpiValue,
+      formatKpiUnit,
       ddStatusLabel,
       handleGeneratedSuggestions,
       sessionUnsavedSuggestions,
@@ -1195,6 +1291,7 @@ export default {
       deleteAllSavedSuggestions,
       deletingSavedSuggestions,
       deletingSuggestionId,
+      formatDateTime,
       formatSavedDateTime,
       formatCurrency,
       formatSavedStrategy,
@@ -1296,6 +1393,7 @@ export default {
 }
 
 .race-stage,
+.raceday-profile-panel,
 .game-panel,
 .session-panel,
 .history-panel {
@@ -1331,6 +1429,74 @@ export default {
 .race-list {
   display: grid;
   gap: 14px;
+}
+
+.raceday-profile-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.profile-loading {
+  min-height: 130px;
+}
+
+.profile-narrative {
+  margin: 0;
+  max-width: 980px;
+  color: var(--text-body);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-tag {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(56, 211, 159, 0.12);
+  border: 1px solid rgba(56, 211, 159, 0.18);
+  color: #9ff4d5;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.profile-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.profile-kpi-card {
+  min-height: 112px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.035);
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+}
+
+.profile-kpi-card span {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-kpi-card strong {
+  color: var(--text-strong);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.profile-kpi-card small {
+  color: var(--text-muted);
+  font-size: 0.82rem;
 }
 
 .game-stack {
@@ -1704,6 +1870,7 @@ export default {
 @media (max-width: 720px) {
   .raceday-hero,
   .race-stage,
+  .raceday-profile-panel,
   .game-panel,
   .session-panel,
   .history-panel,

@@ -4,6 +4,7 @@ import {
   getAllRacedays,
   getMissingRacedays,
   getRacedayById,
+  getRacedayKpis,
   getRacedaysPaged,
   refreshStaleRacedayResults,
   updateEarliestUpdatedHorseTimestamp,
@@ -125,6 +126,19 @@ router.get('/summary', async (req, res) => {
   } catch (error) {
     console.error('Error fetching raceday summary:', error)
     res.status(500).send('Failed to fetch raceday summary. Please try again.')
+  }
+})
+
+router.get('/:id/kpis', validateObjectIdParam('id'), async (req, res) => {
+  try {
+    const result = await getRacedayKpis(req.params.id)
+    if (!result) {
+      return res.status(404).json({ error: 'Raceday not found.' })
+    }
+    res.json(result)
+  } catch (error) {
+    console.error(`Error fetching raceday KPI profile for ID ${req.params.id}:`, error)
+    res.status(500).json({ error: 'Failed to fetch raceday KPI profile.' })
   }
 })
 

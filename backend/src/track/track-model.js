@@ -10,6 +10,7 @@ const TrackSchema = new mongoose.Schema({
   openStretchLanes: { type: Number },
   trackRecord: { type: String },
   favouriteStartingPosition: { type: Number },
+  fastestStartingPosition: { type: Number },
   atgTrackId: { type: Number }
 })
 

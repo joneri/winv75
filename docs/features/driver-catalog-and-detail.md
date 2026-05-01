@@ -26,6 +26,7 @@ Backend list endpoint supports query + cursor pagination on Elo. Detail endpoint
 - Invalid id returns `400`.
 - Missing driver returns `404`.
 - `resultsLimit` is clamped (25..500).
+- Driver collection rebuild preserves existing `elo`, `careerElo`, race counts and `eloUpdatedAt` while refreshing names/results, so the UI does not temporarily lose kusk-Elo between collection rebuild and Elo recompute.
 
 ## Edge cases
 - Missing race metadata still returns driver result record with null-safe fields.
@@ -39,6 +40,7 @@ Backend list endpoint supports query + cursor pagination on Elo. Detail endpoint
 - Primary log: `Error listing drivers` / `Error fetching driver detail`.
 - What "good" looks like: sorted list by Elo and detail stats matching recent results.
 - What "bad" looks like: negative/invalid placements counted in starts.
+- If all race cards show missing `Kusk Form Elo`, check `db.drivers.countDocuments({ elo: { $gt: 0 } })`. A healthy local rebuild should have thousands of non-zero Elo values.
 
 ## Related files
 - `backend/src/driver/driver-routes.js`
@@ -49,4 +51,5 @@ Backend list endpoint supports query + cursor pagination on Elo. Detail endpoint
 - `frontend/src/api.ts`
 
 ## Change log
+- 2026-05-01: Fixed driver collection rebuild so it preserves existing Elo fields and combined the daily collection/Elo cron flow to avoid an Elo-less window.
 - 2026-02-27: Initial feature documentation.

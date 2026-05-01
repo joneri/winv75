@@ -12,7 +12,9 @@ Turn winv75 Elo into an explainable race prediction model with explicit career, 
   - profile-specific K and half-life behavior
 - Runtime prediction rebuilds a stronger `formElo` from recent results by applying:
   - explicit result scoring
+  - unplaced `0`/`sortValue: 99` starts as active weak form results
   - recency decay
+  - result-count confidence so several recent weak starts can move stored form even when older starts have low recency weight
   - inactivity penalty
   - a controlled anchor back toward the persisted form Elo
   - stale-form reversion toward `careerElo` when the horse has no in-window races but does have older completed starts
@@ -99,9 +101,12 @@ Lane bias is now context feature #3:
 ## Result and recency handling
 - Wins and strong placings score clearly positive.
 - Weak placings score negative.
+- Unplaced `0` results are treated as active weak results, not invalid rows.
+- Unplaced `0` rows with explicit external-withdrawal reason text (for example `str, banforhallande` or `str, transporthinder`) are treated as withdrawn and ignored.
 - `withdrawn` results are ignored.
 - Gallop and disqualification are explicit negative outcomes but do not nuke form unrealistically on their own.
 - Newer races get higher weight through explicit half-life based recency weights.
+- Runtime Form Elo blends recent-result evidence by both recency weight and count confidence, so a cluster of poor recent starts can cool an over-hot stored `formRating`.
 - Stored career and form ratings now decay between races using different half-life profiles instead of being tied to `Date.now()` at rebuild time.
 - Form decays back toward career much faster than career decays toward its seed/base.
 - When the latest real start is older than the prediction lookback window, runtime form no longer keeps a "hot" stored form untouched. It first cools an over-heated stored form back toward `careerElo`, then applies inactivity on the actual latest known race date.
@@ -132,6 +137,7 @@ Inspect `eloDebug` for:
 - component weights
 - recent races used
 - per-race recency weights
+- sample confidence used for blending recent evidence against stored form
 - result codes and scores
 - inactivity penalty
 - latest known race date outside the active lookback window
@@ -158,12 +164,16 @@ The response includes baseline vs upgraded RMSE and the delta between them.
 
 ## Related files
 - `backend/src/rating/horse-elo-prediction.js`
+- `backend/src/rating/elo-policy.js`
+- `backend/src/horse/update-elo-ratings.js`
 - `backend/src/horse/horse-service.js`
 - `backend/src/race/race-read-service.js`
 - `backend/src/rating/elo-eval.js`
 - `backend/src/suggestion/suggestion-service.js`
 
 ## Change log
+- 2026-05-01: Added explicit external-withdrawal signal handling for unplaced `0` rows; plain `0` remains weak form when no such signal exists.
+- 2026-05-01: Treated unplaced `0`/`sortValue: 99` starts as weak active results and added result-count confidence so runtime Form Elo cools over-hot stored form when recent form is visibly poor.
 - 2026-04-25: Changed stale-form fallback to only cool over-hot stored form toward career Elo, so inactive horses do not get artificial positive trend from stale reversion.
 - 2026-04-10: Fixed stale-form handling so inactive horses revert toward career Elo before inactivity is applied, and exposed separate trend-vs-stored-form plus gap-vs-career metrics.
 - 2026-04-05: Added explicit career/form/driver/effective Elo prediction model with debug and field-normalized probabilities.

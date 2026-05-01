@@ -1,10 +1,24 @@
 import express from 'express'
 import eloService from '../rating/elo-service.js'
 import raceReadService from './race-read-service.js'
+import { getRaceProfile } from './race-profile-service.js'
 import { validateNumericParam } from '../middleware/validators.js'
 import { updateDriverRatingsForRace } from '../driver/driver-elo-service.js'
 
 const router = express.Router()
+
+router.get('/profile/:id', validateNumericParam('id'), async (req, res) => {
+  try {
+    const profile = await getRaceProfile(req.params.id)
+    if (profile) {
+      return res.json(profile)
+    }
+    res.status(404).send('Race profile not found.')
+  } catch (error) {
+    console.error(`Error fetching race profile with ID ${req.params.id}:`, error)
+    res.status(500).send('Failed to fetch race profile. Please try again.')
+  }
+})
 
 router.get('/:id', validateNumericParam('id'), async (req, res) => {
   console.log('req:', req.originalUrl)

@@ -57,7 +57,7 @@ const fetchBasicInformation = async (horseId) => {
     }
 }
 
-const upsertHorseData = async (horseId) => {
+const upsertHorseData = async (horseId, options = {}) => {
     const [basicInformation, results, statistics] = await Promise.all([fetchBasicInformation(horseId), fetchResults(horseId), fetchStatistics(horseId)])
     const horseData = { 
         ...basicInformation, 
@@ -69,7 +69,6 @@ const upsertHorseData = async (horseId) => {
     if (statistics.points) {
      horseData.points = Number(statistics.points.replace(/\s/g, ''))
     } else {
-        console.warn('statistics.points is undefined for horseId:', horseId)
         horseData.points = 0
     }
 
@@ -89,11 +88,21 @@ const upsertHorseData = async (horseId) => {
             winnerTracks.add(res.trackCode)
         }
     }
-    for (const code of winnerTracks) {
-        try {
-            await trackService.updateTrackStats(code)
-        } catch (err) {
-            console.error(`Failed to update track stats for ${code}:`, err)
+
+    if (options.updateTrackStats !== false) {
+        for (const code of winnerTracks) {
+            try {
+                await trackService.updateTrackStats(code)
+            } catch (err) {
+                console.error(`Failed to update track stats for ${code}:`, err)
+            }
+        }
+    }
+
+    if (options.includeWinnerTracks === true) {
+        return {
+            writeResult: horse,
+            winnerTracks: [...winnerTracks]
         }
     }
 

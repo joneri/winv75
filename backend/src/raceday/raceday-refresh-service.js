@@ -1,6 +1,7 @@
 import Raceday from './raceday-model.js'
 import Horse from '../horse/horse-model.js'
 import horseService from '../horse/horse-service.js'
+import trackService from '../track/track-service.js'
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -127,6 +128,7 @@ export async function refreshRacedayHorses(raceDay, options = {}) {
   const delayMs = readPositiveInteger(options.delayMs, HORSE_REFRESH_DELAY_MS)
   const horseIds = [...new Set(raceDay.raceList.flatMap(race => race.horses.map(horse => horse.id)))]
   const failedHorseIds = []
+  const winnerTracks = new Set()
   let updatedHorseCount = 0
   console.log(`Updating ${horseIds.length} horses for raceday ${raceDay.raceDayId} (concurrency=${concurrency}, delayMs=${delayMs})`)
 
@@ -136,7 +138,13 @@ export async function refreshRacedayHorses(raceDay, options = {}) {
       try {
         await waitForHorseRefreshSlot(delayMs)
         console.log(`Updating horse ${index + 1} of ${horseIds.length}: ${horseId}`)
-        await horseService.upsertHorseData(horseId)
+        const result = await horseService.upsertHorseData(horseId, {
+          updateTrackStats: false,
+          includeWinnerTracks: true
+        })
+        for (const trackCode of result?.winnerTracks || []) {
+          winnerTracks.add(trackCode)
+        }
         updatedHorseCount += 1
       } catch (error) {
         console.error(`Skipped horse ${horseId} due to error:`, error.message)
@@ -145,6 +153,14 @@ export async function refreshRacedayHorses(raceDay, options = {}) {
     },
     concurrency
   )
+
+  for (const trackCode of winnerTracks) {
+    try {
+      await trackService.updateTrackStats(trackCode, raceDay.trackName)
+    } catch (error) {
+      console.error(`Failed to update track stats for ${trackCode}:`, error.message)
+    }
+  }
 
   try {
     await updateEarliestUpdatedHorseTimestamps(raceDay._id)
@@ -170,6 +186,7 @@ export async function refreshTargetRaceHorses(raceDay, raceIds = [], options = {
   const races = (raceDay?.raceList || []).filter((race) => targetIds.has(String(race?.raceId)))
   const horseIds = [...new Set(races.flatMap((race) => (race?.horses || []).map((horse) => horse?.id)).filter(Boolean))]
   const failedHorseIds = []
+  const winnerTracks = new Set()
   let updatedHorseCount = 0
 
   await runWithConcurrency(
@@ -180,7 +197,13 @@ export async function refreshTargetRaceHorses(raceDay, raceIds = [], options = {
           await waitForHorseRefreshSlot(readPositiveInteger(options.delayMs, HORSE_REFRESH_DELAY_MS))
         }
         console.log(`Targeted refresh horse ${index + 1} of ${horseIds.length}: ${horseId}`)
-        await horseService.upsertHorseData(horseId)
+        const result = await horseService.upsertHorseData(horseId, {
+          updateTrackStats: false,
+          includeWinnerTracks: true
+        })
+        for (const trackCode of result?.winnerTracks || []) {
+          winnerTracks.add(trackCode)
+        }
         updatedHorseCount += 1
       } catch (error) {
         console.error(`Skipped horse ${horseId} due to error:`, error.message)
@@ -189,6 +212,14 @@ export async function refreshTargetRaceHorses(raceDay, raceIds = [], options = {
     },
     options.concurrency ?? 6
   )
+
+  for (const trackCode of winnerTracks) {
+    try {
+      await trackService.updateTrackStats(trackCode, raceDay.trackName)
+    } catch (error) {
+      console.error(`Failed to update track stats for ${trackCode}:`, error.message)
+    }
+  }
 
   try {
     await updateEarliestUpdatedHorseTimestamps(raceDay._id, races.map((race) => race.raceId))

@@ -14,6 +14,16 @@ const fetchRacedayDetails = async (racedayId, propLanguage = 'sv') => {
   }
 }
 
+const fetchRacedayKpis = async (racedayId) => {
+  try {
+    const response = await axios.get(`${API_BASE}/raceday/${racedayId}/kpis`)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching raceday KPI profile:', error)
+    throw error
+  }
+}
+
 async function fetchPropositionTranslationOverview(limit = 250, propLanguage = 'sv') {
   try {
     const response = await axios.get(`${API_BASE}/proposition-translations/overview`, {
@@ -238,6 +248,7 @@ async function fetchV86GameView(racedayId) {
 
 export default {
   fetchRacedayDetails,
+  fetchRacedayKpis,
   fetchSpelformer,
   fetchV5Info,
   fetchV85Info,

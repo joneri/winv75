@@ -12,6 +12,12 @@ const ensureConnection = async () => {
 
 const buildDrivers = async ({ disconnect = false } = {}) => {
   await ensureConnection()
+  const existingDrivers = await Driver.find(
+    {},
+    { _id: 1, elo: 1, careerElo: 1, eloRaceCount: 1, careerRaceCount: 1, eloUpdatedAt: 1 }
+  ).lean()
+  const existingRatings = new Map(existingDrivers.map(driver => [Number(driver._id), driver]))
+
   await Driver.deleteMany({})
 
   const cursor = Horse.find({}, { id: 1, name: 1, results: 1 }).lean().cursor()
@@ -53,8 +59,17 @@ const buildDrivers = async ({ disconnect = false } = {}) => {
 
   const bulk = Driver.collection.initializeUnorderedBulkOp()
   for (const [id, data] of drivers.entries()) {
+    const previous = existingRatings.get(Number(id)) || {}
     bulk.find({ _id: id }).upsert().updateOne({
-      $set: { name: data.name, results: data.results }
+      $set: {
+        name: data.name,
+        results: data.results,
+        elo: Number.isFinite(previous.elo) ? previous.elo : 0,
+        careerElo: Number.isFinite(previous.careerElo) ? previous.careerElo : 0,
+        eloRaceCount: Number.isFinite(previous.eloRaceCount) ? previous.eloRaceCount : 0,
+        careerRaceCount: Number.isFinite(previous.careerRaceCount) ? previous.careerRaceCount : 0,
+        eloUpdatedAt: previous.eloUpdatedAt ?? null
+      }
     })
   }
   if (bulk.length > 0) await bulk.execute()

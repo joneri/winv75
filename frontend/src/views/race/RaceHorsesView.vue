@@ -14,182 +14,244 @@
           :next-race-id="nextRaceId"
           @navigate="goToRace"
         />
-        <v-row>
-            <v-col>
-                <v-data-table :headers="headers" :items="tableItems" :items-per-page="16"
-                        :custom-key-sort="customKeySort"
-                        :must-sort="false"
-                        :multi-sort="false"
-                        class="elevation-1">
-                            <template v-slot:[`item.programNumber`]="slotProps">
-                              <div class="start-cell">
-                                <div class="start-line1">#{{ (slotProps?.value ?? slotRow(slotProps)?.programNumber) }}</div>
-                                <div class="start-line2">
-                                  <template v-if="raceStartMethod === 'Autostart'">
-                                    <span>
-                                      {{ (slotRow(slotProps)?.actualStartPosition ?? slotRow(slotProps)?.startPosition) ? `Spår ${formatStartPosition(slotRow(slotProps)?.actualStartPosition ?? slotRow(slotProps)?.startPosition)}` : 'oklart' }}
-                                    </span>
-                                  </template>
-                                  <template v-else>
-                                    <span v-if="slotRow(slotProps)?.actualStartPosition">
-                                      {{ `Volte ${formatStartPosition(slotRow(slotProps)?.actualStartPosition)}` }}
-                                    </span>
-                                    <span v-else-if="slotRow(slotProps)?.startPosition">
-                                      {{ `Startpos ${formatStartPosition(slotRow(slotProps)?.startPosition)}` }}
-                                    </span>
-                                    <span v-else>oklart</span>
-                                  </template>
-                                </div>
-                                <div class="start-line3" v-if="(slotRow(slotProps)?.actualDistance || currentRace.distance)">
-                                  <span>
-                                    {{ (slotRow(slotProps)?.actualDistance || currentRace.distance) ? `${(slotRow(slotProps)?.actualDistance || currentRace.distance)} m` : '' }}
-                                  </span>
-                                  <template v-if="slotRow(slotProps)?.actualDistance && currentRace.distance && slotRow(slotProps)?.actualDistance !== currentRace.distance">
-                                    <span class="start-badge" :class="{ longer: slotRow(slotProps)?.actualDistance > currentRace.distance, shorter: slotRow(slotProps)?.actualDistance < currentRace.distance }">
-                                      <template v-if="slotRow(slotProps)?.actualDistance > currentRace.distance">
-                                        Handicap +{{ slotRow(slotProps)?.actualDistance - currentRace.distance }}
-                                      </template>
-                                      <template v-else>
-                                        Försprång −{{ currentRace.distance - slotRow(slotProps)?.actualDistance }}
-                                      </template>
-                                    </span>
-                                  </template>
-                                </div>
-                              </div>
-                            </template>
-                            <template v-slot:[`item.eloRating`]="slotProps">
-                                <div :class="{ withdrawn: slotRow(slotProps)?.columns?.horseWithdrawn }">
-                                    <template v-if="true">
-                                      <div class="horse-info-line">
-                                        <template v-if="horseLink(slotRow(slotProps))">
-                                          <router-link
-                                            class="horse-link"
-                                            :to="horseLink(slotRow(slotProps))"
-                                          >
-                                            {{ slotRow(slotProps)?.name || '—' }}
-                                          </router-link>
-                                        </template>
-                                        <template v-else>
-                                          <span>{{ slotRow(slotProps)?.name || '—' }}</span>
-                                        </template>
-                                        <span> – {{ formatElo(Number(slotProps?.value ?? getEloFor(slotRow(slotProps) || {}))) }}</span>
-                                      </div>
-                                    </template>
-                                    <!-- Unified past performances: Date, Track, Placement, Comment -->
-                                    <div class="mt-1">
-                                      <div
-                                        v-for="(line, idx) in buildUnifiedPastDisplay(slotRow(slotProps)?.id, recentCoreFor(slotRow(slotProps) || {}))"
-                                        :key="idx"
-                                        class="text-caption past-line"
-                                      >
-                                        {{ line }}
-                                      </div>
-                                      <div v-if="buildUnifiedPastDisplay(slotRow(slotProps)?.id, recentCoreFor(slotRow(slotProps) || {})).length === 0" class="text-caption past-line">
-                                        Inga tidigare starter tillgängliga
-                                      </div>
-                                    </div>
-                                </div>
-                            </template>
-                            <template v-slot:[`item.formRating`]="slotProps">
-                              <div class="elo-cell">
-                                <span class="elo-main">
-                                  {{ formatElo(Number(slotProps?.value ?? getFormEloFor(slotRow(slotProps)))) }}
-                                </span>
-                                <span
-                                  v-if="hasFormDelta(slotRow(slotProps))"
-                                  class="elo-delta"
-                                >
-                                  Δ {{ formatFormDelta(getFormDeltaFor(slotRow(slotProps))) }}
-                                </span>
-                              </div>
-                            </template>
-                            <template v-slot:[`item.eloFreshness`]="slotProps">
-                              <div class="freshness-cell" :title="eloFreshnessTooltip(slotRow(slotProps))">
-                                <v-chip
-                                  size="x-small"
-                                  variant="tonal"
-                                  :color="eloFreshnessColor(slotRow(slotProps))"
-                                >
-                                  {{ eloFreshnessLabel(slotRow(slotProps)) }}
-                                </v-chip>
-                                <span class="freshness-detail">
-                                  {{ eloFreshnessDetail(slotRow(slotProps)) }}
-                                </span>
-                              </div>
-                            </template>
-                            <template v-slot:[`item.driverName`]="slotProps">
-                              <template v-if="driverLink(slotRow(slotProps))">
-                                <router-link
-                                  class="driver-link"
-                                  :to="driverLink(slotRow(slotProps))"
-                                >
-                                  {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
-                                </router-link>
-                              </template>
-                              <template v-else>
-                                {{ (slotProps?.value ?? slotRow(slotProps)?.driver?.name) || '—' }}
-                              </template>
-                            </template>
-                            <template v-slot:[`item.driverElo`]="slotProps">
-                              {{ formatElo(Number(slotProps?.value ?? getDriverEloFor(slotRow(slotProps)))) }}
-                            </template>
-                            <template v-slot:[`item.statsScore`]="slotProps">
-                                <div class="stats-cell">
-                                  <div
-                                    v-if="(slotRow(slotProps)?.statsText || getStatsFormatted(slotRow(slotProps))) && (slotRow(slotProps)?.statsText || getStatsFormatted(slotRow(slotProps))) !== '—'"
-                                    class="stats-text"
-                                  >
-                                    {{ slotRow(slotProps)?.statsText || getStatsFormatted(slotRow(slotProps)) }}
-                                  </div>
-                                  <div class="form-row">
-                                    <span class="form-label">Form {{ formatFormValue(slotRow(slotProps)?.statsDetails?.formScore) }}/10</span>
-                                    <div class="form-bar" :class="formColorClass(Number(slotRow(slotProps)?.statsDetails?.formScore))">
-                                      <div class="form-fill" :style="{ width: ((Number(slotRow(slotProps)?.statsDetails?.formScore) || 0) * 10) + '%' }"></div>
-                                    </div>
-                                  </div>
-                                  <div class="stats-row">
-                                    <span class="stats-pair">{{ formatWinsStarts(slotRow(slotProps)?.statsDetails) }}</span>
-                                    <span
-                                      class="sep"
-                                      v-if="formatWinsStarts(slotRow(slotProps)?.statsDetails) !== '—' && formatPlaceWinPct(slotRow(slotProps)?.statsDetails) !== '—'"
-                                    >•</span>
-                                    <span class="pct">{{ formatPlaceWinPct(slotRow(slotProps)?.statsDetails) }}</span>
-                                  </div>
-                                  <div v-if="formatV85Percent(slotRow(slotProps)?.statsDetails?.v85Percent)" class="v85-row">
-                                    V85 {{ formatV85Percent(slotRow(slotProps)?.statsDetails?.v85Percent) }}
-                                  </div>
-                                  <div v-if="formatV86Percent(slotRow(slotProps)?.statsDetails?.v86Percent)" class="v86-row">
-                                    V86 {{ formatV86Percent(slotRow(slotProps)?.statsDetails?.v86Percent) }}
-                                  </div>
-                                </div>
-                            </template>
-                            <template v-slot:[`item.advantages`]="slotProps">
-                                <div class="advantages-wrap">
-                                    <template v-if="getAdvantages(slotRow(slotProps)).length">
-                                        <template v-for="(chip, idx) in getAdvantages(slotRow(slotProps)).slice(0, maxAdvChips)" :key="chip.key">
-                                            <v-chip size="x-small" variant="tonal" class="mr-1 mb-1" :title="chip.tip">
-                                                <span class="mr-1">{{ chip.icon }}</span>{{ chip.label }}
-                                            </v-chip>
-                                        </template>
-                                        <template v-if="getAdvantages(slotRow(slotProps)).length > maxAdvChips">
-                                            <v-chip size="x-small" variant="outlined" class="mr-1 mb-1" :title="overflowTooltip(slotRow(slotProps))">
-                                                +{{ getAdvantages(slotRow(slotProps)).length - maxAdvChips }}
-                                            </v-chip>
-                                        </template>
-                                    </template>
-                                    <template v-else>
-                                        —
-                                    </template>
-                                </div>
-                            </template>
-                            <template v-slot:[`item.shoeOption`]="slotProps">
-                                <span :title="startListShoeTooltip(slotRow(slotProps)) || null">
-                                    {{ formatStartListShoe(slotRow(slotProps)) || (slotProps?.value ?? '—') }}
-                                </span>
-                            </template>
-                </v-data-table>
-            </v-col>
-        </v-row>
+        <section
+          v-if="raceProfile || raceProfileLoading || raceProfileError"
+          class="race-profile-block"
+          aria-labelledby="race-profile-title"
+        >
+          <div class="race-profile-head">
+            <div>
+              <div class="race-profile-eyebrow">Lopprofil</div>
+              <h2 id="race-profile-title">Vad påverkar loppet?</h2>
+            </div>
+            <div v-if="raceProfile?.topHorse" class="race-profile-favorite" aria-label="Modellens favorit">
+              <span>Modellfavorit</span>
+              <strong>{{ raceProfile.topHorse.name }}</strong>
+              <small>
+                Modell {{ formatElo(raceProfile.topHorse.modelElo || raceProfile.topHorse.effectiveElo) }}
+                · Class {{ formatElo(raceProfile.topHorse.classElo) }}
+                · Form {{ formatElo(raceProfile.topHorse.formElo) }}
+              </small>
+            </div>
+          </div>
+          <div v-if="raceProfileLoading" class="race-profile-muted">Laddar lopprofil…</div>
+          <div v-else-if="raceProfileError" class="race-profile-muted">{{ raceProfileError }}</div>
+          <template v-else>
+            <p class="race-profile-narrative">{{ raceProfile.narrative }}</p>
+            <div class="race-profile-kpis">
+              <div
+                v-for="kpi in profileKpis"
+                :key="kpi.key"
+                class="race-profile-kpi"
+                :class="profileKpiClass(kpi)"
+                :aria-label="`${kpi.label}: ${formatProfileKpiValue(kpi)}`"
+              >
+                <span>{{ kpi.label }}</span>
+                <strong>{{ formatProfileKpiValue(kpi) }}</strong>
+              </div>
+            </div>
+            <div class="race-profile-details">
+              <div class="race-profile-detail">
+                <h3>Distans och tillägg</h3>
+                <div v-if="raceProfile.distanceTiers?.length" class="race-profile-list">
+                  <div v-for="tier in raceProfile.distanceTiers" :key="tier.distance" class="race-profile-list-row">
+                    <span class="race-profile-main">{{ tier.distance }} m</span>
+                    <strong class="race-profile-value">
+                      {{ tier.starters }} start{{ tier.starters === 1 ? '' : 'er' }}
+                      <template v-if="tier.handicapMeters > 0"> · +{{ tier.handicapMeters }} m</template>
+                    </strong>
+                    <small v-if="tier.topHorse">Bäst på nivån: {{ tier.topHorse.name }}</small>
+                  </div>
+                </div>
+                <div v-else class="race-profile-muted">Ingen distansprofil tillgänglig.</div>
+              </div>
+              <div class="race-profile-detail">
+                <h3>Spår och lägesbild</h3>
+                <div v-if="raceProfile.laneSignals?.items?.length" class="race-profile-list">
+                  <div v-for="signal in raceProfile.laneSignals.items" :key="signal.id" class="race-profile-list-row">
+                    <span class="race-profile-main">{{ signal.name }}</span>
+                    <strong class="race-profile-value" :class="{ positive: signal.deltaElo > 0, negative: signal.deltaElo < 0 }">
+                      {{ formatSigned(signal.deltaElo) }} Elo
+                    </strong>
+                    <small>Spår {{ signal.startPosition || 'okänt' }} · {{ signal.sampleSize || 0 }} historiska träffar</small>
+                  </div>
+                </div>
+                <div v-else class="race-profile-muted">Spårhistoriken ger ingen tydlig aktiv signal.</div>
+              </div>
+              <div class="race-profile-detail">
+                <h3>Spikfrågan</h3>
+                <p class="race-profile-verdict">{{ spikeVerdictText }}</p>
+                <div v-if="raceProfile.handicapPenalties?.length" class="race-profile-list compact">
+                  <div v-for="penalty in raceProfile.handicapPenalties" :key="penalty.id" class="race-profile-list-row">
+                    <span class="race-profile-main">{{ penalty.name }}</span>
+                    <strong class="race-profile-value">{{ penalty.handicapMeters }} m tillägg</strong>
+                    <small>{{ formatSigned(penalty.deltaElo) }} Elo i modellen</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </section>
+        <section class="start-list-modern" aria-labelledby="start-list-title">
+          <div class="start-list-header">
+            <div>
+              <div class="race-profile-eyebrow">Startlista</div>
+              <h2 id="start-list-title">Hästar och modellvärden</h2>
+            </div>
+            <span class="start-list-count">{{ tableItems.length }} startande</span>
+          </div>
+          <div class="start-sort-bar" aria-label="Sortera startlistan">
+            <button
+              v-for="option in startSortOptions"
+              :key="option.key"
+              type="button"
+              class="start-sort-button"
+              :class="{ active: startSortKey === option.key }"
+              :aria-pressed="startSortKey === option.key"
+              @click="setStartSort(option.key)"
+            >
+              <span>{{ option.label }}</span>
+              <small v-if="startSortKey === option.key">{{ startSortDirection === 'asc' ? '↑' : '↓' }}</small>
+            </button>
+          </div>
+          <article
+            v-for="horse in sortedTableItems"
+            :key="horse.id || horse.programNumber"
+            class="horse-card-modern"
+            :class="{ withdrawn: horse?.columns?.horseWithdrawn || horse?.horseWithdrawn }"
+          >
+            <div class="horse-card-start">
+              <div class="horse-number">#{{ horse.programNumber || '—' }}</div>
+              <div class="horse-start-meta">{{ startPositionLabel(horse) }}</div>
+              <div class="horse-start-distance" v-if="horse.actualDistance || currentRace.distance">
+                {{ horse.actualDistance || currentRace.distance }} m
+              </div>
+              <span
+                v-if="handicapLabel(horse)"
+                class="start-badge"
+                :class="{ longer: Number(horse.actualDistance) > Number(currentRace.distance), shorter: Number(horse.actualDistance) < Number(currentRace.distance) }"
+              >
+                {{ handicapLabel(horse) }}
+              </span>
+            </div>
+
+            <div class="horse-card-main">
+              <div class="horse-card-title-row">
+                <template v-if="horseLink(horse)">
+                  <router-link class="horse-card-name horse-link" :to="horseLink(horse)">
+                    {{ horse.name || '—' }}
+                  </router-link>
+                </template>
+                <template v-else>
+                  <span class="horse-card-name">{{ horse.name || '—' }}</span>
+                </template>
+                <v-chip
+                  size="x-small"
+                  variant="tonal"
+                  :color="eloFreshnessColor(horse)"
+                  :title="eloFreshnessTooltip(horse)"
+                >
+                  {{ eloFreshnessLabel(horse) }}
+                </v-chip>
+              </div>
+
+              <div class="horse-card-metrics" aria-label="Elo och modellvärden">
+                <div class="horse-metric">
+                  <span>Class Elo</span>
+                  <strong>{{ formatElo(getEloFor(horse)) }}</strong>
+                </div>
+                <div class="horse-metric">
+                  <span>Form Elo</span>
+                  <strong>{{ formatElo(getFormEloFor(horse)) }}</strong>
+                  <small v-if="hasFormDelta(horse)">Δ {{ formatFormDelta(getFormDeltaFor(horse)) }}</small>
+                </div>
+                <div class="horse-metric model">
+                  <span>Modell Elo</span>
+                  <strong>{{ formatElo(getModelEloFor(horse)) }}</strong>
+                  <small v-if="hasModelDelta(horse)" :class="{ negative: getModelDeltaFor(horse) < 0 }">
+                    Δ {{ formatFormDelta(getModelDeltaFor(horse)) }}
+                  </small>
+                </div>
+                <div class="horse-metric">
+                  <span>Kusk Form Elo</span>
+                  <strong>{{ formatElo(getDriverEloFor(horse)) }}</strong>
+                </div>
+              </div>
+
+              <div class="horse-card-past" aria-label="Senaste resultat">
+                <div
+                  v-for="(line, idx) in buildUnifiedPastDisplay(horse.id, recentCoreFor(horse)).slice(0, 4)"
+                  :key="idx"
+                  class="past-line"
+                >
+                  {{ line }}
+                </div>
+                <div v-if="buildUnifiedPastDisplay(horse.id, recentCoreFor(horse)).length === 0" class="past-line">
+                  Inga tidigare starter tillgängliga
+                </div>
+              </div>
+            </div>
+
+            <aside class="horse-card-side" aria-label="Hästfakta">
+              <div class="horse-side-section">
+                <span class="horse-side-label">Kusk</span>
+                <template v-if="driverLink(horse)">
+                  <router-link class="driver-link" :to="driverLink(horse)">
+                    {{ horse?.driver?.name || horse.driverName || '—' }}
+                  </router-link>
+                </template>
+                <template v-else>
+                  <strong>{{ horse?.driver?.name || horse.driverName || '—' }}</strong>
+                </template>
+              </div>
+
+              <div class="horse-side-section">
+                <span class="horse-side-label">Stats</span>
+                <div class="form-row">
+                  <span class="form-label">Form {{ formatFormValue(horse?.statsDetails?.formScore) }}/10</span>
+                  <div class="form-bar" :class="formColorClass(Number(horse?.statsDetails?.formScore))">
+                    <div class="form-fill" :style="{ width: ((Number(horse?.statsDetails?.formScore) || 0) * 10) + '%' }"></div>
+                  </div>
+                </div>
+                <div class="stats-row">
+                  <span class="stats-pair">{{ formatWinsStarts(horse?.statsDetails) }}</span>
+                  <span
+                    class="sep"
+                    v-if="formatWinsStarts(horse?.statsDetails) !== '—' && formatPlaceWinPct(horse?.statsDetails) !== '—'"
+                  >•</span>
+                  <span class="pct">{{ formatPlaceWinPct(horse?.statsDetails) }}</span>
+                </div>
+              </div>
+
+              <div class="horse-side-section" v-if="getAdvantages(horse).length">
+                <span class="horse-side-label">Fördelar</span>
+                <div class="advantages-wrap">
+                  <template v-for="chip in getAdvantages(horse).slice(0, maxAdvChips)" :key="chip.key">
+                    <v-chip size="x-small" variant="tonal" class="mr-1 mb-1" :title="chip.tip">
+                      <span class="mr-1">{{ chip.icon }}</span>{{ chip.label }}
+                    </v-chip>
+                  </template>
+                  <v-chip
+                    v-if="getAdvantages(horse).length > maxAdvChips"
+                    size="x-small"
+                    variant="outlined"
+                    class="mr-1 mb-1"
+                    :title="overflowTooltip(horse)"
+                  >
+                    +{{ getAdvantages(horse).length - maxAdvChips }}
+                  </v-chip>
+                </div>
+              </div>
+
+              <div class="horse-side-section">
+                <span class="horse-side-label">Skor</span>
+                <strong :title="startListShoeTooltip(horse) || null">
+                  {{ formatStartListShoe(horse) || horse.shoeOption || '—' }}
+                </strong>
+              </div>
+            </aside>
+          </article>
+        </section>
         <v-row v-if="raceList.length" class="race-navigation">
             <v-col class="d-flex justify-space-between">
                 <v-btn variant="text" @click="goToRace(previousRaceId)" :disabled="!previousRaceId">⟵ Previous race</v-btn>
@@ -210,6 +272,7 @@ import RaceHeader from './components/RaceHeader.vue'
 import RaceNavigation from './components/RaceNavigation.vue'
 import {
     fetchRaceFromRaceId,
+    fetchRaceProfile,
     fetchHorseScores
 } from '@/views/race/services/RaceHorsesService.js'
 import RacedayService from '@/views/raceday/services/RacedayService.js'
@@ -279,6 +342,11 @@ export default {
         const currentRace = computed(() => store.state.raceHorses.currentRace)
         const rankedHorses = computed(() => store.getters['raceHorses/getRankedHorses'])
         const rankedMap = computed(() => new Map((rankedHorses.value || []).map(r => [r.id, r])))
+        const raceProfile = ref(null)
+        const raceProfileLoading = ref(false)
+        const raceProfileError = ref('')
+        const startSortKey = ref('programNumber')
+        const startSortDirection = ref('asc')
 
         const v86LegByRaceId = computed(() => {
           const map = new Map()
@@ -397,18 +465,53 @@ export default {
           statsScore: (a, b) => Number(a || 0) - Number(b || 0)
         }))
 
-        // Data-table headers used by the Start List
-        const headers = [
-          { title: '# / Start', key: 'programNumber', sortable: true, width: 120 },
-          { title: 'Häst och info', key: 'eloRating', sortable: true, width: 520 },
-          { title: 'Form Elo', key: 'formRating', sortable: true, align: 'end', width: 110 },
-          { title: 'Elo-status', key: 'eloFreshness', sortable: false, width: 170 },
-          { title: 'Kusk', key: 'driverName', sortable: false, width: 160 },
-          { title: 'Kusk Form Elo', key: 'driverElo', sortable: true, align: 'end', width: 130 },
-          { title: 'Stats', key: 'statsScore', sortable: true, width: 220 },
-          { title: 'Fördelar', key: 'advantages', sortable: false, width: 220 },
-          { title: 'Skor', key: 'shoeOption', sortable: false, width: 110 },
+        const startSortOptions = [
+          { label: '# / Start', key: 'programNumber', type: 'number' },
+          { label: 'Häst', key: 'name', type: 'string' },
+          { label: 'Class Elo', key: 'eloRating', type: 'number' },
+          { label: 'Form Elo', key: 'formRating', type: 'number' },
+          { label: 'Modell Elo', key: 'modelElo', type: 'number' },
+          { label: 'Elo-status', key: 'eloFreshness', type: 'number' },
+          { label: 'Kusk', key: 'driverName', type: 'string' },
+          { label: 'Kusk Form Elo', key: 'driverElo', type: 'number' },
+          { label: 'Stats', key: 'statsScore', type: 'number' },
+          { label: 'Fördelar', key: 'advantagesCount', type: 'number' },
+          { label: 'Skor', key: 'shoeLabel', type: 'string' },
         ]
+
+        const profileKpis = computed(() => {
+          const hidden = new Set(['spikeVerdict'])
+          return (raceProfile.value?.kpis || []).filter(kpi => !hidden.has(kpi.key))
+        })
+
+        const spikeVerdictText = computed(() => {
+          const verdict = (raceProfile.value?.kpis || []).find(kpi => kpi.key === 'spikeVerdict')
+          return verdict?.value || 'Ingen spikbedömning tillgänglig.'
+        })
+
+        const formatProfileKpiValue = (kpi) => {
+          if (!kpi) return '—'
+          if (kpi.unit === 'bool') return kpi.value ? 'Ja' : 'Nej'
+          if (kpi.value == null || kpi.value === '') return '—'
+          const numeric = Number(kpi.value)
+          const value = Number.isFinite(numeric)
+            ? new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 1 }).format(numeric)
+            : String(kpi.value)
+          if (!kpi.unit || kpi.unit === 'text') return value
+          return `${value} ${kpi.unit}`
+        }
+
+        const profileKpiClass = (kpi) => ({
+          'is-warning': ['hasHandicap', 'maxHandicap'].includes(kpi?.key) && Boolean(kpi?.value),
+          'is-positive': ['topGap', 'spikeConfidence'].includes(kpi?.key) && Number(kpi?.value) >= 70
+        })
+
+        const formatSigned = (value) => {
+          const numeric = Number(value)
+          if (!Number.isFinite(numeric)) return '—'
+          const formatted = new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 1 }).format(numeric)
+          return numeric > 0 ? `+${formatted}` : formatted
+        }
 
         // Helper to normalize Vuetify 3 data-table slot item to raw row
         const slotRow = (slotItem) => {
@@ -489,6 +592,61 @@ export default {
           return null
         }
 
+        function getModelEloFor(horse) {
+          if (!horse) return 0
+          let val = horse?.effectiveElo ?? horse?.modelElo ?? horse?.columns?.modelElo
+
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) {
+            const ranked = rankedMap.value.get(horse.id)
+            val = ranked?.effectiveElo ?? ranked?.modelElo ?? ranked?.columns?.modelElo
+          }
+
+          if (!(Number.isFinite(Number(val)) && Number(val) > 0)) {
+            val = getEloFor(horse)
+          }
+
+          return Number(val) || 0
+        }
+
+        function getModelDeltaFor(horse) {
+          if (!horse) return null
+          const model = getModelEloFor(horse)
+          const classElo = getEloFor(horse)
+          if (Number.isFinite(model) && Number.isFinite(classElo)) {
+            return Number((model - classElo).toFixed(2))
+          }
+          return null
+        }
+
+        const hasModelDelta = (horse) => Number.isFinite(Number(getModelDeltaFor(horse)))
+
+        const modelEloTooltip = (horse) => {
+          const model = getModelEloFor(horse)
+          const classElo = getEloFor(horse)
+          const formElo = getFormEloFor(horse)
+          const driverElo = getDriverEloFor(horse)
+          return `Modell Elo: ${formatElo(model)}. Bygger på Class Elo ${formatElo(classElo)}, Form Elo ${formatElo(formElo)}, Kusk Form Elo ${formatElo(driverElo)} och loppvillkor som spår, distans, bana, balans och tillägg.`
+        }
+
+        const startPositionLabel = (horse) => {
+          if (!horse) return 'Startläge oklart'
+          const position = horse.actualStartPosition ?? horse.startPosition
+          if (raceStartMethod.value === 'Autostart') {
+            return position ? `Spår ${formatStartPosition(position)}` : 'Spår oklart'
+          }
+          if (horse.actualStartPosition) return `Volte ${formatStartPosition(horse.actualStartPosition)}`
+          if (horse.startPosition) return `Startpos ${formatStartPosition(horse.startPosition)}`
+          return 'Startläge oklart'
+        }
+
+        const handicapLabel = (horse) => {
+          const actualDistance = Number(horse?.actualDistance)
+          const baseDistance = Number(currentRace.value?.distance)
+          if (!Number.isFinite(actualDistance) || !Number.isFinite(baseDistance) || actualDistance === baseDistance) return ''
+          if (actualDistance > baseDistance) return `Tillägg +${actualDistance - baseDistance}`
+          return `Försprång −${baseDistance - actualDistance}`
+        }
+
         function getDriverEloFor(horse) {
           if (!horse) return 0
           let val = horse?.driver?.elo ?? horse?.driverElo
@@ -549,6 +707,7 @@ export default {
               ...merged,
               eloRating: getEloFor(merged),
               formRating: getFormEloFor(merged),
+              modelElo: getModelEloFor(merged),
               formDelta: getFormDeltaFor(merged),
               driverElo: getDriverEloFor(merged),
               eloFreshness: getEloFreshness(merged).sortValue,
@@ -556,12 +715,45 @@ export default {
               v85Percent: Number.isFinite(Number(merged?.v85Percent)) ? Number(merged.v85Percent) : null,
               v86Percent: Number.isFinite(Number(merged?.v86Percent)) ? Number(merged.v86Percent) : null,
               statsScore: statsDetails.formScore ?? computeFormLast5(merged) ?? 0,
+              advantagesCount: getAdvantages(merged).length,
+              shoeLabel: formatStartListShoe(merged) || merged.shoeOption || '',
               statsDetails,
               statsText: getStatsFormatted(merged),
               // No precomputed stats string stored; use getter in slot
             }
           })
         })
+
+        const sortedTableItems = computed(() => {
+          const option = startSortOptions.find(item => item.key === startSortKey.value) || startSortOptions[0]
+          const direction = startSortDirection.value === 'asc' ? 1 : -1
+          return [...tableItems.value].sort((left, right) => {
+            const leftValue = left?.[option.key]
+            const rightValue = right?.[option.key]
+            if (option.type === 'string') {
+              return String(leftValue || '').localeCompare(String(rightValue || ''), 'sv-SE') * direction
+            }
+            const leftNumber = Number(leftValue)
+            const rightNumber = Number(rightValue)
+            const leftValid = Number.isFinite(leftNumber)
+            const rightValid = Number.isFinite(rightNumber)
+            if (leftValid && rightValid && leftNumber !== rightNumber) return (leftNumber - rightNumber) * direction
+            if (leftValid && !rightValid) return -1
+            if (!leftValid && rightValid) return 1
+            return String(left?.name || '').localeCompare(String(right?.name || ''), 'sv-SE')
+          })
+        })
+
+        const setStartSort = (key) => {
+          if (startSortKey.value === key) {
+            startSortDirection.value = startSortDirection.value === 'asc' ? 'desc' : 'asc'
+            return
+          }
+          startSortKey.value = key
+          startSortDirection.value = key === 'programNumber' || key === 'name' || key === 'driverName' || key === 'shoeLabel'
+            ? 'asc'
+            : 'desc'
+        }
 
         const latestDate = (...values) => {
           const timestamps = values
@@ -994,6 +1186,23 @@ export default {
           }
         }
 
+        const fetchRaceProfileData = async (raceId) => {
+          if (!raceId) {
+            raceProfile.value = null
+            return
+          }
+          raceProfileLoading.value = true
+          raceProfileError.value = ''
+          try {
+            raceProfile.value = await fetchRaceProfile(raceId)
+          } catch (error) {
+            raceProfile.value = null
+            raceProfileError.value = 'Kunde inte hämta lopprofilen just nu.'
+          } finally {
+            raceProfileLoading.value = false
+          }
+        }
+
         // Race meta strings and games badges
         const { raceMetaString, trackMetaString, raceGames } = useRaceMeta({
           currentRace,
@@ -1091,7 +1300,10 @@ export default {
 
         onMounted(async () => {
             const raceId = route.params.raceId
-            await fetchDataAndUpdate(raceId)
+            await Promise.all([
+              fetchDataAndUpdate(raceId),
+              fetchRaceProfileData(raceId)
+            ])
             await fetchTrackInfo()
             await fetchSpelformer()
             await fetchV86GameView()
@@ -1102,7 +1314,10 @@ export default {
         watch(() => route.params.raceId, async (newRaceId) => {
             store.commit('raceHorses/clearRankedHorses')
             store.commit('raceHorses/clearCurrentRace')
-            await fetchDataAndUpdate(newRaceId)
+            await Promise.all([
+              fetchDataAndUpdate(newRaceId),
+              fetchRaceProfileData(newRaceId)
+            ])
             await fetchTrackInfo()
             await fetchSpelformer()
             await nextTick()
@@ -1124,7 +1339,6 @@ export default {
 
         return {
             // core
-            headers,
             racedayTrackName,
             navigateToRaceDay,
             currentRace,
@@ -1134,6 +1348,14 @@ export default {
             goToRace,
             raceStartMethod,
             hasHandicap,
+            raceProfile,
+            raceProfileLoading,
+            raceProfileError,
+            profileKpis,
+            spikeVerdictText,
+            formatProfileKpiValue,
+            profileKpiClass,
+            formatSigned,
             // shoe helpers
             formatStartListShoe,
             startListShoeTooltip,
@@ -1144,8 +1366,12 @@ export default {
             // number/pct formatters for AI block
             formatElo,
             formatStartPosition,
-            customKeySort,
             tableItems,
+            sortedTableItems,
+            startSortOptions,
+            startSortKey,
+            startSortDirection,
+            setStartSort,
             // past display
             buildUnifiedPastDisplay,
             recentCoreFor,
@@ -1153,6 +1379,13 @@ export default {
             getEloFor,
             getFormEloFor,
             getFormDeltaFor,
+            getModelEloFor,
+            getModelDeltaFor,
+            getDriverEloFor,
+            hasModelDelta,
+            modelEloTooltip,
+            startPositionLabel,
+            handicapLabel,
             hasFormDelta,
             formatFormDelta,
             eloFreshnessLabel,
@@ -1193,6 +1426,8 @@ export default {
 .elo-cell { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
 .elo-main { font-weight: 600; }
 .elo-delta { font-size: 0.75rem; color: #16a34a; }
+.elo-delta.negative { color: #f59e0b; }
+.model-elo-cell .elo-main { color: #5eead4; }
 .freshness-cell { display: grid; gap: 3px; align-items: start; }
 .freshness-detail { color: #6b7280; font-size: 0.75rem; line-height: 1.1; }
 .race-header .games { display: flex; gap: 6px; }
@@ -1252,6 +1487,534 @@ export default {
 .race-navigation { margin-top: 16px; }
 .withdrawn { text-decoration: line-through; }
 
+.start-list-modern {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.start-list-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 2px;
+}
+
+.start-list-header h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.22rem;
+  line-height: 1.2;
+}
+
+.start-list-count {
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.start-sort-bar {
+  display: grid;
+  grid-template-columns: 90px minmax(150px, 1.2fr) repeat(3, minmax(108px, 0.8fr)) minmax(100px, 0.8fr) minmax(130px, 1fr) minmax(120px, 0.8fr) minmax(95px, 0.7fr) minmax(95px, 0.7fr) minmax(90px, 0.7fr);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #243244;
+  border-radius: 8px;
+  background: #0b1322;
+  overflow-x: auto;
+}
+
+.start-sort-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.start-sort-button:hover,
+.start-sort-button:focus-visible {
+  border-color: #155e75;
+  color: #e5e7eb;
+  outline: none;
+}
+
+.start-sort-button.active {
+  border-color: #155e75;
+  background: #083344;
+  color: #5eead4;
+}
+
+.start-sort-button small {
+  color: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.horse-card-modern {
+  display: grid;
+  grid-template-columns: 118px minmax(360px, 1fr) minmax(260px, 340px);
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #243244;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.horse-card-modern.withdrawn {
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.horse-card-modern.withdrawn .horse-card-name {
+  text-decoration: line-through;
+}
+
+.horse-card-start {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.horse-number {
+  color: #f8fafc;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.horse-start-meta {
+  color: #cbd5e1;
+  font-size: 0.92rem;
+}
+
+.horse-start-distance {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.horse-card-main {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+}
+
+.horse-card-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.horse-card-name {
+  color: #f8fafc;
+  font-size: 1.16rem;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.horse-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(112px, 1fr));
+  gap: 8px;
+}
+
+.horse-metric {
+  display: grid;
+  gap: 3px;
+  min-height: 70px;
+  padding: 10px;
+  border: 1px solid #243244;
+  border-radius: 8px;
+  background: #111c2e;
+}
+
+.horse-metric span {
+  color: #94a3b8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.horse-metric strong {
+  color: #f8fafc;
+  font-size: 1.22rem;
+  line-height: 1.1;
+}
+
+.horse-metric small {
+  color: #86efac;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.horse-metric small.negative {
+  color: #fbbf24;
+}
+
+.horse-metric.model {
+  border-color: #155e75;
+  background: #083344;
+}
+
+.horse-metric.model strong {
+  color: #5eead4;
+}
+
+.horse-card-past {
+  display: grid;
+  gap: 5px;
+  max-width: 920px;
+}
+
+.horse-card-past .past-line {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  line-height: 1.38;
+}
+
+.horse-card-side {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.horse-side-section {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #243244;
+  border-radius: 8px;
+  background: #111c2e;
+}
+
+.horse-side-label {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.horse-side-section strong,
+.horse-side-section .driver-link {
+  color: #f8fafc;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.horse-side-section .form-row {
+  grid-template-columns: minmax(70px, auto) 1fr;
+}
+
+.horse-card-modern .stats-row,
+.horse-card-modern .stats-pair {
+  color: #cbd5e1;
+}
+
+.horse-card-modern .pct,
+.horse-card-modern .sep {
+  color: #94a3b8;
+}
+
+@media (max-width: 1180px) {
+  .horse-card-modern {
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+
+  .horse-card-side {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .start-list-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .horse-card-modern {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .horse-card-start {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .horse-number {
+    font-size: 1.25rem;
+  }
+
+  .horse-card-metrics,
+  .horse-card-side {
+    grid-template-columns: 1fr;
+  }
+
+  .start-sort-bar {
+    display: flex;
+    gap: 8px;
+    margin: 0 -2px;
+    padding: 8px 2px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .start-sort-button {
+    flex: 0 0 auto;
+    min-width: 112px;
+    background: #111c2e;
+    border-color: #243244;
+  }
+}
+
+.race-profile-block {
+  margin: 18px 0 22px;
+  padding: 20px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+}
+
+.race-profile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.race-profile-eyebrow {
+  margin-bottom: 3px;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.race-profile-head h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.race-profile-favorite {
+  display: grid;
+  gap: 2px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  text-align: left;
+}
+
+.race-profile-favorite span {
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.race-profile-favorite strong {
+  color: #1e3a8a;
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.race-profile-favorite small {
+  color: #475569;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.race-profile-narrative {
+  max-width: 1120px;
+  margin: 0 0 16px;
+  color: #334155;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.race-profile-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.race-profile-kpi {
+  display: grid;
+  gap: 5px;
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.race-profile-kpi span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.race-profile-kpi strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.race-profile-kpi.is-warning {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.race-profile-kpi.is-positive {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.race-profile-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.race-profile-detail {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.race-profile-detail h3 {
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: 0.96rem;
+  line-height: 1.25;
+}
+
+.race-profile-detail p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.race-profile-verdict {
+  font-weight: 600;
+}
+
+.race-profile-list {
+  display: grid;
+  gap: 8px;
+}
+
+.race-profile-list.compact {
+  margin-top: 12px;
+}
+
+.race-profile-list-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  padding: 9px 0;
+  border-top: 1px solid #edf2f7;
+}
+
+.race-profile-list-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.race-profile-main,
+.race-profile-value {
+  min-width: 0;
+  color: #111827;
+  font-size: 0.94rem;
+  line-height: 1.25;
+}
+
+.race-profile-main {
+  overflow-wrap: anywhere;
+}
+
+.race-profile-value {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.race-profile-list-row small {
+  grid-column: 1 / -1;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.race-profile-value.positive {
+  color: #15803d;
+}
+
+.race-profile-value.negative {
+  color: #b45309;
+}
+
+.race-profile-muted {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 1080px) {
+  .race-profile-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .race-profile-block {
+    padding: 14px;
+  }
+
+  .race-profile-head {
+    display: grid;
+  }
+
+  .race-profile-favorite {
+    min-width: 0;
+  }
+}
+
 /* Simple layout for chips area */
 .advantages-wrap {
   display: flex;
@@ -1283,10 +2046,228 @@ export default {
 .hl-star { color: #f59e0b; margin-left: 4px; }
 
 @media (prefers-color-scheme: dark) {
+  .race-profile-block {
+    border-color: #243244;
+    background: #0f172a;
+    color: #e5e7eb;
+  }
+
+  .race-profile-eyebrow {
+    color: #5eead4;
+  }
+
+  .race-profile-head h2,
+  .race-profile-kpi strong,
+  .race-profile-detail h3,
+  .race-profile-main,
+  .race-profile-value {
+    color: #f8fafc;
+  }
+
+  .race-profile-narrative,
+  .race-profile-detail p {
+    color: #cbd5e1;
+  }
+
+  .race-profile-favorite {
+    border-color: #155e75;
+    background: #083344;
+  }
+
+  .race-profile-favorite span {
+    color: #5eead4;
+  }
+
+  .race-profile-favorite strong {
+    color: #ecfeff;
+  }
+
+  .race-profile-favorite small {
+    color: #a7f3d0;
+  }
+
+  .race-profile-kpi,
+  .race-profile-detail {
+    border-color: #243244;
+    background: #111c2e;
+  }
+
+  .race-profile-kpi span,
+  .race-profile-muted,
+  .race-profile-list-row small {
+    color: #94a3b8;
+  }
+
+  .race-profile-kpi.is-warning {
+    border-color: #92400e;
+    background: #2b2113;
+  }
+
+  .race-profile-kpi.is-positive {
+    border-color: #166534;
+    background: #10251b;
+  }
+
+  .race-profile-list-row {
+    border-top-color: #243244;
+  }
+
+  .race-profile-value.positive {
+    color: #86efac;
+  }
+
+  .race-profile-value.negative {
+    color: #fbbf24;
+  }
+
   .start-line2, .start-line3 { color: #9ca3af; }
   .start-badge { border-color: #374151; }
   .start-badge.longer { background: #3b2518; color: #fdba74; border-color: #7c2d12; }
   .start-badge.shorter { background: #082f35; color: #67e8f9; border-color: #164e63; }
+}
+
+.v-theme--dark .race-profile-block {
+  border-color: #243244;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.v-theme--dark .race-profile-eyebrow {
+  color: #5eead4;
+}
+
+.v-theme--dark .race-profile-head h2,
+.v-theme--dark .race-profile-kpi strong,
+.v-theme--dark .race-profile-detail h3,
+.v-theme--dark .race-profile-main,
+.v-theme--dark .race-profile-value {
+  color: #f8fafc;
+}
+
+.v-theme--dark .race-profile-narrative,
+.v-theme--dark .race-profile-detail p {
+  color: #cbd5e1;
+}
+
+.v-theme--dark .race-profile-favorite {
+  border-color: #155e75;
+  background: #083344;
+}
+
+.v-theme--dark .race-profile-favorite span {
+  color: #5eead4;
+}
+
+.v-theme--dark .race-profile-favorite strong {
+  color: #ecfeff;
+}
+
+.v-theme--dark .race-profile-favorite small {
+  color: #a7f3d0;
+}
+
+.v-theme--dark .race-profile-kpi,
+.v-theme--dark .race-profile-detail {
+  border-color: #243244;
+  background: #111c2e;
+}
+
+.v-theme--dark .race-profile-kpi span,
+.v-theme--dark .race-profile-muted,
+.v-theme--dark .race-profile-list-row small {
+  color: #94a3b8;
+}
+
+.v-theme--dark .race-profile-kpi.is-warning {
+  border-color: #92400e;
+  background: #2b2113;
+}
+
+.v-theme--dark .race-profile-kpi.is-positive {
+  border-color: #166534;
+  background: #10251b;
+}
+
+.v-theme--dark .race-profile-list-row {
+  border-top-color: #243244;
+}
+
+.v-theme--dark .race-profile-value.positive {
+  color: #86efac;
+}
+
+.v-theme--dark .race-profile-value.negative {
+  color: #fbbf24;
+}
+
+.race-profile-block {
+  border-color: #243244;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.race-profile-eyebrow {
+  color: #5eead4;
+}
+
+.race-profile-head h2,
+.race-profile-kpi strong,
+.race-profile-detail h3,
+.race-profile-main,
+.race-profile-value {
+  color: #f8fafc;
+}
+
+.race-profile-narrative,
+.race-profile-detail p {
+  color: #cbd5e1;
+}
+
+.race-profile-favorite {
+  border-color: #155e75;
+  background: #083344;
+}
+
+.race-profile-favorite span {
+  color: #5eead4;
+}
+
+.race-profile-favorite strong {
+  color: #ecfeff;
+}
+
+.race-profile-kpi,
+.race-profile-detail {
+  border-color: #243244;
+  background: #111c2e;
+}
+
+.race-profile-kpi span,
+.race-profile-muted,
+.race-profile-list-row small {
+  color: #94a3b8;
+}
+
+.race-profile-kpi.is-warning {
+  border-color: #92400e;
+  background: #2b2113;
+}
+
+.race-profile-kpi.is-positive {
+  border-color: #166534;
+  background: #10251b;
+}
+
+.race-profile-list-row {
+  border-top-color: #243244;
+}
+
+.race-profile-value.positive {
+  color: #86efac;
+}
+
+.race-profile-value.negative {
+  color: #fbbf24;
 }
 .ai-preset { margin-top: 4px; }
 
